@@ -1,0 +1,8 @@
+{
+  "ignoreFiles": ["**/*.[jt]s?(x)", ".(svg|png|jpeg|webp)"],
+  "extends": ["stylelint-config-standard", "stylelint-config-clean-order"],
+  "rules": {
+    "function-no-unknown": [true, { "ignoreFunctions": ["theme"] }],
+    "media-query-no-invalid": null
+  }
+}

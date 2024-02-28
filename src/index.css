@@ -1,0 +1,7 @@
+/* stylelint-disable */
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@import './styles/layer.css';
+@import './styles/root.css';

@@ -1,0 +1,61 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2020": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "prettier"
+  ],
+  "ignorePatterns": ["dist", ".eslintrc.cjs", "tailwind.config.js"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["react-refresh"],
+  "rules": {
+    "react-refresh/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["**/*.tsx"],
+      "extends": [
+        "plugin:jsx-a11y/recommended",
+        "plugin:compat/recommended",
+        "plugin:tailwindcss/recommended",
+        "plugin:react-hooks/recommended",
+        "plugin:@tanstack/eslint-plugin-query/recommended",
+        "plugin:react/recommended"
+      ],
+      "plugins": ["react"],
+      "rules": {
+        "react/display-name": "warn",
+        "react/react-in-jsx-scope": "off",
+        "react/prop-types": "warn"
+      }
+    },
+    {
+      "files": ["**/?(*.)+(spec|test).[jt]s?(x)"],
+      "extends": [
+        "plugin:testing-library/react",
+        "plugin:jest-dom/recommended"
+      ],
+      "rules": {
+        "testing-library/no-container": "off",
+        "testing-library/no-node-access": "off"
+      }
+    },
+    {
+      "files": ["**/?(*.)+(stories).[jt]s?(x)"],
+      "extends": ["plugin:storybook/recommended"]
+    },
+    {
+      "files": ["**/*(?!.(d|stories|test|spec)).[jt]s?(x)"],
+      "extends": ["plugin:sonarjs/recommended"]
+    }
+  ]
+}
