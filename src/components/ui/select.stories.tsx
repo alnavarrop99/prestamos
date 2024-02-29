@@ -7,7 +7,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from './select'
+} from '@/components/ui/select'
 
 function Basic() {
   return (

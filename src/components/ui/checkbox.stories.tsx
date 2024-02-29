@@ -1,12 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Checkbox } from './checkbox'
-import { Label } from '@radix-ui/react-label'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
 
 function Basic({ label }: { label: string }) {
   return (
     <div>
       <Label className="inline-flex items-center gap-1">
-        {' '}
         <Checkbox /> {label}{' '}
       </Label>
     </div>

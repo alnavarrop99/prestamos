@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Calendar, CalendarProps } from './calendar'
+import { Calendar, CalendarProps } from '@/components/ui/calendar'
 import { useState } from 'react'
 
-function Basic({...props}: CalendarProps) {
+function Basic({ ...props }: CalendarProps) {
   const [date, setDate] = useState<Date | undefined>(new Date())
- 
+
   return (
     <Calendar
       {...props}
@@ -14,7 +14,6 @@ function Basic({...props}: CalendarProps) {
       className="rounded-md border"
     />
   )
-  
 }
 
 const meta: Meta<CalendarProps> = {
@@ -23,9 +22,8 @@ const meta: Meta<CalendarProps> = {
 }
 export default meta
 
-export const _Basic: StoryObj<CalendarProps> = {
-  name: "Basic",
-  args: {
-  },
+export const _Basic: StoryObj<React.ComponentProps<typeof Basic>> = {
+  name: 'Basic',
+  args: {},
   render: Basic,
 }

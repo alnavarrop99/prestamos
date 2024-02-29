@@ -8,10 +8,10 @@ import {
   DialogContent,
   DialogTrigger,
   DialogDescription,
-} from './dialog'
-import { Button } from './button'
-import { Label } from './label'
-import { Input } from './input'
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Copy } from 'lucide-react'
 
 function Basic({ close }: { close: boolean }) {

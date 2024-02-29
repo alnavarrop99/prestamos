@@ -6,7 +6,7 @@ import {
   CardTitle,
   CardFooter,
   CardDescription,
-} from './card'
+} from '@/components/ui/card'
 import React from 'react'
 
 function Basic({

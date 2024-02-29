@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Badge, badgeVariants } from './badge'
+import { Badge, badgeVariants } from '@/components/ui/badge'
 import { VariantProps } from 'class-variance-authority'
 
 const meta: Meta<VariantProps<typeof badgeVariants>> = {
@@ -8,9 +8,7 @@ const meta: Meta<VariantProps<typeof badgeVariants>> = {
 }
 export default meta
 
-export const _Basic: StoryObj<
-  VariantProps<typeof badgeVariants> & { children: string }
-> = {
+export const _Basic: StoryObj<typeof Badge> = {
   name: 'Basic',
   args: {
     variant: 'default',

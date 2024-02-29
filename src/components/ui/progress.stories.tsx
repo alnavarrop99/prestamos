@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Progress } from './progress'
-import React, { useEffect, useState } from 'react'
+import { Progress } from '@/components/ui/progress'
+import { useEffect, useState } from 'react'
 
 function Basic({
   progress: _progress,

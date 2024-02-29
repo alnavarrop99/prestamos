@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Input, InputProps } from './input'
-import { Label } from './label'
+import { Input, InputProps } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 function InputLabel({ label, ...props }: InputProps & { label: string }) {
   return (
@@ -18,6 +18,7 @@ const meta: Meta<React.ComponentProps<typeof Input>> = {
 export default meta
 
 export const _Basic: StoryObj<InputProps> = {
+  name: 'Basic',
   args: {
     type: 'text',
     placeholder: 'phone',
