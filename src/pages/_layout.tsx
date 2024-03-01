@@ -4,6 +4,8 @@ import clsx from 'clsx'
 import {
   BadgeCent,
   BadgeDollarSign,
+  Calendar as CalendarIcon,
+  icons,
   MenuSquare,
   Network,
   NotepadText,
@@ -23,19 +25,24 @@ export const Route = createFileRoute('/_layout')({
   component: Navigation,
 })
 
-type TStatus = { readonly offline?: boolean }
+type TStatus = { readonly offline?: boolean; readonly open?: boolean }
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
 
 const username = 'Admin99'
 export function Navigation({ children }: React.PropsWithChildren) {
-  const [{ offline }, setStatus] = useReducer(reducer, {
+  const [{ offline, open }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
   })
   const onNotwork = () => {
     setStatus({ offline: !offline })
   }
+  const onclick =
+    ({ ...props }: TStatus) =>
+    (): void => {
+      setStatus(props)
+    }
 
   useEffect(() => {
     addEventListener('online', onNotwork)
@@ -53,38 +60,64 @@ export function Navigation({ children }: React.PropsWithChildren) {
         styles?.['grid-layout']
       )}
     >
-      <nav className="row-span-full h-[100dvh] rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl">
+      <nav
+        className={clsx(
+          'row-span-full h-[100dvh] rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl',
+          {
+            [styles?.['menu-animation']]: !open,
+            [styles?.['menu-animation-reverse']]: open,
+          }
+        )}
+      >
         <div className="grid place-items-center">
           <h2 className="flex items-center gap-2 text-xl">
             {' '}
-            <BadgeDollarSign /> {text.title} <BadgeCent />{' '}
+            <BadgeDollarSign className="hover:animate-pulse" />{' '}
+            <span className={clsx({ hidden: open })}>{text.title} </span>{' '}
+            <BadgeCent className={clsx({ hidden: open })} />
           </h2>
         </div>
         <Separator className="my-4" />
         <div className="p-4 px-6 text-xl">
           <ul className="space-y-3 [&_button]:w-full">
-            {Object.entries(text.navegation).map(([name, nav]) => (
-              <li key={name}>
-                <Link to={nav.url}>
-                  {({ isActive }) => (
-                    <Button variant={!isActive ? 'link' : 'default'}>
-                      {nav.title}
-                    </Button>
-                  )}
-                </Link>
-              </li>
-            ))}
+            {Object.entries(text.navegation).map(
+              ([name, { url, title, Icon }]) => {
+                return (
+                  <li key={name}>
+                    <Link to={url}>
+                      {({ isActive }) => (
+                        <Button
+                          variant={!isActive ? 'link' : 'default'}
+                          className={clsx({ 'p-2': open })}
+                        >
+                          {!open ? title : <Icon />}
+                        </Button>
+                      )}
+                    </Link>
+                  </li>
+                )
+              }
+            )}
           </ul>
         </div>
         <Separator className="my-4" />
         <div className="grid place-items-center">
-          <Calendar className="rounded-xl bg-secondary" />
+          {!open ? (
+            <Calendar className="rounded-xl bg-secondary" />
+          ) : (
+            <Button className={clsx({ 'p-2': open })} variant="outline">
+              <CalendarIcon />
+            </Button>
+          )}
         </div>
       </nav>
       <header className="!my-0 [&_div]:flex [&_div]:items-center [&_div]:gap-4">
         <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg ">
           <div className="[&>button]:px-2">
-            <Button variant="outline">
+            <Button
+              variant={!open ? 'default' : 'outline'}
+              onClick={onclick({ open: !open })}
+            >
               {' '}
               <MenuSquare />{' '}
             </Button>
@@ -144,10 +177,10 @@ Navigation.dispalyname = 'Navigation'
 const text = {
   title: 'Pretamos App',
   navegation: {
-    home: { title: 'Dashboard', url: '/' },
-    client: { title: 'Clientes', url: '/client' },
-    credit: { title: 'Creditos', url: '/credit' },
-    user: { title: 'Usuarios', url: '/user' },
+    home: { title: 'Dashboard', url: '/', Icon: icons?.Home },
+    client: { title: 'Clientes', url: '/client', Icon: icons?.Award },
+    credit: { title: 'Creditos', url: '/credit', Icon: icons?.CreditCard },
+    user: { title: 'Usuarios', url: '/user', Icon: icons?.BookUser },
   },
   avatar: {
     src: 'https://placehold.co/50x50?text=Hello+World',
