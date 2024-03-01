@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { useEffect, useReducer, useRef } from 'react'
+import { useEffect, useReducer } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -25,7 +25,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { createPortal } from 'react-dom'
 
 export const Route = createFileRoute('/_layout')({
   component: Navigation,
@@ -61,10 +60,7 @@ export function Navigation({ children }: React.PropsWithChildren) {
       removeEventListener('online', onNotwork)
       removeEventListener('offline', onNotwork)
     }
-  })
-
-  const popover = useRef<HTMLDivElement>(null)
-  const container = useRef<HTMLDivElement>(null)
+  }, [])
 
   return (
     <div
@@ -84,7 +80,9 @@ export function Navigation({ children }: React.PropsWithChildren) {
       >
         <div className="grid place-items-center">
           <h2 className="flex items-center gap-2 text-xl">
-            <BadgeDollarSign className="hover:animate-pulse" />
+            <BadgeDollarSign
+              className={clsx({ 'hover:animate-pulse': open })}
+            />
             <span className={clsx({ hidden: open })}>{text.title} </span>
             <BadgeCent className={clsx({ hidden: open })} />
           </h2>
@@ -113,13 +111,11 @@ export function Navigation({ children }: React.PropsWithChildren) {
           </ul>
         </div>
         <Separator className="my-4" />
-        <div className="grid place-items-center" ref={container}>
-          {createPortal(
-            <Calendar className="rounded-xl bg-secondary" />,
-            (!open ? container?.current : popover.current) ?? document?.body
-          )}
-          {open && (
-            <Popover open={open}>
+        <div className="grid place-items-center">
+          {!open ? (
+            <Calendar className="rounded-xl bg-secondary" />
+          ) : (
+            <Popover>
               <PopoverTrigger>
                 <Button
                   className={clsx({ 'p-2': open })}
@@ -129,10 +125,8 @@ export function Navigation({ children }: React.PropsWithChildren) {
                   <CalendarIcon />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent
-                className={clsx('w-80 shadow-lg', { hidden: !calendar })}
-              >
-                <div ref={popover} />
+              <PopoverContent className="w-76 rounded-xl bg-secondary">
+                <Calendar />
               </PopoverContent>
             </Popover>
           )}
