@@ -14,25 +14,35 @@ import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { useEffect, useReducer } from 'react'
+import { useEffect, useReducer, useRef } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { createPortal } from 'react-dom'
 
 export const Route = createFileRoute('/_layout')({
   component: Navigation,
 })
 
-type TStatus = { readonly offline?: boolean; readonly open?: boolean }
+type TStatus = {
+  readonly offline?: boolean
+  readonly open?: boolean
+  readonly calendar?: boolean
+}
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
 
 const username = 'Admin99'
 export function Navigation({ children }: React.PropsWithChildren) {
-  const [{ offline, open }, setStatus] = useReducer(reducer, {
+  const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
   })
   const onNotwork = () => {
@@ -53,6 +63,9 @@ export function Navigation({ children }: React.PropsWithChildren) {
     }
   })
 
+  const popover = useRef<HTMLDivElement>(null)
+  const container = useRef<HTMLDivElement>(null)
+
   return (
     <div
       className={clsx(
@@ -71,9 +84,8 @@ export function Navigation({ children }: React.PropsWithChildren) {
       >
         <div className="grid place-items-center">
           <h2 className="flex items-center gap-2 text-xl">
-            {' '}
-            <BadgeDollarSign className="hover:animate-pulse" />{' '}
-            <span className={clsx({ hidden: open })}>{text.title} </span>{' '}
+            <BadgeDollarSign className="hover:animate-pulse" />
+            <span className={clsx({ hidden: open })}>{text.title} </span>
             <BadgeCent className={clsx({ hidden: open })} />
           </h2>
         </div>
@@ -101,13 +113,28 @@ export function Navigation({ children }: React.PropsWithChildren) {
           </ul>
         </div>
         <Separator className="my-4" />
-        <div className="grid place-items-center">
-          {!open ? (
-            <Calendar className="rounded-xl bg-secondary" />
-          ) : (
-            <Button className={clsx({ 'p-2': open })} variant="outline">
-              <CalendarIcon />
-            </Button>
+        <div className="grid place-items-center" ref={container}>
+          {createPortal(
+            <Calendar className="rounded-xl bg-secondary" />,
+            (!open ? container?.current : popover.current) ?? document?.body
+          )}
+          {open && (
+            <Popover open={open}>
+              <PopoverTrigger>
+                <Button
+                  className={clsx({ 'p-2': open })}
+                  variant={!calendar ? 'outline' : 'default'}
+                  onClick={onclick({ calendar: !calendar })}
+                >
+                  <CalendarIcon />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className={clsx('w-80 shadow-lg', { hidden: !calendar })}
+              >
+                <div ref={popover} />
+              </PopoverContent>
+            </Popover>
           )}
         </div>
       </nav>
@@ -118,17 +145,15 @@ export function Navigation({ children }: React.PropsWithChildren) {
               variant={!open ? 'default' : 'outline'}
               onClick={onclick({ open: !open })}
             >
-              {' '}
-              <MenuSquare />{' '}
+              <MenuSquare />
             </Button>
             <Button variant="outline">
-              {' '}
-              <NotepadText />{' '}
+              <NotepadText />
             </Button>
           </div>
           <div>
             <Label className="flex items-center justify-center gap-2 rounded-lg border border-border bg-primary pl-2">
-              <User className="stroke-secondary" />{' '}
+              <User className="stroke-secondary" />
               <Input
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
@@ -148,17 +173,16 @@ export function Navigation({ children }: React.PropsWithChildren) {
         </div>
       </header>
       <main>
-        {' '}
         <div className="h-full border border-primary">
           {children ?? <Outlet />}
-        </div>{' '}
+        </div>
       </main>
       <footer className="py-4">
         <Separator className="my-4" />
         <div className="flex items-center">
           <h3>
-            <span className="italic">{text.copyright}</span>{' '}
-            <Badge> &copy; {new Date().getFullYear()} </Badge>{' '}
+            <span className="italic">{text.copyright}</span>
+            <Badge> &copy; {new Date().getFullYear()} </Badge>
           </h3>
           <Network
             className={clsx('ms-auto', {
