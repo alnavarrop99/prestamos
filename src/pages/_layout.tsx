@@ -14,7 +14,7 @@ import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { useEffect, useReducer } from 'react'
+import React, { useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -34,16 +34,20 @@ type TStatus = {
   readonly offline?: boolean
   readonly open?: boolean
   readonly calendar?: boolean
+  readonly search?: boolean
 }
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
 
+type TClients = typeof import('@/__mock__/mocks-clients.json')
+
 const username = 'Admin99'
 export function Navigation({ children }: React.PropsWithChildren) {
-  const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
+  const [{ offline, open, calendar, search }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
   })
+  const [clients, setClients] = useState<TClients | undefined>(undefined)
   const onNotwork = () => {
     setStatus({ offline: !offline })
   }
@@ -60,6 +64,56 @@ export function Navigation({ children }: React.PropsWithChildren) {
       removeEventListener('online', onNotwork)
       removeEventListener('offline', onNotwork)
     }
+  }, [])
+
+  const onChange: React.ChangeEventHandler<
+    React.ComponentRef<typeof Input>
+  > = async (ev) => {
+    const { value } = ev.currentTarget
+    try {
+      const { default: clients } = await import('@/__mock__/mocks-clients.json')
+      if (!clients || !clients?.length) return
+
+      const query = clients?.filter(({ ...props }) =>
+        Object.values(props)
+          .join(' ')
+          .toLowerCase()
+          .includes(value.toLowerCase())
+      )
+      setClients(query)
+    } catch (error) {
+      return
+    }
+  }
+
+  const onKeyDown: React.KeyboardEventHandler<
+    React.ComponentRef<typeof Input>
+  > = (ev) => {
+    const { key } = ev
+
+    if (!clients || !clients?.length) return
+
+    if (key === 'Enter') {
+      setStatus({ search: !search })
+    }
+  }
+
+  const onSearchChange = () => {
+    if (!clients || !clients?.length) return
+    setStatus({ search: !search })
+  }
+
+  const getClient = async () => {
+    try {
+      const { default: query } = await import('@/__mock__/mocks-clients.json')
+      return query
+    } catch (error) {
+      return undefined
+    }
+  }
+
+  useEffect(() => {
+    getClient()?.then((query) => setClients(query))
   }, [])
 
   return (
@@ -113,20 +167,19 @@ export function Navigation({ children }: React.PropsWithChildren) {
         <Separator className="my-4" />
         <div className="grid place-items-center">
           {!open ? (
-            <Calendar className="rounded-xl bg-secondary" />
+            <Calendar key={'calendar'} className="rounded-xl bg-secondary" />
           ) : (
-            <Popover>
+            <Popover onOpenChange={onclick({ calendar: !calendar })}>
               <PopoverTrigger>
                 <Button
                   className={clsx({ 'p-2': open })}
                   variant={!calendar ? 'outline' : 'default'}
-                  onClick={onclick({ calendar: !calendar })}
                 >
                   <CalendarIcon />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-76 rounded-xl bg-secondary">
-                <Calendar />
+                <Calendar key={'calendar'} />
               </PopoverContent>
             </Popover>
           )}
@@ -146,14 +199,84 @@ export function Navigation({ children }: React.PropsWithChildren) {
             </Button>
           </div>
           <div>
-            <Label className="flex items-center justify-center gap-2 rounded-lg border border-border bg-primary pl-2">
-              <User className="stroke-secondary" />
+            <Label className="flex items-center justify-center rounded-lg border border-border">
+              <Popover open={search} onOpenChange={onSearchChange}>
+                <PopoverTrigger>
+                  <Button
+                    className={clsx('rounded-br-none rounded-tr-none p-2')}
+                    variant={!search ? 'ghost' : 'default'}
+                  >
+                    <User />
+                    <Badge
+                      className={clsx(
+                        { '!hidden': search },
+                        styles?.['search-badge-animation']
+                      )}
+                      variant={!search ? 'default' : 'secondary'}
+                    >
+                      {clients?.length}
+                    </Badge>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="absolute -start-16 top-2 w-80">
+                  <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
+                    <h3 className="text-xl [&>span]:underline">
+                      <span>{text.search.title}</span>
+                      <Badge variant="default"> {clients?.length} </Badge>{' '}
+                    </h3>
+                    <Separator />
+                    <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
+                      {clients?.map(({ alias, lastName, firstName, id }) => (
+                        <li key={id} className="group cursor-pointer">
+                          <Link to={'./user/' + id}>
+                            {({ isActive }) => (
+                              <>
+                                <Avatar>
+                                  <AvatarFallback>
+                                    {' '}
+                                    {alias?.slice(0, 2).toUpperCase()}{' '}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p
+                                    className={clsx('font-bold', {
+                                      "group-hover:after:content-['#']":
+                                        !isActive,
+                                    })}
+                                  >
+                                    {' '}
+                                    {firstName + ' ' + lastName}{' '}
+                                  </p>
+                                  <p className="italic">
+                                    {' '}
+                                    {id.slice(0, 4) +
+                                      '...' +
+                                      id.slice(-4, id.length)}{' '}
+                                  </p>
+                                </div>
+                                {isActive && (
+                                  <Badge> {text.search.current} </Badge>
+                                )}
+                              </>
+                            )}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <Input
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
                 placeholder={text.search.placeholder}
+                {...{
+                  onChange,
+                  onKeyDown,
+                }}
               />
             </Label>
+
             <div>
               <Avatar className="border border-primary">
                 <AvatarImage src={text.avatar.src} alt="user-img" />
@@ -167,9 +290,7 @@ export function Navigation({ children }: React.PropsWithChildren) {
         </div>
       </header>
       <main>
-        <div className="h-full border border-primary">
-          {children ?? <Outlet />}
-        </div>
+        <div>{children ?? <Outlet />}</div>
       </main>
       <footer className="py-4">
         <Separator className="my-4" />
@@ -207,6 +328,8 @@ const text = {
   },
   search: {
     placeholder: 'Buscar cliente ....',
+    title: 'Clientes:',
+    current: 'actual',
   },
   copyright: 'Todos los derechos reservados',
 }

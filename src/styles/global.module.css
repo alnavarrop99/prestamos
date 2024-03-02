@@ -10,6 +10,10 @@
   animation: 350ms menu-reverse;
 }
 
+.search-badge-animation {
+  animation: 350ms badge;
+}
+
 @keyframes menu {
   0% {
     transform: translateX(0);
@@ -35,6 +39,18 @@
 
   100% {
     transform: scaleX(100%);
+    opacity: 1;
+  }
+}
+
+@keyframes badge {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(100%);
     opacity: 1;
   }
 }
