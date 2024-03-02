@@ -18,6 +18,7 @@ import { Route as LayoutIndexImport } from './pages/_layout/index'
 import { Route as LayoutUserImport } from './pages/_layout/user'
 import { Route as LayoutCreditImport } from './pages/_layout/credit'
 import { Route as LayoutClientImport } from './pages/_layout/client'
+import { Route as LayoutUserIdImport } from './pages/_layout/user/$id'
 
 // Create/Update Routes
 
@@ -56,6 +57,11 @@ const LayoutClientRoute = LayoutClientImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutUserIdRoute = LayoutUserIdImport.update({
+  path: '/$id',
+  getParentRoute: () => LayoutUserRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -88,6 +94,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/user/$id': {
+      preLoaderRoute: typeof LayoutUserIdImport
+      parentRoute: typeof LayoutUserImport
+    }
   }
 }
 
@@ -98,7 +108,7 @@ export const routeTree = rootRoute.addChildren([
   LayoutRoute.addChildren([
     LayoutClientRoute,
     LayoutCreditRoute,
-    LayoutUserRoute,
+    LayoutUserRoute.addChildren([LayoutUserIdRoute]),
     LayoutIndexRoute,
   ]),
   LoginRoute,
