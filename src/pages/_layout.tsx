@@ -1,4 +1,8 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Outlet,
+  useChildMatches,
+} from '@tanstack/react-router'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import {
@@ -25,6 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
+import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout')({
   component: Navigation,
@@ -44,18 +49,26 @@ type TClients = typeof import('@/__mock__/mocks-clients.json')
 
 const username = 'Admin99'
 export function Navigation({ children }: React.PropsWithChildren) {
-  const [{ offline, open, calendar, search }, setStatus] = useReducer(reducer, {
+  const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
   })
+  const { setValue, setSearch, search } = useStatus((status) => ({
+    setValue: status.setValue,
+    setSearch: status.setSearch,
+    search: status.search,
+  }))
   const [clients, setClients] = useState<TClients | undefined>(undefined)
-  const onNotwork = () => {
-    setStatus({ offline: !offline })
-  }
-  const onclick =
-    ({ ...props }: TStatus) =>
-    (): void => {
-      setStatus(props)
+
+  const route = useChildMatches()
+
+  const getClient = async () => {
+    try {
+      const { default: query } = await import('@/__mock__/mocks-clients.json')
+      return query
+    } catch (error) {
+      return undefined
     }
+  }
 
   useEffect(() => {
     addEventListener('online', onNotwork)
@@ -66,10 +79,25 @@ export function Navigation({ children }: React.PropsWithChildren) {
     }
   }, [])
 
+  useEffect(() => {
+    getClient()?.then((query) => setClients(query))
+  }, [])
+
+  const onNotwork = () => {
+    setStatus({ offline: !offline })
+  }
+
+  const onclick =
+    (setStatus: (status: TStatus) => void, { ...props }: TStatus) =>
+    (): void => {
+      setStatus(props)
+    }
+
   const onChange: React.ChangeEventHandler<
     React.ComponentRef<typeof Input>
   > = async (ev) => {
     const { value } = ev.currentTarget
+    setValue({ value })
     try {
       const { default: clients } = await import('@/__mock__/mocks-clients.json')
       if (!clients || !clients?.length) return
@@ -94,27 +122,14 @@ export function Navigation({ children }: React.PropsWithChildren) {
     if (!clients || !clients?.length) return
 
     if (key === 'Enter') {
-      setStatus({ search: !search })
+      setSearch({ search: !search })
     }
   }
 
   const onSearchChange = () => {
     if (!clients || !clients?.length) return
-    setStatus({ search: !search })
+    setSearch({ search: !search })
   }
-
-  const getClient = async () => {
-    try {
-      const { default: query } = await import('@/__mock__/mocks-clients.json')
-      return query
-    } catch (error) {
-      return undefined
-    }
-  }
-
-  useEffect(() => {
-    getClient()?.then((query) => setClients(query))
-  }, [])
 
   return (
     <div
@@ -169,7 +184,7 @@ export function Navigation({ children }: React.PropsWithChildren) {
           {!open ? (
             <Calendar key={'calendar'} className="rounded-xl bg-secondary" />
           ) : (
-            <Popover onOpenChange={onclick({ calendar: !calendar })}>
+            <Popover onOpenChange={onclick(setStatus, { calendar: !calendar })}>
               <PopoverTrigger>
                 <Button
                   className={clsx({ 'p-2': open })}
@@ -190,7 +205,7 @@ export function Navigation({ children }: React.PropsWithChildren) {
           <div className="[&>button]:px-2">
             <Button
               variant={!open ? 'default' : 'outline'}
-              onClick={onclick({ open: !open })}
+              onClick={onclick(setStatus, { open: !open })}
             >
               <MenuSquare />
             </Button>
@@ -200,16 +215,27 @@ export function Navigation({ children }: React.PropsWithChildren) {
           </div>
           <div>
             <Label className="flex items-center justify-center rounded-lg border border-border">
-              <Popover open={search} onOpenChange={onSearchChange}>
+              <Popover
+                open={search && !route?.at(0)?.pathname?.includes('/client')}
+                onOpenChange={onSearchChange}
+              >
                 <PopoverTrigger>
                   <Button
                     className={clsx('rounded-br-none rounded-tr-none p-2')}
-                    variant={!search ? 'ghost' : 'default'}
+                    variant={
+                      !search && !route?.at(0)?.pathname?.includes('/client')
+                        ? 'ghost'
+                        : 'default'
+                    }
                   >
                     <User />
                     <Badge
                       className={clsx(
-                        { '!hidden': search },
+                        {
+                          '!hidden':
+                            search ||
+                            route?.at(0)?.pathname?.includes('/client'),
+                        },
                         styles?.['search-badge-animation']
                       )}
                       variant={!search ? 'default' : 'secondary'}
@@ -269,7 +295,13 @@ export function Navigation({ children }: React.PropsWithChildren) {
               <Input
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
-                placeholder={text.search.placeholder}
+                placeholder={text.search.placeholder({
+                  pathname: route?.at(0)?.pathname as
+                    | '/client'
+                    | '/credit'
+                    | '/user'
+                    | '/',
+                })}
                 {...{
                   onChange,
                   onKeyDown,
@@ -285,26 +317,29 @@ export function Navigation({ children }: React.PropsWithChildren) {
               <Badge className="text-sm" variant="outline">
                 {text.avatar.description({ username })}
               </Badge>
+              {!offline && (
+                <Network
+                  className={clsx('ms-auto animate-bounce', {
+                    'stroke-green-500': offline,
+                    'stroke-red-500': !offline,
+                  })}
+                />
+              )}
             </div>
           </div>
         </div>
       </header>
-      <main>
-        <div>{children ?? <Outlet />}</div>
-      </main>
+      <main className="!px-10 py-8">{children ?? <Outlet />}</main>
       <footer className="py-4">
         <Separator className="my-4" />
-        <div className="flex items-center">
+        <div className="flex justify-between">
           <h3>
-            <span className="italic">{text.copyright}</span>
+            <span>{text.footer.description}</span>{' '}
+          </h3>
+          <h3>
+            <span className="italic">{text.footer.copyright}</span>{' '}
             <Badge> &copy; {new Date().getFullYear()} </Badge>
           </h3>
-          <Network
-            className={clsx('ms-auto', {
-              'stroke-green-500': offline,
-              'stroke-red-500': !offline,
-            })}
-          />
         </div>
       </footer>
     </div>
@@ -327,9 +362,26 @@ const text = {
     description: ({ username }: { username: string }) => username,
   },
   search: {
-    placeholder: 'Buscar cliente ....',
+    placeholder: ({
+      pathname,
+    }: {
+      pathname?: '/client' | '/user' | '/credit' | '/'
+    }) =>
+      'Buscar ' +
+      (pathname
+        ? {
+            '/client': 'clientes',
+            '/user': 'usuarios',
+            '/credit': 'creditos',
+            '/': 'clientes activos',
+          }[pathname]
+        : '') +
+      ' ...',
     title: 'Clientes:',
     current: 'actual',
   },
-  copyright: 'Todos los derechos reservados',
+  footer: {
+    copyright: 'Todos los derechos reservados',
+    description: 'Compañia de creditos comerciales independiente',
+  },
 }
