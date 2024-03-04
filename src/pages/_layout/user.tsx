@@ -1,4 +1,4 @@
-import { Outlet, createFileRoute } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/user')({
   component: User,
@@ -7,9 +7,13 @@ export const Route = createFileRoute('/_layout/user')({
 export function User() {
   return (
     <div>
-      Hello User <Outlet />
+      <h1 className="text-3xl font-bold">{text.title}</h1>
     </div>
   )
 }
 
 User.dispalyname = 'User'
+
+const text = {
+  title: 'Usuarios:',
+}

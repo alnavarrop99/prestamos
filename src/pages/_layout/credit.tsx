@@ -5,7 +5,15 @@ export const Route = createFileRoute('/_layout/credit')({
 })
 
 export function Credit() {
-  return <div>Hello Credit</div>
+  return (
+    <div>
+      <h1 className="text-3xl font-bold">{text.title}</h1>
+    </div>
+  )
 }
 
 Credit.dispalyname = 'Credit'
+
+const text = {
+  title: 'Creditos:',
+}
