@@ -19,6 +19,7 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import clients from '@/__mock__/mocks-clients.json'
 import { Switch } from '@/components/ui/switch'
+import { Badge } from '@/components/ui/badge'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: Update,
@@ -41,10 +42,14 @@ const reducer: React.Reducer<TForm, TForm> = (prev, state) => ({
 
 export function Update() {
   const form = useRef<HTMLFormElement>(null)
-  const [update, setUpdate] = useState(false)
+  const [checked, setChecked] = useState(false)
   const client = Route.useLoaderData()
   const [{ direction, comment, phone, ref, lastName, firstName }, setForm] =
     useReducer(reducer, client ?? {})
+
+  const onCheckedChange: (checked: boolean) => void = () => {
+    setChecked(!checked)
+  }
 
   const onChange: (
     prop: TClientForm
@@ -113,11 +118,11 @@ export function Update() {
     <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">
-          {text.title({ state: !update })}
+          {text.title({ state: !checked })}
         </DialogTitle>
         <Separator />
         <DialogDescription>
-          {text.description({ state: !update })}
+          {text.description({ state: !checked })}
         </DialogDescription>
       </DialogHeader>
       <form
@@ -129,7 +134,7 @@ export function Update() {
           'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
           styles?.['custom-form'],
           {
-            [styles?.['custom-form-off']]: !update,
+            [styles?.['custom-form-off']]: !checked,
           }
         )}
       >
@@ -138,69 +143,69 @@ export function Update() {
           <span>{text.form.firstName.label}</span>{' '}
           <Input
             required
-            disabled={!update}
+            disabled={!checked}
             name={'firstName' as TClientForm}
             type="text"
             value={firstName}
             onChange={onChange('firstName')}
-            placeholder={update ? text.form.firstName.placeholder : undefined}
+            placeholder={checked ? text.form.firstName.placeholder : undefined}
           />{' '}
         </Label>
         <Label>
           <span>{text.form.lastName.label} </span>
           <Input
             required
-            disabled={!update}
+            disabled={!checked}
             name={'lastName' as TClientForm}
             type="text"
             value={lastName}
             onChange={onChange('lastName')}
-            placeholder={update ? text.form.lastName.placeholder : undefined}
+            placeholder={checked ? text.form.lastName.placeholder : undefined}
           />{' '}
         </Label>
         <Label>
           <span>{text.form.phone.label} </span>
           <Input
             required
-            disabled={!update}
+            disabled={!checked}
             name={'phone' as TClientForm}
             type="tel"
             value={phone}
             onChange={onChange('phone')}
-            placeholder={update ? text.form.phone.placeholder : undefined}
+            placeholder={checked ? text.form.phone.placeholder : undefined}
           />{' '}
         </Label>
         <Label>
           <span>{text.form.direction.label}</span>
           <Input
             required
-            disabled={!update}
+            disabled={!checked}
             name={'direction' as TClientForm}
             type="text"
             value={direction}
             onChange={onChange('direction')}
-            placeholder={update ? text.form.direction.placeholder : undefined}
+            placeholder={checked ? text.form.direction.placeholder : undefined}
           />{' '}
         </Label>
         <Label>
           <span>{text.form.ref.label} </span>
           <Input
             required
-            disabled={!update}
+            disabled={!checked}
             name={'ref' as TClientForm}
             type="text"
             value={ref}
             onChange={onChange('ref')}
-            placeholder={update ? text.form.ref.placeholder : undefined}
+            placeholder={checked ? text.form.ref.placeholder : undefined}
           />{' '}
         </Label>
         <Label>
           <span>{text.form.comment.label} </span>
           <Textarea
             spellCheck
-            disabled={!update}
+            disabled={!checked}
             name={'comment' as TClientForm}
-            placeholder={update ? text.form.comment.placeholder : undefined}
+            placeholder={checked ? text.form.comment.placeholder : undefined}
             rows={6}
             value={comment}
             onChange={onChange('comment')}
@@ -209,17 +214,25 @@ export function Update() {
         </Label>
       </form>
       <DialogFooter className="!justify-between">
-        <Label className="flex cursor-pointer items-center gap-2 font-bold italic">
-          {' '}
-          <Switch value={!!update} onClick={() => setUpdate(!update)} />{' '}
-          {text.button.mode}{' '}
-        </Label>
+        <div className="flex items-center gap-2 font-bold italic">
+          <Switch
+            id="switch-updates-client"
+            checked={checked}
+            onCheckedChange={onCheckedChange}
+          />
+          <Label
+            htmlFor="switch-updates-client"
+            className={clsx('cursor-pointer')}
+          >
+            <Badge>{text.button.mode}</Badge>
+          </Label>
+        </div>
         <div className="space-x-2">
           <Button
             variant="default"
             form="new-client-form"
             type="submit"
-            disabled={!update}
+            disabled={!checked}
           >
             {' '}
             {text.button.update}{' '}
@@ -245,10 +258,10 @@ Update.dispalyname = 'NewClient'
 
 const text = {
   title: ({ state }: { state: boolean }) =>
-    (state ? 'Ver' : 'Actualizar') + ' cliente:',
+    (state ? 'Ver' : 'Actualizacion de los datos') + ' cliente:',
   description: ({ state }: { state: boolean }) =>
-    (state ? 'Datos relacionados ' : 'Actualizacion de los datos') +
-    'del cliente en la plataforma.',
+    (state ? 'Datos' : 'Actualizacion de los datos') +
+    ' del cliente en la plataforma.',
   button: {
     close: 'Cerrar',
     update: 'Actualizar',
