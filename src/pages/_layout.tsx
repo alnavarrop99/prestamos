@@ -29,7 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { useStatus } from '@/lib/context/layout'
+import { useRootStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout')({
   component: Navigation,
@@ -52,7 +52,7 @@ export function Navigation({ children }: React.PropsWithChildren) {
   const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
   })
-  const { setValue, setSearch, search } = useStatus((status) => ({
+  const { setValue, setSearch, search } = useRootStatus((status) => ({
     setValue: status.setValue,
     setSearch: status.setSearch,
     search: status.search,
@@ -254,7 +254,7 @@ export function Navigation({ children }: React.PropsWithChildren) {
                     <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
                       {clients?.map(({ alias, lastName, firstName, id }) => (
                         <li key={id} className="group cursor-pointer">
-                          <Link to={'./user/' + id}>
+                          <Link to={'/user/$userId'} params={{ userId: id }}>
                             {({ isActive }) => (
                               <>
                                 <Avatar>

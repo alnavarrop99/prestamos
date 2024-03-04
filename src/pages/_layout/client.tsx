@@ -18,7 +18,14 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from 'lucide-react'
+import {
+  ArrowUpDown,
+  ChevronDown,
+  Copy,
+  MoreHorizontal,
+  UserCog,
+  UserX,
+} from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -32,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
-import React, { useEffect, useReducer, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Outlet,
   createFileRoute,
@@ -40,7 +47,8 @@ import {
   useNavigate,
   Navigate,
 } from '@tanstack/react-router'
-import { useStatus } from '@/lib/context/layout'
+import { useClientStatus } from '@/lib/context/client'
+import { useRootStatus } from '@/lib/context/layout'
 import clients from '@/__mock__/mocks-clients.json'
 
 export const Route = createFileRoute('/_layout/client')({
@@ -125,6 +133,24 @@ const columns: ColumnDef<TClients>[] = [
     cell: ({ row }) => {
       const { id } = row.original
 
+      /* eslint-disable-next-line */
+      const { open, setStatus } = useClientStatus(({ open, setStatus }) => ({
+        open,
+        setStatus,
+      }))
+
+      const onClickCopy: React.MouseEventHandler<
+        React.ComponentRef<typeof DropdownMenuItem>
+      > = () => {
+        navigator.clipboard.writeText(id)
+      }
+
+      const onClick: React.MouseEventHandler<
+        React.ComponentRef<typeof DropdownMenuItem>
+      > = () => {
+        setStatus({ open: !open })
+      }
+
       return (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -133,26 +159,37 @@ const columns: ColumnDef<TClients>[] = [
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>{text.dropdown.title}: </DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => navigator.clipboard.writeText(id)}>
-              {text.dropdown.copy}
-            </DropdownMenuItem>
+          <DropdownMenuContent
+            align="end"
+            className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
+          >
+            <DropdownMenuLabel className="text-lg">
+              {text.dropdown.title}{' '}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>{text.dropdown.view}</DropdownMenuItem>
+            <DropdownMenuItem onClick={onClickCopy}>
+              {' '}
+              {text.dropdown.copy} <Copy />{' '}
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onClick}>
+              <Link
+                className="flex h-full w-full items-center justify-between gap-2"
+                to={'./$clientId/update'}
+                params={{ clientId: id }}
+              >
+                {text.dropdown.update} <UserCog />
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              {' '}
+              {text.dropdown.delete} <UserX />{' '}
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
     },
   },
 ]
-
-type TStatus = {
-  open?: boolean
-}
-const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
-  return { ...prev, ...state }
-}
 
 export function Client({
   children,
@@ -162,10 +199,10 @@ export function Client({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const { value } = useStatus(({ value }) => ({ value }))
-  const [{ open }, setStatus] = useReducer<typeof reducer>(reducer, {
-    open: _open,
-  })
+  const { open = _open, setStatus } = useClientStatus(
+    ({ open, setStatus }) => ({ open, setStatus })
+  )
+  const { value } = useRootStatus(({ value }) => ({ value }))
   const navigate = useNavigate({ from: '/client' })
 
   const table = useReactTable({
@@ -193,14 +230,14 @@ export function Client({
 
   const onOpenChange: (open: boolean) => void = () => {
     if (open) {
-      navigate({ to: './' })
+      !children && navigate({ to: './' })
     }
     setStatus({ open: !open })
   }
 
   return (
     <>
-      <Navigate to={'/client'} />
+      {!children && <Navigate to={'/client'} />}
       <div>
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
@@ -211,7 +248,7 @@ export function Client({
         </div>
 
         <div className="w-full">
-          <div className="flex items-center gap-4 py-4">
+          <div className="flex items-center gap-2 py-4">
             <Dialog open={open} onOpenChange={onOpenChange}>
               <DialogTrigger asChild>
                 <Link to={'./new'}>
@@ -364,8 +401,9 @@ const text = {
   },
   dropdown: {
     aria: 'Mas Opciones',
-    title: 'Acciones',
-    copy: 'Copiar I.D',
-    view: 'Ver Clientes',
+    title: 'Acciones:',
+    copy: 'Copiar datos del cliente',
+    update: 'Ver | Actualizar Cliente',
+    delete: 'Eliminar Cliente',
   },
 }

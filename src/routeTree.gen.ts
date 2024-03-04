@@ -18,8 +18,9 @@ import { Route as LayoutIndexImport } from './pages/_layout/index'
 import { Route as LayoutUserImport } from './pages/_layout/user'
 import { Route as LayoutCreditImport } from './pages/_layout/credit'
 import { Route as LayoutClientImport } from './pages/_layout/client'
-import { Route as LayoutUserIdImport } from './pages/_layout/user/$id'
+import { Route as LayoutUserUserIdImport } from './pages/_layout/user/$userId'
 import { Route as LayoutClientNewImport } from './pages/_layout/client/new'
+import { Route as LayoutClientClientIdUpdateImport } from './pages/_layout/client/$clientId.update'
 
 // Create/Update Routes
 
@@ -58,8 +59,8 @@ const LayoutClientRoute = LayoutClientImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
-const LayoutUserIdRoute = LayoutUserIdImport.update({
-  path: '/$id',
+const LayoutUserUserIdRoute = LayoutUserUserIdImport.update({
+  path: '/$userId',
   getParentRoute: () => LayoutUserRoute,
 } as any)
 
@@ -67,6 +68,13 @@ const LayoutClientNewRoute = LayoutClientNewImport.update({
   path: '/new',
   getParentRoute: () => LayoutClientRoute,
 } as any)
+
+const LayoutClientClientIdUpdateRoute = LayoutClientClientIdUpdateImport.update(
+  {
+    path: '/$clientId/update',
+    getParentRoute: () => LayoutClientRoute,
+  } as any
+)
 
 // Populate the FileRoutesByPath interface
 
@@ -104,9 +112,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutClientNewImport
       parentRoute: typeof LayoutClientImport
     }
-    '/_layout/user/$id': {
-      preLoaderRoute: typeof LayoutUserIdImport
+    '/_layout/user/$userId': {
+      preLoaderRoute: typeof LayoutUserUserIdImport
       parentRoute: typeof LayoutUserImport
+    }
+    '/_layout/client/$clientId/update': {
+      preLoaderRoute: typeof LayoutClientClientIdUpdateImport
+      parentRoute: typeof LayoutClientImport
     }
   }
 }
@@ -116,9 +128,12 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren([
   R404Route,
   LayoutRoute.addChildren([
-    LayoutClientRoute.addChildren([LayoutClientNewRoute]),
+    LayoutClientRoute.addChildren([
+      LayoutClientNewRoute,
+      LayoutClientClientIdUpdateRoute,
+    ]),
     LayoutCreditRoute,
-    LayoutUserRoute.addChildren([LayoutUserIdRoute]),
+    LayoutUserRoute.addChildren([LayoutUserUserIdRoute]),
     LayoutIndexRoute,
   ]),
   LoginRoute,

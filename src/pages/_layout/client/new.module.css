@@ -14,3 +14,18 @@
     color: theme(colors.red.500);
   }
 }
+
+.custom-form-off {
+  & > label > *:last-child {
+    border-color: inherit;
+  }
+
+  & span:has(+ input:required)::after {
+    content: none;
+  }
+
+  & :is(input:disabled) {
+    opacity: 1;
+    cursor: text;
+  }
+}

@@ -2,6 +2,7 @@ import type { Meta, StoryFn, StoryObj } from '@storybook/react'
 import $ from '@/lib/render'
 import { Client } from '@/pages/_layout/client'
 import { New } from '@/pages/_layout/client/new'
+import { Update } from '@/pages/_layout/client/$clientId.update'
 import { Navigation } from '@/pages/_layout'
 import { Fragment } from 'react'
 import { Toaster } from '@/components/ui/toaster'
@@ -44,11 +45,22 @@ export default meta
 
 export const _Home: StoryObj = {
   name: '/client',
-  render: Client,
+  render: () => (
+    <Client>
+      {' '}
+      <></>{' '}
+    </Client>
+  ),
 }
 
 export const _User: StoryObj = {
   name: '/client/new',
   render: New,
+  decorators: [ToastProvider, ClientLayout],
+}
+
+export const _Update: StoryObj = {
+  name: '/client/$clientId/update',
+  render: Update,
   decorators: [ToastProvider, ClientLayout],
 }

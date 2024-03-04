@@ -7,7 +7,7 @@ interface TSearchContext {
   setValue: ({ value }: { value: string }) => void
 }
 
-export const useStatus = create<TSearchContext>()((set) => ({
+export const useRootStatus = create<TSearchContext>()((set) => ({
   search: undefined,
   value: undefined,
   setSearch: ({ search }) => set(() => ({ search })),
