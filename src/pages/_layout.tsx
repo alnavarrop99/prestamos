@@ -49,7 +49,7 @@ type TClients = typeof import('@/__mock__/mocks-clients.json')
 
 const username = 'Admin99'
 export function Navigation({ children }: React.PropsWithChildren) {
-  const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
+  const [{ offline, open = false, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
   })
   const { setValue, setSearch, search } = useRootStatus((status) => ({

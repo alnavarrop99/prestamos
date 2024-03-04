@@ -20,6 +20,7 @@ import { Route as LayoutCreditImport } from './pages/_layout/credit'
 import { Route as LayoutClientImport } from './pages/_layout/client'
 import { Route as LayoutUserUserIdImport } from './pages/_layout/user/$userId'
 import { Route as LayoutClientNewImport } from './pages/_layout/client/new'
+import { Route as LayoutClientDeleteImport } from './pages/_layout/client/delete'
 import { Route as LayoutClientClientIdUpdateImport } from './pages/_layout/client/$clientId.update'
 import { Route as LayoutClientClientIdDeleteImport } from './pages/_layout/client/$clientId.delete'
 
@@ -70,18 +71,23 @@ const LayoutClientNewRoute = LayoutClientNewImport.update({
   getParentRoute: () => LayoutClientRoute,
 } as any)
 
+const LayoutClientDeleteRoute = LayoutClientDeleteImport.update({
+  path: '/delete',
+  getParentRoute: () => LayoutClientRoute,
+} as any)
+
 const LayoutClientClientIdUpdateRoute = LayoutClientClientIdUpdateImport.update(
   {
     path: '/$clientId/update',
     getParentRoute: () => LayoutClientRoute,
-  } as any
+  } as any,
 )
 
 const LayoutClientClientIdDeleteRoute = LayoutClientClientIdDeleteImport.update(
   {
     path: '/$clientId/delete',
     getParentRoute: () => LayoutClientRoute,
-  } as any
+  } as any,
 )
 
 // Populate the FileRoutesByPath interface
@@ -116,6 +122,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutIndexImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/client/delete': {
+      preLoaderRoute: typeof LayoutClientDeleteImport
+      parentRoute: typeof LayoutClientImport
+    }
     '/_layout/client/new': {
       preLoaderRoute: typeof LayoutClientNewImport
       parentRoute: typeof LayoutClientImport
@@ -141,6 +151,7 @@ export const routeTree = rootRoute.addChildren([
   R404Route,
   LayoutRoute.addChildren([
     LayoutClientRoute.addChildren([
+      LayoutClientDeleteRoute,
       LayoutClientNewRoute,
       LayoutClientClientIdDeleteRoute,
       LayoutClientClientIdUpdateRoute,

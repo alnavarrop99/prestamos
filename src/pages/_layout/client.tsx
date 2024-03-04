@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
-import React, { useEffect, useState } from 'react'
+import React, { ComponentRef, useEffect, useState } from 'react'
 import {
   Outlet,
   createFileRoute,
@@ -47,9 +47,9 @@ import {
   useNavigate,
   Navigate,
 } from '@tanstack/react-router'
-import { useClientStatus } from '@/lib/context/client'
+import { useClientSelected, useClientStatus } from '@/lib/context/client'
 import { useRootStatus } from '@/lib/context/layout'
-import clients from '@/__mock__/mocks-clients.json'
+import clientsMock from '@/__mock__/mocks-clients.json'
 
 export const Route = createFileRoute('/_layout/client')({
   component: Client,
@@ -168,12 +168,11 @@ const columns: ColumnDef<TClients>[] = [
             className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
           >
             <DropdownMenuLabel className="text-lg">
-              {text.dropdown.title}{' '}
+              {text.dropdown.title}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onClickCopy}>
-              {' '}
-              {text.dropdown.copy} <Copy />{' '}
+              {text.dropdown.copy} <Copy />
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onClick}>
               <Link
@@ -209,13 +208,15 @@ export function Client({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const { open = _open, setStatus } = useClientStatus(
-    ({ open, setStatus }) => ({ open, setStatus })
+    ({ open = false, setStatus }) => ({ open, setStatus })
   )
   const { value } = useRootStatus(({ value }) => ({ value }))
   const navigate = useNavigate({ from: '/client' })
+  const { clients: clientsSelected, setClient: setSelectdedClient } =
+    useClientSelected(({ clients, setClient }) => ({ clients, setClient }))
 
   const table = useReactTable({
-    data: clients,
+    data: clientsMock,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -237,7 +238,18 @@ export function Client({
     table.getColumn('firstName')?.setFilterValue(value)
   }, [value])
 
+  useEffect(() => {
+    setSelectdedClient({ clients: table.getFilteredSelectedRowModel().rows })
+  }, [rowSelection])
+
   const onOpenChange: (open: boolean) => void = () => {
+    if (open) {
+      !children && navigate({ to: './' })
+    }
+    setStatus({ open: !open })
+  }
+
+  const onClick: React.MouseEventHandler<ComponentRef<typeof Button>> = () => {
     if (open) {
       !children && navigate({ to: './' })
     }
@@ -251,8 +263,7 @@ export function Client({
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
           <Badge className="px-3 text-xl">
-            {' '}
-            {table.getFilteredRowModel().rows.length}{' '}
+            {table.getFilteredRowModel().rows.length}
           </Badge>
         </div>
 
@@ -267,7 +278,9 @@ export function Client({
               {children ?? <Outlet />}
             </Dialog>
 
-            <Button>{text.buttons.delete}</Button>
+            <Button disabled={!clientsSelected?.length} onClick={onClick}>
+              <Link to={'./delete'}>{text.buttons.delete}</Link>
+            </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="ml-auto">

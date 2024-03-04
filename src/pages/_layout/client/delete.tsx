@@ -15,15 +15,18 @@ import { useRef, useState } from 'react'
 import styles from './new.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
-import clients from '@/__mock__/mocks-clients.json'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useClientSelected } from '@/lib/context/client'
+import { Row } from '@tanstack/react-table'
 
-export const Route = createFileRoute('/_layout/client/$clientId/delete')({
-  component: DeleteByClientId,
-  loader: async ({ params: { clientId } }) =>
-    clients?.find(({ id }) => clientId === id),
+export const Route = createFileRoute('/_layout/client/delete')({
+  component: DeleteClient,
+  // loader: async () =>{
+  //   const {clients} = useClientSelected(({clients}) => ({clients}))
+  //   return clients
+  // }
 })
 
 type TForm = {
@@ -35,31 +38,28 @@ type TForm = {
   comment?: string
 }
 
-export function DeleteByClientId() {
+export function DeleteClient() {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const client = (Route.useLoaderData() ?? {}) as TForm
-  const { firstName, lastName } = client
+  const { clients } = useClientSelected(({ clients }) => ({ clients }))
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    const action =
-      ({ ...props }: TForm) =>
-      () => {
-        console.table(props)
-      }
+    const action = (clients?: Row<TForm>[]) => () => {
+      console.table(clients)
+    }
 
-    const timer = setTimeout(action(client), 6 * 1000)
+    const timer = setTimeout(action(clients), 6 * 1000)
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
     if (
-      Object.entries(client).every(([key, value]) => {
+      Object.entries(clients).every(([key, value]) => {
         if (key === 'comment') return true
         return value
       })
@@ -67,7 +67,7 @@ export function DeleteByClientId() {
       toast({
         title: text.notification.titile,
         description: text.notification.decription({
-          username: firstName + ' ' + lastName,
+          length: clients?.length,
         }),
         variant: 'default',
         action: (
@@ -93,7 +93,7 @@ export function DeleteByClientId() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ username: firstName + ' ' + lastName })}
+              {text.alert.description({ length: clients?.length })}
             </AlertDescription>
           </Alert>
         </DialogDescription>
@@ -159,27 +159,27 @@ export function DeleteByClientId() {
   )
 }
 
-DeleteByClientId.dispalyname = 'DeleteByClientId'
+DeleteClient.dispalyname = 'DeleteByClientId'
 
 const text = {
-  title: 'Eliminacion del cliente',
+  title: 'Eliminacion de clientes',
   alert: {
-    title: 'Se eiminara el cliente de la base de datos',
-    description: ({ username }: { username: string }) =>
-      'Estas seguro de eliminar el cliente ' +
-      username +
-      '?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el cliente.',
+    title: 'Se eiminara multiples clientes de la base de datos',
+    description: ({ length = 0 }: { length: number }) =>
+      'Estas seguro de eliminar ' +
+      length +
+      ' cliente(s) de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con los clientes seleccionados.',
   },
   button: {
     close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina el cliente.',
+    delete: 'Si, elimina los clientes.',
     checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
   },
   notification: {
-    titile: 'Eliminacion del cliente',
-    decription: ({ username }: { username: string }) =>
-      'Se ha eliminado el cliente ' + username + ' con exito.',
-    error: 'Error: la eliminacion de los datos del cliente ha fallado',
+    titile: 'Eliminacion de multiples clientes',
+    decription: ({ length = 0 }: { length?: number }) =>
+      'Se han eliminado ' + length + ' clientes con exito.',
+    error: 'Error: la eliminacion de los clientes ha fallado',
     undo: 'Deshacer',
   },
 }
