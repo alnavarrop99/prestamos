@@ -19,10 +19,10 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 
 export const Route = createFileRoute('/_layout/client/new')({
-  component: New,
+  component: NewClient,
 })
 
-export function New() {
+export function NewClient() {
   const form = useRef<HTMLFormElement>(null)
 
   const onSubmit: React.FormEventHandler = (ev) => {
@@ -166,7 +166,7 @@ export function New() {
   )
 }
 
-New.dispalyname = 'NewClient'
+NewClient.dispalyname = 'NewClient'
 
 const text = {
   title: 'Crear cliente:',

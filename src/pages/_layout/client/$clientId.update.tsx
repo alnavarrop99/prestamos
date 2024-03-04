@@ -22,7 +22,7 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
-  component: Update,
+  component: UpdateByClientId,
   loader: async ({ params: { clientId } }) =>
     clients?.find(({ id }) => clientId === id),
 })
@@ -40,7 +40,7 @@ const reducer: React.Reducer<TForm, TForm> = (prev, state) => ({
   ...state,
 })
 
-export function Update() {
+export function UpdateByClientId() {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const client = Route.useLoaderData()
@@ -254,7 +254,7 @@ export function Update() {
   )
 }
 
-Update.dispalyname = 'NewClient'
+UpdateByClientId.dispalyname = 'UpdateByClientId'
 
 const text = {
   title: ({ state }: { state: boolean }) =>

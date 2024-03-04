@@ -21,6 +21,7 @@ import { Route as LayoutClientImport } from './pages/_layout/client'
 import { Route as LayoutUserUserIdImport } from './pages/_layout/user/$userId'
 import { Route as LayoutClientNewImport } from './pages/_layout/client/new'
 import { Route as LayoutClientClientIdUpdateImport } from './pages/_layout/client/$clientId.update'
+import { Route as LayoutClientClientIdDeleteImport } from './pages/_layout/client/$clientId.delete'
 
 // Create/Update Routes
 
@@ -76,6 +77,13 @@ const LayoutClientClientIdUpdateRoute = LayoutClientClientIdUpdateImport.update(
   } as any
 )
 
+const LayoutClientClientIdDeleteRoute = LayoutClientClientIdDeleteImport.update(
+  {
+    path: '/$clientId/delete',
+    getParentRoute: () => LayoutClientRoute,
+  } as any
+)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -116,6 +124,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutUserUserIdImport
       parentRoute: typeof LayoutUserImport
     }
+    '/_layout/client/$clientId/delete': {
+      preLoaderRoute: typeof LayoutClientClientIdDeleteImport
+      parentRoute: typeof LayoutClientImport
+    }
     '/_layout/client/$clientId/update': {
       preLoaderRoute: typeof LayoutClientClientIdUpdateImport
       parentRoute: typeof LayoutClientImport
@@ -130,6 +142,7 @@ export const routeTree = rootRoute.addChildren([
   LayoutRoute.addChildren([
     LayoutClientRoute.addChildren([
       LayoutClientNewRoute,
+      LayoutClientClientIdDeleteRoute,
       LayoutClientClientIdUpdateRoute,
     ]),
     LayoutCreditRoute,

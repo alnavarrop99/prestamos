@@ -1,8 +1,9 @@
 import type { Meta, StoryFn, StoryObj } from '@storybook/react'
 import $ from '@/lib/render'
 import { Client } from '@/pages/_layout/client'
-import { New } from '@/pages/_layout/client/new'
-import { Update } from '@/pages/_layout/client/$clientId.update'
+import { NewClient } from '@/pages/_layout/client/new'
+import { UpdateByClientId } from '@/pages/_layout/client/$clientId.update'
+import { DeleteByClientId } from '@/pages/_layout/client/$clientId.delete'
 import { Navigation } from '@/pages/_layout'
 import { Fragment } from 'react'
 import { Toaster } from '@/components/ui/toaster'
@@ -55,12 +56,18 @@ export const _Home: StoryObj = {
 
 export const _User: StoryObj = {
   name: '/client/new',
-  render: New,
+  render: NewClient,
   decorators: [ToastProvider, ClientLayout],
 }
 
-export const _Update: StoryObj = {
+export const _UpdateById: StoryObj = {
   name: '/client/$clientId/update',
-  render: Update,
+  render: UpdateByClientId,
+  decorators: [ToastProvider, ClientLayout],
+}
+
+export const _DeleteByClientId: StoryObj = {
+  name: '/client/$clientId/delete',
+  render: DeleteByClientId,
   decorators: [ToastProvider, ClientLayout],
 }

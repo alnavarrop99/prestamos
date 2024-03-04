@@ -139,6 +139,9 @@ const columns: ColumnDef<TClients>[] = [
         setStatus,
       }))
 
+      /* eslint-disable-next-line */
+      const [{ menu }, setMenu] = useState<{ menu?: boolean }>({ menu: false })
+
       const onClickCopy: React.MouseEventHandler<
         React.ComponentRef<typeof DropdownMenuItem>
       > = () => {
@@ -148,11 +151,12 @@ const columns: ColumnDef<TClients>[] = [
       const onClick: React.MouseEventHandler<
         React.ComponentRef<typeof DropdownMenuItem>
       > = () => {
+        setMenu({ menu: !menu })
         setStatus({ open: !open })
       }
 
       return (
-        <DropdownMenu>
+        <DropdownMenu open={menu} onOpenChange={() => setMenu({ menu: !menu })}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">{text.dropdown.aria}</span>
@@ -180,9 +184,14 @@ const columns: ColumnDef<TClients>[] = [
                 {text.dropdown.update} <UserCog />
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>
-              {' '}
-              {text.dropdown.delete} <UserX />{' '}
+            <DropdownMenuItem onClick={onClick}>
+              <Link
+                className="flex h-full w-full items-center justify-between gap-2"
+                to={'./$clientId/delete'}
+                params={{ clientId: id }}
+              >
+                {text.dropdown.delete} <UserX />
+              </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
