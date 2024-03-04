@@ -1,0 +1,16 @@
+/* [&>*>*:last-child]:border-primary [&>*:last-child]:col-span-full */
+
+.custom-form {
+  & > label > *:last-child {
+    border-color: black;
+  }
+
+  & > label:last-child {
+    grid-column: 1 / -1;
+  }
+
+  & span:has(+ input:required)::after {
+    content: '*';
+    color: theme(colors.red.500);
+  }
+}
