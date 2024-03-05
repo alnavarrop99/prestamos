@@ -1,13 +1,18 @@
 import { Row } from '@tanstack/react-table'
 import { create } from 'zustand'
 
-interface TSearchContext {
+type TFilter = keyof (typeof import('@/__mock__/mocks-clients.json'))[0]
+interface TStatusProps {
   open?: boolean
-  setStatus: ({ open }: { open: boolean }) => void
+  filter?: TFilter
+}
+interface TStatus extends TStatusProps {
+  setStatus: ({ open, filter }: { open?: boolean; filter?: TFilter }) => void
 }
 
-export const useClientStatus = create<TSearchContext>()((set) => ({
-  setStatus: ({ open }) => set(() => ({ open })),
+export const useClientStatus = create<TStatus>()((set) => ({
+  setStatus: (state) =>
+    set(({ open, filter }) => ({ open, filter: filter, ...state })),
 }))
 
 type TCLient = (typeof import('@/__mock__/mocks-clients.json'))[0]

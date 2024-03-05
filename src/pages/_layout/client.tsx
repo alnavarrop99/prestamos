@@ -53,7 +53,6 @@ import clientsMock from '@/__mock__/mocks-clients.json'
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -217,12 +216,12 @@ export function Client({
   const [rowSelection, setRowSelection] = useState({})
   const {
     open = _open,
+    filter = 'firstName',
     setStatus,
-    filter,
-  } = useClientStatus(({ open = _open, setStatus, filter }) => ({
+  } = useClientStatus(({ open = _open, filter, setStatus }) => ({
     open,
-    setStatus,
     filter,
+    setStatus,
   }))
   const { value } = useRootStatus(({ value }) => ({ value }))
   const navigate = useNavigate({ from: '/client' })
@@ -249,7 +248,7 @@ export function Client({
   })
 
   useEffect(() => {
-    table.getColumn(filter ?? 'firstName')?.setFilterValue(value)
+    table.getColumn(filter)?.setFilterValue(value)
   }, [value, filter])
 
   useEffect(() => {
@@ -263,9 +262,9 @@ export function Client({
     setStatus({ open: !open })
   }
 
-  const onValueChange: (value: string) => void = () => {
-    alert(filter)
-    setStatus({ filter: value })
+  type onValueChange = (value: string) => void
+  const onValueChange: onValueChange = (value) => {
+    setStatus({ filter: value as keyof (typeof clientsMock)[0] })
   }
 
   const onClick: React.MouseEventHandler<ComponentRef<typeof Button>> = () => {
@@ -284,7 +283,6 @@ export function Client({
           <Badge className="px-3 text-xl">
             {table.getFilteredRowModel().rows.length}
           </Badge>
-          {filter ?? 'aoeaoe'}
         </div>
 
         <div className="w-full">
@@ -298,33 +296,41 @@ export function Client({
               {children ?? <Outlet />}
             </Dialog>
 
-            <Link to={'./delete'}>
+            <Link disabled={!clientsSelected?.length} to={'./delete'}>
               <Button disabled={!clientsSelected?.length} onClick={onClick}>
                 {text.buttons.delete}
               </Button>
             </Link>
 
-            <Select onValueChange={onValueChange}>
+            <Select value={filter} onValueChange={onValueChange}>
               <SelectTrigger className="ms-auto w-auto">
                 <SelectValue placeholder={text.select.placeholder} />
               </SelectTrigger>
-              <SelectContent>
-                <SelectGroup className="[&>*]:cursor-pointer">
-                  <SelectItem
-                    value={'firstName' as keyof typeof text.select.items}
-                  >
-                    {text.select.items.fullName}
-                  </SelectItem>
-                  <SelectItem value={'id' as keyof typeof text.select.items}>
-                    {text.select.items.id}
-                  </SelectItem>
-                  <SelectItem value={'email' as keyof typeof text.select.items}>
-                    {text.select.items.email}
-                  </SelectItem>
-                  <SelectItem value={'phone' as keyof typeof text.select.items}>
-                    {text.select.items.phone}
-                  </SelectItem>
-                </SelectGroup>
+              <SelectContent className="[&>div]:cursor-pointer">
+                <SelectItem
+                  value={'firstName' as keyof typeof text.select.items}
+                  className="cursor-pointer"
+                >
+                  {text.select.items.fullName}
+                </SelectItem>
+                <SelectItem
+                  value={'id' as keyof typeof text.select.items}
+                  className="cursor-pointer"
+                >
+                  {text.select.items.id}
+                </SelectItem>
+                <SelectItem
+                  value={'email' as keyof typeof text.select.items}
+                  className="cursor-pointer"
+                >
+                  {text.select.items.email}
+                </SelectItem>
+                <SelectItem
+                  value={'phone' as keyof typeof text.select.items}
+                  className="cursor-pointer"
+                >
+                  {text.select.items.phone}
+                </SelectItem>
               </SelectContent>
             </Select>
 
