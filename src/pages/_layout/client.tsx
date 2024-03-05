@@ -50,6 +50,14 @@ import {
 import { useClientSelected, useClientStatus } from '@/lib/context/client'
 import { useRootStatus } from '@/lib/context/layout'
 import clientsMock from '@/__mock__/mocks-clients.json'
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 export const Route = createFileRoute('/_layout/client')({
   component: Client,
@@ -159,7 +167,7 @@ const columns: ColumnDef<TClients>[] = [
         <DropdownMenu open={menu} onOpenChange={() => setMenu({ menu: !menu })}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">{text.dropdown.aria}</span>
+              <span className="sr-only">{text.menu.aria}</span>
               <MoreHorizontal className="h-4 w-4" />
             </Button>
           </DropdownMenuTrigger>
@@ -168,11 +176,11 @@ const columns: ColumnDef<TClients>[] = [
             className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
           >
             <DropdownMenuLabel className="text-lg">
-              {text.dropdown.title}
+              {text.menu.title}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={onClickCopy}>
-              {text.dropdown.copy} <Copy />
+              {text.menu.copy} <Copy />
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onClick}>
               <Link
@@ -180,7 +188,7 @@ const columns: ColumnDef<TClients>[] = [
                 to={'./$clientId/update'}
                 params={{ clientId: id }}
               >
-                {text.dropdown.update} <UserCog />
+                {text.menu.update} <UserCog />
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onClick}>
@@ -189,7 +197,7 @@ const columns: ColumnDef<TClients>[] = [
                 to={'./$clientId/delete'}
                 params={{ clientId: id }}
               >
-                {text.dropdown.delete} <UserX />
+                {text.menu.delete} <UserX />
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -201,15 +209,21 @@ const columns: ColumnDef<TClients>[] = [
 
 export function Client({
   children,
-  open: _open,
+  open: _open = false,
 }: React.PropsWithChildren<{ open?: boolean }>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const { open = _open, setStatus } = useClientStatus(
-    ({ open = false, setStatus }) => ({ open, setStatus })
-  )
+  const {
+    open = _open,
+    setStatus,
+    filter,
+  } = useClientStatus(({ open = _open, setStatus, filter }) => ({
+    open,
+    setStatus,
+    filter,
+  }))
   const { value } = useRootStatus(({ value }) => ({ value }))
   const navigate = useNavigate({ from: '/client' })
   const { clients: clientsSelected, setClient: setSelectdedClient } =
@@ -235,8 +249,8 @@ export function Client({
   })
 
   useEffect(() => {
-    table.getColumn('firstName')?.setFilterValue(value)
-  }, [value])
+    table.getColumn(filter ?? 'firstName')?.setFilterValue(value)
+  }, [value, filter])
 
   useEffect(() => {
     setSelectdedClient({ clients: table.getFilteredSelectedRowModel().rows })
@@ -247,6 +261,11 @@ export function Client({
       !children && navigate({ to: './' })
     }
     setStatus({ open: !open })
+  }
+
+  const onValueChange: (value: string) => void = () => {
+    alert(filter)
+    setStatus({ filter: value })
   }
 
   const onClick: React.MouseEventHandler<ComponentRef<typeof Button>> = () => {
@@ -265,6 +284,7 @@ export function Client({
           <Badge className="px-3 text-xl">
             {table.getFilteredRowModel().rows.length}
           </Badge>
+          {filter ?? 'aoeaoe'}
         </div>
 
         <div className="w-full">
@@ -278,13 +298,40 @@ export function Client({
               {children ?? <Outlet />}
             </Dialog>
 
-            <Button disabled={!clientsSelected?.length} onClick={onClick}>
-              <Link to={'./delete'}>{text.buttons.delete}</Link>
-            </Button>
+            <Link to={'./delete'}>
+              <Button disabled={!clientsSelected?.length} onClick={onClick}>
+                {text.buttons.delete}
+              </Button>
+            </Link>
+
+            <Select onValueChange={onValueChange}>
+              <SelectTrigger className="ms-auto w-auto">
+                <SelectValue placeholder={text.select.placeholder} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup className="[&>*]:cursor-pointer">
+                  <SelectItem
+                    value={'firstName' as keyof typeof text.select.items}
+                  >
+                    {text.select.items.fullName}
+                  </SelectItem>
+                  <SelectItem value={'id' as keyof typeof text.select.items}>
+                    {text.select.items.id}
+                  </SelectItem>
+                  <SelectItem value={'email' as keyof typeof text.select.items}>
+                    {text.select.items.email}
+                  </SelectItem>
+                  <SelectItem value={'phone' as keyof typeof text.select.items}>
+                    {text.select.items.phone}
+                  </SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="ml-auto">
-                  {text.select.title} <ChevronDown className="ml-2 h-4 w-4" />
+                <Button variant="outline">
+                  {text.dropdown.title} <ChevronDown className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -301,7 +348,7 @@ export function Client({
                           column.toggleVisibility(!!value)
                         }
                       >
-                        {text.select.columns?.[column.id as keyof TClients]}
+                        {text.dropdown.columns?.[column.id as keyof TClients]}
                       </DropdownMenuCheckboxItem>
                     )
                   })}
@@ -415,13 +462,20 @@ const text = {
     new: 'Nuevo',
   },
   select: {
+    placeholder: 'Seleccione un filtro',
+    title: 'Filtros:',
+    get items() {
+      return { ...text.columns }
+    },
+  },
+  dropdown: {
     title: 'Columnas',
     subtitle: 'Acciones',
     get columns() {
       return { ...text.columns }
     },
   },
-  dropdown: {
+  menu: {
     aria: 'Mas Opciones',
     title: 'Acciones:',
     copy: 'Copiar datos del cliente',
