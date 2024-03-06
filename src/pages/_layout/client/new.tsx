@@ -39,6 +39,7 @@ export function NewClient() {
         console.table(props)
       }
 
+
     const timer = setTimeout(action(items), 6 * 1000)
 
     const onClick = () => {
@@ -65,6 +66,7 @@ export function NewClient() {
       })
     }
 
+    form.current.reset()
     ev.preventDefault()
   }
 

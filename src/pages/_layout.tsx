@@ -133,7 +133,7 @@ export function Navigation({ children }: React.PropsWithChildren) {
             <BadgeDollarSign
               className={clsx({ 'hover:animate-pulse': open })}
             />
-            <span className={clsx({ hidden: open })}>{text.title} </span>
+            <span className={clsx("uppercase font-bold",{ hidden: open })}>{text.title} </span>
             <BadgeCent className={clsx({ hidden: open })} />
           </h2>
         </div>
@@ -336,11 +336,11 @@ export function Navigation({ children }: React.PropsWithChildren) {
 Navigation.dispalyname = 'Navigation'
 
 const text = {
-  title: 'Pretamos App',
+  title: 'Matcor',
   navegation: {
     home: { title: 'Dashboard', url: '/', Icon: icons?.Home },
     client: { title: 'Clientes', url: '/client', Icon: icons?.Award },
-    credit: { title: 'Creditos', url: '/credit', Icon: icons?.CreditCard },
+    credit: { title: 'Prestamos', url: '/credit', Icon: icons?.CreditCard },
     user: { title: 'Usuarios', url: '/user', Icon: icons?.BookUser },
   },
   avatar: {
@@ -359,7 +359,7 @@ const text = {
         ? {
             '/client': 'clientes',
             '/user': 'usuarios',
-            '/credit': 'creditos',
+            '/credit': 'prestamos',
             '/': 'clientes activos',
           }[pathname]
         : '') +
