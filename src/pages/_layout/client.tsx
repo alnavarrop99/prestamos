@@ -231,10 +231,15 @@ const columns: ColumnDef<TClient>[] = [
   },
 ]
 
+interface TClientProps {
+  clients?: TClient[],
+  open?: boolean
+}
 export function Client({
   children,
   open: _open = false,
-}: React.PropsWithChildren<{ open?: boolean }>) {
+  clients: _clients = [] as TClient[]
+}: React.PropsWithChildren<TClientProps>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -252,10 +257,10 @@ export function Client({
   const navigate = useNavigate({ from: '/client' })
   const { clients: clientsSelected, setClient: setSelectdedClient } =
     useClientSelected(({ clients, setClient }) => ({ clients, setClient }))
-  const clients = Route.useLoaderData() ?? [] as TClient[]
+  const clientsDB = Route.useLoaderData() ?? _clients
 
   const table = useReactTable({
-    data: clients,
+    data: clientsDB,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -278,7 +283,7 @@ export function Client({
   }, [value, filter])
 
   useEffect(() => {
-    setSelectdedClient({ clients: table.getFilteredSelectedRowModel().rows })
+    setSelectdedClient({ clients: table.getFilteredSelectedRowModel().rows as unknown as TClient[] })
   }, [rowSelection])
 
   const onOpenChange: (open: boolean) => void = () => {
@@ -288,8 +293,7 @@ export function Client({
     setStatus({ open: !open })
   }
 
-  type onValueChange = (value: string) => void
-  const onValueChange: onValueChange = (value) => {
+  const onValueChange = (value: string) => {
     setStatus({ filter: value as keyof TClient})
   }
 
@@ -379,6 +383,7 @@ export function Client({
                   .getAllColumns()
                   .filter((column) => column.getCanHide())
                   .map((column) => {
+                    // TODO: this fuctions offuse the code but is necesary because the api is in spanish and the frontend is in english
                     const getColumnsName = ( id: string ) => ({
                       numero_de_identificacion: "id" as keyof typeof text.dropdown.items,
                       telefono: "telephone" as keyof typeof text.dropdown.items,

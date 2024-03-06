@@ -36,11 +36,6 @@ export const _User: StoryObj = {
   render: User,
 }
 
-export const _Client: StoryObj = {
-  name: '/client',
-  render: Client,
-}
-
 export const _Credit: StoryObj = {
   name: '/credit',
   render: Credit,

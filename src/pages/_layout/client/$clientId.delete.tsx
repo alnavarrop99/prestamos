@@ -26,19 +26,22 @@ export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   loader: async ({ params: { clientId } }) => getClientId({ clientId: Number.parseInt(clientId) }),
 })
 
-export function DeleteByClientId() {
+interface TDeleteByClient {
+  client?: TClient
+}
+export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByClient) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const client = Route.useLoaderData() ?? {} as TClient
+  const clientDB = Route.useLoaderData() ?? _client
   const { setStatus, open } = useClientStatus()
-  const { nombres: firstName, apellidos: lastName } = client
+  const { nombres: firstName, apellidos: lastName } = clientDB
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    if(!client) return;
+    if(!clientDB) return;
 
     const action =
       ({ ...props }: TClient) =>
@@ -46,7 +49,7 @@ export function DeleteByClientId() {
         console.table(props)
       }
 
-    const timer = setTimeout(action(client), 6 * 1000)
+    const timer = setTimeout(action(clientDB), 6 * 1000)
     setStatus({ open: !open, })
 
     const onClick = () => {

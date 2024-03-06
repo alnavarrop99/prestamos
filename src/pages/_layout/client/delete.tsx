@@ -19,27 +19,28 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useClientSelected, useClientStatus } from '@/lib/context/client'
-import { Row } from '@tanstack/react-table'
 import { type TClient } from "@/api/clients"
 
 export const Route = createFileRoute('/_layout/client/delete')({
   component: DeleteClient,
 })
 
-export function DeleteClient() {
+interface TDeleteClient {
+  clients?: TClient[]
+}
+
+export function DeleteClient({ clients: _clients = [] as TClient[] }: TDeleteClient) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const { clients } = useClientSelected()
+  const { clients = _clients } = useClientSelected() 
   const { open, setStatus } = useClientStatus()
-
-  if(!clients) return;
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    const action = (clients?: Row<TClient>[]) => () => {
+    const action = (clients?: TClient[]) => () => {
       console.table(clients)
     }
 

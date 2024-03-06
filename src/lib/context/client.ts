@@ -1,4 +1,3 @@
-import { Row } from '@tanstack/react-table'
 import { create } from 'zustand'
 
 type TFilter = keyof (typeof import('@/__mock__/CLIENTS.json'))[0]
@@ -17,8 +16,8 @@ export const useClientStatus = create<TStatus>()((set) => ({
 
 type TCLient = (typeof import('@/__mock__/CLIENTS.json'))[0]
 interface TClientSelected {
-  clients?: Row<TCLient>[]
-  setClient: ({ clients }: { clients: Row<TCLient>[] }) => void
+  clients?: TCLient[]
+  setClient: ({ clients }: { clients: TCLient[] }) => void
 }
 
 export const useClientSelected = create<TClientSelected>()((set) => ({

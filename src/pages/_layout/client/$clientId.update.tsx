@@ -32,11 +32,14 @@ const reducer: React.Reducer<TClient, TClient> = (prev, state) => ({
   ...state,
 })
 
-export function UpdateByClientId() {
+interface TUpdateByClient {
+  client?: TClient
+}
+export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByClient) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const _client = Route.useLoaderData() ?? {} as TClient
-  const [client, setForm] = useReducer(reducer, _client)
+  const clientDB = Route.useLoaderData() ?? _client
+  const [client, setForm] = useReducer(reducer, clientDB)
 
   const { 
     nombres: firstName,

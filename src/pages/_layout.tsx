@@ -30,7 +30,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useRootStatus } from '@/lib/context/layout'
-import { getClients } from '@/api/clients'
+import { getClients, TClient } from '@/api/clients'
 
 export const Route = createFileRoute('/_layout')({
   component: Navigation,
@@ -49,7 +49,13 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 }
 
 const username = 'Admin99'
-export function Navigation({ children }: React.PropsWithChildren) {
+interface TNavigation {
+  clients?: TClient[]
+}
+export function Navigation({
+  children,
+  clients: _clients = [] as TClient[],
+}: React.PropsWithChildren<TNavigation>) {
   const [{ offline, open = false, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
   })
@@ -58,8 +64,8 @@ export function Navigation({ children }: React.PropsWithChildren) {
     setSearch: status.setSearch,
     search: status.search,
   }))
-  const _clients = Route.useLoaderData() ?? []
-  const [clients, setClients] = useState(_clients)
+  const clientsDB = Route.useLoaderData() ?? _clients
+  const [clients, setClients] = useState(clientsDB)
 
   const route = useChildMatches()
 
@@ -89,7 +95,7 @@ export function Navigation({ children }: React.PropsWithChildren) {
 
     if (!clients || !clients?.length) return
 
-    const query = _clients?.filter(({ ...props }) =>
+    const query = clientsDB?.filter(({ ...props }) =>
       Object.values(props).join(' ').toLowerCase().includes(value.toLowerCase())
     )
     setClients(query)
@@ -133,7 +139,9 @@ export function Navigation({ children }: React.PropsWithChildren) {
             <BadgeDollarSign
               className={clsx({ 'hover:animate-pulse': open })}
             />
-            <span className={clsx("uppercase font-bold",{ hidden: open })}>{text.title} </span>
+            <span className={clsx('font-bold uppercase', { hidden: open })}>
+              {text.title}{' '}
+            </span>
             <BadgeCent className={clsx({ hidden: open })} />
           </h2>
         </div>
