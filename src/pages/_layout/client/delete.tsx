@@ -18,52 +18,40 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useClientSelected } from '@/lib/context/client'
+import { useClientSelected, useClientStatus } from '@/lib/context/client'
 import { Row } from '@tanstack/react-table'
+import { type TClient } from "@/api/clients"
 
 export const Route = createFileRoute('/_layout/client/delete')({
   component: DeleteClient,
-  // loader: async () =>{
-  //   const {clients} = useClientSelected(({clients}) => ({clients}))
-  //   return clients
-  // }
 })
-
-type TForm = {
-  ref?: string
-  firstName?: string
-  lastName?: string
-  phone?: string
-  direction?: string
-  comment?: string
-}
 
 export function DeleteClient() {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const { clients } = useClientSelected(({ clients }) => ({ clients }))
+  const { clients } = useClientSelected()
+  const { open, setStatus } = useClientStatus()
+
+  if(!clients) return;
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    const action = (clients?: Row<TForm>[]) => () => {
+    const action = (clients?: Row<TClient>[]) => () => {
       console.table(clients)
     }
 
+
     const timer = setTimeout(action(clients), 6 * 1000)
+    setStatus({open: !open})
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if (
-      Object.entries(clients).every(([key, value]) => {
-        if (key === 'comment') return true
-        return value
-      })
-    ) {
+    if ( true) {
       toast({
         title: text.notification.titile,
         description: text.notification.decription({
@@ -137,6 +125,7 @@ export function DeleteClient() {
           )}
         >
           <Button
+            className={clsx({ "hover:bg-destructive": checked })}
             variant="default"
             form="new-client-form"
             type="submit"

@@ -15,55 +15,45 @@ import { useRef, useState } from 'react'
 import styles from './new.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
-import clients from '@/__mock__/mocks-clients.json'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
+import { getClientId, TClient } from '@/api/clients'
+import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteByClientId,
-  loader: async ({ params: { clientId } }) =>
-    clients?.find(({ id }) => clientId === id),
+  loader: async ({ params: { clientId } }) => getClientId({ clientId: Number.parseInt(clientId) }),
 })
-
-type TForm = {
-  ref?: string
-  firstName?: string
-  lastName?: string
-  phone?: string
-  direction?: string
-  comment?: string
-}
 
 export function DeleteByClientId() {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const client = (Route.useLoaderData() ?? {}) as TForm
-  const { firstName, lastName } = client
+  const client = Route.useLoaderData() ?? {} as TClient
+  const { setStatus, open } = useClientStatus()
+  const { nombres: firstName, apellidos: lastName } = client
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
+    if(!client) return;
+
     const action =
-      ({ ...props }: TForm) =>
+      ({ ...props }: TClient) =>
       () => {
         console.table(props)
       }
 
     const timer = setTimeout(action(client), 6 * 1000)
+    setStatus({ open: !open, })
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if (
-      Object.entries(client).every(([key, value]) => {
-        if (key === 'comment') return true
-        return value
-      })
-    ) {
+    if (true) {
       toast({
         title: text.notification.titile,
         description: text.notification.decription({
@@ -82,6 +72,7 @@ export function DeleteByClientId() {
 
     ev.preventDefault()
   }
+
 
   return (
     <DialogContent className="max-w-xl">
@@ -137,6 +128,7 @@ export function DeleteByClientId() {
           )}
         >
           <Button
+            className={clsx({'hover:bg-destructive': checked})}
             variant="default"
             form="new-client-form"
             type="submit"

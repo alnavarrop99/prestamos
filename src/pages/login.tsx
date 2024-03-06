@@ -125,15 +125,15 @@ type LoginForm = 'password' | 'username' | 'remember'
 const text = {
   title: 'Inicio de sesion:',
   description: [
-    'Bienvenido a su aplicacion do creditos.',
-    'Por faver introdusca sus credenciales para acceder a su cuenta.',
+    'Bienvenido a su aplicacion de creditos.',
+    'Por favor introdusca sus credenciales para acceder a su cuenta.',
   ],
   username: {
-    placeholder: 'escriba su @username aqui',
+    placeholder: 'Escriba su @username aqui',
     label: 'Username:',
   },
   password: {
-    placeholder: 'escriba su ****** aqui',
+    placeholder: 'Escriba su ****** aqui',
     label: 'Password:',
   },
   remember: 'Recuerdame.',

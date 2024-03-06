@@ -30,9 +30,11 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useRootStatus } from '@/lib/context/layout'
+import { getClients } from '@/api/clients'
 
 export const Route = createFileRoute('/_layout')({
   component: Navigation,
+  loader: getClients,
 })
 
 type TStatus = {
@@ -41,11 +43,10 @@ type TStatus = {
   readonly calendar?: boolean
   readonly search?: boolean
 }
+
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
-
-type TClients = typeof import('@/__mock__/mocks-clients.json')
 
 const username = 'Admin99'
 export function Navigation({ children }: React.PropsWithChildren) {
@@ -57,20 +58,15 @@ export function Navigation({ children }: React.PropsWithChildren) {
     setSearch: status.setSearch,
     search: status.search,
   }))
-  const [clients, setClients] = useState<TClients | undefined>(undefined)
+  const _clients = Route.useLoaderData() ?? []
+  const [clients, setClients] = useState(_clients)
 
   const route = useChildMatches()
 
-  const getClient = async () => {
-    try {
-      const { default: query } = await import('@/__mock__/mocks-clients.json')
-      return query
-    } catch (error) {
-      return undefined
-    }
-  }
-
   useEffect(() => {
+    const onNotwork = () => {
+      setStatus({ offline: !offline })
+    }
     addEventListener('online', onNotwork)
     addEventListener('offline', onNotwork)
     return () => {
@@ -78,14 +74,6 @@ export function Navigation({ children }: React.PropsWithChildren) {
       removeEventListener('offline', onNotwork)
     }
   }, [])
-
-  useEffect(() => {
-    getClient()?.then((query) => setClients(query))
-  }, [])
-
-  const onNotwork = () => {
-    setStatus({ offline: !offline })
-  }
 
   const onclick =
     (setStatus: (status: TStatus) => void, { ...props }: TStatus) =>
@@ -98,20 +86,13 @@ export function Navigation({ children }: React.PropsWithChildren) {
   > = async (ev) => {
     const { value } = ev.currentTarget
     setValue({ value })
-    try {
-      const { default: clients } = await import('@/__mock__/mocks-clients.json')
-      if (!clients || !clients?.length) return
 
-      const query = clients?.filter(({ ...props }) =>
-        Object.values(props)
-          .join(' ')
-          .toLowerCase()
-          .includes(value.toLowerCase())
-      )
-      setClients(query)
-    } catch (error) {
-      return
-    }
+    if (!clients || !clients?.length) return
+
+    const query = _clients?.filter(({ ...props }) =>
+      Object.values(props).join(' ').toLowerCase().includes(value.toLowerCase())
+    )
+    setClients(query)
   }
 
   const onKeyDown: React.KeyboardEventHandler<
@@ -252,42 +233,48 @@ export function Navigation({ children }: React.PropsWithChildren) {
                     </h3>
                     <Separator />
                     <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
-                      {clients?.map(({ alias, lastName, firstName, id }) => (
-                        <li key={id} className="group cursor-pointer">
-                          <Link to={'/user/$userId'} params={{ userId: id }}>
-                            {({ isActive }) => (
-                              <>
-                                <Avatar>
-                                  <AvatarFallback>
-                                    {' '}
-                                    {alias?.slice(0, 2).toUpperCase()}{' '}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p
-                                    className={clsx('font-bold', {
-                                      "group-hover:after:content-['#']":
-                                        !isActive,
-                                    })}
-                                  >
-                                    {' '}
-                                    {firstName + ' ' + lastName}{' '}
-                                  </p>
-                                  <p className="italic">
-                                    {' '}
-                                    {id.slice(0, 4) +
-                                      '...' +
-                                      id.slice(-4, id.length)}{' '}
-                                  </p>
-                                </div>
-                                {isActive && (
-                                  <Badge> {text.search.current} </Badge>
-                                )}
-                              </>
-                            )}
-                          </Link>
-                        </li>
-                      ))}
+                      {clients?.map(
+                        ({
+                          apellidos: lastName,
+                          nombres: firstName,
+                          id,
+                          numero_de_identificacion: SSN,
+                        }) => (
+                          <li key={id} className="group cursor-pointer">
+                            <Link to={'/user/$userId'} params={{ userId: id }}>
+                              {({ isActive }) => (
+                                <>
+                                  <Avatar>
+                                    <AvatarFallback>
+                                      {firstName.at(0) ??
+                                        'N' + lastName.at(0) ??
+                                        'A'}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p
+                                      className={clsx('font-bold', {
+                                        "group-hover:after:content-['#']":
+                                          !isActive,
+                                      })}
+                                    >
+                                      {firstName + ' ' + lastName}
+                                    </p>
+                                    <p className="italic">
+                                      {SSN.slice(0, 4) +
+                                        '...' +
+                                        SSN.slice(-4, SSN.length)}
+                                    </p>
+                                  </div>
+                                  {isActive && (
+                                    <Badge> {text.search.current} </Badge>
+                                  )}
+                                </>
+                              )}
+                            </Link>
+                          </li>
+                        )
+                      )}
                     </ul>
                   </div>
                 </PopoverContent>

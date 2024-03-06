@@ -49,7 +49,6 @@ import {
 } from '@tanstack/react-router'
 import { useClientSelected, useClientStatus } from '@/lib/context/client'
 import { useRootStatus } from '@/lib/context/layout'
-import clientsMock from '@/__mock__/mocks-clients.json'
 import {
   Select,
   SelectContent,
@@ -57,13 +56,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { getClients, type TClient } from '@/api/clients'
+import clsx from 'clsx'
 
 export const Route = createFileRoute('/_layout/client')({
   component: Client,
+  loader: getClients
 })
 
-type TClients = (typeof import('@/__mock__/mocks-clients.json'))[0]
-const columns: ColumnDef<TClients>[] = [
+const columns: ColumnDef<TClient>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -85,7 +86,7 @@ const columns: ColumnDef<TClients>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'firstName',
+    accessorKey: 'nombres' as keyof TClient,
     header: ({ column }) => {
       return (
         <Button
@@ -99,40 +100,64 @@ const columns: ColumnDef<TClients>[] = [
     },
     cell: ({ row }) => (
       <div className="copitalize">
-        {row.original.firstName + ' ' + row.original.lastName}
+        {row.original.nombres + ' ' + row.original.apellidos}
       </div>
     ),
   },
   {
-    accessorKey: 'email',
-    header: ({ column }) => {
-      return (
-        <Button
+    accessorKey: 'direccion' as keyof TClient,
+    header: ({column}) => {
+      return <Button
           variant="ghost"
           onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
         >
-          {text.columns.email}
+          {text.columns.direction}
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      )
     },
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue('email')}</div>
-    ),
+    cell: ({ row }) => <div>
+      {row.getValue('direccion' as keyof TClient) + ". " +
+      row.original.segunda_direccion}
+    </div>,
   },
   {
-    accessorKey: 'phone',
+    accessorKey: 'celular' as keyof TClient,
     header: () => {
       return <p>{text.columns.phone}</p>
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue('phone')}</div>,
+    cell: ({ row }) => <div className="lowercase w-32">{row.getValue('celular' as keyof TClient)}</div>,
   },
   {
-    accessorKey: 'id',
+    accessorKey: 'telefono' as keyof TClient,
+    header: () => {
+      return <p>{text.columns.telephone}</p>
+    },
+    cell: ({ row }) => <div className="lowercase w-32">{row.getValue('telefono' as keyof TClient)}</div>,
+  },
+  {
+    accessorKey: 'numero_de_identificacion' as keyof TClient,
     header: () => {
       return <p>{text.columns.id}</p>
     },
-    cell: ({ row }) => <div className="lowercase">{row.getValue('id')}</div>,
+    cell: ({ row }) => <div className='w-32'>
+      <p className='capitalize font-bold'>{row.original.tipo_de_identificacion}</p>
+      <p>{row.getValue('numero_de_identificacion' as keyof TClient)}</p>
+    </div>,
+  },
+  {
+    accessorKey: 'referencia' as keyof TClient,
+    header: ({column}) => {
+     return <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          {text.columns.ref}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+    },
+    cell: ({ row }) => <div>
+      <p>{row.getValue('referencia' as keyof TClient)}</p>
+    </div>,
   },
   {
     id: 'actions',
@@ -152,7 +177,7 @@ const columns: ColumnDef<TClients>[] = [
       const onClickCopy: React.MouseEventHandler<
         React.ComponentRef<typeof DropdownMenuItem>
       > = () => {
-        navigator.clipboard.writeText(id)
+        navigator.clipboard.writeText(id.toFixed())
       }
 
       const onClick: React.MouseEventHandler<
@@ -216,7 +241,7 @@ export function Client({
   const [rowSelection, setRowSelection] = useState({})
   const {
     open = _open,
-    filter = 'firstName',
+    filter = 'nombres' as keyof TClient,
     setStatus,
   } = useClientStatus(({ open = _open, filter, setStatus }) => ({
     open,
@@ -227,9 +252,10 @@ export function Client({
   const navigate = useNavigate({ from: '/client' })
   const { clients: clientsSelected, setClient: setSelectdedClient } =
     useClientSelected(({ clients, setClient }) => ({ clients, setClient }))
+  const clients = Route.useLoaderData() ?? [] as TClient[]
 
   const table = useReactTable({
-    data: clientsMock,
+    data: clients,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -264,7 +290,7 @@ export function Client({
 
   type onValueChange = (value: string) => void
   const onValueChange: onValueChange = (value) => {
-    setStatus({ filter: value as keyof (typeof clientsMock)[0] })
+    setStatus({ filter: value as keyof TClient})
   }
 
   const onClick: React.MouseEventHandler<ComponentRef<typeof Button>> = () => {
@@ -297,8 +323,10 @@ export function Client({
             </Dialog>
 
             <Link disabled={!clientsSelected?.length} to={'./delete'}>
-              <Button disabled={!clientsSelected?.length} onClick={onClick}>
-                {text.buttons.delete}
+              <Button
+                className={clsx({ "hover:bg-destructive": clientsSelected?.length })}
+                disabled={!clientsSelected?.length} onClick={onClick}>
+                  {text.buttons.delete}
               </Button>
             </Link>
 
@@ -308,28 +336,34 @@ export function Client({
               </SelectTrigger>
               <SelectContent className="[&>div]:cursor-pointer">
                 <SelectItem
-                  value={'firstName' as keyof typeof text.select.items}
+                  value={'nombres' as keyof TClient}
                   className="cursor-pointer"
                 >
                   {text.select.items.fullName}
                 </SelectItem>
                 <SelectItem
-                  value={'id' as keyof typeof text.select.items}
+                  value={'numero_de_identificacion' as keyof TClient}
                   className="cursor-pointer"
                 >
                   {text.select.items.id}
                 </SelectItem>
                 <SelectItem
-                  value={'email' as keyof typeof text.select.items}
+                  value={'direccion' as keyof TClient}
                   className="cursor-pointer"
                 >
-                  {text.select.items.email}
+                  {text.select.items.direction}
                 </SelectItem>
                 <SelectItem
-                  value={'phone' as keyof typeof text.select.items}
+                  value={'celular' as keyof TClient}
                   className="cursor-pointer"
                 >
                   {text.select.items.phone}
+                </SelectItem>
+                <SelectItem
+                  value={'telefono' as keyof TClient}
+                  className="cursor-pointer"
+                >
+                  {text.select.items.telephone}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -345,6 +379,15 @@ export function Client({
                   .getAllColumns()
                   .filter((column) => column.getCanHide())
                   .map((column) => {
+                    const getColumnsName = ( id: string ) => ({
+                      numero_de_identificacion: "id" as keyof typeof text.dropdown.items,
+                      telefono: "telephone" as keyof typeof text.dropdown.items,
+                      celular: "phone" as keyof typeof text.dropdown.items,
+                      direccion: "direction" as keyof typeof text.dropdown.items,
+                      nombres: "firstName" as keyof typeof text.dropdown.items,
+                      apellidos: "lastName" as keyof typeof text.dropdown.items,
+                      referencia: "ref" as keyof typeof text.dropdown.items,
+                    } as Record<keyof TClient, string>)?.[id as keyof TClient] ?? ""
                     return (
                       <DropdownMenuCheckboxItem
                         className="capitalize hover:cursor-pointer"
@@ -354,7 +397,7 @@ export function Client({
                           column.toggleVisibility(!!value)
                         }
                       >
-                        {text.dropdown.columns?.[column.id as keyof TClients]}
+                        {text.dropdown.items?.[ getColumnsName( column.id ) ] ?? ""}
                       </DropdownMenuCheckboxItem>
                     )
                   })}
@@ -362,7 +405,7 @@ export function Client({
             </DropdownMenu>
           </div>
           <div className="rounded-md border">
-            <Table>
+            <Table className='overflow-auto'>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
@@ -456,10 +499,12 @@ const text = {
     fullName: 'Nombre y Apellidos',
     firstName: 'Nombre',
     lastName: 'Apellidos',
-    id: 'I.D',
-    phone: 'Telefono',
-    alias: 'Alias',
-    email: 'Email',
+    id: 'I.D.',
+    phone: 'Celular',
+    telephone: 'Telefono',
+    ref: 'Referencia',
+    direction: 'Direccion',
+    secondDirection: 'Segunda Direccion',
   },
   buttons: {
     next: 'Siguiente',
@@ -477,7 +522,7 @@ const text = {
   dropdown: {
     title: 'Columnas',
     subtitle: 'Acciones',
-    get columns() {
+    get items() {
       return { ...text.columns }
     },
   },

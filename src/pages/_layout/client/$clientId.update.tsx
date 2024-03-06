@@ -9,33 +9,25 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { Textarea } from '@/components/ui/textarea'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { ComponentRef, useReducer, useRef, useState } from 'react'
+import { useReducer, useRef, useState } from 'react'
 import styles from './new.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
-import clients from '@/__mock__/mocks-clients.json'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
+import { getClientId, type TClient } from '@/api/clients'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateByClientId,
   loader: async ({ params: { clientId } }) =>
-    clients?.find(({ id }) => clientId === id),
+    getClientId({clientId: Number.parseInt(clientId)})
 })
 
-type TForm = {
-  ref?: string
-  firstName?: string
-  lastName?: string
-  phone?: string
-  direction?: string
-  comment?: string
-}
-const reducer: React.Reducer<TForm, TForm> = (prev, state) => ({
+const reducer: React.Reducer<TClient, TClient> = (prev, state) => ({
   ...prev,
   ...state,
 })
@@ -43,39 +35,38 @@ const reducer: React.Reducer<TForm, TForm> = (prev, state) => ({
 export function UpdateByClientId() {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const client = Route.useLoaderData()
-  const [{ direction, comment, phone, ref, lastName, firstName }, setForm] =
-    useReducer(reducer, client ?? {})
+  const _client = Route.useLoaderData() ?? {} as TClient
+  const [client, setForm] = useReducer(reducer, _client)
+
+  const { 
+    nombres: firstName,
+    apellidos: lastName,
+    direccion: direction,
+    segunda_direccion: secondDirection,
+    numero_de_identificacion: id,
+    tipo_de_identificacion: idType,
+    referencia: ref,
+    celular: phone, 
+    telefono: telephone,
+  } =  client
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
-  const onChange: (
-    prop: TClientForm
-  ) => React.ChangeEventHandler<
-    ComponentRef<typeof Input> | ComponentRef<typeof Textarea>
-  > = (prop) => (ev) => {
-    setForm({ [prop]: ev.target.value })
+  const onChange: React.ChangeEventHandler< HTMLFormElement > = (ev) => {
+    setForm({ ...client, [ev.target.name as keyof TClient]: ev.target.value })
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    if (!form.current) return
+    if (!form.current) return;
 
-    const items = {
-      firstName,
-      lastName,
-      phone,
-      comment,
-      ref,
-      direction,
-    } as Record<TClientForm, string>
-    // const items = Object.fromEntries(
-    //   new FormData(form.current).entries()
-    // ) as Record<TClientForm, string>
+    const items = Object.fromEntries(
+      new FormData(form.current).entries()
+    ) as Record<keyof TClient, string>
 
     const action =
-      ({ ...props }: Record<TClientForm, string>) =>
+      ({ ...props }: Record<keyof TClient, string>) =>
       () => {
         console.table(props)
       }
@@ -86,13 +77,8 @@ export function UpdateByClientId() {
       clearTimeout(timer)
     }
 
-    if (
-      Object.entries(items).every(([key, value]) => {
-        if (key === 'comment') return true
-        return value
-      })
-    ) {
-      const { firstName, lastName } = items
+    if (true) {
+      const { nombres: firstName, apellidos: lastName } = items
       toast({
         title: text.notification.titile,
         description: text.notification.decription({
@@ -101,10 +87,8 @@ export function UpdateByClientId() {
         variant: 'default',
         action: (
           <ToastAction altText="action from new user">
-            {' '}
             <Button variant="default" onClick={onClick}>
-              {' '}
-              {text.notification.undo}{' '}
+              {text.notification.undo}
             </Button>{' '}
           </ToastAction>
         ),
@@ -129,6 +113,7 @@ export function UpdateByClientId() {
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
+        onChange={onChange}
         id="new-client-form"
         className={clsx(
           'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
@@ -139,78 +124,106 @@ export function UpdateByClientId() {
         )}
       >
         <Label>
-          {' '}
           <span>{text.form.firstName.label}</span>{' '}
           <Input
             required
             disabled={!checked}
-            name={'firstName' as TClientForm}
+            name={'nombres' as keyof TClient}
             type="text"
             value={firstName}
-            onChange={onChange('firstName')}
             placeholder={checked ? text.form.firstName.placeholder : undefined}
-          />{' '}
+          />
         </Label>
         <Label>
           <span>{text.form.lastName.label} </span>
           <Input
             required
             disabled={!checked}
-            name={'lastName' as TClientForm}
+            name={'apellidos' as keyof TClient}
             type="text"
             value={lastName}
-            onChange={onChange('lastName')}
             placeholder={checked ? text.form.lastName.placeholder : undefined}
-          />{' '}
+          />
         </Label>
+        <Label>
+          <span>{text.form.id.label} </span>
+          <Input
+            required
+            disabled={!checked}
+            name={'numero_de_identificacion' as keyof TClient}
+            type="text"
+            value={id}
+            placeholder={checked ? text.form.id.placeholder : undefined}
+          />
+        </Label>
+        <Label>
+          <span>{text.form.id.label} </span>
+          <Select value={idType} disabled={!checked} required name={'tipo_de_identificacion' as keyof TClient} >
+            <SelectTrigger className={clsx("w-full", { "border border-primary": checked})}>
+              <SelectValue placeholder={text.form.id.placeholder} />
+            </SelectTrigger>
+            <SelectContent className='[&_*]:cursor-pointer'>
+              <SelectItem value={text.form.id.items.id}>{text.form.id.items.id}</SelectItem>
+              <SelectItem value={text.form.id.items.passport}>{text.form.id.items.passport}</SelectItem>
+              <SelectItem value={text.form.id.items.driverId}>{text.form.id.items.driverId}</SelectItem>
+            </SelectContent>
+          </Select>
+        </Label>
+        
         <Label>
           <span>{text.form.phone.label} </span>
           <Input
             required
             disabled={!checked}
-            name={'phone' as TClientForm}
+            name={'celular' as keyof TClient}
             type="tel"
             value={phone}
-            onChange={onChange('phone')}
             placeholder={checked ? text.form.phone.placeholder : undefined}
-          />{' '}
+          />
+        </Label>
+        <Label>
+          <span>{text.form.telephone.label} </span>
+          <Input
+            required
+            disabled={!checked}
+            name={'telefono' as keyof TClient}
+            type="tel"
+            value={telephone}
+            placeholder={checked ? text.form.telephone.placeholder : undefined}
+          />
         </Label>
         <Label>
           <span>{text.form.direction.label}</span>
           <Input
             required
             disabled={!checked}
-            name={'direction' as TClientForm}
+            name={'direccion' as keyof TClient}
             type="text"
             value={direction}
-            onChange={onChange('direction')}
             placeholder={checked ? text.form.direction.placeholder : undefined}
-          />{' '}
+          />
         </Label>
         <Label>
-          <span>{text.form.ref.label} </span>
+          <span>{text.form.secondDirection.label} </span>
           <Input
             required
             disabled={!checked}
-            name={'ref' as TClientForm}
+            name={'segunda_direccion' as keyof TClient}
             type="text"
-            value={ref}
-            onChange={onChange('ref')}
+            value={secondDirection}
             placeholder={checked ? text.form.ref.placeholder : undefined}
-          />{' '}
+          />
         </Label>
         <Label>
-          <span>{text.form.comment.label} </span>
-          <Textarea
-            spellCheck
+          <span>{text.form.ref.label}</span>
+          <Input
+            required
             disabled={!checked}
-            name={'comment' as TClientForm}
-            placeholder={checked ? text.form.comment.placeholder : undefined}
-            rows={6}
-            value={comment}
-            onChange={onChange('comment')}
-            className="rosize-none"
-          />{' '}
+            name={'referencia' as keyof TClient}
+            type="text"
+            value={ref}
+            placeholder={checked ? text.form.ref.placeholder : undefined}
+          />
         </Label>
       </form>
       <DialogFooter className="!justify-between">
@@ -234,8 +247,7 @@ export function UpdateByClientId() {
             type="submit"
             disabled={!checked}
           >
-            {' '}
-            {text.button.update}{' '}
+            {text.button.update}
           </Button>
 
           <DialogClose asChild>
@@ -244,8 +256,7 @@ export function UpdateByClientId() {
               variant="secondary"
               className="font-bold hover:ring-1 hover:ring-primary"
             >
-              {' '}
-              {text.button.close}{' '}
+              {text.button.close}
             </Button>
           </DialogClose>
         </div>
@@ -284,6 +295,10 @@ const text = {
       placeholder: 'Escriba el apellido del cliente',
     },
     phone: {
+      label: 'Celular:',
+      placeholder: 'Escriba el celular del cliente',
+    },
+    telephone: {
       label: 'Telefono:',
       placeholder: 'Escriba el telefono del cliente',
     },
@@ -291,12 +306,26 @@ const text = {
       label: 'Direccion:',
       placeholder: 'Escriba la direccion del cliente',
     },
-    comment: { label: 'Comentario:', placeholder: 'Escriba un comentario' },
+    secondDirection: {
+      label: '2da Direccion:',
+      placeholder: 'Escriba la 2da direccion del cliente',
+    },
+    id: {
+      label: 'I.D.:',
+      placeholder: 'Escriba el numero del I.D. del cliente',
+      items: {
+        passport: "Passaporte",
+        id: "I.D.",
+        driverId: "Carnet de Conducir"
+      }
+    },
     ref: {
       label: 'Referencia:',
-      placeholder: 'Escriba | Seleccione la referencia del cliente',
+      placeholder: 'Escriba la referencia del cliente',
     },
+    status: {
+      label: 'Estado:',
+      placeholder: 'Seleccione el estado del cliente',
+    }
   },
 }
-
-type TClientForm = keyof typeof text.form
