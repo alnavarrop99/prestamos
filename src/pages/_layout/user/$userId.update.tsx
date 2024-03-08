@@ -33,7 +33,6 @@ export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUse
   const { rol, nombre } = Route.useLoaderData() ?? _user
   const { open, setStatus } = useClientStatus()
 
-
   const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
   }

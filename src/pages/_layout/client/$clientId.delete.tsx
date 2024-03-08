@@ -32,16 +32,16 @@ interface TDeleteByClient {
 export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByClient) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const clientDB = Route.useLoaderData() ?? _client
+  const client = Route.useLoaderData() ?? _client
+  const { nombres: firstName, apellidos: lastName } = client
   const { setStatus, open } = useClientStatus()
-  const { nombres: firstName, apellidos: lastName } = clientDB
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    if(!clientDB) return;
+    if(!client) return;
 
     const action =
       ({ ...props }: TClient) =>
@@ -49,7 +49,7 @@ export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByC
         console.table(props)
       }
 
-    const timer = setTimeout(action(clientDB), 6 * 1000)
+    const timer = setTimeout(action(client), 6 * 1000)
     setStatus({ open: !open, })
 
     const onClick = () => {

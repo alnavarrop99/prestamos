@@ -39,8 +39,8 @@ interface TUpdateByClient {
 export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByClient) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const clientDB = Route.useLoaderData() ?? _client
-  const [client, setForm] = useReducer(reducer, clientDB)
+  const client = Route.useLoaderData() ?? _client
+  const [clientItems, setForm] = useReducer(reducer, client)
   const { open, setStatus } = useClientStatus()
 
   const { 
@@ -53,14 +53,14 @@ export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByC
     referencia: ref,
     celular: phone, 
     telefono: telephone,
-  } =  client
+  } =  clientItems
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onChange: React.ChangeEventHandler< HTMLFormElement > = (ev) => {
-    setForm({ ...client, [ev.target.name as keyof TClient]: ev.target.value })
+    setForm({ ...clientItems, [ev.target.name as keyof TClient]: ev.target.value })
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {

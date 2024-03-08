@@ -3,14 +3,15 @@ import $ from '@/lib/render'
 import { User } from '@/pages/_layout/user'
 import { Navigation } from '@/pages/_layout'
 import { Fragment } from 'react'
+import { Toaster } from '@/components/ui/toaster'
+import { TUserResponse } from '@/api/users'
+import { NewUser } from '@/pages/_layout/user/new'
+import { DeleteUserById } from '@/pages/_layout/user/$userId.delete'
+import { UpdateUserById } from '@/pages/_layout/user/$userId.update'
+import { DeleteUsers } from '@/pages/_layout/user/delete'
 import _users from "@/__mock__/USERS.json";
 import roles from "@/__mock__/ROLES.json";
-import { NewUser } from './new'
-import { TUserResponse } from '@/api/users'
-import { DeleteUserById } from './$userId.delete'
-import { UpdateUserById } from './$userId.update'
-import { DeleteUsers } from './delete'
-import { Toaster } from '@/components/ui/toaster'
+
 const users = _users.map( ({ rol: { id: rolId }, ...items  }) => ({
         rol: roles.find( ( { id } ) => id === rolId  )?.name ?? "Usuario",
         active: false,
@@ -45,6 +46,10 @@ function ToastProvider(Story: StoryFn) {
   )
 }
 
+function _UserLayout( prop: React.ComponentProps< typeof User >  ) {
+  return <User {...prop}> <></>  </User>
+}
+
 const meta: Meta = {
   title: '@pages/users',
   component: Fragment,
@@ -52,9 +57,9 @@ const meta: Meta = {
 }
 export default meta
 
-export const _User: StoryObj< React.ComponentProps< typeof User > > = {
+export const _User: StoryObj< React.ComponentProps< typeof _UserLayout > > = {
   name: '/user',
-  render: User,
+  render: _UserLayout,
   args: {
     users,
   }
@@ -73,7 +78,7 @@ export const _DeleteUsers: StoryObj< React.ComponentProps< typeof DeleteUsers > 
   name: '/user/delete',
   render: DeleteUsers,
   args: {
-    users,
+    users: users.slice(0,5)
   },
   decorators: [UsersLayout(users)]
 }

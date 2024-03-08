@@ -30,9 +30,9 @@ interface TDeleteUsers {
   users?: TUserResponse[]
 }
 export function DeleteUsers({users: _users=[] as TUserResponse[]}: TDeleteUsers) {
-    const form = useRef<HTMLFormElement>(null)
+  const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const users = useContext(_selectUsers ?? _users) 
+  const users = useContext(_selectUsers) ?? _users
   const { open, setStatus } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {

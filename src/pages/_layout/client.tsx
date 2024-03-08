@@ -47,7 +47,7 @@ import {
   useNavigate,
   Navigate,
 } from '@tanstack/react-router'
-import { useClientSelected, useClientStatus } from '@/lib/context/client'
+import { useClientStatus } from '@/lib/context/client'
 import { useRootStatus } from '@/lib/context/layout'
 import {
   Select,

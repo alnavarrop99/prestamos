@@ -33,10 +33,8 @@ interface TDeleteClient {
 export function DeleteClient({ clients: _clients = [] as TClient[] }: TDeleteClient) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const clients = useContext(_selectedClients ?? _clients) 
+  const clients = useContext(_selectedClients) ?? _clients
   const { open, setStatus } = useClientStatus()
-
-  if(!clients) return;
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
