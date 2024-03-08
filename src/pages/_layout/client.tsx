@@ -328,7 +328,7 @@ export function Client({
 
             <Link disabled={!clientsSelected?.length} to={'./delete'}>
               <Button
-                className={clsx({ "hover:bg-destructive": clientsSelected?.length })}
+                className={clsx({ "bg-destructive": clientsSelected?.length })}
                 disabled={!clientsSelected?.length} onClick={onClick}>
                   {text.buttons.delete}
               </Button>
