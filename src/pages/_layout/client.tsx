@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
-import React, { ComponentRef, useEffect, useState } from 'react'
+import React, { ComponentRef, createContext, useEffect, useState } from 'react'
 import {
   Outlet,
   createFileRoute,
@@ -235,6 +235,9 @@ interface TClientProps {
   clients?: TClient[],
   open?: boolean
 }
+
+export const _selectedClients = createContext<TClient[] | undefined>(undefined)
+
 export function Client({
   children,
   open: _open = false,
@@ -255,12 +258,10 @@ export function Client({
   }))
   const { value } = useRootStatus(({ value }) => ({ value }))
   const navigate = useNavigate({ from: '/client' })
-  const { clients: clientsSelected, setClient: setSelectdedClient } =
-    useClientSelected(({ clients, setClient }) => ({ clients, setClient }))
-  const clientsDB = Route.useLoaderData() ?? _clients
+  const clients = Route.useLoaderData() ?? _clients
 
   const table = useReactTable({
-    data: clientsDB,
+    data: clients,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -282,10 +283,6 @@ export function Client({
     table.getColumn(filter)?.setFilterValue(value)
   }, [value, filter])
 
-  useEffect(() => {
-    setSelectdedClient({ clients: table.getFilteredSelectedRowModel().rows as unknown as TClient[] })
-  }, [rowSelection])
-
   const onOpenChange: (open: boolean) => void = () => {
     if (open) {
       !children && navigate({ to: './' })
@@ -305,7 +302,7 @@ export function Client({
   }
 
   return (
-    <>
+    <_selectedClients.Provider value={table.getFilteredSelectedRowModel().rows as unknown as TClient[]}>
       {!children && <Navigate to={'/client'} />}
       <div>
         <div className="flex items-center gap-2">
@@ -326,10 +323,10 @@ export function Client({
               {children ?? <Outlet />}
             </Dialog>
 
-            <Link disabled={!clientsSelected?.length} to={'./delete'}>
+            <Link disabled={!table.getFilteredSelectedRowModel().rows?.length} to={'./delete'}>
               <Button
-                className={clsx({ "bg-destructive": clientsSelected?.length })}
-                disabled={!clientsSelected?.length} onClick={onClick}>
+                className={clsx({ "bg-destructive": table.getFilteredSelectedRowModel().rows?.length })}
+                disabled={!table.getFilteredSelectedRowModel().rows?.length} onClick={onClick}>
                   {text.buttons.delete}
               </Button>
             </Link>
@@ -487,7 +484,7 @@ export function Client({
           </div>
         </div>
       </div>
-    </>
+    </_selectedClients.Provider>
   )
 }
 

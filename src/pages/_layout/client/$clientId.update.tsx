@@ -20,6 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { getClientId, type TClient } from '@/api/clients'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateByClientId,
@@ -40,6 +41,7 @@ export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByC
   const [checked, setChecked] = useState(false)
   const clientDB = Route.useLoaderData() ?? _client
   const [client, setForm] = useReducer(reducer, clientDB)
+  const { open, setStatus } = useClientStatus()
 
   const { 
     nombres: firstName,
@@ -75,6 +77,7 @@ export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByC
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
+    setStatus({ open: !open })
 
     const onClick = () => {
       clearTimeout(timer)
