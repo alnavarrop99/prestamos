@@ -23,8 +23,8 @@ import {
   ChevronDown,
   Copy,
   MoreHorizontal,
-  UserCog,
-  UserX,
+  UserCog2 as UserUpdate,
+  UserX2 as UserDelete,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
-import React, { ComponentRef, createContext, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useState } from 'react'
 import {
   Outlet,
   createFileRoute,
@@ -212,7 +212,7 @@ const columns: ColumnDef<TClient>[] = [
                 to={'./$clientId/update'}
                 params={{ clientId: id }}
               >
-                {text.menu.update} <UserCog />
+                {text.menu.update} <UserUpdate />
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onClick}>
@@ -221,7 +221,7 @@ const columns: ColumnDef<TClient>[] = [
                 to={'./$clientId/delete'}
                 params={{ clientId: id }}
               >
-                {text.menu.delete} <UserX />
+                {text.menu.delete} <UserDelete />
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -294,7 +294,7 @@ export function Client({
     setStatus({ filter: value as keyof TClient})
   }
 
-  const onClick: React.MouseEventHandler<ComponentRef<typeof Button>> = () => {
+  const onClick: React.MouseEventHandler<React.ComponentRef<typeof Button>> = () => {
     if (open) {
       !children && navigate({ to: './' })
     }

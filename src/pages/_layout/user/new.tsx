@@ -9,7 +9,7 @@ import { toast } from '@/components/ui/use-toast'
 import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
 import styles from './new.module.css'
-import { ComponentRef, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 
 export const Route = createFileRoute('/_layout/user/new')({
@@ -25,7 +25,7 @@ export function NewUser() {
   const form = useRef<HTMLFormElement>(null)
 
 
-  const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
+  const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
   }
 

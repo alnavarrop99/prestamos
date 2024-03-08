@@ -8,10 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import styles from "@/styles/global.module.css";
 import clsx from 'clsx';
 import { Button } from '@/components/ui/button';
-import React, { ComponentRef, createContext, useEffect, useState } from 'react';
+import { createContext, useEffect, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import {  MoreHorizontal, UserCog2, UserX2, Users } from 'lucide-react';
+import { MoreHorizontal, UserCog as UserUpdate, UserX as UserDelete, Users as UsersList } from 'lucide-react';
 import { useRootStatus } from '@/lib/context/layout';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useClientStatus } from '@/lib/context/client';
@@ -58,7 +58,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
     setUsers(list)
   }
 
-  const onClick: ({ id }: {id: number}) => React.MouseEventHandler< ComponentRef < typeof Card > > = ({id}) => () => {
+  const onClick: ({ id }: {id: number}) => React.MouseEventHandler< React.ComponentRef < typeof Card > > = ({id}) => () => {
     const user = users?.find( ({ id: userId }) => id === userId  )
     if(!user) return;
 
@@ -77,7 +77,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
     setStatus({ open })
   }
 
-  const onOpenLink: ({id}: {id: number}) => React.MouseEventHandler< ComponentRef< typeof Link > > = ({id}) => (ev) => {
+  const onOpenLink: ({id}: {id: number}) => React.MouseEventHandler< React.ComponentRef< typeof Link > > = ({id}) => (ev) => {
     ev.stopPropagation()
 
     const user = users.find( ({ id: userId }) => id === userId )
@@ -88,7 +88,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
     onCheckChanged({id, prop: "menu"})( !menu )
   }
 
-  const onDeleteUsers: React.MouseEventHandler< ComponentRef< typeof Button > > = () => {
+  const onDeleteUsers: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
     setStatus({open: !open})
   }
 
@@ -137,7 +137,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem >
-                  {text.menu.client} <Users />
+                  {text.menu.client} <UsersList />
                 </DropdownMenuItem>
                 <DropdownMenuItem  >
                   <Link
@@ -145,7 +145,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
                       className="flex h-full w-full items-center justify-between gap-2"
                       to={"./$userId/update"}
                       params={{ userId: id }} >
-                    {text.menu.update} <UserCog2 />
+                    {text.menu.update} <UserUpdate />
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem  >
@@ -154,7 +154,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
                     className="flex h-full w-full items-center justify-between gap-2"
                     to={"./$userId/delete"} 
                     params={{ userId: id }}>
-                    {text.menu.delete} <UserX2 />
+                    {text.menu.delete} <UserDelete />
                   </Link>
                 </DropdownMenuItem>
               </DropdownMenuContent>

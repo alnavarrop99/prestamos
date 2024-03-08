@@ -98,14 +98,14 @@ const LayoutClientClientIdUpdateRoute = LayoutClientClientIdUpdateImport.update(
   {
     path: '/$clientId/update',
     getParentRoute: () => LayoutClientRoute,
-  } as any
+  } as any,
 )
 
 const LayoutClientClientIdDeleteRoute = LayoutClientClientIdDeleteImport.update(
   {
     path: '/$clientId/delete',
     getParentRoute: () => LayoutClientRoute,
-  } as any
+  } as any,
 )
 
 // Populate the FileRoutesByPath interface
