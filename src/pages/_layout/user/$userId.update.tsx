@@ -12,6 +12,7 @@ import styles from './new.module.css'
 import { ComponentRef, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { TUserResponse, getUserId } from '@/api/users'
+import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
   component: UpdateUserById,
@@ -30,6 +31,7 @@ export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUse
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
   const { rol, nombre } = Route.useLoaderData() ?? _user
+  const { open, setStatus } = useClientStatus()
 
 
   const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
@@ -51,6 +53,7 @@ export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUse
 
 
     const timer = setTimeout(action(items), 6 * 1000)
+    setStatus({ open: !open })
 
     const onClick = () => {
       clearTimeout(timer)
@@ -154,8 +157,8 @@ export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUse
         </div>
 
         <div>
-          <Label htmlFor='user-confirmation'>
-            <span>{text.form.password.confirmation.label} </span>
+          <Label htmlFor='user-new'>
+            <span>{text.form.password.new.label} </span>
           </Label>
           <div className="flex flex-row-reverse items-center gap-x-2">
             <Button
@@ -167,11 +170,11 @@ export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUse
               {!confirmation ? <Eye /> : <EyeOff />}
             </Button>
             <Input
-              id='user-confirmation'
+              id='user-new'
               required
-              name={'confirmation' as keyof typeof text.form.password}
+              name={'new' as keyof typeof text.form.password}
               type={!confirmation ? "password" : "text"}
-              placeholder={text.form.password.confirmation.placeholder}
+              placeholder={text.form.password.new.placeholder}
             />
           </div>
         </div>
@@ -223,12 +226,12 @@ const text = {
     },
     password: {
       current: {
-        label: 'Contraseña:',
-        placeholder: 'Escriba la cantraseña del usuario',
+        label: 'Contraseña actual:',
+        placeholder: 'Escriba la cantraseña actual del usuario',
       },
-      confirmation: {
-        label: 'Confirmacion:',
-        placeholder: 'Confirme la cantraseña anterior',
+      new: {
+        label: 'Nueva contraseña:',
+        placeholder: 'Escriba la nuva cantraseña del usuario',
       }
     },
     rol: {

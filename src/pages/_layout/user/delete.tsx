@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import styles from './new.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -20,6 +20,7 @@ import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useClientStatus } from '@/lib/context/client'
 import { TUserResponse } from '@/api/users'
+import { _selectUsers } from "@/pages/_layout/user"
 
 export const Route = createFileRoute('/_layout/user/delete')({
   component: DeleteUsers,
@@ -31,7 +32,7 @@ interface TDeleteUsers {
 export function DeleteUsers({users: _users=[] as TUserResponse[]}: TDeleteUsers) {
     const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const [ users ] = useState<TUserResponse[]>(_users) 
+  const users = useContext(_selectUsers ?? _users) 
   const { open, setStatus } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -42,7 +43,6 @@ export function DeleteUsers({users: _users=[] as TUserResponse[]}: TDeleteUsers)
     const action = (clients?: TUserResponse[]) => () => {
       console.table(clients)
     }
-
 
     const timer = setTimeout(action(users), 6 * 1000)
     setStatus({open: !open})
