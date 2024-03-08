@@ -91,7 +91,7 @@ export const _DeleteUserById: StoryObj< React.ComponentProps< typeof DeleteUserB
   name: '/user/$userId/delete',
   render: DeleteUserById,
   args: {
-    users,
+    user: users[0]
   },
   decorators: [UsersLayout(users)]
 }
