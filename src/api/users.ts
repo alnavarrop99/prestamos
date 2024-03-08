@@ -1,9 +1,9 @@
 export type TUser = typeof import('@/__mock__/USERS.json')[0]
 
-type TGetUsersId = ( params: { userId: number } ) => Promise<TUser | undefined> 
+type TGetUsersId = ( params: { userId: number } ) => Promise<TUserResponse | undefined> 
 export const getUserId: TGetUsersId = async ( {userId} ) => {
     try {
-      const { default: list } = (await import('@/__mock__/USERS.json'))
+      const list = await getUsers() 
       return list?.find( ( { id } ) => id === userId  )
     } catch (error) {
       return undefined;

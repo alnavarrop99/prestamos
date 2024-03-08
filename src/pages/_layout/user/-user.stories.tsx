@@ -82,7 +82,7 @@ export const _UpdateUserById: StoryObj< React.ComponentProps< typeof UpdateUserB
   name: '/user/$userId/update',
   render: UpdateUserById,
   args: {
-    users,
+    user: users[0]
   },
   decorators: [UsersLayout(users)]
 }

@@ -1,7 +1,7 @@
 /* [&>*>*:last-child]:border-primary [&>*:last-child]:col-span-full */
 
 .custom-form {
-  & > :is(label, div) > *:last-child {
+  & :is(label, div) > *:last-child {
     border-color: var(--border);
   }
 
