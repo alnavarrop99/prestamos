@@ -1,6 +1,6 @@
 import { type TUserResponse, getUsers } from '@/api/users'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { createFileRoute } from '@tanstack/react-router'
+import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
 import { Avatar } from '@/components/ui/avatar';
 import { AvatarFallback } from '@radix-ui/react-avatar';
 import { Switch } from '@/components/ui/switch';
@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import {  MoreHorizontal, UserCog2, UserX2, Users } from 'lucide-react';
 import { useRootStatus } from '@/lib/context/layout';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 
 export const Route = createFileRoute('/_layout/user')({
   component: User,
@@ -20,9 +21,10 @@ export const Route = createFileRoute('/_layout/user')({
 })
 
 interface TUserProps {
+  open?: boolean
   users?: TUserResponse[]
 }
-export function User({ users: _users=[] as TUserResponse[] }: TUserProps) {
+export function User({children, open: _open=false, users: _users=[] as TUserResponse[] }: React.PropsWithChildren<TUserProps>) {
   const usersDB = (Route.useLoaderData()  ?? _users).map( (items) => ({...items, selected: false }))
   const [users, setUsers] = useState( usersDB )
   const { value } = useRootStatus()
@@ -53,7 +55,14 @@ export function User({ users: _users=[] as TUserResponse[] }: TUserProps) {
           <Badge className="px-3 text-xl">
             {usersDB.length}
           </Badge>
-          <Button className='ms-auto'>{text.button.create}</Button>
+          <Dialog open={_open}>
+            <DialogTrigger asChild className='ms-auto'>
+              <Link to={'./new'}>
+                <Button className='ms-auto'>{text.button.create}</Button>
+              </Link>
+            </DialogTrigger>
+            {children ?? <Outlet />}
+          </Dialog>
           <Button disabled={!users.some(({ selected }) => selected )} className={clsx({"bg-destructive": users.some(({ selected }) => selected )})}>{text.button.delete}</Button>
         </div>
       <div className='flex flex-wrap gap-4 [&>*]:flex-auto'>

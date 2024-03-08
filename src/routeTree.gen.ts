@@ -18,9 +18,13 @@ import { Route as LayoutIndexImport } from './pages/_layout/index'
 import { Route as LayoutUserImport } from './pages/_layout/user'
 import { Route as LayoutCreditImport } from './pages/_layout/credit'
 import { Route as LayoutClientImport } from './pages/_layout/client'
+import { Route as LayoutUserNewImport } from './pages/_layout/user/new'
+import { Route as LayoutUserDeleteImport } from './pages/_layout/user/delete'
 import { Route as LayoutUserUserIdImport } from './pages/_layout/user/$userId'
 import { Route as LayoutClientNewImport } from './pages/_layout/client/new'
 import { Route as LayoutClientDeleteImport } from './pages/_layout/client/delete'
+import { Route as LayoutUserUserIdUpdateImport } from './pages/_layout/user/$userId.update'
+import { Route as LayoutUserUserIdDeleteImport } from './pages/_layout/user/$userId.delete'
 import { Route as LayoutClientClientIdUpdateImport } from './pages/_layout/client/$clientId.update'
 import { Route as LayoutClientClientIdDeleteImport } from './pages/_layout/client/$clientId.delete'
 
@@ -61,6 +65,16 @@ const LayoutClientRoute = LayoutClientImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutUserNewRoute = LayoutUserNewImport.update({
+  path: '/new',
+  getParentRoute: () => LayoutUserRoute,
+} as any)
+
+const LayoutUserDeleteRoute = LayoutUserDeleteImport.update({
+  path: '/delete',
+  getParentRoute: () => LayoutUserRoute,
+} as any)
+
 const LayoutUserUserIdRoute = LayoutUserUserIdImport.update({
   path: '/$userId',
   getParentRoute: () => LayoutUserRoute,
@@ -74,6 +88,16 @@ const LayoutClientNewRoute = LayoutClientNewImport.update({
 const LayoutClientDeleteRoute = LayoutClientDeleteImport.update({
   path: '/delete',
   getParentRoute: () => LayoutClientRoute,
+} as any)
+
+const LayoutUserUserIdUpdateRoute = LayoutUserUserIdUpdateImport.update({
+  path: '/update',
+  getParentRoute: () => LayoutUserUserIdRoute,
+} as any)
+
+const LayoutUserUserIdDeleteRoute = LayoutUserUserIdDeleteImport.update({
+  path: '/delete',
+  getParentRoute: () => LayoutUserUserIdRoute,
 } as any)
 
 const LayoutClientClientIdUpdateRoute = LayoutClientClientIdUpdateImport.update(
@@ -134,6 +158,14 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutUserUserIdImport
       parentRoute: typeof LayoutUserImport
     }
+    '/_layout/user/delete': {
+      preLoaderRoute: typeof LayoutUserDeleteImport
+      parentRoute: typeof LayoutUserImport
+    }
+    '/_layout/user/new': {
+      preLoaderRoute: typeof LayoutUserNewImport
+      parentRoute: typeof LayoutUserImport
+    }
     '/_layout/client/$clientId/delete': {
       preLoaderRoute: typeof LayoutClientClientIdDeleteImport
       parentRoute: typeof LayoutClientImport
@@ -141,6 +173,14 @@ declare module '@tanstack/react-router' {
     '/_layout/client/$clientId/update': {
       preLoaderRoute: typeof LayoutClientClientIdUpdateImport
       parentRoute: typeof LayoutClientImport
+    }
+    '/_layout/user/$userId/delete': {
+      preLoaderRoute: typeof LayoutUserUserIdDeleteImport
+      parentRoute: typeof LayoutUserUserIdImport
+    }
+    '/_layout/user/$userId/update': {
+      preLoaderRoute: typeof LayoutUserUserIdUpdateImport
+      parentRoute: typeof LayoutUserUserIdImport
     }
   }
 }
@@ -157,7 +197,14 @@ export const routeTree = rootRoute.addChildren([
       LayoutClientClientIdUpdateRoute,
     ]),
     LayoutCreditRoute,
-    LayoutUserRoute.addChildren([LayoutUserUserIdRoute]),
+    LayoutUserRoute.addChildren([
+      LayoutUserUserIdRoute.addChildren([
+        LayoutUserUserIdDeleteRoute,
+        LayoutUserUserIdUpdateRoute,
+      ]),
+      LayoutUserDeleteRoute,
+      LayoutUserNewRoute,
+    ]),
     LayoutIndexRoute,
   ]),
   LoginRoute,
