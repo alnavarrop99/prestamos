@@ -124,7 +124,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
 }
 
 User.dispalyname = 'User'
-type TRole = "Administrador" | "Cliente" | "Usuario"
+export type TRole = "Administrador" | "Cliente" | "Usuario"
 
 const text = {
   title: 'Usuarios:',

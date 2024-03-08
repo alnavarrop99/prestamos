@@ -10,6 +10,7 @@ import { TUserResponse } from '@/api/users'
 import { DeleteUserById } from './$userId.delete'
 import { UpdateUserById } from './$userId.update'
 import { DeleteUsers } from './delete'
+import { Toaster } from '@/components/ui/toaster'
 const users = _users.map( ({ rol: { id: rolId }, ...items  }) => ({
         rol: roles.find( ( { id } ) => id === rolId  )?.name ?? "Usuario",
         active: false,
@@ -35,10 +36,19 @@ function Router(Story: StoryFn) {
   return $.customRenderStorie(() => <Story />)
 }
 
+function ToastProvider(Story: StoryFn) {
+  return (
+    <>
+      <Toaster />
+      <Story />
+    </>
+  )
+}
+
 const meta: Meta = {
   title: '@pages/users',
   component: Fragment,
-  decorators: [Layout, Router],
+  decorators: [Layout, Router, ToastProvider],
 }
 export default meta
 
