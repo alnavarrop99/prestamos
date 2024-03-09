@@ -20,6 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { getClientId, type TClient } from '@/api/clients'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateByClientId,
@@ -38,8 +39,9 @@ interface TUpdateByClient {
 export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByClient) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const clientDB = Route.useLoaderData() ?? _client
-  const [client, setForm] = useReducer(reducer, clientDB)
+  const client = Route.useLoaderData() ?? _client
+  const [clientItems, setForm] = useReducer(reducer, client)
+  const { open, setStatus } = useClientStatus()
 
   const { 
     nombres: firstName,
@@ -51,14 +53,14 @@ export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByC
     referencia: ref,
     celular: phone, 
     telefono: telephone,
-  } =  client
+  } =  clientItems
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onChange: React.ChangeEventHandler< HTMLFormElement > = (ev) => {
-    setForm({ ...client, [ev.target.name as keyof TClient]: ev.target.value })
+    setForm({ ...clientItems, [ev.target.name as keyof TClient]: ev.target.value })
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
@@ -75,6 +77,7 @@ export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByC
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
+    setStatus({ open: !open })
 
     const onClick = () => {
       clearTimeout(timer)

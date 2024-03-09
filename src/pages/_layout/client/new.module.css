@@ -2,7 +2,7 @@
 
 .custom-form {
   & > label > *:last-child {
-    border-color: black;
+    border-color: var(--border);
   }
 
   & > label:last-child {

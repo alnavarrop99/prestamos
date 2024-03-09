@@ -15,5 +15,5 @@ export function Credit() {
 Credit.dispalyname = 'Credit'
 
 const text = {
-  title: 'Creditos:',
+  title: 'Prestamos:',
 }

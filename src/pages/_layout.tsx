@@ -18,7 +18,7 @@ import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import React, { useEffect, useReducer, useState } from 'react'
+import { useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -205,14 +205,14 @@ export function Navigation({
           <div>
             <Label className="flex items-center justify-center rounded-lg border border-border">
               <Popover
-                open={search && !route?.at(0)?.pathname?.includes('/client')}
+                open={search && !!route?.at(0)?.pathname?.match(/^\/+$/g)}
                 onOpenChange={onSearchChange}
               >
                 <PopoverTrigger>
                   <Button
                     className={clsx('rounded-br-none rounded-tr-none p-2')}
                     variant={
-                      !search && !route?.at(0)?.pathname?.includes('/client')
+                      !search && route?.at(0)?.pathname?.match(/^\/+$/g)
                         ? 'ghost'
                         : 'default'
                     }
@@ -223,7 +223,7 @@ export function Navigation({
                         {
                           '!hidden':
                             search ||
-                            route?.at(0)?.pathname?.includes('/client'),
+                            !route?.at(0)?.pathname?.match(/^\/+$/g),
                         },
                         styles?.['search-badge-animation']
                       )}

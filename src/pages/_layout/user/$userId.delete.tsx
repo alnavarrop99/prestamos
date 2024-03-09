@@ -1,3 +1,4 @@
+import { createFileRoute } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
   DialogClose,
@@ -10,7 +11,6 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import styles from './new.module.css'
 import clsx from 'clsx'
@@ -18,22 +18,23 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { getClientId, TClient } from '@/api/clients'
 import { useClientStatus } from '@/lib/context/client'
+import { TUserResponse, getUserId } from '@/api/users'
 
-export const Route = createFileRoute('/_layout/client/$clientId/delete')({
-  component: DeleteByClientId,
-  loader: async ({ params: { clientId } }) => getClientId({ clientId: Number.parseInt(clientId) }),
+
+export const Route = createFileRoute('/_layout/user/$userId/delete')({
+  component: DeleteUserById,
+  loader: async ({ params: { userId } }) => getUserId({ userId: Number.parseInt(userId) }),
 })
 
-interface TDeleteByClient {
-  client?: TClient
+interface TDeleteByUser {
+  user?: TUserResponse
 }
-export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByClient) {
-  const form = useRef<HTMLFormElement>(null)
+export function DeleteUserById({ user: _user={} as TUserResponse }: TDeleteByUser) {
+    const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const client = Route.useLoaderData() ?? _client
-  const { nombres: firstName, apellidos: lastName } = client
+  const user = Route.useLoaderData() ?? _user
+  const { nombre } = user
   const { setStatus, open } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -41,15 +42,15 @@ export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByC
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    if(!client) return;
+    if(!user) return;
 
     const action =
-      ({ ...props }: TClient) =>
+      ({ ...props }: TUserResponse) =>
       () => {
         console.table(props)
       }
 
-    const timer = setTimeout(action(client), 6 * 1000)
+    const timer = setTimeout(action(user), 6 * 1000)
     setStatus({ open: !open, })
 
     const onClick = () => {
@@ -60,7 +61,7 @@ export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByC
       toast({
         title: text.notification.titile,
         description: text.notification.decription({
-          username: firstName + ' ' + lastName,
+          username: nombre,
         }),
         variant: 'default',
         action: (
@@ -87,7 +88,7 @@ export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByC
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ username: firstName + ' ' + lastName })}
+              {text.alert.description({ username: nombre })}
             </AlertDescription>
           </Alert>
         </DialogDescription>
@@ -154,27 +155,27 @@ export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByC
   )
 }
 
-DeleteByClientId.dispalyname = 'DeleteByClientId'
+DeleteUserById.dispalyname = 'DeleteUserById'
 
 const text = {
-  title: 'Eliminacion del cliente',
+  title: 'Eliminacion del usuario',
   alert: {
-    title: 'Se eiminara el cliente de la base de datos',
+    title: 'Se eiminara el usuario de la base de datos',
     description: ({ username }: { username: string }) =>
-      'Estas seguro de eliminar el cliente ' +
+      'Estas seguro de eliminar el usuario ' +
       username +
-      '?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el cliente.',
+      '?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el usuario.',
   },
   button: {
     close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina el cliente.',
+    delete: 'Si, elimina el usuario.',
     checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
   },
   notification: {
-    titile: 'Eliminacion del cliente',
+    titile: 'Eliminacion del usuario',
     decription: ({ username }: { username: string }) =>
-      'Se ha eliminado el cliente ' + username + ' con exito.',
-    error: 'Error: la eliminacion de los datos del cliente ha fallado',
+      'Se ha eliminado el usuario ' + username + ' con exito.',
+    error: 'Error: la eliminacion de los datos del usuario ha fallado',
     undo: 'Deshacer',
   },
 }

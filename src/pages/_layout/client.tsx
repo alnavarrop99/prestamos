@@ -23,8 +23,8 @@ import {
   ChevronDown,
   Copy,
   MoreHorizontal,
-  UserCog,
-  UserX,
+  UserCog2 as UserUpdate,
+  UserX2 as UserDelete,
 } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -39,7 +39,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
-import React, { ComponentRef, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useState } from 'react'
 import {
   Outlet,
   createFileRoute,
@@ -47,7 +47,7 @@ import {
   useNavigate,
   Navigate,
 } from '@tanstack/react-router'
-import { useClientSelected, useClientStatus } from '@/lib/context/client'
+import { useClientStatus } from '@/lib/context/client'
 import { useRootStatus } from '@/lib/context/layout'
 import {
   Select,
@@ -99,9 +99,9 @@ const columns: ColumnDef<TClient>[] = [
       )
     },
     cell: ({ row }) => (
-      <div className="copitalize">
+      <p className="copitalize">
         {row.original.nombres + ' ' + row.original.apellidos}
-      </div>
+      </p>
     ),
   },
   {
@@ -115,24 +115,24 @@ const columns: ColumnDef<TClient>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
     },
-    cell: ({ row }) => <div>
+    cell: ({ row }) => <p>
       {row.getValue('direccion' as keyof TClient) + ". " +
       row.original.segunda_direccion}
-    </div>,
+    </p>,
   },
   {
     accessorKey: 'celular' as keyof TClient,
     header: () => {
       return <p>{text.columns.phone}</p>
     },
-    cell: ({ row }) => <div className="lowercase w-32">{row.getValue('celular' as keyof TClient)}</div>,
+    cell: ({ row }) => <p className="lowercase w-32">{row.getValue('celular' as keyof TClient)}</p>
   },
   {
     accessorKey: 'telefono' as keyof TClient,
     header: () => {
       return <p>{text.columns.telephone}</p>
     },
-    cell: ({ row }) => <div className="lowercase w-32">{row.getValue('telefono' as keyof TClient)}</div>,
+    cell: ({ row }) => <p className="lowercase w-32">{row.getValue('telefono' as keyof TClient)}</p>
   },
   {
     accessorKey: 'numero_de_identificacion' as keyof TClient,
@@ -212,7 +212,7 @@ const columns: ColumnDef<TClient>[] = [
                 to={'./$clientId/update'}
                 params={{ clientId: id }}
               >
-                {text.menu.update} <UserCog />
+                {text.menu.update} <UserUpdate />
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onClick}>
@@ -221,7 +221,7 @@ const columns: ColumnDef<TClient>[] = [
                 to={'./$clientId/delete'}
                 params={{ clientId: id }}
               >
-                {text.menu.delete} <UserX />
+                {text.menu.delete} <UserDelete />
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>
@@ -235,6 +235,9 @@ interface TClientProps {
   clients?: TClient[],
   open?: boolean
 }
+
+export const _selectedClients = createContext<TClient[] | undefined>(undefined)
+
 export function Client({
   children,
   open: _open = false,
@@ -255,12 +258,10 @@ export function Client({
   }))
   const { value } = useRootStatus(({ value }) => ({ value }))
   const navigate = useNavigate({ from: '/client' })
-  const { clients: clientsSelected, setClient: setSelectdedClient } =
-    useClientSelected(({ clients, setClient }) => ({ clients, setClient }))
-  const clientsDB = Route.useLoaderData() ?? _clients
+  const clients = Route.useLoaderData() ?? _clients
 
   const table = useReactTable({
-    data: clientsDB,
+    data: clients,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -282,10 +283,6 @@ export function Client({
     table.getColumn(filter)?.setFilterValue(value)
   }, [value, filter])
 
-  useEffect(() => {
-    setSelectdedClient({ clients: table.getFilteredSelectedRowModel().rows as unknown as TClient[] })
-  }, [rowSelection])
-
   const onOpenChange: (open: boolean) => void = () => {
     if (open) {
       !children && navigate({ to: './' })
@@ -297,7 +294,7 @@ export function Client({
     setStatus({ filter: value as keyof TClient})
   }
 
-  const onClick: React.MouseEventHandler<ComponentRef<typeof Button>> = () => {
+  const onClick: React.MouseEventHandler<React.ComponentRef<typeof Button>> = () => {
     if (open) {
       !children && navigate({ to: './' })
     }
@@ -305,7 +302,7 @@ export function Client({
   }
 
   return (
-    <>
+    <_selectedClients.Provider value={table.getFilteredSelectedRowModel().rows as unknown as TClient[]}>
       {!children && <Navigate to={'/client'} />}
       <div>
         <div className="flex items-center gap-2">
@@ -315,7 +312,7 @@ export function Client({
           </Badge>
         </div>
 
-        <div className="w-full">
+        <div >
           <div className="flex items-center gap-2 py-4">
             <Dialog open={open} onOpenChange={onOpenChange}>
               <DialogTrigger asChild>
@@ -326,10 +323,10 @@ export function Client({
               {children ?? <Outlet />}
             </Dialog>
 
-            <Link disabled={!clientsSelected?.length} to={'./delete'}>
+            <Link disabled={!table.getFilteredSelectedRowModel().rows?.length} to={'./delete'}>
               <Button
-                className={clsx({ "hover:bg-destructive": clientsSelected?.length })}
-                disabled={!clientsSelected?.length} onClick={onClick}>
+                className={clsx({ "bg-destructive": table.getFilteredSelectedRowModel().rows?.length })}
+                disabled={!table.getFilteredSelectedRowModel().rows?.length} onClick={onClick}>
                   {text.buttons.delete}
               </Button>
             </Link>
@@ -413,10 +410,11 @@ export function Client({
             <Table className='overflow-auto'>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
+                  <TableRow key={headerGroup.id}
+                  >
                     {headerGroup.headers.map((header) => {
                       return (
-                        <TableHead key={header.id}>
+                        <TableHead key={header.id} className={ clsx( "first:sticky sticky last:sticky first:z-10 last:z-10 relative z-0") }>
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -437,7 +435,7 @@ export function Client({
                       data-state={row.getIsSelected() && 'selected'}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
+                        <TableCell key={cell.id} className={ clsx( "first:sticky last:sticky first:z-10 last:z-10 relative z-0") }>
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -487,7 +485,7 @@ export function Client({
           </div>
         </div>
       </div>
-    </>
+    </_selectedClients.Provider>
   )
 }
 
@@ -501,7 +499,7 @@ const text = {
       `${selected} de ${total} fila(s) seleccionadas.`,
   },
   columns: {
-    fullName: 'Nombre y Apellidos',
+    fullName: 'Nombre',
     firstName: 'Nombre',
     lastName: 'Apellidos',
     id: 'I.D.',

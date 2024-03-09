@@ -11,15 +11,16 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import styles from './new.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useClientSelected, useClientStatus } from '@/lib/context/client'
+import { useClientStatus } from '@/lib/context/client'
 import { type TClient } from "@/api/clients"
+import { _selectedClients } from "@/pages/_layout/client";
 
 export const Route = createFileRoute('/_layout/client/delete')({
   component: DeleteClient,
@@ -32,7 +33,7 @@ interface TDeleteClient {
 export function DeleteClient({ clients: _clients = [] as TClient[] }: TDeleteClient) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const { clients = _clients } = useClientSelected() 
+  const clients = useContext(_selectedClients) ?? _clients
   const { open, setStatus } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {

@@ -1,7 +1,5 @@
 import type { Meta, StoryFn, StoryObj } from '@storybook/react'
 import $ from '@/lib/render'
-import { User } from './user'
-import { Client } from './client'
 import { Credit } from './credit'
 import { Home } from './index'
 import { Navigation } from '../_layout.tsx'
@@ -29,11 +27,6 @@ export default meta
 export const _Home: StoryObj = {
   name: '/',
   render: Home,
-}
-
-export const _User: StoryObj = {
-  name: '/user',
-  render: User,
 }
 
 export const _Credit: StoryObj = {

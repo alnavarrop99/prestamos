@@ -14,6 +14,15 @@
   animation: 350ms badge;
 }
 
+.scale-users {
+  &:hover{
+    animation: 500ms users;
+    transform: scale(1.05);
+  }
+  animation: 300ms users-off;
+  transform: scale(1);
+}
+
 @keyframes menu {
   0% {
     transform: translateX(0);
@@ -52,5 +61,26 @@
   100% {
     transform: scale(100%);
     opacity: 1;
+  }
+}
+
+@keyframes users {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+@keyframes users-off {
+  0% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transform: scale(1);
   }
 }
