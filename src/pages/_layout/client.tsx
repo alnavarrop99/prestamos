@@ -99,9 +99,9 @@ const columns: ColumnDef<TClient>[] = [
       )
     },
     cell: ({ row }) => (
-      <div className="copitalize">
+      <p className="copitalize">
         {row.original.nombres + ' ' + row.original.apellidos}
-      </div>
+      </p>
     ),
   },
   {
@@ -115,24 +115,24 @@ const columns: ColumnDef<TClient>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
     },
-    cell: ({ row }) => <div>
+    cell: ({ row }) => <p>
       {row.getValue('direccion' as keyof TClient) + ". " +
       row.original.segunda_direccion}
-    </div>,
+    </p>,
   },
   {
     accessorKey: 'celular' as keyof TClient,
     header: () => {
       return <p>{text.columns.phone}</p>
     },
-    cell: ({ row }) => <div className="lowercase w-32">{row.getValue('celular' as keyof TClient)}</div>,
+    cell: ({ row }) => <p className="lowercase w-32">{row.getValue('celular' as keyof TClient)}</p>
   },
   {
     accessorKey: 'telefono' as keyof TClient,
     header: () => {
       return <p>{text.columns.telephone}</p>
     },
-    cell: ({ row }) => <div className="lowercase w-32">{row.getValue('telefono' as keyof TClient)}</div>,
+    cell: ({ row }) => <p className="lowercase w-32">{row.getValue('telefono' as keyof TClient)}</p>
   },
   {
     accessorKey: 'numero_de_identificacion' as keyof TClient,
@@ -312,7 +312,7 @@ export function Client({
           </Badge>
         </div>
 
-        <div className="w-full">
+        <div >
           <div className="flex items-center gap-2 py-4">
             <Dialog open={open} onOpenChange={onOpenChange}>
               <DialogTrigger asChild>
@@ -410,10 +410,11 @@ export function Client({
             <Table className='overflow-auto'>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
+                  <TableRow key={headerGroup.id}
+                  >
                     {headerGroup.headers.map((header) => {
                       return (
-                        <TableHead key={header.id}>
+                        <TableHead key={header.id} className={ clsx( "first:sticky sticky last:sticky first:z-10 last:z-10 relative z-0") }>
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -434,7 +435,7 @@ export function Client({
                       data-state={row.getIsSelected() && 'selected'}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
+                        <TableCell key={cell.id} className={ clsx( "first:sticky last:sticky first:z-10 last:z-10 relative z-0") }>
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -498,7 +499,7 @@ const text = {
       `${selected} de ${total} fila(s) seleccionadas.`,
   },
   columns: {
-    fullName: 'Nombre y Apellidos',
+    fullName: 'Nombre',
     firstName: 'Nombre',
     lastName: 'Apellidos',
     id: 'I.D.',
