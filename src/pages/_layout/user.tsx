@@ -119,7 +119,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
         </div>
       <div className='flex flex-wrap gap-4 [&>*]:flex-auto'>
       { users?.map( ({id, rol, nombre: name, clientes: clients, selected, active, menu }) =>
-          <Card key={id} className={clsx("group shadow-lg max-w-sm z-0 py-4 cursor-pointer", styles?.["scale-users"])} onClick={onClick({id})}>
+          <Card key={id} className={clsx("group shadow-lg max-w-sm py-4 cursor-pointer", styles?.["scale-users"])} onClick={onClick({id})}>
             <div className='gap-2 flex items-center justify-end px-4'>
             <DropdownMenu open={menu} onOpenChange={onCheckChanged({ id, prop: "menu" })}  >
               <DropdownMenuTrigger asChild onClick={onClickStop}>

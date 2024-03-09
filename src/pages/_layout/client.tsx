@@ -78,6 +78,7 @@ const columns: ColumnDef<TClient>[] = [
     ),
     cell: ({ row }) => (
       <Checkbox
+        className='mr-4'
         checked={row.getIsSelected()}
         onCheckedChange={(value) => row.toggleSelected(!!value)}
       />
@@ -99,7 +100,7 @@ const columns: ColumnDef<TClient>[] = [
       )
     },
     cell: ({ row }) => (
-      <p className="copitalize">
+      <p className="copitalize min-w-32">
         {row.original.nombres + ' ' + row.original.apellidos}
       </p>
     ),
@@ -115,7 +116,7 @@ const columns: ColumnDef<TClient>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
     },
-    cell: ({ row }) => <p>
+    cell: ({ row }) => <p className='min-w-32'>
       {row.getValue('direccion' as keyof TClient) + ". " +
       row.original.segunda_direccion}
     </p>,
@@ -155,9 +156,7 @@ const columns: ColumnDef<TClient>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
     },
-    cell: ({ row }) => <div>
-      <p>{row.getValue('referencia' as keyof TClient)}</p>
-    </div>,
+    cell: ({ row }) => <p className='w-32'>{row.getValue('referencia' as keyof TClient)}</p>
   },
   {
     id: 'actions',
@@ -406,7 +405,7 @@ export function Client({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="rounded-md border">
+          <div className="rounded-md border ">
             <Table className='overflow-auto'>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
@@ -414,7 +413,7 @@ export function Client({
                   >
                     {headerGroup.headers.map((header) => {
                       return (
-                        <TableHead key={header.id} className={ clsx( "first:sticky sticky last:sticky first:z-10 last:z-10 relative z-0") }>
+                        <TableHead key={header.id} className={clsx("first:sticky first:left-0 last:sticky last:right-0 first:bg-secondary last:bg-secondary")}>
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -435,7 +434,7 @@ export function Client({
                       data-state={row.getIsSelected() && 'selected'}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className={ clsx( "first:sticky last:sticky first:z-10 last:z-10 relative z-0") }>
+                        <TableCell key={cell.id} className={clsx("first:sticky first:left-0 last:sticky last:right-0 first:bg-secondary last:bg-secondary")}>
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -499,7 +498,7 @@ const text = {
       `${selected} de ${total} fila(s) seleccionadas.`,
   },
   columns: {
-    fullName: 'Nombre',
+    fullName: 'Nombre y apellidos',
     firstName: 'Nombre',
     lastName: 'Apellidos',
     id: 'I.D.',

@@ -189,8 +189,8 @@ export function Navigation({
           )}
         </div>
       </nav>
-      <header className="!my-0 [&_div]:flex [&_div]:items-center [&_div]:gap-4">
-        <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg ">
+      <header className="!my-0 [&_div]:flex [&_div]:items-center [&_div]:gap-4 sticky top-0 z-20">
+        <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg">
           <div className="[&>button]:px-2">
             <Button
               variant={!open ? 'default' : 'outline'}
@@ -324,7 +324,7 @@ export function Navigation({
           </div>
         </div>
       </header>
-      <main className="!px-10 py-8">{children ?? <Outlet />}</main>
+      <main className="!px-10 py-8 max-w-screen-lg">{children ?? <Outlet />}</main>
       <footer className="py-4">
         <Separator className="my-4" />
         <div className="flex justify-between">
