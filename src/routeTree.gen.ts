@@ -24,6 +24,7 @@ import { Route as LayoutClientNewImport } from './pages/_layout/client/new'
 import { Route as LayoutClientDeleteImport } from './pages/_layout/client/delete'
 import { Route as LayoutUserUserIdUpdateImport } from './pages/_layout/user/$userId.update'
 import { Route as LayoutUserUserIdDeleteImport } from './pages/_layout/user/$userId.delete'
+import { Route as LayoutCreditCreditIdUpdateImport } from './pages/_layout/credit/$creditId.update'
 import { Route as LayoutClientClientIdUpdateImport } from './pages/_layout/client/$clientId.update'
 import { Route as LayoutClientClientIdDeleteImport } from './pages/_layout/client/$clientId.delete'
 
@@ -94,18 +95,25 @@ const LayoutUserUserIdDeleteRoute = LayoutUserUserIdDeleteImport.update({
   getParentRoute: () => LayoutUserRoute,
 } as any)
 
+const LayoutCreditCreditIdUpdateRoute = LayoutCreditCreditIdUpdateImport.update(
+  {
+    path: '/$creditId/update',
+    getParentRoute: () => LayoutCreditRoute,
+  } as any
+)
+
 const LayoutClientClientIdUpdateRoute = LayoutClientClientIdUpdateImport.update(
   {
     path: '/$clientId/update',
     getParentRoute: () => LayoutClientRoute,
-  } as any,
+  } as any
 )
 
 const LayoutClientClientIdDeleteRoute = LayoutClientClientIdDeleteImport.update(
   {
     path: '/$clientId/delete',
     getParentRoute: () => LayoutClientRoute,
-  } as any,
+  } as any
 )
 
 // Populate the FileRoutesByPath interface
@@ -164,6 +172,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutClientClientIdUpdateImport
       parentRoute: typeof LayoutClientImport
     }
+    '/_layout/credit/$creditId/update': {
+      preLoaderRoute: typeof LayoutCreditCreditIdUpdateImport
+      parentRoute: typeof LayoutCreditImport
+    }
     '/_layout/user/$userId/delete': {
       preLoaderRoute: typeof LayoutUserUserIdDeleteImport
       parentRoute: typeof LayoutUserImport
@@ -186,7 +198,7 @@ export const routeTree = rootRoute.addChildren([
       LayoutClientClientIdDeleteRoute,
       LayoutClientClientIdUpdateRoute,
     ]),
-    LayoutCreditRoute,
+    LayoutCreditRoute.addChildren([LayoutCreditCreditIdUpdateRoute]),
     LayoutUserRoute.addChildren([
       LayoutUserDeleteRoute,
       LayoutUserNewRoute,
