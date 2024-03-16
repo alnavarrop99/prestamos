@@ -8,32 +8,36 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
-import styles from './new.module.css'
+import styles from '@/styles/global.module.css'
 import { ComponentRef, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { TUserResponse, getUserId } from '@/api/users'
+import { type TUser, getUserIdRes } from '@/api/users'
 import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
   component: UpdateUserById,
-  loader: async ({ params: { userId } }) => getUserId({ userId: Number.parseInt(userId) }) 
+  loader: getUserIdRes
 })
 
-type TPassoword = {
+/* eslint-disable-next-line */
+interface TPassowordState {
   password?: boolean
   confirmation?: boolean
 }
 
+/* eslint-disable-next-line */
 interface TUpdateUserById {
-  user?: TUserResponse
+  user?: TUser
 }
-export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUserById) {
-  const [ passItems, setPassword ] = useState<TPassoword>({  })
+
+/* eslint-disable-next-line */
+export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
+  const [ passItems, setPassword ] = useState<TPassowordState>({  })
   const form = useRef<HTMLFormElement>(null)
   const { rol, nombre } = Route.useLoaderData() ?? _user
   const { open, setStatus } = useClientStatus()
 
-  const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
+  const onClick: ( {prop}:{ prop: keyof TPassowordState } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
   }
 

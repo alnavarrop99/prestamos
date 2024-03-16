@@ -1,53 +1,25 @@
+import { default as _credits } from '@/__mock__/CREDITS.json'
 import payments from '@/__mock__/PAYMENTS.json'
 import installmants from '@/__mock__/INSTALLMANTS.json'
+import { getId, gets } from './base'
 
-import type { TPayment } from '@/api/payment'
-import type { TInstallmants } from '@/api/installmants'
+const credits = _credits.map(({ pagos, cuotas, ...items }) => ({
+    ...items,
+    pagos: pagos.map(({ id }) =>
+      payments.find(({ id: paymentId }) => id === paymentId)
+    ),
+    cuotas: cuotas.map(({ id }) =>
+      installmants.find(({ id: installmantId }) => id === installmantId)
+    ),
+}))
 
-export type TCredit = (typeof import('@/__mock__/CREDITS.json'))[0]
+export type TCredit = typeof credits[0]
+type TGetCreditId = ( params: { creditId: number } ) => TCredit
+type TGetCredits = () => TCredit[] 
+type TGetCreditIdRes = ({params}: { params: { creditId: string } }) => Promise<TCredit>
+type TGetCreditsRes = () => Promise<TCredit[]>
 
-type TGetCreditId = (params: {
-  creditId: number
-}) => Promise<TCredit | undefined>
-export const getCreditId: TGetCreditId = async ({ creditId }) => {
-  try {
-    const list = await getCredits()
-    return list?.find(({ id }) => id === creditId)
-  } catch (error) {
-    return undefined
-  }
-}
-
-export interface TCreditRes {
-  comentario: string
-  id: number
-  fecha_de_aprobacion: string
-  numero_de_cuotas: number
-  cantidad: number
-  estado: boolean
-  dias_adicionales: number
-  created_at: string
-  porcentaje: number
-  frecuencia_del_credito: {
-    nombre: string
-  }
-  cuotas: TInstallmants[]
-  pagos: TPayment[]
-}
-type TGetCredits = () => Promise<TCreditRes[] | undefined>
-export const getCredits: TGetCredits = async () => {
-  try {
-    const { default: list } = await import('@/__mock__/CREDITS.json')
-    return list.map(({ pagos, cuotas, ...props }) => ({
-      ...props,
-      pagos: pagos.map(({ id }) =>
-        payments.find(({ id: paymentId }) => id === paymentId)
-      ) as TPayment[],
-      cuotas: cuotas.map(({ id }) =>
-        installmants.find(({ id: installmantId }) => id === installmantId)
-      ) as TInstallmants[],
-    }))
-  } catch (error) {
-    return undefined
-  }
-}
+export const getCreditId: TGetCreditId = ( {creditId } ) => getId( credits, { id: creditId } )
+export const getCredits: TGetCredits = () => gets( credits )
+export const getCreditIdRes: TGetCreditIdRes = async ({ params: { creditId} }) => getCreditId({ creditId: Number.parseInt(creditId) })
+export const getCreditsRes: TGetCreditsRes =  async () => getCredits()

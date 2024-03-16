@@ -1,11 +1,5 @@
 import { Button } from '@/components/ui/button'
-import {
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -13,19 +7,18 @@ import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
 import { useReducer, useRef, useState } from 'react'
-import styles from './new.module.css'
+import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { getClientId, type TClient } from '@/api/clients'
+import { getClientIdRes, type TClient } from '@/api/clients'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
-  component: UpdateByClientId,
-  loader: async ({ params: { clientId } }) =>
-    getClientId({clientId: Number.parseInt(clientId)})
+  component: UpdateClientById,
+  loader: getClientIdRes
 })
 
 const reducer: React.Reducer<TClient, TClient> = (prev, state) => ({
@@ -33,10 +26,13 @@ const reducer: React.Reducer<TClient, TClient> = (prev, state) => ({
   ...state,
 })
 
-interface TUpdateByClient {
+/* eslint-disable-next-line */
+interface TUpdateClientByIdProps {
   client?: TClient
 }
-export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByClient) {
+
+/* eslint-disable-next-line */
+export function UpdateClientById({ client: _client = {} as TClient }: TUpdateClientByIdProps) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const client = Route.useLoaderData() ?? _client
@@ -271,7 +267,7 @@ export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByC
   )
 }
 
-UpdateByClientId.dispalyname = 'UpdateByClientId'
+UpdateClientById.dispalyname = 'UpdateClientById'
 
 const text = {
   title: ({ state }: { state: boolean }) =>

@@ -23,6 +23,36 @@
   transform: scale(1);
 }
 
+.custom-form {
+  & > label > :is(input, textarea) {
+    border-color: var(--border);
+  }
+
+  & > label:last-child {
+    grid-column: 1 / -1;
+  }
+
+  & *:has(*:required) > span::after {
+    content: '*';
+    color: theme(colors.red.500);
+  }
+}
+
+.custom-form-off {
+  & > label > *:last-child {
+    border-color: inherit;
+  }
+
+  & span:has(+ input:required)::after {
+    content: none;
+  }
+
+  & :is(input:disabled) {
+    opacity: 1;
+    cursor: text;
+  }
+}
+
 @keyframes menu {
   0% {
     transform: translateX(0);

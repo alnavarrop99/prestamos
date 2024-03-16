@@ -1,26 +1,14 @@
-export type TInstallmants = (typeof import('@/__mock__/INSTALLMANTS.json'))[0]
+import installmants from "@/__mock__/INSTALLMANTS.json"
+import { gets, getId } from "@/api/base"
 
-type TGetInstallmantsId = (params: {
-  installmantId: number
-}) => Promise<TInstallmants | undefined>
-export const getInstallmantId: TGetInstallmantsId = async ({
-  installmantId,
-}) => {
-  try {
-    const { default: list } = await import('@/__mock__/INSTALLMANTS.json')
+export type TInstallmant = typeof installmants[0]
+type TGetInstallmantId = (params: { installmantId: number }) => TInstallmant
+type TGetInstallmants = () => TInstallmant[]
+type TGetInstallmantIdRes = ({params}:{params: { installmantId: string }}) => Promise<TInstallmant>
+type TGetInstallmantsRes = () => Promise<TInstallmant[]>
 
-    return list?.find(({ id }) => id === installmantId)
-  } catch (error) {
-    return undefined
-  }
-}
+export const getInstallmantId: TGetInstallmantId = ({ installmantId, }) => getId( installmants, { id: installmantId } )
+export const getInstallmants: TGetInstallmants = () => gets(installmants)
+export const getInstallmantIdRes: TGetInstallmantIdRes = async ({params: { installmantId }}) => getInstallmantId({ installmantId: Number.parseInt(installmantId) })
+export const getInstallmantsRes: TGetInstallmantsRes = async () => getInstallmants()
 
-type TGetInstallmants = () => Promise<TInstallmants[] | undefined>
-export const getInstallmants: TGetInstallmants = async () => {
-  try {
-    const { default: list } = await import('@/__mock__/INSTALLMANTS.json')
-    return list
-  } catch (error) {
-    return undefined
-  }
-}

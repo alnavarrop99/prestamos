@@ -1,67 +1,60 @@
-import { createFileRoute } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
-import {
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
+import { createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
-import styles from './new.module.css'
+import styles from "@/styles/global.module.css"
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useClientStatus } from '@/lib/context/client'
-import { TUserResponse, getUserId } from '@/api/users'
+import { _selectedClients } from "@/pages/_layout/client";
+import { getCreditIdRes, type TCredit } from "@/api/credit";
 
-
-export const Route = createFileRoute('/_layout/user/$userId/delete')({
-  component: DeleteUserById,
-  loader: async ({ params: { userId } }) => getUserId({ userId: Number.parseInt(userId) }),
+export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
+  component: DeleteCreditById,
+  loader: getCreditIdRes
 })
 
-interface TDeleteByUser {
-  user?: TUserResponse
+/* eslint-disable-next-line */
+interface TDeleteCreditByIdProps {
+  credit?: TCredit
 }
-export function DeleteUserById({ user: _user={} as TUserResponse }: TDeleteByUser) {
-    const form = useRef<HTMLFormElement>(null)
+
+/* eslint-disable-next-line */
+export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCreditByIdProps) {
+  const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const user = Route.useLoaderData() ?? _user
-  const { nombre } = user
-  const { setStatus, open } = useClientStatus()
+  const credit: TCredit = Route.useLoaderData() ?? _credit
+  const { open, setStatus } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    if(!user) return;
+    const action = (credit?: TCredit) => () => {
+      console.table(credit)
+    }
 
-    const action =
-      ({ ...props }: TUserResponse) =>
-      () => {
-        console.table(props)
-      }
-
-    const timer = setTimeout(action(user), 6 * 1000)
-    setStatus({ open: !open, })
+    const timer = setTimeout(action(credit), 6 * 1000)
+    setStatus({open: !open})
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if (true) {
+    if ( true) {
       toast({
         title: text.notification.titile,
         description: text.notification.decription({
-          username: nombre,
+          // TODO
+          username: "Armando Navarro",
         }),
         variant: 'default',
         action: (
@@ -77,9 +70,8 @@ export function DeleteUserById({ user: _user={} as TUserResponse }: TDeleteByUse
     ev.preventDefault()
   }
 
-
   return (
-    <DialogContent className="max-w-xl">
+    <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
         <Separator />
@@ -88,7 +80,10 @@ export function DeleteUserById({ user: _user={} as TUserResponse }: TDeleteByUse
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ username: nombre })}
+              {text.alert.description({ 
+                // TODO
+                username: "Armando Navarro" 
+              })}
             </AlertDescription>
           </Alert>
         </DialogDescription>
@@ -132,7 +127,7 @@ export function DeleteUserById({ user: _user={} as TUserResponse }: TDeleteByUse
           )}
         >
           <Button
-            className={clsx({'hover:bg-destructive': checked})}
+            className={clsx({ "hover:bg-destructive": checked })}
             variant="default"
             form="new-client-form"
             type="submit"
@@ -155,27 +150,25 @@ export function DeleteUserById({ user: _user={} as TUserResponse }: TDeleteByUse
   )
 }
 
-DeleteUserById.dispalyname = 'DeleteUserById'
+DeleteCreditById.dispalyname = 'DeleteCreditById'
 
 const text = {
-  title: 'Eliminacion del usuario',
+  title: 'Eliminacion de un prestamo',
   alert: {
-    title: 'Se eiminara el usuario de la base de datos',
+    title: 'Se eiminara un prestamo de la base de datos',
     description: ({ username }: { username: string }) =>
-      'Estas seguro de eliminar el usuario ' +
-      username +
-      '?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el usuario.',
+      'Estas seguro de eliminar credito del cliente ' + username + ' de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el credito.',
   },
   button: {
     close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina el usuario.',
+    delete: 'Si, elimina el credito.',
     checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
   },
   notification: {
-    titile: 'Eliminacion del usuario',
-    decription: ({ username }: { username: string }) =>
-      'Se ha eliminado el usuario ' + username + ' con exito.',
-    error: 'Error: la eliminacion de los datos del usuario ha fallado',
+    titile: 'Eliminacion de un credito',
+    decription: ({ username }: { username?: string }) =>
+      'Se ha eliminado credito del cliente ' + username + ' con exito.',
+    error: 'Error: la eliminacion del credito ha fallado',
     undo: 'Deshacer',
   },
 }

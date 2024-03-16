@@ -1,4 +1,4 @@
-import { type TUserResponse, getUsers } from '@/api/users'
+import { type TUser, getUsersRes } from '@/api/users'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Link, Navigate, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Avatar } from '@/components/ui/avatar';
@@ -17,26 +17,33 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useClientStatus } from '@/lib/context/client';
 
 export const Route = createFileRoute('/_layout/user')({
-  component: User,
-  loader: getUsers,
+  component: Users,
+  loader: getUsersRes,
 })
 
-interface TUserProps {
+/* eslint-disable-next-line */
+interface TUsersProps {
   open?: boolean
-  users?: TUserResponse[]
+  users?: TUser[]
 }
 
-interface TUser extends TUserResponse {
-    selected: boolean;
-    menu: boolean;
-    active: boolean;
+/* eslint-disable-next-line */
+interface TUsersState extends TUser {
+  selected: boolean;
+  menu: boolean;
+  active: boolean;
 }
 
-export const _selectUsers = createContext<TUser[] | undefined>(undefined)
+/* eslint-disable-next-line */
+export type TRole = "Administrador" | "Cliente" | "Usuario"
 
-export function User({children, open: _open=false, users: _users=[] as TUserResponse[] }: React.PropsWithChildren<TUserProps>) {
-  const usersDB = (Route.useLoaderData()  ?? _users).map<TUser>( (items) => ({...items, selected: false, menu: false }))
-  const [users, setUsers] = useState<TUser[]>( usersDB )
+export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
+
+/* eslint-disable-next-line */
+export function Users({children, open: _open=false, users: _users=[] as TUser[] }: React.PropsWithChildren<TUsersProps>) {
+  const _usersDB = (Route.useLoaderData()  ?? _users)
+  const usersDB = _usersDB.map<TUsersState>( (items) => ({...items, selected: false, menu: false }))
+  const [users, setUsers] = useState<TUsersState[]>( usersDB )
   const navigate = useNavigate()
   const { value } = useRootStatus()
   const { open=_open, setStatus } = useClientStatus()
@@ -188,8 +195,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
   )
 }
 
-User.dispalyname = 'User'
-export type TRole = "Administrador" | "Cliente" | "Usuario"
+Users.dispalyname = 'UsersList'
 
 const text = {
   title: 'Usuarios:',

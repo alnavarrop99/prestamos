@@ -1,31 +1,21 @@
-export type TUser = typeof import('@/__mock__/USERS.json')[0]
+import roles from "@/__mock__/ROLES.json"
+import { default as _users } from "@/__mock__/USERS.json"
+import { getId, gets } from "./base"
 
-type TGetUsersId = ( params: { userId: number } ) => Promise<TUserResponse | undefined> 
-export const getUserId: TGetUsersId = async ( {userId} ) => {
-    try {
-      const list = await getUsers() 
-      return list?.find( ( { id } ) => id === userId  )
-    } catch (error) {
-      return undefined;
-    }
-  }
+const users = _users.map( ({ rol: { id: rolId }, ...items  }) => ({
+  rol: roles.find( ( { id } ) => id === rolId  )?.name ?? "Usuario",
+  active: false,
+  ...items
+}) )
 
-export interface TUserResponse extends Omit< TUser, "rol" > {
-  active: boolean,
-  rol: string,
-}
-type TGetUsers = () => Promise<TUserResponse[] | undefined>
-export const getUsers: TGetUsers = async () => {
-    try {
-      const { default: list } = (await import('@/__mock__/USERS.json'))
-      const { default: roles } = (await import('@/__mock__/ROLES.json'))
-      return list.map( ({ rol: { id: rolId }, ...items  }) => ({
-        rol: roles.find( ( { id } ) => id === rolId  )?.name ?? "Usuario",
-        active: false,
-        ...items
-    }) ) 
-    } catch (error) {
-      return undefined;
-    }
-  }
+export type TUser = typeof users[0]
+type TGetUserId = (params: { userId: number }) => TUser
+type TGetUsers = () => TUser[]
+type TGetUserIdRes = ({params}:{ params: { userId: string }}) => Promise<TUser>
+type TGetUsersRes = () => Promise<TUser[]>
+
+export const getUserId: TGetUserId = ({ userId }) => getId( users, { id: userId } )
+export const getUsers: TGetUsers = () => gets( users )
+export const getUserIdRes: TGetUserIdRes = async ({ params: { userId }}) => getUserId({ userId: Number.parseInt(userId) })
+export const getUsersRes: TGetUsersRes = async () => getUsers()
 

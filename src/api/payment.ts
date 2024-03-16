@@ -1,24 +1,14 @@
-export type TPayment = (typeof import('@/__mock__/PAYMENTS.json'))[0]
+import payments from "@/__mock__/PAYMENTS.json"
+import { getId, gets } from "./base"
 
-type TGetPaymentId = (params: {
-  paymentId: number
-}) => Promise<TPayment | undefined>
-export const getPaymentId: TGetPaymentId = async ({ paymentId }) => {
-  try {
-    const { default: list } = await import('@/__mock__/PAYMENTS.json')
+export type TPayment = typeof payments[0]
+type TGetPaymentId = (params: { paymentId: number }) => TPayment
+type TGetPayments = () => TPayment[]
+type TGetPaymentIdRes = ({ params }: { params: { paymentId: string } }) => Promise<TPayment>
+type TGetPaymentsRes = () => Promise<TPayment[]>
 
-    return list?.find(({ id }) => id === paymentId)
-  } catch (error) {
-    return undefined
-  }
-}
+export const getPaymentId: TGetPaymentId = ({ paymentId, }) => getId( payments, { id: paymentId } )
+export const getPayments: TGetPayments = () => gets( payments )
+export const getPaymentIdRes: TGetPaymentIdRes = async ({ params: { paymentId, } }) => getPaymentId({ paymentId: Number.parseInt(paymentId) })
+export const getPaymentsRes: TGetPaymentsRes = async () => getPayments()
 
-type TGetPayments = () => Promise<TPayment[] | undefined>
-export const getPayments: TGetPayments = async () => {
-  try {
-    const { default: list } = await import('@/__mock__/PAYMENTS.json')
-    return list
-  } catch (error) {
-    return undefined
-  }
-}

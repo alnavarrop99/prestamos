@@ -4,6 +4,10 @@ export const Route = createFileRoute('/_layout/')({
   component: Home,
 })
 
+/* eslint-disable-next-line */
+interface THomeProps {}
+
+/* eslint-disable-next-line */
 export function Home() {
   return (
     <div>

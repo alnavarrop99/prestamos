@@ -1,35 +1,29 @@
 import type { Meta, StoryFn, StoryObj } from '@storybook/react'
 import $ from '@/lib/render'
-import { Credit } from './credit'
-import { Home } from './index'
-import { Navigation } from '../_layout.tsx'
+import { Home } from '@/pages/_layout/index'
+import { Layout } from '@/pages/_layout'
 import { Fragment } from 'react'
 
-function Layout(Story: StoryFn) {
+function _Layout(Story: StoryFn) {
   return (
-    <Navigation>
+    <Layout>
       <Story />
-    </Navigation>
+    </Layout>
   )
 }
 
-function Router(Story: StoryFn) {
+function _Router(Story: StoryFn) {
   return $.customRenderStorie(() => <Story />)
 }
 
 const meta: Meta = {
   title: '@pages/nav',
   component: Fragment,
-  decorators: [Layout, Router],
+  decorators: [_Layout, _Router],
 }
 export default meta
 
 export const _Home: StoryObj = {
   name: '/',
   render: Home,
-}
-
-export const _Credit: StoryObj = {
-  name: '/credit',
-  render: Credit,
 }

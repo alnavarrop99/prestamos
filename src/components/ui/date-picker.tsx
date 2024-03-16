@@ -8,17 +8,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { useState } from 'react'
+import { ComponentProps, forwardRef, useState } from 'react'
 import { addDays, format } from 'date-fns'
 import { DateRange } from 'react-day-picker'
 
-type TDatePicker = {
-  label: string
-  range: boolean
+interface TDatePicker extends ComponentProps< typeof Button > {
+  label?: string
+  range?: boolean
+  date?: Date
 }
 
-export function DatePicker({ label, range }: TDatePicker) {
-  const [date, setDate] = useState<Date>()
+export const DatePicker = forwardRef<HTMLButtonElement, TDatePicker>(function({ label, range, date: _date, ...props }, ref) {
+  const [date, setDate] = useState<Date | undefined>(_date)
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(2022, 0, 20),
     to: addDays(new Date(2022, 0, 20), 20),
@@ -30,11 +31,13 @@ export function DatePicker({ label, range }: TDatePicker) {
         <Popover>
           <PopoverTrigger asChild>
             <Button
-              id="date"
               variant={'outline'}
+              { ...props }
+              ref={ref}
+              id="date"
               className={cn(
-                'w-[300px] justify-start text-left font-normal',
-                !dateRange && 'text-muted-foreground'
+                'w-full justify-start text-left font-normal',
+                !dateRange && 'text-muted-foreground', props.className
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4" />
@@ -72,9 +75,11 @@ export function DatePicker({ label, range }: TDatePicker) {
       <PopoverTrigger asChild>
         <Button
           variant={'outline'}
+          { ...props }
+          ref={ref}
           className={cn(
-            'w-[280px] justify-start text-left font-normal',
-            !date && 'text-muted-foreground'
+            'w-full justify-start text-left font-normal',
+            !date && 'text-muted-foreground', props.className
           )}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
@@ -91,4 +96,4 @@ export function DatePicker({ label, range }: TDatePicker) {
       </PopoverContent>
     </Popover>
   )
-}
+})

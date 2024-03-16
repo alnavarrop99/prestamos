@@ -20,13 +20,18 @@ import { Route as LayoutCreditImport } from './pages/_layout/credit'
 import { Route as LayoutClientImport } from './pages/_layout/client'
 import { Route as LayoutUserNewImport } from './pages/_layout/user/new'
 import { Route as LayoutUserDeleteImport } from './pages/_layout/user/delete'
+import { Route as LayoutCreditCreditIdImport } from './pages/_layout/credit_/$creditId'
+import { Route as LayoutCreditNewImport } from './pages/_layout/credit/new'
 import { Route as LayoutClientNewImport } from './pages/_layout/client/new'
 import { Route as LayoutClientDeleteImport } from './pages/_layout/client/delete'
-import { Route as LayoutUserUserIdUpdateImport } from './pages/_layout/user/$userId.update'
-import { Route as LayoutUserUserIdDeleteImport } from './pages/_layout/user/$userId.delete'
-import { Route as LayoutCreditCreditIdUpdateImport } from './pages/_layout/credit/$creditId.update'
-import { Route as LayoutClientClientIdUpdateImport } from './pages/_layout/client/$clientId.update'
-import { Route as LayoutClientClientIdDeleteImport } from './pages/_layout/client/$clientId.delete'
+import { Route as LayoutUserUserIdUpdateImport } from './pages/_layout/user/$userId/update'
+import { Route as LayoutUserUserIdDeleteImport } from './pages/_layout/user/$userId/delete'
+import { Route as LayoutCreditCreditIdUpdateImport } from './pages/_layout/credit_/$creditId/update'
+import { Route as LayoutCreditCreditIdDeleteImport } from './pages/_layout/credit_/$creditId/delete'
+import { Route as LayoutCreditCreditIdPrintImport } from './pages/_layout/credit/$creditId/print'
+import { Route as LayoutCreditCreditIdPayImport } from './pages/_layout/credit/$creditId/pay'
+import { Route as LayoutClientClientIdUpdateImport } from './pages/_layout/client/$clientId/update'
+import { Route as LayoutClientClientIdDeleteImport } from './pages/_layout/client/$clientId/delete'
 
 // Create/Update Routes
 
@@ -75,6 +80,16 @@ const LayoutUserDeleteRoute = LayoutUserDeleteImport.update({
   getParentRoute: () => LayoutUserRoute,
 } as any)
 
+const LayoutCreditCreditIdRoute = LayoutCreditCreditIdImport.update({
+  path: '/credit/$creditId',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutCreditNewRoute = LayoutCreditNewImport.update({
+  path: '/new',
+  getParentRoute: () => LayoutCreditRoute,
+} as any)
+
 const LayoutClientNewRoute = LayoutClientNewImport.update({
   path: '/new',
   getParentRoute: () => LayoutClientRoute,
@@ -97,10 +112,27 @@ const LayoutUserUserIdDeleteRoute = LayoutUserUserIdDeleteImport.update({
 
 const LayoutCreditCreditIdUpdateRoute = LayoutCreditCreditIdUpdateImport.update(
   {
-    path: '/$creditId/update',
-    getParentRoute: () => LayoutCreditRoute,
+    path: '/update',
+    getParentRoute: () => LayoutCreditCreditIdRoute,
   } as any
 )
+
+const LayoutCreditCreditIdDeleteRoute = LayoutCreditCreditIdDeleteImport.update(
+  {
+    path: '/delete',
+    getParentRoute: () => LayoutCreditCreditIdRoute,
+  } as any
+)
+
+const LayoutCreditCreditIdPrintRoute = LayoutCreditCreditIdPrintImport.update({
+  path: '/$creditId/print',
+  getParentRoute: () => LayoutCreditRoute,
+} as any)
+
+const LayoutCreditCreditIdPayRoute = LayoutCreditCreditIdPayImport.update({
+  path: '/$creditId/pay',
+  getParentRoute: () => LayoutCreditRoute,
+} as any)
 
 const LayoutClientClientIdUpdateRoute = LayoutClientClientIdUpdateImport.update(
   {
@@ -156,6 +188,14 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutClientNewImport
       parentRoute: typeof LayoutClientImport
     }
+    '/_layout/credit/new': {
+      preLoaderRoute: typeof LayoutCreditNewImport
+      parentRoute: typeof LayoutCreditImport
+    }
+    '/_layout/credit/$creditId': {
+      preLoaderRoute: typeof LayoutCreditCreditIdImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/user/delete': {
       preLoaderRoute: typeof LayoutUserDeleteImport
       parentRoute: typeof LayoutUserImport
@@ -172,9 +212,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutClientClientIdUpdateImport
       parentRoute: typeof LayoutClientImport
     }
+    '/_layout/credit/$creditId/pay': {
+      preLoaderRoute: typeof LayoutCreditCreditIdPayImport
+      parentRoute: typeof LayoutCreditImport
+    }
+    '/_layout/credit/$creditId/print': {
+      preLoaderRoute: typeof LayoutCreditCreditIdPrintImport
+      parentRoute: typeof LayoutCreditImport
+    }
+    '/_layout/credit/$creditId/delete': {
+      preLoaderRoute: typeof LayoutCreditCreditIdDeleteImport
+      parentRoute: typeof LayoutCreditCreditIdImport
+    }
     '/_layout/credit/$creditId/update': {
       preLoaderRoute: typeof LayoutCreditCreditIdUpdateImport
-      parentRoute: typeof LayoutCreditImport
+      parentRoute: typeof LayoutCreditCreditIdImport
     }
     '/_layout/user/$userId/delete': {
       preLoaderRoute: typeof LayoutUserUserIdDeleteImport
@@ -198,7 +250,11 @@ export const routeTree = rootRoute.addChildren([
       LayoutClientClientIdDeleteRoute,
       LayoutClientClientIdUpdateRoute,
     ]),
-    LayoutCreditRoute.addChildren([LayoutCreditCreditIdUpdateRoute]),
+    LayoutCreditRoute.addChildren([
+      LayoutCreditNewRoute,
+      LayoutCreditCreditIdPayRoute,
+      LayoutCreditCreditIdPrintRoute,
+    ]),
     LayoutUserRoute.addChildren([
       LayoutUserDeleteRoute,
       LayoutUserNewRoute,
@@ -206,6 +262,10 @@ export const routeTree = rootRoute.addChildren([
       LayoutUserUserIdUpdateRoute,
     ]),
     LayoutIndexRoute,
+    LayoutCreditCreditIdRoute.addChildren([
+      LayoutCreditCreditIdDeleteRoute,
+      LayoutCreditCreditIdUpdateRoute,
+    ]),
   ]),
   LoginRoute,
 ])

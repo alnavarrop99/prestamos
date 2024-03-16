@@ -1,11 +1,4 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@radix-ui/react-label'
 import { createFileRoute } from '@tanstack/react-router'
@@ -19,11 +12,23 @@ export const Route = createFileRoute('/login')({
   component: Login,
 })
 
-type TStatus = { readonly password?: boolean; readonly error?: boolean }
+/* eslint-disable-next-line */
+interface TStatus {
+  password?: boolean; 
+  error?: boolean
+}
+
+/* eslint-disable-next-line */
+interface TLoginProps { }
+
+/* eslint-disable-next-line */
+type LoginForm = 'password' | 'username' | 'remember'
+
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
 
+/* eslint-disable-next-line */
 export function Login() {
   const ref = useRef<HTMLFormElement>(null)
   const [{ error, password }, setStatus] = useReducer(reducer, {
@@ -119,8 +124,6 @@ export function Login() {
   )
 }
 Login.dispalyname = 'Login'
-
-type LoginForm = 'password' | 'username' | 'remember'
 
 const text = {
   title: 'Inicio de sesion:',

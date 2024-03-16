@@ -13,7 +13,7 @@ import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
-import styles from './new.module.css'
+import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { type TClient } from "@/api/clients";
@@ -23,6 +23,7 @@ export const Route = createFileRoute('/_layout/client/new')({
   component: NewClient,
 })
 
+/* eslint-disable-next-line */
 export function NewClient() {
   const form = useRef<HTMLFormElement>(null)
 

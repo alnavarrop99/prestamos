@@ -1,11 +1,11 @@
-import { Button } from '@/components/ui/button' 
-import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { createFileRoute } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
+import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
-import { useContext, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -13,47 +13,51 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useClientStatus } from '@/lib/context/client'
-import { type TClient } from "@/api/clients"
-import { _selectedClients } from "@/pages/_layout/client";
+import { TUser, getUserIdRes } from '@/api/users'
 
-export const Route = createFileRoute('/_layout/client/delete')({
-  component: DeleteSelectedClients,
+export const Route = createFileRoute('/_layout/user/$userId/delete')({
+  component: DeleteUserById,
+  loader: getUserIdRes,
 })
 
 /* eslint-disable-next-line */
-interface TDeleteClientProps {
-  clients?: TClient[]
+interface TDeleteByUser {
+  user?: TUser
 }
 
 /* eslint-disable-next-line */
-export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: TDeleteClientProps) {
-  const form = useRef<HTMLFormElement>(null)
+export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
+    const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const clients = useContext(_selectedClients) ?? _clients
-  const { open, setStatus } = useClientStatus()
+  const user = Route.useLoaderData() ?? _user
+  const { nombre } = user
+  const { setStatus, open } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    const action = (clients?: TClient[]) => () => {
-      console.table(clients)
-    }
+    if(!user) return;
 
+    const action =
+      ({ ...props }: TUser) =>
+      () => {
+        console.table(props)
+      }
 
-    const timer = setTimeout(action(clients), 6 * 1000)
-    setStatus({open: !open})
+    const timer = setTimeout(action(user), 6 * 1000)
+    setStatus({ open: !open, })
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if ( true) {
+    if (true) {
       toast({
         title: text.notification.titile,
         description: text.notification.decription({
-          length: clients?.length,
+          username: nombre,
         }),
         variant: 'default',
         action: (
@@ -69,6 +73,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
     ev.preventDefault()
   }
 
+
   return (
     <DialogContent className="max-w-xl">
       <DialogHeader>
@@ -79,7 +84,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ length: clients?.length })}
+              {text.alert.description({ username: nombre })}
             </AlertDescription>
           </Alert>
         </DialogDescription>
@@ -123,7 +128,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
           )}
         >
           <Button
-            className={clsx({ "hover:bg-destructive": checked })}
+            className={clsx({'hover:bg-destructive': checked})}
             variant="default"
             form="new-client-form"
             type="submit"
@@ -146,27 +151,27 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
   )
 }
 
-DeleteSelectedClients.dispalyname = 'DeleteSelectedClients'
+DeleteUserById.dispalyname = 'DeleteUserById'
 
 const text = {
-  title: 'Eliminacion de clientes',
+  title: 'Eliminacion del usuario',
   alert: {
-    title: 'Se eiminara multiples clientes de la base de datos',
-    description: ({ length = 0 }: { length: number }) =>
-      'Estas seguro de eliminar ' +
-      length +
-      ' cliente(s) de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con los clientes seleccionados.',
+    title: 'Se eiminara el usuario de la base de datos',
+    description: ({ username }: { username: string }) =>
+      'Estas seguro de eliminar el usuario ' +
+      username +
+      '?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el usuario.',
   },
   button: {
     close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina los clientes.',
+    delete: 'Si, elimina el usuario.',
     checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
   },
   notification: {
-    titile: 'Eliminacion de multiples clientes',
-    decription: ({ length = 0 }: { length?: number }) =>
-      'Se han eliminado ' + length + ' clientes con exito.',
-    error: 'Error: la eliminacion de los clientes ha fallado',
+    titile: 'Eliminacion del usuario',
+    decription: ({ username }: { username: string }) =>
+      'Se ha eliminado el usuario ' + username + ' con exito.',
+    error: 'Error: la eliminacion de los datos del usuario ha fallado',
     undo: 'Deshacer',
   },
 }

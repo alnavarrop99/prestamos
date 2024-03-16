@@ -8,7 +8,7 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
-import styles from './new.module.css'
+import styles from '@/styles/global.module.css'
 import { useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 
@@ -16,10 +16,16 @@ export const Route = createFileRoute('/_layout/user/new')({
   component: NewUser,
 })
 
-type TPassoword = {
+/* eslint-disable-next-line */
+interface TPassoword {
   password?: boolean
   confirmation?: boolean
 }
+
+/* eslint-disable-next-line */
+interface TNewUserProps { }
+
+/* eslint-disable-next-line */
 export function NewUser() {
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
