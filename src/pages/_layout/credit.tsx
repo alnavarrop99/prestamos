@@ -12,7 +12,7 @@ import { Separator } from '@radix-ui/react-separator'
 import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { AlertCircle, AlertTriangle, Printer, CircleDollarSign as Pay, Info } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { createContext, useMemo, useState } from 'react'
 import { getCreditsRes, type TCredit } from '@/api/credit'
 
 export const Route = createFileRoute('/_layout/credit')({
@@ -26,9 +26,12 @@ interface TCreditsProps {
   open?: boolean
 }
 
+export const _creditSelected = createContext<TCredit | undefined>(undefined)
+
 /* eslint-disable-next-line */
 export function Credits({ children, open: _open = false, credits: _credits = [] as TCredit[] }: React.PropsWithChildren<TCreditsProps>) {
   const credits = Route.useLoaderData() ?? _credits
+  const [ credit, setCredit ] = useState<TCredit | undefined>(undefined)
   const [ active, setActive ] = useState<boolean>(true)
   const [ open, setOpen ] = useState<boolean>(_open)
   const activeLength = useMemo( () => credits?.filter( ({ estado }) => estado )?.length, [ credits ] )
@@ -38,10 +41,9 @@ export function Credits({ children, open: _open = false, credits: _credits = [] 
     setActive(checked)
   }
 
-  const onPrint: React.MouseEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
-    ev.preventDefault()
-    ev.stopPropagation()
-    alert("print")
+  const onClick: ( { creditId }: { creditId: number } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ creditId }) => () => {
+    setOpen(!open)
+    setCredit( credits.find( ( { id } ) => ( id === creditId ) ) )
   }
 
   const onOpenChange = (checked: boolean) => {
@@ -49,6 +51,7 @@ export function Credits({ children, open: _open = false, credits: _credits = [] 
   }
 
   return (
+    <_creditSelected.Provider value={credit}>
     <div className='space-y-4'>
         <div className="flex items-center gap-2">
             <Switch id='acitve-credits' checked={active} onCheckedChange={onActive}> </Switch>
@@ -83,7 +86,7 @@ export function Credits({ children, open: _open = false, credits: _credits = [] 
                       <Info className={clsx("transition delay-150 duration-400 opacity-0 group-hover:opacity-100 hover:stroke-blue-500", { "invisible": !cuotas?.length })} />
                     </HoverCardTrigger>
                     <HoverCardContent align='center'  className='z-10 py-4'>
-                      <Card className='ring ring-1 ring-blue-500 max-h-56 overflow-y-auto'>
+                      <Card className='ring-1 ring-blue-500 max-h-56 overflow-y-auto'>
                         <CardHeader className='text-md font-bold'>
                           <CardTitle>
                             {text.details.pay}
@@ -128,17 +131,23 @@ export function Credits({ children, open: _open = false, credits: _credits = [] 
               </CardContent>
               <CardFooter className='flex items-center gap-2'> 
                 <Badge> {fecha_de_aprobacion}  </Badge>
-                <Button variant="ghost" onClick={onPrint} className={clsx('ms-auto invisible group-hover:visible group-hover:opacity-100 transition delay-150 duration-500 opacity-0 hover:ring hover:ring-primary px-3')}> <Printer /> </Button>
-                <Link to={'./$creditId/pay'} params={{ credits: id }} >
-                    <Button variant="default" onClick={onPrint} className={clsx('invisible group-hover:visible group-hover:opacity-100 transition delay-150 duration-500 opacity-0 px-3 bg-green-400 hover:bg-green-700')}> <Pay /> </Button>
+                <Link className='ms-auto' to={'./print'} params={{ creditsId: id }} >
+                  <Button variant="ghost" onClick={onClick({ creditId: id })} className={clsx('invisible group-hover:visible group-hover:opacity-100 transition delay-150 duration-500 opacity-0 hover:ring hover:ring-primary px-3')}>
+                    <Printer />
+                  </Button>
                 </Link>
-
+                <Link to={'./pay'} params={{ creditId: id }} >
+                    <Button onClick={onClick({ creditId: id })} variant="default" className={clsx('invisible group-hover:visible group-hover:opacity-100 transition delay-150 duration-500 opacity-0 px-3 bg-green-400 hover:bg-green-700')}>
+                    <Pay /> 
+                  </Button>
+                </Link>
               </CardFooter>
           </Card>
           </Link>
         }) }
         </div>
     </div>
+    </_creditSelected.Provider>
   )
 }
 
