@@ -5,18 +5,18 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle  } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useClientStatus } from '@/lib/context/client'
-import { getCreditIdRes, type TCredit } from "@/api/credit";
+import { _creditUpdate } from "@/pages/_layout/credit_/$creditId_/update";
+import { TCredit } from '@/api/credit'
 
-export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
+export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')({
   component: DeleteCreditById,
-  loader: getCreditIdRes
 })
 
 /* eslint-disable-next-line */
@@ -27,7 +27,7 @@ interface TDeleteCreditByIdProps {
 /* eslint-disable-next-line */
 export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCreditByIdProps) {
   const [checked, setChecked] = useState(false)
-  const credit = Route.useLoaderData() ?? _credit
+  const credit = useContext(_creditUpdate) ?? _credit
   const { open, setStatus } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -75,7 +75,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
         <Separator />
         <DialogDescription>
-          <Alert variant="destructive">
+          <Alert variant="destructive" >
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
@@ -113,9 +113,9 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
         >
           <DialogClose asChild>
             <Button
-              className={clsx({ "hover:bg-destructive": checked })}
+              className={clsx({ "hover:bg-blue-600": checked })}
               variant="default"
-              form="delete-credit-by-id"
+              form="confirm-update-credit"
               type="submit"
               disabled={!checked}
               onClick={onSubmit}
@@ -141,22 +141,22 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
 DeleteCreditById.dispalyname = 'DeleteCreditById'
 
 const text = {
-  title: 'Eliminacion de un prestamo',
+  title: 'Actualizacion del prestamo',
   alert: {
-    title: 'Se eiminara el prestamo de la base de datos',
+    title: 'Se actualizara el prestamo de la base de datos',
     description: ({ username }: { username: string }) =>
-      'Estas seguro de eliminar prestamo del cliente ' + username + ' de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el prestamo.',
+      'Estas seguro de actualizar el prestamo del cliente ' + username + ' de la basde de datos?. Esta accion es irreversible y se actualizara los datos relacionados con el prestamo.',
   },
   button: {
     close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina el prestamo.',
+    delete: 'Si, actualiza el prestamo.',
     checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
   },
   notification: {
-    titile: 'Eliminacion de un credito',
+    titile: 'Actualizacion de un prestamo',
     decription: ({ username }: { username?: string }) =>
-      'Se ha eliminado prestamo del cliente ' + username + ' con exito.',
-    error: 'Error: la eliminacion del prestamo ha fallado',
+      'Se ha actualizado el prestamo del cliente ' + username + ' con exito.',
+    error: 'Error: la actualizacion del prestamo ha fallado',
     undo: 'Deshacer',
   },
 }
