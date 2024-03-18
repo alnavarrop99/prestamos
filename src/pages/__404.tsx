@@ -10,8 +10,8 @@ export const Route = new NotFoundRoute({
 export function _404() {
   return (
     <section className="grid min-h-screen place-content-center place-items-center">
-      <div className="subgrid grid-row-2 grid grid-cols-2 place-items-center justify-start">
-        <SearchX className="row-span-2 h-24 w-24" />
+      <div className="subgrid grid-row-3 grid place-items-center justify-start">
+        <SearchX className="row-span-2 h-24 w-24 animate-bounce" />
         <h1 className="text-4xl font-bold">{text.title}</h1>
         <h2 className="text-2xl">{text.description}</h2>
       </div>
