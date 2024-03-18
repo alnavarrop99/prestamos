@@ -1,247 +1,38 @@
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import {
-  ArrowUpDown,
-  ChevronDown,
-  Copy,
-  MoreHorizontal,
-  UserCog2 as UserUpdate,
-  UserX2 as UserDelete,
-} from 'lucide-react'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table'
+import { ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable, } from '@tanstack/react-table'
+import { ChevronDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import React, { createContext, useEffect, useState } from 'react'
-import {
-  Outlet,
-  createFileRoute,
-  Link,
-  useNavigate,
-  Navigate,
-} from '@tanstack/react-router'
+import { Outlet, createFileRoute, Link, useNavigate, Navigate, } from '@tanstack/react-router'
 import { useClientStatus } from '@/lib/context/client'
 import { useRootStatus } from '@/lib/context/layout'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { getClients, type TClient } from '@/api/clients'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select'
+import { getClientsRes, type TClient } from '@/api/clients'
 import clsx from 'clsx'
+import { columns } from "@/pages/_layout/-column"
 
 export const Route = createFileRoute('/_layout/client')({
-  component: Client,
-  loader: getClients
+  component: Clients,
+  loader: getClientsRes
 })
 
-const columns: ColumnDef<TClient>[] = [
-  {
-    id: 'select',
-    header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && 'indeterminate')
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        className='mr-4'
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: 'nombres' as keyof TClient,
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          {text.columns.fullName}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => (
-      <p className="copitalize min-w-32">
-        {row.original.nombres + ' ' + row.original.apellidos}
-      </p>
-    ),
-  },
-  {
-    accessorKey: 'direccion' as keyof TClient,
-    header: ({column}) => {
-      return <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          {text.columns.direction}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-    },
-    cell: ({ row }) => <p className='min-w-32'>
-      {row.getValue('direccion' as keyof TClient) + ". " +
-      row.original.segunda_direccion}
-    </p>,
-  },
-  {
-    accessorKey: 'celular' as keyof TClient,
-    header: () => {
-      return <p>{text.columns.phone}</p>
-    },
-    cell: ({ row }) => <p className="lowercase w-32">{row.getValue('celular' as keyof TClient)}</p>
-  },
-  {
-    accessorKey: 'telefono' as keyof TClient,
-    header: () => {
-      return <p>{text.columns.telephone}</p>
-    },
-    cell: ({ row }) => <p className="lowercase w-32">{row.getValue('telefono' as keyof TClient)}</p>
-  },
-  {
-    accessorKey: 'numero_de_identificacion' as keyof TClient,
-    header: () => {
-      return <p>{text.columns.id}</p>
-    },
-    cell: ({ row }) => <div className='w-32'>
-      <p className='capitalize font-bold'>{row.original.tipo_de_identificacion}</p>
-      <p>{row.getValue('numero_de_identificacion' as keyof TClient)}</p>
-    </div>,
-  },
-  {
-    accessorKey: 'referencia' as keyof TClient,
-    header: ({column}) => {
-     return <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          {text.columns.ref}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-    },
-    cell: ({ row }) => <p className='w-32'>{row.getValue('referencia' as keyof TClient)}</p>
-  },
-  {
-    id: 'actions',
-    enableHiding: false,
-    cell: ({ row }) => {
-      const { id } = row.original
-
-      /* eslint-disable-next-line */
-      const { open, setStatus } = useClientStatus(({ open, setStatus }) => ({
-        open,
-        setStatus,
-      }))
-
-      /* eslint-disable-next-line */
-      const [{ menu }, setMenu] = useState<{ menu?: boolean }>({ menu: false })
-
-      const onClickCopy: React.MouseEventHandler<
-        React.ComponentRef<typeof DropdownMenuItem>
-      > = () => {
-        navigator.clipboard.writeText(id.toFixed())
-      }
-
-      const onClick: React.MouseEventHandler<
-        React.ComponentRef<typeof DropdownMenuItem>
-      > = () => {
-        setMenu({ menu: !menu })
-        setStatus({ open: !open })
-      }
-
-      return (
-        <DropdownMenu open={menu} onOpenChange={() => setMenu({ menu: !menu })}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">{text.menu.aria}</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
-          >
-            <DropdownMenuLabel className="text-lg">
-              {text.menu.title}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onClickCopy}>
-              {text.menu.copy} <Copy />
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onClick}>
-              <Link
-                className="flex h-full w-full items-center justify-between gap-2"
-                to={'./$clientId/update'}
-                params={{ clientId: id }}
-              >
-                {text.menu.update} <UserUpdate />
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onClick}>
-              <Link
-                className="flex h-full w-full items-center justify-between gap-2"
-                to={'./$clientId/delete'}
-                params={{ clientId: id }}
-              >
-                {text.menu.delete} <UserDelete />
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
-    },
-  },
-]
-
-interface TClientProps {
+/* eslint-disable-next-line */
+interface TClientsProps {
   clients?: TClient[],
   open?: boolean
 }
 
 export const _selectedClients = createContext<TClient[] | undefined>(undefined)
 
-export function Client({
+/* eslint-disable-next-line */
+export function Clients({
   children,
-  open: _open = false,
+  open: _open,
   clients: _clients = [] as TClient[]
-}: React.PropsWithChildren<TClientProps>) {
+}: React.PropsWithChildren<TClientsProps>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -488,7 +279,7 @@ export function Client({
   )
 }
 
-Client.displayname = 'Client'
+Clients.displayname = 'ClientsList'
 
 const text = {
   title: 'Clientes:',

@@ -1,19 +1,7 @@
-import {
-  createFileRoute,
-  Outlet,
-  useChildMatches,
-} from '@tanstack/react-router'
+import { createFileRoute, Outlet, useChildMatches, } from '@tanstack/react-router'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
-import {
-  BadgeCent,
-  BadgeDollarSign,
-  Calendar as CalendarIcon,
-  icons,
-  MenuSquare,
-  Network,
-  NotepadText,
-} from 'lucide-react'
+import { BadgeCent, BadgeDollarSign, Calendar as CalendarIcon, icons, MenuSquare, Network, NotepadText, } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
@@ -24,38 +12,40 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover'
+import { Popover, PopoverContent, PopoverTrigger, } from '@/components/ui/popover'
 import { useRootStatus } from '@/lib/context/layout'
-import { getClients, TClient } from '@/api/clients'
+import { getClientsRes, type TClient } from '@/api/clients'
 
 export const Route = createFileRoute('/_layout')({
-  component: Navigation,
-  loader: getClients,
+  component: Layout,
+  loader: getClientsRes,
 })
 
-type TStatus = {
-  readonly offline?: boolean
-  readonly open?: boolean
-  readonly calendar?: boolean
-  readonly search?: boolean
+/* eslint-disable-next-line */
+interface TStatus {
+  offline?: boolean
+  open?: boolean
+  calendar?: boolean
+  search?: boolean
+}
+
+/* eslint-disable-next-line */
+interface TNavigationProps {
+  clients?: TClient[]
 }
 
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
 
+
 const username = 'Admin99'
-interface TNavigation {
-  clients?: TClient[]
-}
-export function Navigation({
+
+/* eslint-disable-next-line */
+export function Layout({
   children,
   clients: _clients = [] as TClient[],
-}: React.PropsWithChildren<TNavigation>) {
+}: React.PropsWithChildren<TNavigationProps>) {
   const [{ offline, open = false, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
   })
@@ -121,7 +111,7 @@ export function Navigation({
   return (
     <div
       className={clsx(
-        'container m-auto grid auto-rows-min grid-cols-2 grid-rows-3 space-y-4 [&>*]:px-2',
+        'container max-w-screen-2xl m-auto grid auto-rows-min grid-cols-2 grid-rows-3 space-y-4 [&>*]:px-2',
         styles?.['grid-layout']
       )}
     >
@@ -324,7 +314,7 @@ export function Navigation({
           </div>
         </div>
       </header>
-      <main className="!px-10 py-8 max-w-screen-lg">{children ?? <Outlet />}</main>
+      <main className="!px-10 py-8">{children ?? <Outlet />}</main>
       <footer className="py-4">
         <Separator className="my-4" />
         <div className="flex justify-between">
@@ -341,7 +331,7 @@ export function Navigation({
   )
 }
 
-Navigation.dispalyname = 'Navigation'
+Layout.dispalyname = 'Layout'
 
 const text = {
   title: 'Matcor',

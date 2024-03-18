@@ -1,35 +1,32 @@
 import { Button } from '@/components/ui/button'
-import {
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
 import { useContext, useRef, useState } from 'react'
-import styles from './new.module.css'
+import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useClientStatus } from '@/lib/context/client'
-import { TUserResponse } from '@/api/users'
+import { TUser } from '@/api/users'
 import { _selectUsers } from "@/pages/_layout/user"
 
 export const Route = createFileRoute('/_layout/user/delete')({
-  component: DeleteUsers,
+  component: DeleteSelectedUsers,
 })
 
-interface TDeleteUsers {
-  users?: TUserResponse[]
+/* eslint-disable-next-line */
+interface TDeleteSelectedUsersProps {
+  users?: TUser[]
 }
-export function DeleteUsers({users: _users=[] as TUserResponse[]}: TDeleteUsers) {
+
+/* eslint-disable-next-line */
+export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelectedUsersProps) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const users = useContext(_selectUsers) ?? _users
@@ -40,7 +37,7 @@ export function DeleteUsers({users: _users=[] as TUserResponse[]}: TDeleteUsers)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    const action = (clients?: TUserResponse[]) => () => {
+    const action = (clients?: TUser[]) => () => {
       console.table(clients)
     }
 
@@ -148,12 +145,12 @@ export function DeleteUsers({users: _users=[] as TUserResponse[]}: TDeleteUsers)
   )
 }
 
-DeleteUsers.dispalyname = 'DeleteUser'
+DeleteSelectedUsers.dispalyname = 'DeleteSelectedUsers'
 
 const text = {
   title: 'Eliminacion de usuarios',
   alert: {
-    title: 'Se eiminara multiples usuarios de la base de datos',
+    title: 'Se eliminara multiples usuarios de la base de datos',
     description: ({ length = 0 }: { length: number }) =>
       'Estas seguro de eliminar ' +
       length +

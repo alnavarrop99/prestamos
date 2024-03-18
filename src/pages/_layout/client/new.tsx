@@ -13,7 +13,7 @@ import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
-import styles from './new.module.css'
+import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { type TClient } from "@/api/clients";
@@ -23,6 +23,7 @@ export const Route = createFileRoute('/_layout/client/new')({
   component: NewClient,
 })
 
+/* eslint-disable-next-line */
 export function NewClient() {
   const form = useRef<HTMLFormElement>(null)
 
@@ -75,7 +76,7 @@ export function NewClient() {
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
         <Separator />
-        <DialogDescription>{text.descriiption}</DialogDescription>
+        <DialogDescription className='text-muted-foreground'>{text.descriiption}</DialogDescription>
       </DialogHeader>
       <form
         autoComplete="on"
@@ -115,15 +116,15 @@ export function NewClient() {
           />
         </Label>
         <Label>
-          <span>{text.form.id.label} </span>
-          <Select required name={'tipo_de_identificacion' as keyof TClient} defaultValue={text.form.id.items.id}>
+          <span>{text.form.typeId.label} </span>
+          <Select required name={'tipo_de_identificacion' as keyof TClient} defaultValue={text.form.typeId.items.id}>
             <SelectTrigger className="w-full border border-primary">
-              <SelectValue placeholder={text.form.id.placeholder} />
+              <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={text.form.id.items.id}>{text.form.id.items.id}</SelectItem>
-              <SelectItem value={text.form.id.items.passport}>{text.form.id.items.passport}</SelectItem>
-              <SelectItem value={text.form.id.items.driverId}>{text.form.id.items.driverId}</SelectItem>
+              <SelectItem value={text.form.typeId.items.id}>{text.form.typeId.items.id}</SelectItem>
+              <SelectItem value={text.form.typeId.items.passport}>{text.form.typeId.items.passport}</SelectItem>
+              <SelectItem value={text.form.typeId.items.driverId}>{text.form.typeId.items.driverId}</SelectItem>
             </SelectContent>
           </Select>
         </Label>
@@ -197,7 +198,7 @@ NewClient.dispalyname = 'NewClient'
 const text = {
   title: 'Crear cliente:',
   descriiption:
-    'Introdusca los datos correctamente para la creacion de un cliente nuevo en la plataforma',
+    'Introdusca los datos correctamente para la creacion de un cliente nuevo en la plataforma.',
   button: {
     close: 'Cerrar',
     update: 'Crear',
@@ -235,8 +236,12 @@ const text = {
       placeholder: 'Escriba la 2da direccion del cliente',
     },
     id: {
-      label: 'I.D.:',
-      placeholder: 'Escriba el numero del I.D. del cliente',
+      label: 'ID:',
+      placeholder: 'Escriba el ID',
+    },
+    typeId: {
+      label: 'Tipo de identificacion:',
+      placeholder: 'Seleccione una opcion',
       items: {
         passport: "Passaporte",
         id: "I.D.",

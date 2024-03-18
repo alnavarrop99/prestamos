@@ -1,35 +1,33 @@
-import { Button } from '@/components/ui/button' 
+import { Button } from '@/components/ui/button'
 import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { useContext, useRef, useState } from 'react'
-import styles from '@/styles/global.module.css'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle  } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useClientStatus } from '@/lib/context/client'
-import { type TClient } from "@/api/clients"
-import { _selectedClients } from "@/pages/_layout/client";
+import { _creditUpdate } from "@/pages/_layout/credit_/$creditId_/update";
+import { TCredit } from '@/api/credit'
 
-export const Route = createFileRoute('/_layout/client/delete')({
-  component: DeleteSelectedClients,
+export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')({
+  component: UpdateConfirmationCredit,
 })
 
 /* eslint-disable-next-line */
-interface TDeleteClientProps {
-  clients?: TClient[]
+interface TUpdateConfirmationCreditProps {
+  credit?: TCredit
 }
 
 /* eslint-disable-next-line */
-export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: TDeleteClientProps) {
-  const form = useRef<HTMLFormElement>(null)
+export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TUpdateConfirmationCreditProps) {
   const [checked, setChecked] = useState(false)
-  const clients = useContext(_selectedClients) ?? _clients
+  const credit = useContext(_creditUpdate) ?? _credit
   const { open, setStatus } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -37,23 +35,23 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    const action = (clients?: TClient[]) => () => {
-      console.table(clients)
+    const action = (credit?: TCredit) => () => {
+      console.table(credit)
     }
 
-
-    const timer = setTimeout(action(clients), 6 * 1000)
+    const timer = setTimeout(action(credit), 6 * 1000)
     setStatus({open: !open})
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if ( true) {
+    if (true) {
       toast({
         title: text.notification.titile,
         description: text.notification.decription({
-          length: clients?.length,
+          // TODO
+          username: "Armando Navarro",
         }),
         variant: 'default',
         action: (
@@ -70,43 +68,32 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
   }
 
   return (
-    <DialogContent className="max-w-xl">
+    <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
         <Separator />
         <DialogDescription>
-          <Alert variant="destructive">
+          <Alert variant="destructive" >
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ length: clients?.length })}
+              {text.alert.description({ 
+                // TODO
+                username: "Armando Navarro" 
+              })}
             </AlertDescription>
           </Alert>
         </DialogDescription>
       </DialogHeader>
-
-      <form
-        autoComplete="on"
-        ref={form}
-        onSubmit={onSubmit}
-        id="new-client-form"
-        className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
-          styles?.['custom-form'],
-          {
-            [styles?.['custom-form-off']]: !checked,
-          }
-        )}
-      ></form>
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
-            id="switch-updates-client"
+            id="checkbox-delete-credit"
             checked={checked}
             onCheckedChange={onCheckedChange}
           />
           <Label
-            htmlFor="switch-updates-client"
+            htmlFor="checkbox-delete-credit"
             className={clsx('cursor-pointer')}
           >
             {text.button.checkbox}
@@ -122,15 +109,18 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
             }
           )}
         >
-          <Button
-            className={clsx({ "hover:bg-destructive": checked })}
-            variant="default"
-            form="new-client-form"
-            type="submit"
-            disabled={!checked}
-          >
-            {text.button.delete}
-          </Button>
+          <DialogClose asChild>
+            <Button
+              className={clsx({ "hover:bg-blue-600": checked })}
+              variant="default"
+              form="confirm-update-credit"
+              type="submit"
+              disabled={!checked}
+              onClick={onSubmit}
+            >
+              {text.button.delete}
+            </Button>
+          </DialogClose>
           <DialogClose asChild>
             <Button
               type="button"
@@ -146,27 +136,25 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
   )
 }
 
-DeleteSelectedClients.dispalyname = 'DeleteSelectedClients'
+UpdateConfirmationCredit.dispalyname = 'DeleteCreditById'
 
 const text = {
-  title: 'Eliminacion de clientes',
+  title: 'Actualizacion del prestamo',
   alert: {
-    title: 'Se eiminara multiples clientes de la base de datos',
-    description: ({ length = 0 }: { length: number }) =>
-      'Estas seguro de eliminar ' +
-      length +
-      ' cliente(s) de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con los clientes seleccionados.',
+    title: 'Se actualizara el prestamo de la base de datos',
+    description: ({ username }: { username: string }) =>
+      'Estas seguro de actualizar el prestamo del cliente ' + username + ' de la basde de datos?. Esta accion es irreversible y se actualizara los datos relacionados con el prestamo.',
   },
   button: {
     close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina los clientes.',
+    delete: 'Si, actualiza el prestamo.',
     checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
   },
   notification: {
-    titile: 'Eliminacion de multiples clientes',
-    decription: ({ length = 0 }: { length?: number }) =>
-      'Se han eliminado ' + length + ' clientes con exito.',
-    error: 'Error: la eliminacion de los clientes ha fallado',
+    titile: 'Actualizacion de un prestamo',
+    decription: ({ username }: { username?: string }) =>
+      'Se ha actualizado el prestamo del cliente ' + username + ' con exito.',
+    error: 'Error: la actualizacion del prestamo ha fallado',
     undo: 'Deshacer',
   },
 }

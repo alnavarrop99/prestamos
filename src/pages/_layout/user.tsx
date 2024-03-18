@@ -1,4 +1,4 @@
-import { type TUserResponse, getUsers } from '@/api/users'
+import { type TUser, getUsersRes } from '@/api/users'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Link, Navigate, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Avatar } from '@/components/ui/avatar';
@@ -15,31 +15,39 @@ import { MoreHorizontal, UserCog as UserUpdate, UserX as UserDelete, Users as Us
 import { useRootStatus } from '@/lib/context/layout';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useClientStatus } from '@/lib/context/client';
+import { Separator } from '@/components/ui/separator';
 
 export const Route = createFileRoute('/_layout/user')({
-  component: User,
-  loader: getUsers,
+  component: Users,
+  loader: getUsersRes,
 })
 
-interface TUserProps {
+/* eslint-disable-next-line */
+interface TUsersProps {
   open?: boolean
-  users?: TUserResponse[]
+  users?: TUser[]
 }
 
-interface TUser extends TUserResponse {
-    selected: boolean;
-    menu: boolean;
-    active: boolean;
+/* eslint-disable-next-line */
+interface TUsersState extends TUser {
+  selected: boolean;
+  menu: boolean;
+  active: boolean;
 }
 
-export const _selectUsers = createContext<TUser[] | undefined>(undefined)
+/* eslint-disable-next-line */
+export type TRole = "Administrador" | "Cliente" | "Usuario"
 
-export function User({children, open: _open=false, users: _users=[] as TUserResponse[] }: React.PropsWithChildren<TUserProps>) {
-  const usersDB = (Route.useLoaderData()  ?? _users).map<TUser>( (items) => ({...items, selected: false, menu: false }))
-  const [users, setUsers] = useState<TUser[]>( usersDB )
+export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
+
+/* eslint-disable-next-line */
+export function Users({children, open: _open, users: _users=[] as TUser[] }: React.PropsWithChildren<TUsersProps>) {
+  const _usersDB = (Route.useLoaderData()  ?? _users)
+  const usersDB = _usersDB.map<TUsersState>( (items) => ({...items, selected: false, menu: false }))
+  const [users, setUsers] = useState<TUsersState[]>( usersDB )
   const navigate = useNavigate()
   const { value } = useRootStatus()
-  const { open=_open, setStatus } = useClientStatus()
+  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
 
   const onCheckChanged = ( { id: index, prop }: { id: number, prop: keyof Omit<typeof users[0], "id" | "rol" | "clientes" | "nombre"> } ) => ( checked: boolean ) => {
     const list = users.map( ( { ...user } ) => {
@@ -117,6 +125,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
           <Button disabled={!users.some(({ selected }) => selected )} className={clsx({"bg-destructive": users.some(({ selected }) => selected )})} onClick={onDeleteUsers}>{text.button.delete}</Button>
           </Link>
         </div>
+        <Separator />
       <div className='flex flex-wrap gap-4 [&>*]:flex-auto'>
       { users?.map( ({id, rol, nombre: name, clientes: clients, selected, active, menu }) =>
           <Card key={id} className={clsx("group shadow-lg max-w-sm py-4 cursor-pointer", styles?.["scale-users"])} onClick={onClick({id})}>
@@ -188,8 +197,7 @@ export function User({children, open: _open=false, users: _users=[] as TUserResp
   )
 }
 
-User.dispalyname = 'User'
-export type TRole = "Administrador" | "Cliente" | "Usuario"
+Users.dispalyname = 'UsersList'
 
 const text = {
   title: 'Usuarios:',

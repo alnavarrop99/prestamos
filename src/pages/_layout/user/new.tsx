@@ -8,7 +8,7 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
-import styles from './new.module.css'
+import styles from '@/styles/global.module.css'
 import { useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 
@@ -16,10 +16,16 @@ export const Route = createFileRoute('/_layout/user/new')({
   component: NewUser,
 })
 
-type TPassoword = {
+/* eslint-disable-next-line */
+interface TPassoword {
   password?: boolean
   confirmation?: boolean
 }
+
+/* eslint-disable-next-line */
+interface TNewUserProps { }
+
+/* eslint-disable-next-line */
 export function NewUser() {
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
@@ -86,11 +92,11 @@ export function NewUser() {
         onSubmit={onSubmit}
         id="new-client-form"
         className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>:is(label,div)]:space-y-2',
+          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>:is(label,div)]:space-y-2 [&>*]:col-span-full',
           styles?.['custom-form']
         )}
       >
-        <Label >
+        <Label className='!col-span-1' >
           <span>{text.form.firstName.label}</span>{' '}
           <Input
             required
@@ -99,7 +105,7 @@ export function NewUser() {
             placeholder={text.form.firstName.placeholder}
           />
         </Label>
-        <Label >
+        <Label className='!col-span-1'>
           <span>{text.form.lastName.label} </span>
           <Input
             required
@@ -121,7 +127,7 @@ export function NewUser() {
           </Select>
         </Label>
 
-        <div>
+        <div className='[&>label]:after:content-["_*_"] [&>label]:after:text-red-500'>
           <Label htmlFor='user-password'>
             <span>{text.form.password.current.label} </span>
           </Label>
@@ -144,7 +150,7 @@ export function NewUser() {
           </div>
         </div>
 
-        <div>
+        <div className='[&>label]:after:content-["_*_"] [&>label]:after:text-red-500'>
           <Label htmlFor='user-confirmation'>
             <span>{text.form.password.confirmation.label} </span>
           </Label>

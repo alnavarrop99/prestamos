@@ -1,23 +1,13 @@
-export type TClient = typeof import('@/__mock__/CLIENTS.json')[0]
+import { gets, getId } from "@/api/base"
+import clients from "@/__mock__/CLIENTS.json"
 
-type TGetClientId = ( params: { clientId: number } ) => Promise<TClient | undefined> 
-export const getClientId: TGetClientId = async ( {clientId} ) => {
-    try {
-      const { default: list } = (await import('@/__mock__/CLIENTS.json'))
+export type TClient = typeof clients[0]
+type TGetClientId = ( params: { clientId: number } ) => TClient 
+type TGetClients = () => TClient[]
+type TGetClientIdRes = ({params}: { params: { clientId: string } }) => Promise<TClient>
+type TGetClientsRes = () => Promise<TClient[]>
 
-      return list?.find( ( { id } ) => id === clientId  )
-    } catch (error) {
-      return undefined;
-    }
-  }
-
-type TGetClients = () => Promise<TClient[] | undefined>
-export const getClients: TGetClients = async () => {
-    try {
-      const { default: list } = (await import('@/__mock__/CLIENTS.json'))
-      return list 
-    } catch (error) {
-      return undefined;
-    }
-  }
-
+export const getClientId: TGetClientId = ( {clientId} ) => getId( clients, { id: clientId } )
+export const getClients: TGetClients = () => gets( clients )
+export const getClientIdRes: TGetClientIdRes = async ({params: {clientId} }) => getClientId({ clientId: Number.parseInt(clientId) })
+export const getClientsRes: TGetClientsRes =  async () => getClients()

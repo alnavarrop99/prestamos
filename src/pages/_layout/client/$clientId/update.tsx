@@ -1,11 +1,5 @@
 import { Button } from '@/components/ui/button'
-import {
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -13,19 +7,18 @@ import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
 import { useReducer, useRef, useState } from 'react'
-import styles from './new.module.css'
+import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { getClientId, type TClient } from '@/api/clients'
+import { getClientIdRes, type TClient } from '@/api/clients'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
-  component: UpdateByClientId,
-  loader: async ({ params: { clientId } }) =>
-    getClientId({clientId: Number.parseInt(clientId)})
+  component: UpdateClientById,
+  loader: getClientIdRes
 })
 
 const reducer: React.Reducer<TClient, TClient> = (prev, state) => ({
@@ -33,10 +26,13 @@ const reducer: React.Reducer<TClient, TClient> = (prev, state) => ({
   ...state,
 })
 
-interface TUpdateByClient {
+/* eslint-disable-next-line */
+interface TUpdateClientByIdProps {
   client?: TClient
 }
-export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByClient) {
+
+/* eslint-disable-next-line */
+export function UpdateClientById({ client: _client = {} as TClient }: TUpdateClientByIdProps) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const client = Route.useLoaderData() ?? _client
@@ -120,12 +116,11 @@ export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByC
         ref={form}
         onSubmit={onSubmit}
         onChange={onChange}
-        id="new-client-form"
+        id="update-client"
         className={clsx(
           'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
-          styles?.['custom-form'],
           {
-            [styles?.['custom-form-off']]: !checked,
+            "[&>label>span]:font-bold": checked,
           }
         )}
       >
@@ -163,15 +158,15 @@ export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByC
           />
         </Label>
         <Label>
-          <span>{text.form.id.label} </span>
+          <span>{text.form.typeId.label} </span>
           <Select value={idType} disabled={!checked} required name={'tipo_de_identificacion' as keyof TClient} >
             <SelectTrigger className={clsx("w-full", { "border border-primary": checked})}>
-              <SelectValue placeholder={text.form.id.placeholder} />
+              <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              <SelectItem value={text.form.id.items.id}>{text.form.id.items.id}</SelectItem>
-              <SelectItem value={text.form.id.items.passport}>{text.form.id.items.passport}</SelectItem>
-              <SelectItem value={text.form.id.items.driverId}>{text.form.id.items.driverId}</SelectItem>
+              <SelectItem value={text.form.typeId.items.id}>{text.form.typeId.items.id}</SelectItem>
+              <SelectItem value={text.form.typeId.items.passport}>{text.form.typeId.items.passport}</SelectItem>
+              <SelectItem value={text.form.typeId.items.driverId}>{text.form.typeId.items.driverId}</SelectItem>
             </SelectContent>
           </Select>
         </Label>
@@ -249,7 +244,7 @@ export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByC
         <div className="space-x-2">
           <Button
             variant="default"
-            form="new-client-form"
+            form="update-client-form"
             type="submit"
             disabled={!checked}
           >
@@ -271,7 +266,7 @@ export function UpdateByClientId({ client: _client = {} as TClient }: TUpdateByC
   )
 }
 
-UpdateByClientId.dispalyname = 'UpdateByClientId'
+UpdateClientById.dispalyname = 'UpdateClientById'
 
 const text = {
   title: ({ state }: { state: boolean }) =>
@@ -317,8 +312,12 @@ const text = {
       placeholder: 'Escriba la 2da direccion del cliente',
     },
     id: {
-      label: 'I.D.:',
-      placeholder: 'Escriba el numero del I.D. del cliente',
+      label: 'ID:',
+      placeholder: 'Escriba el ID',
+    },
+    typeId: {
+      label: 'Tipo de identificacion:',
+      placeholder: 'Seleccione una opcion',
       items: {
         passport: "Passaporte",
         id: "I.D.",

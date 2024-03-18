@@ -1,7 +1,7 @@
 import * as React from 'react'
 import styles from './timeline.module.css'
 import clsx from 'clsx'
-import { LucideChevronsRight } from 'lucide-react'
+import { Pin } from 'lucide-react'
 
 export interface Timeline
   extends React.DetailedHTMLProps<
@@ -15,7 +15,7 @@ const Timeline = React.forwardRef<HTMLUListElement, Timeline>(
       <ul
         {...(props && { ref })}
         className={clsx(
-          'inline-flex flex-col [&>*]:m-0 [&>li]:grid [&_hr]:h-4 [&_hr]:w-1.5 [&_hr]:bg-secondary [&_svg]:rounded-full [&_svg]:bg-primary [&_svg]:stroke-secondary [&_svg]:p-px',
+          'inline-flex flex-col [&>*]:m-0 [&>li]:grid [&_hr]:h-4 [&_hr]:w-1.5 [&_hr]:bg-secondary [&_svg]:rounded-full [&_svg]:p-px',
           className
         )}
       >
@@ -31,8 +31,7 @@ const Timeline = React.forwardRef<HTMLUListElement, Timeline>(
                 styles?.['grid-3x2']
               )}
             >
-              {' '}
-              <LucideChevronsRight /> {child}{' '}
+              <Pin className="rotate-45" /> {child}
             </div>
             {i !== list?.length - 1 && <hr className="row-start-3" />}
           </li>

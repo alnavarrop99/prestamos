@@ -8,32 +8,36 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
-import styles from './new.module.css'
+import styles from '@/styles/global.module.css'
 import { ComponentRef, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { TUserResponse, getUserId } from '@/api/users'
+import { type TUser, getUserIdRes } from '@/api/users'
 import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
   component: UpdateUserById,
-  loader: async ({ params: { userId } }) => getUserId({ userId: Number.parseInt(userId) }) 
+  loader: getUserIdRes
 })
 
-type TPassoword = {
+/* eslint-disable-next-line */
+interface TPassowordState {
   password?: boolean
   confirmation?: boolean
 }
 
+/* eslint-disable-next-line */
 interface TUpdateUserById {
-  user?: TUserResponse
+  user?: TUser
 }
-export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUserById) {
-  const [ passItems, setPassword ] = useState<TPassoword>({  })
+
+/* eslint-disable-next-line */
+export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
+  const [ passItems, setPassword ] = useState<TPassowordState>({  })
   const form = useRef<HTMLFormElement>(null)
   const { rol, nombre } = Route.useLoaderData() ?? _user
   const { open, setStatus } = useClientStatus()
 
-  const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
+  const onClick: ( {prop}:{ prop: keyof TPassowordState } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
   }
 
@@ -95,11 +99,10 @@ export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUse
         onSubmit={onSubmit}
         id="new-client-form"
         className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>:is(label,div)]:space-y-2',
-          styles?.['custom-form']
+          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>:is(label,div)]:space-y-2 [&>*]:col-span-full [&_label>span]:font-bold',
         )}
       >
-        <Label >
+        <Label className='!col-span-1' >
           <span>{text.form.firstName.label}</span>{' '}
           <Input
             required
@@ -109,7 +112,7 @@ export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUse
             value={nombre.split(" ")?.at(0)}
           />
         </Label>
-        <Label >
+        <Label className='!col-span-1' >
           <span>{text.form.lastName.label} </span>
           <Input
             required
@@ -120,7 +123,7 @@ export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUse
           />
         </Label>
         <Label>
-          <span className="after:content-['_*_'] after:text-red-500">{text.form.rol.label} </span>
+          <span>{text.form.rol.label} </span>
           <Select required name={'rol' as keyof typeof text.form} defaultValue={text.form.rol.items.user} value={rol}>
             <SelectTrigger className="w-full border border-primary">
               <SelectValue placeholder={text.form.rol.placeholder} />
@@ -131,7 +134,6 @@ export function UpdateUserById({ user: _user = {} as TUserResponse }: TUpdateUse
             </SelectContent>
           </Select>
         </Label>
-
         <div>
           <Label htmlFor='user-password'>
             <span>{text.form.password.current.label} </span>

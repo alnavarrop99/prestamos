@@ -1,56 +1,46 @@
 import { Button } from '@/components/ui/button'
-import {
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
-import styles from './new.module.css'
+import { useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { getClientId, TClient } from '@/api/clients'
 import { useClientStatus } from '@/lib/context/client'
+import { getCreditIdRes, type TCredit } from "@/api/credit";
 
-export const Route = createFileRoute('/_layout/client/$clientId/delete')({
-  component: DeleteByClientId,
-  loader: async ({ params: { clientId } }) => getClientId({ clientId: Number.parseInt(clientId) }),
+export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
+  component: DeleteCreditById,
+  loader: getCreditIdRes
 })
 
-interface TDeleteByClient {
-  client?: TClient
+/* eslint-disable-next-line */
+interface TDeleteCreditByIdProps {
+  credit?: TCredit
 }
-export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByClient) {
-  const form = useRef<HTMLFormElement>(null)
+
+/* eslint-disable-next-line */
+export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCreditByIdProps) {
   const [checked, setChecked] = useState(false)
-  const client = Route.useLoaderData() ?? _client
-  const { nombres: firstName, apellidos: lastName } = client
-  const { setStatus, open } = useClientStatus()
+  const credit = Route.useLoaderData() ?? _credit
+  const { open, setStatus } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    if(!client) return;
+    const action = (credit?: TCredit) => () => {
+      console.table(credit)
+    }
 
-    const action =
-      ({ ...props }: TClient) =>
-      () => {
-        console.table(props)
-      }
-
-    const timer = setTimeout(action(client), 6 * 1000)
-    setStatus({ open: !open, })
+    const timer = setTimeout(action(credit), 6 * 1000)
+    setStatus({open: !open})
 
     const onClick = () => {
       clearTimeout(timer)
@@ -60,7 +50,8 @@ export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByC
       toast({
         title: text.notification.titile,
         description: text.notification.decription({
-          username: firstName + ' ' + lastName,
+          // TODO
+          username: "Armando Navarro",
         }),
         variant: 'default',
         action: (
@@ -76,9 +67,8 @@ export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByC
     ev.preventDefault()
   }
 
-
   return (
-    <DialogContent className="max-w-xl">
+    <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
         <Separator />
@@ -87,34 +77,23 @@ export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByC
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ username: firstName + ' ' + lastName })}
+              {text.alert.description({ 
+                // TODO
+                username: "Armando Navarro" 
+              })}
             </AlertDescription>
           </Alert>
         </DialogDescription>
       </DialogHeader>
-
-      <form
-        autoComplete="on"
-        ref={form}
-        onSubmit={onSubmit}
-        id="new-client-form"
-        className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
-          styles?.['custom-form'],
-          {
-            [styles?.['custom-form-off']]: !checked,
-          }
-        )}
-      ></form>
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
-            id="switch-updates-client"
+            id="checkbox-delete-credit"
             checked={checked}
             onCheckedChange={onCheckedChange}
           />
           <Label
-            htmlFor="switch-updates-client"
+            htmlFor="checkbox-delete-credit"
             className={clsx('cursor-pointer')}
           >
             {text.button.checkbox}
@@ -130,15 +109,18 @@ export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByC
             }
           )}
         >
-          <Button
-            className={clsx({'hover:bg-destructive': checked})}
-            variant="default"
-            form="new-client-form"
-            type="submit"
-            disabled={!checked}
-          >
-            {text.button.delete}
-          </Button>
+          <DialogClose asChild>
+            <Button
+              className={clsx({ "hover:bg-destructive": checked })}
+              variant="default"
+              form="delete-credit-by-id"
+              type="submit"
+              disabled={!checked}
+              onClick={onSubmit}
+            >
+              {text.button.delete}
+            </Button>
+          </DialogClose>
           <DialogClose asChild>
             <Button
               type="button"
@@ -154,27 +136,25 @@ export function DeleteByClientId({ client: _client = {} as TClient }: TDeleteByC
   )
 }
 
-DeleteByClientId.dispalyname = 'DeleteByClientId'
+DeleteCreditById.dispalyname = 'DeleteCreditById'
 
 const text = {
-  title: 'Eliminacion del cliente',
+  title: 'Eliminacion de un prestamo',
   alert: {
-    title: 'Se eiminara el cliente de la base de datos',
+    title: 'Se eiminara el prestamo de la base de datos',
     description: ({ username }: { username: string }) =>
-      'Estas seguro de eliminar el cliente ' +
-      username +
-      '?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el cliente.',
+      'Estas seguro de eliminar prestamo del cliente ' + username + ' de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el prestamo.',
   },
   button: {
     close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina el cliente.',
+    delete: 'Si, elimina el prestamo.',
     checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
   },
   notification: {
-    titile: 'Eliminacion del cliente',
-    decription: ({ username }: { username: string }) =>
-      'Se ha eliminado el cliente ' + username + ' con exito.',
-    error: 'Error: la eliminacion de los datos del cliente ha fallado',
+    titile: 'Eliminacion de un credito',
+    decription: ({ username }: { username?: string }) =>
+      'Se ha eliminado prestamo del cliente ' + username + ' con exito.',
+    error: 'Error: la eliminacion del prestamo ha fallado',
     undo: 'Deshacer',
   },
 }
