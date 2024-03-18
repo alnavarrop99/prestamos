@@ -167,7 +167,7 @@ export function Credits({
                               align="center"
                               className="z-10 py-4"
                             >
-                              <Card className="max-h-56 overflow-y-auto ring-1 ring-blue-500">
+                              <Card className="max-h-64 overflow-y-auto ring-1 ring-blue-500">
                                 <CardHeader className="text-md font-bold">
                                   <CardTitle>{text.details.pay}</CardTitle>
                                   <Separator />
