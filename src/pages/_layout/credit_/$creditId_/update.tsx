@@ -45,11 +45,11 @@ const initialCuotes: TCuotesState = {
 }
 
 /* eslint-disable-next-line */
-export function UpdateCreditById( { children, open: _open = true, credit: _credit = {} as TCredit }: React.PropsWithChildren<TUpdateCreditProps> ) {
+export function UpdateCreditById( { children, open: _open, credit: _credit = {} as TCredit }: React.PropsWithChildren<TUpdateCreditProps> ) {
   const creditDB = Route.useLoaderData() ?? _credit
   const [credit, setCredit] = useState(creditDB)
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
-  const { open = _open, setStatus } = useClientStatus()
+  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
   const navigate = useNavigate()
 
   const onOpenChange = (checked: boolean) => {

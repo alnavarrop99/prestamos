@@ -50,7 +50,7 @@ export const _creditSelected = createContext<TCredit | undefined>(undefined)
 /* eslint-disable-next-line */
 export function Credits({
   children,
-  open: _open = false,
+  open: _open,
   credits: _credits = [] as TCredit[],
 }: React.PropsWithChildren<TCreditsProps>) {
   const credits = Route.useLoaderData() ?? _credits
@@ -64,7 +64,7 @@ export function Credits({
     () => credits?.filter(({ estado }) => !estado)?.length,
     [credits]
   )
-  const { open = _open, setStatus } = useClientStatus()
+  const { open = _open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
 
   const onActive = (checked: boolean) => {
     setActive(checked)

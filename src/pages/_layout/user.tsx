@@ -40,13 +40,13 @@ export type TRole = "Administrador" | "Cliente" | "Usuario"
 export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
 
 /* eslint-disable-next-line */
-export function Users({children, open: _open=false, users: _users=[] as TUser[] }: React.PropsWithChildren<TUsersProps>) {
+export function Users({children, open: _open, users: _users=[] as TUser[] }: React.PropsWithChildren<TUsersProps>) {
   const _usersDB = (Route.useLoaderData()  ?? _users)
   const usersDB = _usersDB.map<TUsersState>( (items) => ({...items, selected: false, menu: false }))
   const [users, setUsers] = useState<TUsersState[]>( usersDB )
   const navigate = useNavigate()
   const { value } = useRootStatus()
-  const { open=_open, setStatus } = useClientStatus()
+  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
 
   const onCheckChanged = ( { id: index, prop }: { id: number, prop: keyof Omit<typeof users[0], "id" | "rol" | "clientes" | "nombre"> } ) => ( checked: boolean ) => {
     const list = users.map( ( { ...user } ) => {

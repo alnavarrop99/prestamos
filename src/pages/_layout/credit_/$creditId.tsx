@@ -39,11 +39,11 @@ interface TCreditByIdProps {
 /* eslint-disable-next-line */
 export function CreditById({
   children,
-  open: _open = false,
+  open: _open,
   credit: _credit = {} as TCredit,
 }: React.PropsWithChildren<TCreditByIdProps>) {
   const credit = Route.useLoaderData() ?? _credit
-  const { open = _open, setStatus } = useClientStatus()
+  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
   const navigate = useNavigate()
 
   const onOpenChange = (checked: boolean) => {
@@ -81,11 +81,9 @@ export function CreditById({
               </Link>
             </DialogTrigger>
 
-            <DialogTrigger asChild>
-              <Link to={'./update'}>
-                <Button> {text.button.update} </Button>
-              </Link>
-            </DialogTrigger>
+            <Link to={'./update'}>
+              <Button> {text.button.update} </Button>
+            </Link>
 
             <DialogTrigger asChild>
               <Link to={'./delete'}>

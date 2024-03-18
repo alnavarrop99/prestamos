@@ -30,7 +30,7 @@ export const _selectedClients = createContext<TClient[] | undefined>(undefined)
 /* eslint-disable-next-line */
 export function Clients({
   children,
-  open: _open = false,
+  open: _open,
   clients: _clients = [] as TClient[]
 }: React.PropsWithChildren<TClientsProps>) {
   const [sorting, setSorting] = useState<SortingState>([])
