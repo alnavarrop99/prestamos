@@ -21,17 +21,20 @@ import { Route as LayoutClientImport } from './pages/_layout/client'
 import { Route as LayoutUserNewImport } from './pages/_layout/user/new'
 import { Route as LayoutUserDeleteImport } from './pages/_layout/user/delete'
 import { Route as LayoutCreditCreditIdImport } from './pages/_layout/credit_/$creditId'
+import { Route as LayoutCreditPrintImport } from './pages/_layout/credit/print'
+import { Route as LayoutCreditPayImport } from './pages/_layout/credit/pay'
 import { Route as LayoutCreditNewImport } from './pages/_layout/credit/new'
 import { Route as LayoutClientNewImport } from './pages/_layout/client/new'
 import { Route as LayoutClientDeleteImport } from './pages/_layout/client/delete'
 import { Route as LayoutUserUserIdUpdateImport } from './pages/_layout/user/$userId/update'
 import { Route as LayoutUserUserIdDeleteImport } from './pages/_layout/user/$userId/delete'
-import { Route as LayoutCreditCreditIdUpdateImport } from './pages/_layout/credit_/$creditId/update'
+import { Route as LayoutCreditCreditIdUpdateImport } from './pages/_layout/credit_/$creditId_/update'
+import { Route as LayoutCreditCreditIdPrintImport } from './pages/_layout/credit_/$creditId/print'
+import { Route as LayoutCreditCreditIdPayImport } from './pages/_layout/credit_/$creditId/pay'
 import { Route as LayoutCreditCreditIdDeleteImport } from './pages/_layout/credit_/$creditId/delete'
-import { Route as LayoutCreditCreditIdPrintImport } from './pages/_layout/credit/$creditId/print'
-import { Route as LayoutCreditCreditIdPayImport } from './pages/_layout/credit/$creditId/pay'
 import { Route as LayoutClientClientIdUpdateImport } from './pages/_layout/client/$clientId/update'
 import { Route as LayoutClientClientIdDeleteImport } from './pages/_layout/client/$clientId/delete'
+import { Route as LayoutCreditCreditIdUpdateConfirmImport } from './pages/_layout/credit_/$creditId_/update.confirm'
 
 // Create/Update Routes
 
@@ -85,6 +88,16 @@ const LayoutCreditCreditIdRoute = LayoutCreditCreditIdImport.update({
   getParentRoute: () => LayoutRoute,
 } as any)
 
+const LayoutCreditPrintRoute = LayoutCreditPrintImport.update({
+  path: '/print',
+  getParentRoute: () => LayoutCreditRoute,
+} as any)
+
+const LayoutCreditPayRoute = LayoutCreditPayImport.update({
+  path: '/pay',
+  getParentRoute: () => LayoutCreditRoute,
+} as any)
+
 const LayoutCreditNewRoute = LayoutCreditNewImport.update({
   path: '/new',
   getParentRoute: () => LayoutCreditRoute,
@@ -112,10 +125,20 @@ const LayoutUserUserIdDeleteRoute = LayoutUserUserIdDeleteImport.update({
 
 const LayoutCreditCreditIdUpdateRoute = LayoutCreditCreditIdUpdateImport.update(
   {
-    path: '/update',
-    getParentRoute: () => LayoutCreditCreditIdRoute,
+    path: '/credit/$creditId/update',
+    getParentRoute: () => LayoutRoute,
   } as any
 )
+
+const LayoutCreditCreditIdPrintRoute = LayoutCreditCreditIdPrintImport.update({
+  path: '/print',
+  getParentRoute: () => LayoutCreditCreditIdRoute,
+} as any)
+
+const LayoutCreditCreditIdPayRoute = LayoutCreditCreditIdPayImport.update({
+  path: '/pay',
+  getParentRoute: () => LayoutCreditCreditIdRoute,
+} as any)
 
 const LayoutCreditCreditIdDeleteRoute = LayoutCreditCreditIdDeleteImport.update(
   {
@@ -123,16 +146,6 @@ const LayoutCreditCreditIdDeleteRoute = LayoutCreditCreditIdDeleteImport.update(
     getParentRoute: () => LayoutCreditCreditIdRoute,
   } as any
 )
-
-const LayoutCreditCreditIdPrintRoute = LayoutCreditCreditIdPrintImport.update({
-  path: '/$creditId/print',
-  getParentRoute: () => LayoutCreditRoute,
-} as any)
-
-const LayoutCreditCreditIdPayRoute = LayoutCreditCreditIdPayImport.update({
-  path: '/$creditId/pay',
-  getParentRoute: () => LayoutCreditRoute,
-} as any)
 
 const LayoutClientClientIdUpdateRoute = LayoutClientClientIdUpdateImport.update(
   {
@@ -147,6 +160,12 @@ const LayoutClientClientIdDeleteRoute = LayoutClientClientIdDeleteImport.update(
     getParentRoute: () => LayoutClientRoute,
   } as any
 )
+
+const LayoutCreditCreditIdUpdateConfirmRoute =
+  LayoutCreditCreditIdUpdateConfirmImport.update({
+    path: '/confirm',
+    getParentRoute: () => LayoutCreditCreditIdUpdateRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -192,6 +211,14 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCreditNewImport
       parentRoute: typeof LayoutCreditImport
     }
+    '/_layout/credit/pay': {
+      preLoaderRoute: typeof LayoutCreditPayImport
+      parentRoute: typeof LayoutCreditImport
+    }
+    '/_layout/credit/print': {
+      preLoaderRoute: typeof LayoutCreditPrintImport
+      parentRoute: typeof LayoutCreditImport
+    }
     '/_layout/credit/$creditId': {
       preLoaderRoute: typeof LayoutCreditCreditIdImport
       parentRoute: typeof LayoutImport
@@ -212,21 +239,21 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutClientClientIdUpdateImport
       parentRoute: typeof LayoutClientImport
     }
-    '/_layout/credit/$creditId/pay': {
-      preLoaderRoute: typeof LayoutCreditCreditIdPayImport
-      parentRoute: typeof LayoutCreditImport
-    }
-    '/_layout/credit/$creditId/print': {
-      preLoaderRoute: typeof LayoutCreditCreditIdPrintImport
-      parentRoute: typeof LayoutCreditImport
-    }
     '/_layout/credit/$creditId/delete': {
       preLoaderRoute: typeof LayoutCreditCreditIdDeleteImport
       parentRoute: typeof LayoutCreditCreditIdImport
     }
+    '/_layout/credit/$creditId/pay': {
+      preLoaderRoute: typeof LayoutCreditCreditIdPayImport
+      parentRoute: typeof LayoutCreditCreditIdImport
+    }
+    '/_layout/credit/$creditId/print': {
+      preLoaderRoute: typeof LayoutCreditCreditIdPrintImport
+      parentRoute: typeof LayoutCreditCreditIdImport
+    }
     '/_layout/credit/$creditId/update': {
       preLoaderRoute: typeof LayoutCreditCreditIdUpdateImport
-      parentRoute: typeof LayoutCreditCreditIdImport
+      parentRoute: typeof LayoutImport
     }
     '/_layout/user/$userId/delete': {
       preLoaderRoute: typeof LayoutUserUserIdDeleteImport
@@ -235,6 +262,10 @@ declare module '@tanstack/react-router' {
     '/_layout/user/$userId/update': {
       preLoaderRoute: typeof LayoutUserUserIdUpdateImport
       parentRoute: typeof LayoutUserImport
+    }
+    '/_layout/credit/$creditId/update/confirm': {
+      preLoaderRoute: typeof LayoutCreditCreditIdUpdateConfirmImport
+      parentRoute: typeof LayoutCreditCreditIdUpdateImport
     }
   }
 }
@@ -252,8 +283,8 @@ export const routeTree = rootRoute.addChildren([
     ]),
     LayoutCreditRoute.addChildren([
       LayoutCreditNewRoute,
-      LayoutCreditCreditIdPayRoute,
-      LayoutCreditCreditIdPrintRoute,
+      LayoutCreditPayRoute,
+      LayoutCreditPrintRoute,
     ]),
     LayoutUserRoute.addChildren([
       LayoutUserDeleteRoute,
@@ -264,7 +295,11 @@ export const routeTree = rootRoute.addChildren([
     LayoutIndexRoute,
     LayoutCreditCreditIdRoute.addChildren([
       LayoutCreditCreditIdDeleteRoute,
-      LayoutCreditCreditIdUpdateRoute,
+      LayoutCreditCreditIdPayRoute,
+      LayoutCreditCreditIdPrintRoute,
+    ]),
+    LayoutCreditCreditIdUpdateRoute.addChildren([
+      LayoutCreditCreditIdUpdateConfirmRoute,
     ]),
   ]),
   LoginRoute,
