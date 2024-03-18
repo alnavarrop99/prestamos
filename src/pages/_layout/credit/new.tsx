@@ -35,6 +35,10 @@ interface TCuotesState {
   type: "value" | "porcentage"
 }
 
+/* eslint-disable-next-line */
+type TCuoteStateType = "value" | "porcentage"
+
+
 const initialCuotes: TCuotesState = {
   type: "porcentage" 
 }
@@ -47,7 +51,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
   const [ { coute, interest }, setCuote ] = useState<{ coute?: number, interest?: number }>({ })
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
-    const { checked, value } = ev.target as { checked: boolean, value: keyof typeof text.form.installments.placeholder }
+    const { checked, value } = ev.target as { checked: boolean, value: TCuoteStateType }
     if(checked && value){
       setInstallmants( { ...installmants, type: value } )
     }
@@ -110,9 +114,9 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
-        id="new-client-form"
+        id="new-credit"
         className={clsx(
-          'grid-rows-subgrid grid grid-cols-3 gap-4 items-end [&>label]:space-y-2 [&>*]:col-span-full',
+          'grid-rows-subgrid grid grid-cols-3 gap-4 items-end [&>label]:space-y-2',
           styles?.["custom-form"]
         )}
       >
@@ -120,7 +124,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <span>{text.form.cliente.label} </span>
           <Input
             required
-            name={'' as keyof TCredit}
+            name={'client' as keyof TCredit}
             type="text"
             placeholder={text.form.cliente.placeholder}
             list='credit-clients'
@@ -129,20 +133,24 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             {clients?.map( ( { nombres, apellidos, id } ) => <option key={id} value={[nombres, apellidos].join(" ")} />  )}
           </datalist>
         </Label>
-        <Label className='!col-span-1'>
+        <Label>
           <span>{text.form.date.label} </span>
-          <DatePicker label={text.form.date.placeholder} className='border border-primary' />
+          <DatePicker
+            name={"fecha_de_aprobacion" as keyof TCredit}
+            label={text.form.date.placeholder}
+            className='border border-primary' 
+          />
         </Label>
-        <Label className='!col-span-1'>
+        <Label>
           <span>{text.form.ref.label} </span>
           <Input
             required
-            name={'' as keyof TCredit}
+            name={'garante' as keyof TCredit}
             type="text"
             placeholder={text.form.ref.placeholder}
           />
         </Label>
-        <Label className='!col-span-1 !row-start-2'>
+        <Label className='row-start-2'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
             <span className='after:content-["_*_"] after:text-red-500'>{text.form.amount.label} </span>
             <Badge>$</Badge>
@@ -151,12 +159,12 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             required
             min={0}
             step={50}
-            name={'' as keyof TCredit}
+            name={'cantidad' as keyof TCredit}
             type="number"
             placeholder={text.form.amount.placeholder}
           />
         </Label>
-        <Label htmlFor='credit-cuote' className='!col-span-1 !row-start-2'>
+        <Label htmlFor='credit-cuote' className='row-start-2'>
            <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
             <span className='after:content-["_*_"] after:text-red-500'>{text.form.interest.label} </span>
             <Badge>%</Badge>
@@ -167,14 +175,14 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             min={0}
             max={100}
             step={1}
-            name={'' as keyof TCredit}
+            name={'porcentaje' as keyof TCredit}
             value={interest}
             onChange={onChangeValue("interest")}
             type="number"
             placeholder={text.form.interest.placeholder}
           />
         </Label>
-        <Label htmlFor='credit-pay' className='!col-span-1 !row-start-2'>
+        <Label htmlFor='credit-pay' className='row-start-2'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
             <span className='after:content-["_*_"] after:text-red-500'>{text.form.cuote.label} </span>
             <Badge>#</Badge>
@@ -185,29 +193,29 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             min={0}
             max={25}
             step={1}
-            name={'' as keyof TCredit}
+            name={'numero_de_cuotas' as keyof TCredit}
             value={coute}
             onChange={onChangeValue("coute")}
             type="number"
             placeholder={text.form.cuote.placeholder}
           />
         </Label>
-        <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500 !col-span-1 !row-start-3'>
+        <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500 row-start-3'>
           <span>{text.form.frecuency.label} </span>
-          <Select required name={'' as keyof TCredit} defaultValue={text.form.frecuency.items?.[0]}>
+          <Select required name={'frecuencia_del_credito' as keyof TCredit} defaultValue={text.form.frecuency.items?.[0]}>
             <SelectTrigger className="w-full border border-primary">
               <SelectValue placeholder={text.form.frecuency.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { text.form.frecuency.items.map( ( item ) => <SelectItem value={item}>{item}</SelectItem> ) }
+              { text.form.frecuency.items.map( ( item ) => <SelectItem key={item} value={item}>{item}</SelectItem> ) }
             </SelectContent>
           </Select>
         </Label>
-        <Label className='!col-span-1 !row-start-3'>
+        <Label className='row-start-3'>
           <span>{text.form.user.label} </span>
           <Input
             required
-            name={'' as keyof TCredit}
+            name={'user' as keyof TCredit}
             type="text"
             placeholder={text.form.user.placeholder}
             list='credit-user'
@@ -216,7 +224,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             {users?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )}
           </datalist>
         </Label>
-        <Label htmlFor='credit-installments' className='!col-span-1 !row-start-4'>
+        <Label htmlFor='credit-installments' className='row-start-4'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
           <span className='after:content-["_*_"] after:text-red-500'>{text.form.installments.label} </span>
           <RadioGroup name='coute-type' defaultValue={'porcentage' as keyof typeof text.form.installments.placeholder} onChange={onChangeType}  >
@@ -230,18 +238,18 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             min={0}
             max={installmants?.type === "porcentage" ? 100 : 25}
             step={1}
-            name={'' as keyof TCredit}
+            name={installmants?.type === "porcentage" ? 'porcentaje' as keyof TCredit : 'valor_de_mora' as keyof TCredit}
             type="number"
             value={installmants.value}
             placeholder={text.form.installments.placeholder?.[installmants.type]}
           />
         </Label>
-        <Label className='!col-span-1 !row-start-4'>
+        <Label className='row-start-4'>
           <span>{text.form.aditionalDays.label} </span>
           <Input
             min={0}
             max={10}
-            name={'' as keyof TCredit}
+            name={'dias_adicionales' as keyof TCredit}
             type="number"
             placeholder={text.form.aditionalDays.placeholder}
           />
@@ -251,7 +259,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <span>{text.form.comment.label}</span>
           <Textarea
             rows={5}
-            name={'' as keyof TCredit}
+            name={'comentario' as keyof TCredit}
             placeholder={text.form.comment.placeholder}
           />
         </Label>
@@ -265,7 +273,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <li><span>Monto por cuota</span>: { 300 }. </li>
         </ul>
         <div>
-          <Button variant="default" form="new-client-form" type="submit" className='self-end'>
+          <Button variant="default" form="new-credit" type="submit" className='self-end'>
             {text.button.update}
           </Button>
           <DialogClose asChild>

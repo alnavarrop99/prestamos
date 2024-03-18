@@ -12,14 +12,13 @@ import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
 import { Checkbox } from '@/components/ui/checkbox'
 import { type TPayment } from "@/api/payment";
-import { type TCredit, getCreditIdRes } from '@/api/credit'
+import { type TCredit } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { _creditSelected } from "@/pages/_layout/credit";
 
 export const Route = createFileRoute('/_layout/credit/pay')({
   component: PayCreditById,
-  loader: getCreditIdRes
 })
 
 /* eslint-disable-next-line */
@@ -89,13 +88,13 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
         <Separator />
-        <DialogDescription>{text.descriiption}</DialogDescription>
+        <DialogDescription className='text-muted-foreground'><p>{text.descriiption}</p></DialogDescription>
       </DialogHeader>
       <form
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
-        id="pay-credit-selected"
+        id="pay-selected-credit"
         className={clsx(
           'grid-rows-subgrid grid gap-3 grid-cols-2 gap-y-4 [&>label]:space-y-2',
           styles?.["custom-form"]
@@ -131,12 +130,12 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
-            id="checkbox-payment"
+            id="checkbox-payment-credit"
             checked={checked}
             onCheckedChange={onCheckedChange}
           />
           <Label
-            htmlFor="checkbox-payment"
+            htmlFor="checkbox-payment-credit"
             className={clsx('cursor-pointer')}
           >
             {text.button.checkbox}
@@ -144,14 +143,14 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
           
         </div>
         <div
-          className={clsx( 'flex flex-row items-end gap-2',
+          className={clsx( 'flex flex-col-reverse items-end gap-2',
             {
-              'flex-row-reverse': checked,
+              '!flex-col': checked,
               '[&>*:last-child]:animate-pulse': !checked,
             }
           )}
         >
-          <Button form="pay-credit-selected" type="submit" disabled={!checked} className={clsx("bg-green-500 ",{
+          <Button form="pay-selected-credit" type="submit" disabled={!checked} className={clsx({
             "hover:bg-green-700": checked,
           })}>
             {text.button.pay}
@@ -174,12 +173,12 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
 PayCreditById.dispalyname = 'PayCreditById'
 
 const text = {
-  title: 'Ejecutar un pago:',
+  title: 'Realizar un pago:',
   descriiption:
-    'Introdusca los datos de la ejecucion de un pago',
+    'Introdusca los datos correctamente para realizar un pago.',
   button: {
-    close: 'Cerrar',
-    pay: 'Pagar',
+    close: 'No, vuelve a la pestaña anterior',
+    pay: 'Si, realiza el pago',
     checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
   },
   notification: {

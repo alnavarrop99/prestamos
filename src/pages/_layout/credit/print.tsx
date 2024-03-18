@@ -13,13 +13,12 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useContext, useRef, useState } from 'react'
 import clsx from 'clsx'
 import styles from "@/styles/global.module.css"
-import { type TCredit, getCreditIdRes } from '@/api/credit'
+import { type TCredit } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { _creditSelected } from "@/pages/_layout/credit";
 
 export const Route = createFileRoute('/_layout/credit/print')({
   component: PrintCreditById,
-  loader: getCreditIdRes
 })
 
 /* eslint-disable-next-line */
@@ -50,12 +49,14 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
     ev.preventDefault()
   }
 
+  if(!credit) return;
+
   return (
     <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
         <Separator />
-        <DialogDescription>{text.description}</DialogDescription>
+        <DialogDescription className='text-muted-foreground'>{text.description}</DialogDescription>
       </DialogHeader>
       <form
         autoComplete="on"
@@ -110,9 +111,9 @@ PrintCreditById.dispalyname = 'PayCreditById'
 
 const text = {
   title: 'Opciones de impresion:',
-  description: "Seleccione la opcion deseada para la impresion del pago relacionados con el prestamo",
+  description: "Seleccione la opcion deseada para la impresion del pago.",
   button: {
-    close: 'Cerrar',
+    close: 'Volver a la pestaña anterior',
     print: 'Imprimir',
   },
   form: {
