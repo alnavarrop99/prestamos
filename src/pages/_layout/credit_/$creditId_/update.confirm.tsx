@@ -16,16 +16,16 @@ import { _creditUpdate } from "@/pages/_layout/credit_/$creditId_/update";
 import { TCredit } from '@/api/credit'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')({
-  component: DeleteCreditById,
+  component: UpdateConfirmationCredit,
 })
 
 /* eslint-disable-next-line */
-interface TDeleteCreditByIdProps {
+interface TUpdateConfirmationCreditProps {
   credit?: TCredit
 }
 
 /* eslint-disable-next-line */
-export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCreditByIdProps) {
+export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TUpdateConfirmationCreditProps) {
   const [checked, setChecked] = useState(false)
   const credit = useContext(_creditUpdate) ?? _credit
   const { open, setStatus } = useClientStatus()
@@ -66,8 +66,6 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
 
     ev.preventDefault()
   }
-
-  if(!credit) return;
 
   return (
     <DialogContent className="max-w-lg">
@@ -138,7 +136,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
   )
 }
 
-DeleteCreditById.dispalyname = 'DeleteCreditById'
+UpdateConfirmationCredit.dispalyname = 'DeleteCreditById'
 
 const text = {
   title: 'Actualizacion del prestamo',

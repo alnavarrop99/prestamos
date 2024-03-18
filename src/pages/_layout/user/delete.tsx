@@ -150,7 +150,7 @@ DeleteSelectedUsers.dispalyname = 'DeleteSelectedUsers'
 const text = {
   title: 'Eliminacion de usuarios',
   alert: {
-    title: 'Se eiminara multiples usuarios de la base de datos',
+    title: 'Se eliminara multiples usuarios de la base de datos',
     description: ({ length = 0 }: { length: number }) =>
       'Estas seguro de eliminar ' +
       length +

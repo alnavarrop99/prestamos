@@ -99,11 +99,10 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
         onSubmit={onSubmit}
         id="new-client-form"
         className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>:is(label,div)]:space-y-2',
-          styles?.['custom-form']
+          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>:is(label,div)]:space-y-2 [&>*]:col-span-full [&_label>span]:font-bold',
         )}
       >
-        <Label >
+        <Label className='!col-span-1' >
           <span>{text.form.firstName.label}</span>{' '}
           <Input
             required
@@ -113,7 +112,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
             value={nombre.split(" ")?.at(0)}
           />
         </Label>
-        <Label >
+        <Label className='!col-span-1' >
           <span>{text.form.lastName.label} </span>
           <Input
             required
@@ -124,7 +123,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
           />
         </Label>
         <Label>
-          <span className="after:content-['_*_'] after:text-red-500">{text.form.rol.label} </span>
+          <span>{text.form.rol.label} </span>
           <Select required name={'rol' as keyof typeof text.form} defaultValue={text.form.rol.items.user} value={rol}>
             <SelectTrigger className="w-full border border-primary">
               <SelectValue placeholder={text.form.rol.placeholder} />
@@ -135,7 +134,6 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
             </SelectContent>
           </Select>
         </Label>
-
         <div>
           <Label htmlFor='user-password'>
             <span>{text.form.password.current.label} </span>

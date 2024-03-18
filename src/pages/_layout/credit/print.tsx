@@ -18,11 +18,11 @@ import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@
 import { _creditSelected } from "@/pages/_layout/credit";
 
 export const Route = createFileRoute('/_layout/credit/print')({
-  component: PrintCreditById,
+  component: PrintSelectedCredit,
 })
 
 /* eslint-disable-next-line */
-interface TPaymentCreditByIdProps {
+interface TPrintSelectedCreditProps {
   credit?: TCredit
 }
 
@@ -31,7 +31,7 @@ type TOptState = "last" | "especific"
   
 
 /* eslint-disable-next-line */
-export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCreditByIdProps ) {
+export function PrintSelectedCredit( { credit: _credit = {} as TCredit }: TPrintSelectedCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
   const [ opt, setOpt ] = useState<TOptState | undefined>(undefined)
   const credit = useContext(_creditSelected) ?? _credit
@@ -48,8 +48,6 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
     form.current.reset()
     ev.preventDefault()
   }
-
-  if(!credit) return;
 
   return (
     <DialogContent className="max-w-lg">
@@ -107,7 +105,7 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
   )
 }
 
-PrintCreditById.dispalyname = 'PayCreditById'
+PrintSelectedCredit.dispalyname = 'PayCreditById'
 
 const text = {
   title: 'Opciones de impresion:',

@@ -19,7 +19,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@radix-ui/react-hover-card'
-import { Separator } from '@radix-ui/react-separator'
+import { Separator } from '@/components/ui/separator'
 import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
 import {
@@ -114,6 +114,7 @@ export function Credits({
             {children ?? <Outlet />}
           </Dialog>
         </div>
+        <Separator />
         <div
           className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5', {
             '[&>*]:basis-1/4':

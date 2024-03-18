@@ -67,8 +67,6 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
     ev.preventDefault()
   }
 
-  if(!credit) return;
-
   return (
     <DialogContent className="max-w-lg">
       <DialogHeader>

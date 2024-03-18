@@ -108,7 +108,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
         <Separator />
-        <DialogDescription>{text.descriiption}</DialogDescription>
+        <DialogDescription className='text-muted-foreground'>{text.descriiption}</DialogDescription>
       </DialogHeader>
       <form
         autoComplete="on"
@@ -296,7 +296,7 @@ NewCredit.dispalyname = 'NewClient'
 const text = {
   title: 'Crear prestamo:',
   descriiption:
-    'Introdusca los datos para la creacion de un prestamo en la plataforma',
+    'Introdusca los datos correctamente para la creacion de un prestamo en la plataforma',
   button: {
     close: 'Cerrar',
     update: 'Crear',

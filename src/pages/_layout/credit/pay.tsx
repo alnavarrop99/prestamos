@@ -18,17 +18,16 @@ import { Textarea } from '@/components/ui/textarea'
 import { _creditSelected } from "@/pages/_layout/credit";
 
 export const Route = createFileRoute('/_layout/credit/pay')({
-  component: PayCreditById,
+  component: PaySelectedCredit,
 })
 
 /* eslint-disable-next-line */
-interface TPaymentCreditByIdProps {
-  amount?: number,
+interface TPaySelectedCreditProps {
   credit?: TCredit
 }
 
 /* eslint-disable-next-line */
-export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCreditByIdProps ) {
+export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySelectedCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const credit = useContext(_creditSelected) ?? _credit
@@ -80,8 +79,6 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
     form.current.reset()
     ev.preventDefault()
   }
-
-  if(!credit) return;
 
   return (
     <DialogContent className="max-w-lg">
@@ -170,7 +167,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
   )
 }
 
-PayCreditById.dispalyname = 'PayCreditById'
+PaySelectedCredit.dispalyname = 'PayCreditById'
 
 const text = {
   title: 'Realizar un pago:',

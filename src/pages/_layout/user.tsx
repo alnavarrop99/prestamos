@@ -15,6 +15,7 @@ import { MoreHorizontal, UserCog as UserUpdate, UserX as UserDelete, Users as Us
 import { useRootStatus } from '@/lib/context/layout';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useClientStatus } from '@/lib/context/client';
+import { Separator } from '@/components/ui/separator';
 
 export const Route = createFileRoute('/_layout/user')({
   component: Users,
@@ -124,6 +125,7 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
           <Button disabled={!users.some(({ selected }) => selected )} className={clsx({"bg-destructive": users.some(({ selected }) => selected )})} onClick={onDeleteUsers}>{text.button.delete}</Button>
           </Link>
         </div>
+        <Separator />
       <div className='flex flex-wrap gap-4 [&>*]:flex-auto'>
       { users?.map( ({id, rol, nombre: name, clientes: clients, selected, active, menu }) =>
           <Card key={id} className={clsx("group shadow-lg max-w-sm py-4 cursor-pointer", styles?.["scale-users"])} onClick={onClick({id})}>

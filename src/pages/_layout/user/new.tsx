@@ -92,11 +92,11 @@ export function NewUser() {
         onSubmit={onSubmit}
         id="new-client-form"
         className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>:is(label,div)]:space-y-2',
+          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>:is(label,div)]:space-y-2 [&>*]:col-span-full',
           styles?.['custom-form']
         )}
       >
-        <Label >
+        <Label className='!col-span-1' >
           <span>{text.form.firstName.label}</span>{' '}
           <Input
             required
@@ -105,7 +105,7 @@ export function NewUser() {
             placeholder={text.form.firstName.placeholder}
           />
         </Label>
-        <Label >
+        <Label className='!col-span-1'>
           <span>{text.form.lastName.label} </span>
           <Input
             required
@@ -127,7 +127,7 @@ export function NewUser() {
           </Select>
         </Label>
 
-        <div>
+        <div className='[&>label]:after:content-["_*_"] [&>label]:after:text-red-500'>
           <Label htmlFor='user-password'>
             <span>{text.form.password.current.label} </span>
           </Label>
@@ -150,7 +150,7 @@ export function NewUser() {
           </div>
         </div>
 
-        <div>
+        <div className='[&>label]:after:content-["_*_"] [&>label]:after:text-red-500'>
           <Label htmlFor='user-confirmation'>
             <span>{text.form.password.confirmation.label} </span>
           </Label>

@@ -24,7 +24,6 @@ export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
 
 /* eslint-disable-next-line */
 interface TPaymentCreditByIdProps {
-  amount?: number,
   credit?: TCredit
 }
 
@@ -84,8 +83,6 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
     form.current.reset()
     ev.preventDefault()
   }
-
-  if(!credit) return;
 
   return (
     <DialogContent className="max-w-lg">

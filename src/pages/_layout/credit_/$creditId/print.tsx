@@ -52,8 +52,6 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
     ev.preventDefault()
   }
 
-  if(!credit) return;
-
   return (
     <DialogContent className="max-w-lg">
       <DialogHeader>
