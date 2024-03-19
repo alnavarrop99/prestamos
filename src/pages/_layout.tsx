@@ -1,7 +1,19 @@
-import { createFileRoute, Outlet, useChildMatches, } from '@tanstack/react-router'
+import {
+  createFileRoute,
+  Outlet,
+  useChildMatches,
+} from '@tanstack/react-router'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
-import { BadgeCent, BadgeDollarSign, Calendar as CalendarIcon, icons, MenuSquare, Network, NotepadText, } from 'lucide-react'
+import {
+  BadgeCent,
+  BadgeDollarSign,
+  Calendar as CalendarIcon,
+  icons,
+  MenuSquare,
+  Network,
+  NotepadText,
+} from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
@@ -12,7 +24,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Popover, PopoverContent, PopoverTrigger, } from '@/components/ui/popover'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { useRootStatus } from '@/lib/context/layout'
 import { getClientsRes, type TClient } from '@/api/clients'
 
@@ -37,7 +53,6 @@ interface TNavigationProps {
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
-
 
 const username = 'Admin99'
 
@@ -111,7 +126,7 @@ export function Layout({
   return (
     <div
       className={clsx(
-        'container max-w-screen-2xl m-auto grid auto-rows-min grid-cols-2 grid-rows-3 space-y-4 [&>*]:px-2',
+        'container m-auto grid max-w-screen-2xl auto-rows-min grid-cols-2 grid-rows-3 space-y-4 [&>*]:px-2',
         styles?.['grid-layout']
       )}
     >
@@ -179,7 +194,7 @@ export function Layout({
           )}
         </div>
       </nav>
-      <header className="!my-0 [&_div]:flex [&_div]:items-center [&_div]:gap-4 sticky top-0 z-20">
+      <header className="sticky top-0 z-20 !my-0 [&_div]:flex [&_div]:items-center [&_div]:gap-4">
         <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg">
           <div className="[&>button]:px-2">
             <Button
@@ -188,11 +203,15 @@ export function Layout({
             >
               <MenuSquare />
             </Button>
-            <Link to={"./notification"}>
-              {({ isActive }) => 
-              <Button className='px-2' variant={ isActive ? "default" : "outline" }>
-                <NotepadText />
-              </Button>}
+            <Link to={'./notification'}>
+              {({ isActive }) => (
+                <Button
+                  className="px-2"
+                  variant={isActive ? 'default' : 'outline'}
+                >
+                  <NotepadText />
+                </Button>
+              )}
             </Link>
           </div>
           <div>
@@ -215,8 +234,7 @@ export function Layout({
                       className={clsx(
                         {
                           '!hidden':
-                            search ||
-                            !route?.at(0)?.pathname?.match(/^\/+$/g),
+                            search || !route?.at(0)?.pathname?.match(/^\/+$/g),
                         },
                         styles?.['search-badge-animation']
                       )}
@@ -343,6 +361,7 @@ const text = {
     client: { title: 'Clientes', url: '/client', Icon: icons?.Award },
     credit: { title: 'Prestamos', url: '/credit', Icon: icons?.CreditCard },
     user: { title: 'Usuarios', url: '/user', Icon: icons?.BookUser },
+    report: { title: 'Reportes', url: '/report', Icon: icons?.BookA },
   },
   avatar: {
     src: 'https://placehold.co/50x50?text=Hello+World',

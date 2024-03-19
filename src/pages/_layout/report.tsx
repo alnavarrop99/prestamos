@@ -12,8 +12,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@radix-ui/react-label'
 import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
-import { ArrowDownToLine } from 'lucide-react'
+import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useRef } from 'react'
 
 export const Route = createFileRoute('/_layout/report')({
   component: Report,
@@ -91,7 +92,7 @@ export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
                 className=" group ms-auto flex gap-2 transition delay-150 duration-500"
               >
                 {' '}
-                <ArrowDownToLine />{' '}
+                <Download />{' '}
               </Button>
             </AccordionContent>
           </AccordionItem>
