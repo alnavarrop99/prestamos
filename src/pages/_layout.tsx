@@ -188,9 +188,12 @@ export function Layout({
             >
               <MenuSquare />
             </Button>
-            <Button variant="outline">
-              <NotepadText />
-            </Button>
+            <Link to={"./notification"}>
+              {({ isActive }) => 
+              <Button className='px-2' variant={ isActive ? "default" : "outline" }>
+                <NotepadText />
+              </Button>}
+            </Link>
           </div>
           <div>
             <Label className="flex items-center justify-center rounded-lg border border-border">

@@ -14,6 +14,7 @@ import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { getClientIdRes, type TClient } from '@/api/clients'
 import { useClientStatus } from '@/lib/context/client'
+import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteClientById,
@@ -32,6 +33,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
   const client = Route.useLoaderData() ?? _client
   const { nombres: firstName, apellidos: lastName } = client
   const { setStatus, open } = useClientStatus()
+  const { setNotification } = useNotifications()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -40,10 +42,21 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
   const onSubmit: React.FormEventHandler = (ev) => {
     if(!client) return;
 
+    const description = text.notification.decription({
+      username: firstName + ' ' + lastName,
+    })
+
     const action =
       ({ ...props }: TClient) =>
       () => {
         console.table(props)
+        setNotification({
+          notification: {
+            date: new Date(),
+            action: "DELETE",
+            description,
+          }
+        })
       }
 
     const timer = setTimeout(action(client), 6 * 1000)
@@ -56,9 +69,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
     if (true) {
       toast({
         title: text.notification.titile,
-        description: text.notification.decription({
-          username: firstName + ' ' + lastName,
-        }),
+        description,
         variant: 'default',
         action: (
           <ToastAction altText="action from delete client">

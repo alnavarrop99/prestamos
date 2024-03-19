@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
 import { TCredit } from '@/api/credit'
 import users from '@/__mock__/USERS.json'
+import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/credit/new')({
   component: NewCredit,
@@ -49,6 +50,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
   const clients = Route.useLoaderData() ?? _clients
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest }, setCuote ] = useState<{ coute?: number, interest?: number }>({ })
+  const { setNotification } = useNotifications()
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
     const { checked, value } = ev.target as { checked: boolean, value: TCuoteStateType }
@@ -69,10 +71,22 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
       new FormData(form.current).entries()
     ) as Record<keyof TClient, string>
 
+    const { nombres: firstName, apellidos: lastName } = items
+    const description = text.notification.decription({
+      username: firstName + ' ' + lastName,
+    })
+
     const action =
       ({ ...props }: Record<keyof TClient, string>) =>
       () => {
         console.table(props)
+        setNotification({
+          notification: {
+            date: new Date(),
+            action: "POST",
+            description,
+          }
+        })
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
@@ -82,12 +96,9 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
     }
 
     if ( true) {
-      const { nombres: firstName, apellidos: lastName } = items
       toast({
         title: text.notification.titile,
-        description: text.notification.decription({
-          username: firstName + ' ' + lastName,
-        }),
+        description,
         variant: 'default',
         action: (
           <ToastAction altText="action from new user">

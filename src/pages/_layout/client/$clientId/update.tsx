@@ -7,7 +7,6 @@ import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
 import { useReducer, useRef, useState } from 'react'
-import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
@@ -15,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { getClientIdRes, type TClient } from '@/api/clients'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useClientStatus } from '@/lib/context/client'
+import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
@@ -38,6 +38,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
   const client = Route.useLoaderData() ?? _client
   const [clientItems, setForm] = useReducer(reducer, client)
   const { open, setStatus } = useClientStatus()
+  const { setNotification } = useNotifications()
 
   const { 
     nombres: firstName,
@@ -66,10 +67,23 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
       new FormData(form.current).entries()
     ) as Record<keyof TClient, string>
 
+    const { nombres: firstName, apellidos: lastName } = items
+    const description = text.notification.decription({
+      username: firstName + ' ' + lastName,
+    })
+
+
     const action =
       ({ ...props }: Record<keyof TClient, string>) =>
       () => {
         console.table(props)
+        setNotification({
+          notification: {
+            date: new Date(),
+            action: "PATH",
+            description,
+          }
+        })
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
@@ -80,12 +94,9 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
     }
 
     if (true) {
-      const { nombres: firstName, apellidos: lastName } = items
       toast({
         title: text.notification.titile,
-        description: text.notification.decription({
-          username: firstName + ' ' + lastName,
-        }),
+        description,
         variant: 'default',
         action: (
           <ToastAction altText="action from new user">
