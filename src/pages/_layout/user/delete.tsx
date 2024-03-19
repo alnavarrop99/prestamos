@@ -15,6 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useClientStatus } from '@/lib/context/client'
 import { TUser } from '@/api/users'
 import { _selectUsers } from "@/pages/_layout/user"
+import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/user/delete')({
   component: DeleteSelectedUsers,
@@ -31,14 +32,25 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
   const [checked, setChecked] = useState(false)
   const users = useContext(_selectUsers) ?? _users
   const { open, setStatus } = useClientStatus()
+  const { setNotification } = useNotifications()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
+    const description = text.notification.decription({
+      length: users?.length,
+    })
     const action = (clients?: TUser[]) => () => {
       console.table(clients)
+      setNotification({
+        notification: {
+          date: new Date(),
+          action: "DELETE",
+          description,
+        }
+      })
     }
 
     const timer = setTimeout(action(users), 6 * 1000)
@@ -51,9 +63,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
     if ( true) {
       toast({
         title: text.notification.titile,
-        description: text.notification.decription({
-          length: users?.length,
-        }),
+        description,
         variant: 'default',
         action: (
           <ToastAction altText="action from delete client">

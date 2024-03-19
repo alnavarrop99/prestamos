@@ -15,6 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useClientStatus } from '@/lib/context/client'
 import { type TClient } from "@/api/clients"
 import { _selectedClients } from "@/pages/_layout/client";
+import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/client/delete')({
   component: DeleteSelectedClients,
@@ -31,14 +32,23 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
   const [checked, setChecked] = useState(false)
   const clients = useContext(_selectedClients) ?? _clients
   const { open, setStatus } = useClientStatus()
+  const { setNotification } = useNotifications()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
+  const description = text.notification.decription({ length: clients?.length, })
 
   const onSubmit: React.FormEventHandler = (ev) => {
     const action = (clients?: TClient[]) => () => {
       console.table(clients)
+      setNotification({
+          notification: {
+            date: new Date(),
+            action: "DELETE",
+            description,
+          }
+        })
     }
 
 
@@ -52,9 +62,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
     if ( true) {
       toast({
         title: text.notification.titile,
-        description: text.notification.decription({
-          length: clients?.length,
-        }),
+        description: description,
         variant: 'default',
         action: (
           <ToastAction altText="action from delete client">

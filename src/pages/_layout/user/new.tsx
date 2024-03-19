@@ -11,6 +11,7 @@ import clsx from 'clsx'
 import styles from '@/styles/global.module.css'
 import { useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
+import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/user/new')({
   component: NewUser,
@@ -29,6 +30,7 @@ interface TNewUserProps { }
 export function NewUser() {
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
+  const { setNotification } = useNotifications()
 
 
   const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
@@ -42,10 +44,22 @@ export function NewUser() {
       new FormData(form.current).entries()
     ) as Record<keyof (typeof text.form & typeof text.form.password), string>
 
+    const { firstName, lastName } = items
+    const description = text.notification.decription({
+      username: firstName + ' ' + lastName,
+    })
+
     const action =
       ({ ...props }: Record<keyof (typeof text.form & typeof text.form.password), string>) =>
       () => {
         console.table(props)
+        setNotification({
+          notification: {
+            date: new Date(),
+            action: "POST",
+            description,
+          }
+        })
       }
 
 
@@ -56,12 +70,9 @@ export function NewUser() {
     }
 
     if ( true) {
-      const { firstName, lastName } = items
       toast({
         title: text.notification.titile,
-        description: text.notification.decription({
-          username: firstName + ' ' + lastName,
-        }),
+        description,
         variant: 'default',
         action: (
           <ToastAction altText="action from new user">

@@ -13,6 +13,7 @@ import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useClientStatus } from '@/lib/context/client'
 import { getCreditIdRes, type TCredit } from "@/api/credit";
+import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
   component: DeleteCreditById,
@@ -29,14 +30,27 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
   const [checked, setChecked] = useState(false)
   const credit = Route.useLoaderData() ?? _credit
   const { open, setStatus } = useClientStatus()
+  const { setNotification } = useNotifications()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
+    const description = text.notification.decription({
+      // TODO
+      username: "Armando Navarro",
+    })
+
     const action = (credit?: TCredit) => () => {
       console.table(credit)
+      setNotification({
+        notification: {
+          date: new Date(),
+          action: "DELETE",
+          description,
+        }
+      })
     }
 
     const timer = setTimeout(action(credit), 6 * 1000)
@@ -49,10 +63,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
     if (true) {
       toast({
         title: text.notification.titile,
-        description: text.notification.decription({
-          // TODO
-          username: "Armando Navarro",
-        }),
+        description,
         variant: 'default',
         action: (
           <ToastAction altText="action from delete client">

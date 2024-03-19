@@ -8,11 +8,11 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
-import styles from '@/styles/global.module.css'
 import { ComponentRef, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { type TUser, getUserIdRes } from '@/api/users'
 import { useClientStatus } from '@/lib/context/client'
+import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
   component: UpdateUserById,
@@ -36,6 +36,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
   const form = useRef<HTMLFormElement>(null)
   const { rol, nombre } = Route.useLoaderData() ?? _user
   const { open, setStatus } = useClientStatus()
+  const { setNotification } = useNotifications()
 
   const onClick: ( {prop}:{ prop: keyof TPassowordState } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
@@ -48,10 +49,22 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
       new FormData(form.current).entries()
     ) as Record<keyof (typeof text.form & typeof text.form.password), string>
 
+    const { firstName, lastName } = items
+    const description = text.notification.decription({
+      username: firstName + ' ' + lastName,
+    })
+
     const action =
       ({ ...props }: Record<keyof (typeof text.form & typeof text.form.password), string>) =>
       () => {
         console.table(props)
+        setNotification({
+          notification: {
+            date: new Date(),
+            action: "PATH",
+            description,
+          }
+        })
       }
 
 
@@ -62,13 +75,10 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
       clearTimeout(timer)
     }
 
-    if ( true) {
-      const { firstName, lastName } = items
+    if (true) {
       toast({
         title: text.notification.titile,
-        description: text.notification.decription({
-          username: firstName + ' ' + lastName,
-        }),
+        description,
         variant: 'default',
         action: (
           <ToastAction altText="action from new user">

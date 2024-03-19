@@ -18,6 +18,7 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { type TClient } from "@/api/clients";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/client/new')({
   component: NewClient,
@@ -26,18 +27,33 @@ export const Route = createFileRoute('/_layout/client/new')({
 /* eslint-disable-next-line */
 export function NewClient() {
   const form = useRef<HTMLFormElement>(null)
+  const { setNotification } = useNotifications()
 
   const onSubmit: React.FormEventHandler = (ev) => {
     if (!form.current) return
+
+    
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
     ) as Record<keyof TClient, string>
 
+    const { nombres: firstName, apellidos: lastName } = items
+    const description = text.notification.decription({
+      username: firstName + ' ' + lastName,
+    })
+
     const action =
       ({ ...props }: Record<keyof TClient, string>) =>
       () => {
         console.table(props)
+        setNotification({
+          notification: {
+            date: new Date(),
+            action: "POST",
+            description,
+          }
+        })
       }
 
 
@@ -48,12 +64,9 @@ export function NewClient() {
     }
 
     if ( true) {
-      const { nombres: firstName, apellidos: lastName } = items
       toast({
         title: text.notification.titile,
-        description: text.notification.decription({
-          username: firstName + ' ' + lastName,
-        }),
+        description,
         variant: 'default',
         action: (
           <ToastAction altText="action from new user">

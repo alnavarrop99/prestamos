@@ -16,6 +16,7 @@ import { Route as LayoutImport } from './pages/_layout'
 import { Route as R404Import } from './pages/__404'
 import { Route as LayoutIndexImport } from './pages/_layout/index'
 import { Route as LayoutUserImport } from './pages/_layout/user'
+import { Route as LayoutNotificationImport } from './pages/_layout/notification'
 import { Route as LayoutCreditImport } from './pages/_layout/credit'
 import { Route as LayoutClientImport } from './pages/_layout/client'
 import { Route as LayoutUserNewImport } from './pages/_layout/user/new'
@@ -60,6 +61,11 @@ const LayoutIndexRoute = LayoutIndexImport.update({
 
 const LayoutUserRoute = LayoutUserImport.update({
   path: '/user',
+  getParentRoute: () => LayoutRoute,
+} as any)
+
+const LayoutNotificationRoute = LayoutNotificationImport.update({
+  path: '/notification',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -191,6 +197,10 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutCreditImport
       parentRoute: typeof LayoutImport
     }
+    '/_layout/notification': {
+      preLoaderRoute: typeof LayoutNotificationImport
+      parentRoute: typeof LayoutImport
+    }
     '/_layout/user': {
       preLoaderRoute: typeof LayoutUserImport
       parentRoute: typeof LayoutImport
@@ -286,6 +296,7 @@ export const routeTree = rootRoute.addChildren([
       LayoutCreditPayRoute,
       LayoutCreditPrintRoute,
     ]),
+    LayoutNotificationRoute,
     LayoutUserRoute.addChildren([
       LayoutUserDeleteRoute,
       LayoutUserNewRoute,

@@ -16,6 +16,7 @@ import { getCreditIdRes, type TCredit } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { useClientStatus } from '@/lib/context/client'
+import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
   component: PayCreditById,
@@ -33,6 +34,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
   const [checked, setChecked] = useState(false)
   const credit = Route.useLoaderData() ?? _credit
   const { open, setStatus } = useClientStatus()
+  const { setNotification } = useNotifications()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -45,11 +47,24 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
       new FormData(form.current).entries()
     ) as Record<keyof TPayment, string>
 
+    const description = text.notification.decription({
+      // TODO
+      username: "Armando Navarro",
+      number: 0,
+    })
+
     const action =
       ({ ...props }: Record<keyof TPayment, string>) =>
       () => {
         console.table(props)
         console.table(credit)
+        setNotification({
+          notification: {
+            date: new Date(),
+            action: "POST",
+            description,
+          }
+        })
       }
 
     setStatus({ open: !open })
@@ -64,11 +79,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
       // const { nombres: firstName, apellidos: lastName } = items
       toast({
         title: text.notification.titile,
-        description: text.notification.decription({
-          // username: firstName + ' ' + lastName,
-          username: "",
-          number: 0,
-        }),
+        description,
         variant: 'default',
         action: (
           <ToastAction altText="action from new user">
