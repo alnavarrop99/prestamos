@@ -9,20 +9,22 @@ import { NewUser } from '@/pages/_layout/user/new'
 import { DeleteUserById } from '@/pages/_layout/user/$userId/delete'
 import { UpdateUserById } from '@/pages/_layout/user/$userId/update'
 import { DeleteSelectedUsers } from '@/pages/_layout/user/delete'
+import { Theme } from '@/components/theme-provider'
 
-function _Layout(Story: StoryFn) {
+function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
   return (
-    <Layout>
+    <Layout theme={context.globals.theme}>
       <Story />
     </Layout>
   )
 }
 
-function _UsersLayout( users: TUser[] ){
- return (Story: StoryFn) =>
-    <Users users={users} open >
+function _UsersLayout(users: TUser[]) {
+  return (Story: StoryFn) => (
+    <Users users={users} open>
       <Story />
     </Users>
+  )
 }
 
 function _Router(Story: StoryFn) {
@@ -38,8 +40,13 @@ function _ToastProvider(Story: StoryFn) {
   )
 }
 
-function _UserBasic( prop: React.ComponentProps< typeof Users >  ) {
-  return <Users {...prop}> <></>  </Users>
+function _UserBasic(prop: React.ComponentProps<typeof Users>) {
+  return (
+    <Users {...prop}>
+      {' '}
+      <></>{' '}
+    </Users>
+  )
 }
 
 const meta: Meta = {
@@ -49,46 +56,52 @@ const meta: Meta = {
 }
 export default meta
 
-export const _User: StoryObj< React.ComponentProps< typeof _UserBasic > > = {
+export const _User: StoryObj<React.ComponentProps<typeof _UserBasic>> = {
   name: '/user',
   render: _UserBasic,
   args: {
-    users: getUsers()
-  }
+    users: getUsers(),
+  },
 }
 
-export const _NewUser: StoryObj< React.ComponentProps< typeof NewUser > > = {
+export const _NewUser: StoryObj<React.ComponentProps<typeof NewUser>> = {
   name: '/user/new',
   render: NewUser,
   args: {
-    users: getUsers()
+    users: getUsers(),
   },
-  decorators: [_UsersLayout(getUsers())]
+  decorators: [_UsersLayout(getUsers())],
 }
 
-export const _DeleteUsers: StoryObj< React.ComponentProps< typeof DeleteSelectedUsers > > = {
+export const _DeleteUsers: StoryObj<
+  React.ComponentProps<typeof DeleteSelectedUsers>
+> = {
   name: '/user/delete',
   render: DeleteSelectedUsers,
   args: {
-    users: getUsers().slice(0,5)
+    users: getUsers().slice(0, 5),
   },
-  decorators: [_UsersLayout(getUsers())]
+  decorators: [_UsersLayout(getUsers())],
 }
 
-export const _UpdateUserById: StoryObj< React.ComponentProps< typeof UpdateUserById > > = {
+export const _UpdateUserById: StoryObj<
+  React.ComponentProps<typeof UpdateUserById>
+> = {
   name: '/user/$userId/update',
   render: UpdateUserById,
   args: {
-    user: getUserId( { userId: 4 } )
+    user: getUserId({ userId: 4 }),
   },
-  decorators: [_UsersLayout(getUsers())]
+  decorators: [_UsersLayout(getUsers())],
 }
 
-export const _DeleteUserById: StoryObj< React.ComponentProps< typeof DeleteUserById > > = {
+export const _DeleteUserById: StoryObj<
+  React.ComponentProps<typeof DeleteUserById>
+> = {
   name: '/user/$userId/delete',
   render: DeleteUserById,
   args: {
-    user: getUserId({ userId: 4 })
+    user: getUserId({ userId: 4 }),
   },
-  decorators: [_UsersLayout(getUsers())]
+  decorators: [_UsersLayout(getUsers())],
 }

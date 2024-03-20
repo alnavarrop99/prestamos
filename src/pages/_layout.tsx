@@ -11,8 +11,10 @@ import {
   Calendar as CalendarIcon,
   icons,
   MenuSquare,
+  Moon,
   Network,
   NotepadText,
+  Sun,
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
@@ -31,6 +33,8 @@ import {
 } from '@/components/ui/popover'
 import { useRootStatus } from '@/lib/context/layout'
 import { getClientsRes, type TClient } from '@/api/clients'
+import { Theme, useTheme } from '@/components/theme-provider'
+import { Switch } from '@/components/ui/switch'
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
@@ -48,6 +52,7 @@ interface TStatus {
 /* eslint-disable-next-line */
 interface TNavigationProps {
   clients?: TClient[]
+  theme: Theme
 }
 
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
@@ -59,6 +64,7 @@ const username = 'Admin99'
 /* eslint-disable-next-line */
 export function Layout({
   children,
+  theme: _theme,
   clients: _clients = [] as TClient[],
 }: React.PropsWithChildren<TNavigationProps>) {
   const [{ offline, open = false, calendar }, setStatus] = useReducer(reducer, {
@@ -71,6 +77,7 @@ export function Layout({
   }))
   const clientsDB = Route.useLoaderData() ?? _clients
   const [clients, setClients] = useState(clientsDB)
+  const { theme, setTheme } = useTheme()
 
   const route = useChildMatches()
 
@@ -121,6 +128,15 @@ export function Layout({
   const onSearchChange = () => {
     if (!clients || !clients?.length) return
     setSearch({ search: !search })
+  }
+
+  const onSwitch = (checked: boolean) => {
+    if (_theme) return
+
+    if (checked) {
+      setTheme('dark')
+    }
+    setTheme('light')
   }
 
   return (
@@ -215,6 +231,10 @@ export function Layout({
             </Link>
           </div>
           <div>
+            <div>
+              {theme === 'dark' ? <Moon /> : <Sun />}
+              <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
+            </div>
             <Label className="flex items-center justify-center rounded-lg border border-border">
               <Popover
                 open={search && !!route?.at(0)?.pathname?.match(/^\/+$/g)}

@@ -1,12 +1,12 @@
 import type { Meta, StoryFn, StoryObj } from '@storybook/react'
 import $ from '@/lib/render'
 import { Layout } from '@/pages/_layout'
-import reports from '@/__mock__/REPORT.json'
+import { getReports } from '@/api/report'
 import { Report } from '@/pages/_layout/report'
 
-function _Layout(Story: StoryFn) {
+function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
   return (
-    <Layout>
+    <Layout theme={context.globals.theme}>
       <Story />
     </Layout>
   )
@@ -26,6 +26,6 @@ export default meta
 export const _Report: StoryObj<React.ComponentProps<typeof Report>> = {
   name: '/report',
   args: {
-    reports: reports,
+    reports: getReports(),
   },
 }
