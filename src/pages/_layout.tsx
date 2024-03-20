@@ -135,6 +135,7 @@ export function Layout({
 
     if (checked) {
       setTheme('dark')
+      return
     }
     setTheme('light')
   }
@@ -231,10 +232,10 @@ export function Layout({
             </Link>
           </div>
           <div>
-            <div>
+            <Label className="flex cursor-pointer items-center gap-2">
               {theme === 'dark' ? <Moon /> : <Sun />}
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
-            </div>
+            </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
               <Popover
                 open={search && !!route?.at(0)?.pathname?.match(/^\/+$/g)}
@@ -334,7 +335,6 @@ export function Layout({
                 }}
               />
             </Label>
-
             <div>
               <Avatar className="border border-primary">
                 <AvatarImage src={text.avatar.src} alt="user-img" />
