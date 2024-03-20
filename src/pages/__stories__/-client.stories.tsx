@@ -8,22 +8,24 @@ import { DeleteClientById } from '@/pages/_layout/client/$clientId/delete'
 import { Layout } from '@/pages/_layout'
 import React, { Fragment } from 'react'
 import { Toaster } from '@/components/ui/toaster'
-import clients from "@/__mock__/CLIENTS.json";
+import clients from '@/__mock__/CLIENTS.json'
 import { getClientId, type TClient } from '@/api/clients'
+import { Theme } from '@/components/theme-provider'
 
-function _Layout(Story: StoryFn) {
+function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
   return (
-    <Layout>
+    <Layout theme={context.globals.theme}>
       <Story />
     </Layout>
   )
 }
 
-function _ClientLayout( clients: TClient[] ){
- return (Story: StoryFn) =>
+function _ClientLayout(clients: TClient[]) {
+  return (Story: StoryFn) => (
     <Clients open={true} clients={clients}>
       <Story />
     </Clients>
+  )
 }
 
 function _ToastProvider(Story: StoryFn) {
@@ -35,8 +37,12 @@ function _ToastProvider(Story: StoryFn) {
   )
 }
 
-function _ClientRender({ ...props }: React.ComponentProps< typeof Clients >) {
-  return <Clients {...props}><></></Clients> 
+function _ClientRender({ ...props }: React.ComponentProps<typeof Clients>) {
+  return (
+    <Clients {...props}>
+      <></>
+    </Clients>
+  )
 }
 
 function _Router(Story: StoryFn) {
@@ -50,42 +56,48 @@ const meta: Meta<typeof Fragment> = {
 }
 export default meta
 
-export const _Home: StoryObj< React.ComponentProps< typeof Clients> > = {
+export const _Home: StoryObj<React.ComponentProps<typeof Clients>> = {
   name: '/client',
   args: {
     clients,
   },
-  render: _ClientRender
+  render: _ClientRender,
 }
 
-export const _User: StoryObj< React.ComponentProps< typeof NewClient > > = {
+export const _User: StoryObj<React.ComponentProps<typeof NewClient>> = {
   name: '/client/new',
   render: NewClient,
-  args: { },
+  args: {},
   decorators: [_ToastProvider, _ClientLayout(clients)],
 }
 
-export const _Delete: StoryObj< React.ComponentProps< typeof DeleteSelectedClients > > = {
+export const _Delete: StoryObj<
+  React.ComponentProps<typeof DeleteSelectedClients>
+> = {
   name: '/client/delete',
   render: DeleteSelectedClients,
   args: { clients },
   decorators: [_ToastProvider, _ClientLayout(clients)],
 }
 
-export const _UpdateById: StoryObj< React.ComponentProps< typeof UpdateClientById > > = {
+export const _UpdateById: StoryObj<
+  React.ComponentProps<typeof UpdateClientById>
+> = {
   name: '/client/$clientId/update',
   render: UpdateClientById,
   args: {
-    client: getClientId({ clientId: 4 })
+    client: getClientId({ clientId: 4 }),
   },
   decorators: [_ToastProvider, _ClientLayout(clients)],
 }
 
-export const _DeleteByClientId: StoryObj< React.ComponentProps< typeof DeleteClientById > > = {
+export const _DeleteByClientId: StoryObj<
+  React.ComponentProps<typeof DeleteClientById>
+> = {
   name: '/client/$clientId/delete',
   render: DeleteClientById,
   args: {
-    client: getClientId({ clientId: 4 })
+    client: getClientId({ clientId: 4 }),
   },
   decorators: [_ToastProvider, _ClientLayout(clients)],
 }

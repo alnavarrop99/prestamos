@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { _404 } from './__404'
-import { Login } from './login'
+import { _404 } from '@/pages/__404'
+import { Login } from '@/pages/login'
 import { Toaster } from '@/components/ui/toaster'
 import { Fragment } from 'react'
 
