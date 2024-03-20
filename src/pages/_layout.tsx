@@ -357,9 +357,8 @@ Layout.dispalyname = 'Layout'
 const text = {
   title: 'Matcor',
   navegation: {
-    home: { title: 'Dashboard', url: '/', Icon: icons?.Home },
-    client: { title: 'Clientes', url: '/client', Icon: icons?.Award },
     credit: { title: 'Prestamos', url: '/credit', Icon: icons?.CreditCard },
+    client: { title: 'Clientes', url: '/client', Icon: icons?.Award },
     user: { title: 'Usuarios', url: '/user', Icon: icons?.BookUser },
     report: { title: 'Reportes', url: '/report', Icon: icons?.BookA },
   },

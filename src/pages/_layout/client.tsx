@@ -1,27 +1,62 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from '@/components/ui/table'
-import { ColumnFiltersState, SortingState, VisibilityState, flexRender, getCoreRowModel, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable, } from '@tanstack/react-table'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
 import { ChevronDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import React, { createContext, useEffect, useState } from 'react'
-import { Outlet, createFileRoute, Link, useNavigate, Navigate, } from '@tanstack/react-router'
+import {
+  Outlet,
+  createFileRoute,
+  Link,
+  useNavigate,
+  Navigate,
+} from '@tanstack/react-router'
 import { useClientStatus } from '@/lib/context/client'
 import { useRootStatus } from '@/lib/context/layout'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from '@/components/ui/select'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { getClientsRes, type TClient } from '@/api/clients'
 import clsx from 'clsx'
-import { columns } from "@/pages/_layout/-column"
+import { columns } from '@/pages/_layout/-column'
+import { Separator } from '@/components/ui/separator'
 
 export const Route = createFileRoute('/_layout/client')({
   component: Clients,
-  loader: getClientsRes
+  loader: getClientsRes,
 })
 
 /* eslint-disable-next-line */
 interface TClientsProps {
-  clients?: TClient[],
+  clients?: TClient[]
   open?: boolean
 }
 
@@ -31,7 +66,7 @@ export const _selectedClients = createContext<TClient[] | undefined>(undefined)
 export function Clients({
   children,
   open: _open,
-  clients: _clients = [] as TClient[]
+  clients: _clients = [] as TClient[],
 }: React.PropsWithChildren<TClientsProps>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -81,10 +116,12 @@ export function Clients({
   }
 
   const onValueChange = (value: string) => {
-    setStatus({ filter: value as keyof TClient})
+    setStatus({ filter: value as keyof TClient })
   }
 
-  const onClick: React.MouseEventHandler<React.ComponentRef<typeof Button>> = () => {
+  const onClick: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
     if (open) {
       !children && navigate({ to: './' })
     }
@@ -92,17 +129,20 @@ export function Clients({
   }
 
   return (
-    <_selectedClients.Provider value={table.getFilteredSelectedRowModel().rows as unknown as TClient[]}>
+    <_selectedClients.Provider
+      value={table.getFilteredSelectedRowModel().rows as unknown as TClient[]}
+    >
       {!children && <Navigate to={'/client'} />}
-      <div>
+      <div className="space-y-2">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
           <Badge className="px-3 text-xl">
             {table.getFilteredRowModel().rows.length}
           </Badge>
         </div>
+        <Separator />
 
-        <div >
+        <div>
           <div className="flex items-center gap-2 py-4">
             <Dialog open={open} onOpenChange={onOpenChange}>
               <DialogTrigger asChild>
@@ -113,11 +153,19 @@ export function Clients({
               {children ?? <Outlet />}
             </Dialog>
 
-            <Link disabled={!table.getFilteredSelectedRowModel().rows?.length} to={'./delete'}>
+            <Link
+              disabled={!table.getFilteredSelectedRowModel().rows?.length}
+              to={'./delete'}
+            >
               <Button
-                className={clsx({ "bg-destructive": table.getFilteredSelectedRowModel().rows?.length })}
-                disabled={!table.getFilteredSelectedRowModel().rows?.length} onClick={onClick}>
-                  {text.buttons.delete}
+                className={clsx({
+                  'bg-destructive':
+                    table.getFilteredSelectedRowModel().rows?.length,
+                })}
+                disabled={!table.getFilteredSelectedRowModel().rows?.length}
+                onClick={onClick}
+              >
+                {text.buttons.delete}
               </Button>
             </Link>
 
@@ -171,15 +219,23 @@ export function Clients({
                   .filter((column) => column.getCanHide())
                   .map((column) => {
                     // TODO: this fuctions offuse the code but is necesary because the api is in spanish and the frontend is in english
-                    const getColumnsName = ( id: string ) => ({
-                      numero_de_identificacion: "id" as keyof typeof text.dropdown.items,
-                      telefono: "telephone" as keyof typeof text.dropdown.items,
-                      celular: "phone" as keyof typeof text.dropdown.items,
-                      direccion: "direction" as keyof typeof text.dropdown.items,
-                      nombres: "firstName" as keyof typeof text.dropdown.items,
-                      apellidos: "lastName" as keyof typeof text.dropdown.items,
-                      referencia: "ref" as keyof typeof text.dropdown.items,
-                    } as Record<keyof TClient, string>)?.[id as keyof TClient] ?? ""
+                    const getColumnsName = (id: string) =>
+                      (
+                        ({
+                          numero_de_identificacion:
+                            'id' as keyof typeof text.dropdown.items,
+                          telefono:
+                            'telephone' as keyof typeof text.dropdown.items,
+                          celular: 'phone' as keyof typeof text.dropdown.items,
+                          direccion:
+                            'direction' as keyof typeof text.dropdown.items,
+                          nombres:
+                            'firstName' as keyof typeof text.dropdown.items,
+                          apellidos:
+                            'lastName' as keyof typeof text.dropdown.items,
+                          referencia: 'ref' as keyof typeof text.dropdown.items,
+                        }) as Record<keyof TClient, string>
+                      )?.[id as keyof TClient] ?? ''
                     return (
                       <DropdownMenuCheckboxItem
                         className="capitalize hover:cursor-pointer"
@@ -189,7 +245,7 @@ export function Clients({
                           column.toggleVisibility(!!value)
                         }
                       >
-                        {text.dropdown.items?.[ getColumnsName( column.id ) ] ?? ""}
+                        {text.dropdown.items?.[getColumnsName(column.id)] ?? ''}
                       </DropdownMenuCheckboxItem>
                     )
                   })}
@@ -197,14 +253,18 @@ export function Clients({
             </DropdownMenu>
           </div>
           <div className="rounded-md border ">
-            <Table className='overflow-auto'>
+            <Table className="overflow-auto">
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}
-                  >
+                  <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
                       return (
-                        <TableHead key={header.id} className={clsx("first:sticky first:left-0 last:sticky last:right-0 first:bg-secondary last:bg-secondary")}>
+                        <TableHead
+                          key={header.id}
+                          className={clsx(
+                            'first:sticky first:left-0 first:bg-secondary last:sticky last:right-0 last:bg-secondary'
+                          )}
+                        >
                           {header.isPlaceholder
                             ? null
                             : flexRender(
@@ -225,7 +285,12 @@ export function Clients({
                       data-state={row.getIsSelected() && 'selected'}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id} className={clsx("first:sticky first:left-0 last:sticky last:right-0 first:bg-secondary last:bg-secondary")}>
+                        <TableCell
+                          key={cell.id}
+                          className={clsx(
+                            'first:sticky first:left-0 first:bg-secondary last:sticky last:right-0 last:bg-secondary'
+                          )}
+                        >
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
