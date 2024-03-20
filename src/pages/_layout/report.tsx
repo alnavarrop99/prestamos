@@ -48,7 +48,7 @@ export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
     <div className="space-y-2">
       <h1 className="text-3xl font-bold">{text.title}</h1>
       <Separator />
-      <Accordion className="space-y-2" type="multiple">
+      <Accordion className="my-2 space-y-2" type="multiple">
         {reports.map(({ nombre, parametros, id, comentario }) => (
           <AccordionItem
             key={id}
