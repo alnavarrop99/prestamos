@@ -1,14 +1,17 @@
 import React from 'react'
 import { StoryFn } from '@storybook/react'
-import { type Theme } from '../src/components/theme-provider'
+import { ThemeProvider, type Theme } from '../src/components/theme-provider'
 
-export default function _ThemeProvider(
+export function _ThemeProvider(
   Story: StoryFn,
   context: { globals: { theme: Theme } }
 ) {
   return (
-    <div id="theme-provider" className={context.globals.theme}>
+    <ThemeProvider
+      defaultTheme={context.globals.theme}
+      storageKey="vite-ui-theme"
+    >
       <Story />
-    </div>
+    </ThemeProvider>
   )
 }

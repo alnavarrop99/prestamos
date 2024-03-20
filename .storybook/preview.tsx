@@ -1,4 +1,4 @@
-import ThemeProvider from './decorators'
+import { _ThemeProvider } from './decorators'
 import type { Preview } from '@storybook/react'
 import '../src/index.css'
 // import { initialize, mswLoader } from 'msw-storybook-addon'
@@ -22,7 +22,7 @@ const preview: Preview = {
       },
     },
   },
-  decorators: [ThemeProvider],
+  decorators: [_ThemeProvider],
   // loaders: [mswLoader],
 }
 
