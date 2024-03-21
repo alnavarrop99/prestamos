@@ -5,16 +5,15 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { useRef, useState } from 'react'
-import styles from '@/styles/global.module.css'
+import { useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useClientStatus } from '@/lib/context/client'
 import { TUser, getUserIdRes } from '@/api/users'
 import { useNotifications } from '@/lib/context/notification'
+import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/user/$userId/delete')({
   component: DeleteUserById,
@@ -28,12 +27,11 @@ interface TDeleteByUser {
 
 /* eslint-disable-next-line */
 export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
-  const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const user = Route.useLoaderData() ?? _user
   const { nombre } = user
-  const { setStatus, open } = useClientStatus()
   const { setNotification } = useNotifications()
+  const { open, setStatus } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -58,9 +56,9 @@ export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
           }
         })
       }
-
+  
+    setStatus({ open: !open })
     const timer = setTimeout(action(user), 6 * 1000)
-    setStatus({ open: !open, })
 
     const onClick = () => {
       clearTimeout(timer)
@@ -100,29 +98,15 @@ export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
           </Alert>
         </DialogDescription>
       </DialogHeader>
-
-      <form
-        autoComplete="on"
-        ref={form}
-        onSubmit={onSubmit}
-        id="new-client-form"
-        className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
-          styles?.['custom-form'],
-          {
-            [styles?.['custom-form-off']]: !checked,
-          }
-        )}
-      ></form>
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
-            id="switch-updates-client"
+            id="confirmation"
             checked={checked}
             onCheckedChange={onCheckedChange}
           />
           <Label
-            htmlFor="switch-updates-client"
+            htmlFor="confirmation"
             className={clsx('cursor-pointer')}
           >
             {text.button.checkbox}
@@ -138,15 +122,16 @@ export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
             }
           )}
         >
-          <Button
-            className={clsx({'bg-destructive hover:bg-destructive': checked})}
-            variant="default"
-            form="new-client-form"
-            type="submit"
-            disabled={!checked}
-          >
-            {text.button.delete}
-          </Button>
+            <Button
+              className={clsx({'bg-destructive hover:bg-destructive': checked})}
+              variant="default"
+              form="delete-user"
+              type="submit"
+              disabled={!checked}
+              onClick={onSubmit}
+            >
+              {text.button.delete}
+            </Button>
           <DialogClose asChild>
             <Button
               type="button"

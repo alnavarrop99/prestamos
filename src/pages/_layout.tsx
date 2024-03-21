@@ -83,8 +83,6 @@ export function Layout({
   const { theme, setTheme } = useTheme() 
   const route = useChildMatches()
 
-  console.log( user )
-
   useEffect(() => {
     const onNotwork = () => {
       setStatus({ offline: !offline })

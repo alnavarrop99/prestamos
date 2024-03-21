@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 export interface TNotification {
-  id: number
+  id?: number
   action: 'POST' | 'PATH' | 'DELETE'
   description: string
   date: Date
@@ -16,6 +16,6 @@ export const useNotifications = create<TNotificationContext>()((set) => ({
   setNotification: ({ notification }) =>
     set(({ notifications }) => {
       if (!notifications) return { notifications: [notification] }
-      return { notifications: [...notifications, notification] }
+      return { notifications: [...notifications, { id: (notification?.id ?? 0) + 1,  ...notification }] }
     }),
 }))

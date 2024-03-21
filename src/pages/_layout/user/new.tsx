@@ -27,7 +27,7 @@ interface TPassoword {
 interface TNewUserProps { }
 
 /* eslint-disable-next-line */
-export function NewUser() {
+export function NewUser({}: TNewUserProps) {
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
   const { setNotification } = useNotifications()
@@ -137,7 +137,6 @@ export function NewUser() {
             </SelectContent>
           </Select>
         </Label>
-
         <div className='[&>label]:after:content-["_*_"] [&>label]:after:text-red-500'>
           <Label htmlFor='user-password'>
             <span>{text.form.password.current.label} </span>
@@ -160,7 +159,6 @@ export function NewUser() {
             />
           </div>
         </div>
-
         <div className='[&>label]:after:content-["_*_"] [&>label]:after:text-red-500'>
           <Label htmlFor='user-confirmation'>
             <span>{text.form.password.confirmation.label} </span>
@@ -183,7 +181,6 @@ export function NewUser() {
             />
           </div>
         </div>
-        
       </form>
       <DialogFooter className="justify-end">
         <Button variant="default" form="new-client-form" type="submit">
@@ -250,6 +247,3 @@ const text = {
     },
   },
 }
-
-
-

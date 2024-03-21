@@ -20,9 +20,14 @@ export const Route = createFileRoute('/_layout/user/$userId/update')({
 })
 
 /* eslint-disable-next-line */
-interface TPassowordState {
+interface TPassowordVisibilityState {
   password?: boolean
   confirmation?: boolean
+}
+
+interface TPassowordValueState{
+  password?: string
+  confirmation?: string
 }
 
 /* eslint-disable-next-line */
@@ -32,22 +37,30 @@ interface TUpdateUserById {
 
 /* eslint-disable-next-line */
 export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
-  const [ passItems, setPassword ] = useState<TPassowordState>({  })
+  const [ visibility, setVisibility ] = useState<TPassowordVisibilityState>({})
+  const [ password, setPassword ] = useState<TPassowordValueState | undefined>(undefined)
   const form = useRef<HTMLFormElement>(null)
   const { rol, nombre } = Route.useLoaderData() ?? _user
-  const { open, setStatus } = useClientStatus()
   const { setNotification } = useNotifications()
+  const { open, setStatus } = useClientStatus()
 
-  const onClick: ( {prop}:{ prop: keyof TPassowordState } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
-    setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
+  const onClick: ( {prop}:{ prop: keyof TPassowordVisibilityState } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
+    setVisibility( { ...visibility, [ prop ]: !visibility?.[prop]  } )
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
-    if (!form.current) return
+  const onChange: React.ChangeEventHandler< ComponentRef< typeof Input > > = (ev) => {
+    const { name, value } = ev?.target
+    setPassword( { ...password, [ name ]: value  } )
+    console.log( { [ name ]: value  } )
+  }
+
+
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
+    if (!form.current) return;
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof (typeof text.form & typeof text.form.password), string>
+    ) as Record<keyof TUser | "firstName" | "lastName", string>
 
     const { firstName, lastName } = items
     const description = text.notification.decription({
@@ -55,7 +68,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
     })
 
     const action =
-      ({ ...props }: Record<keyof (typeof text.form & typeof text.form.password), string>) =>
+      ({ ...props }: Record<string, string>) =>
       () => {
         console.table(props)
         setNotification({
@@ -66,7 +79,6 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
           }
         })
       }
-
 
     const timer = setTimeout(action(items), 6 * 1000)
     setStatus({ open: !open })
@@ -94,8 +106,6 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
     ev.preventDefault()
   }
 
-  const { password, confirmation } = passItems
-
   return (
     <DialogContent className="max-w-lg">
       <DialogHeader>
@@ -107,7 +117,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
-        id="new-client-form"
+        id="update-user"
         className={clsx(
           'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>:is(label,div)]:space-y-2 [&>*]:col-span-full [&_label>span]:font-bold',
         )}
@@ -119,22 +129,22 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
             name={'firstName' as keyof typeof text.form}
             type="text"
             placeholder={text.form.firstName.placeholder}
-            value={nombre.split(" ")?.at(0)}
+            defaultValue={nombre.split(" ")?.at(0)}
           />
         </Label>
         <Label className='!col-span-1' >
           <span>{text.form.lastName.label} </span>
           <Input
             required
-            name={'lastName' as keyof typeof text.form}
+            name={'lastName'}
             type="text"
             placeholder={text.form.lastName.placeholder}
-            value={nombre.split(" ")?.at(1)}
+            defaultValue={nombre.split(" ")?.at(1)}
           />
         </Label>
         <Label>
           <span>{text.form.rol.label} </span>
-          <Select required name={'rol' as keyof typeof text.form} defaultValue={text.form.rol.items.user} value={rol}>
+          <Select required name={'rol' as keyof TUser} defaultValue={rol}>
             <SelectTrigger className="w-full border border-primary">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
@@ -159,14 +169,14 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
             </Button>
             <Input
               id='user-password'
-              required
-              name={'password' as keyof typeof text.form.password}
+              name={'password'}
               type={!password ? "password" : "text"}
               placeholder={text.form.password.current.placeholder}
+              value={password?.password}
+              onChange={onChange}
             />
           </div>
         </div>
-
         <div>
           <Label htmlFor='user-new'>
             <span>{text.form.password.new.label} </span>
@@ -176,25 +186,28 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
               type="button"
               className="w-fit p-1.5"
               onClick={onClick({ prop: "confirmation" })}
-              variant={!confirmation ? 'outline' : 'default'}
+              variant={!visibility.confirmation ? 'outline' : 'default'}
             >
-              {!confirmation ? <Eye /> : <EyeOff />}
+              {!visibility.confirmation ? <Eye /> : <EyeOff />}
             </Button>
             <Input
               id='user-new'
-              required
-              name={'new' as keyof typeof text.form.password}
-              type={!confirmation ? "password" : "text"}
+              name={'new'}
+              required={!!password?.password}
+              type={!visibility.confirmation ? "password" : "text"}
               placeholder={text.form.password.new.placeholder}
+              value={password?.confirmation}
+              onChange={onChange}
             />
           </div>
         </div>
-        
       </form>
       <DialogFooter className="justify-end">
-        <Button variant="default" form="new-client-form" type="submit"
->
-          {text.button.update}
+        <Button 
+          variant="default" 
+          form="update-user" 
+          type="submit">
+            {text.button.update}
         </Button>
         <DialogClose asChild>
           <Button
