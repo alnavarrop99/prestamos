@@ -84,6 +84,17 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
     setStatus({ open })
   }
 
+  const onOpenChangeById: ({id}: {id: number}) => React.MouseEventHandler< React.ComponentRef< typeof DropdownMenuItem > > = ({id}) => (ev) => {
+    ev.stopPropagation()
+
+    const user = users.find( ({ id: userId }) => id === userId )
+    if( !user ) return;
+    const { menu } = user
+
+    onOpenChange( !open )
+    onCheckChanged({id, prop: "menu"})( !menu )
+  }
+
   useEffect(() => {
     setUsers( usersDB.filter(( { nombre } ) => nombre.toLowerCase().includes(value?.toLowerCase() ?? "")) ) 
   }, [value])
@@ -134,10 +145,10 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
                     {text.menu.title}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem >
+                  <DropdownMenuItem onClick={onOpenChangeById({ id })}>
                     {text.menu.client} <UsersList />
                   </DropdownMenuItem>
-                  <DropdownMenuItem  >
+                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
                     <DialogTrigger asChild>
                       <Link
                           className="flex h-full w-full items-center justify-between gap-2"
@@ -147,7 +158,7 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
                       </Link>
                     </DialogTrigger>
                   </DropdownMenuItem>
-                  <DropdownMenuItem  >
+                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
                     <DialogTrigger asChild>
                       <Link
                         className="flex h-full w-full items-center justify-between gap-2"
