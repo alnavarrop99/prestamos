@@ -4,9 +4,8 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
-import { useContext, useRef, useState } from 'react'
-import styles from '@/styles/global.module.css'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -28,18 +27,19 @@ interface TDeleteClientProps {
 
 /* eslint-disable-next-line */
 export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: TDeleteClientProps) {
-  const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const clients = useContext(_selectedClients) ?? _clients
   const { open, setStatus } = useClientStatus()
   const { setNotification } = useNotifications()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
-  const description = text.notification.decription({ length: clients?.length, })
 
   const onSubmit: React.FormEventHandler = (ev) => {
+    const description = text.notification.decription({ length: clients?.length })
+
     const action = (clients?: TClient[]) => () => {
       console.table(clients)
       setNotification({
@@ -51,7 +51,6 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
         })
     }
 
-
     const timer = setTimeout(action(clients), 6 * 1000)
     setStatus({open: !open})
 
@@ -59,7 +58,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
       clearTimeout(timer)
     }
 
-    if ( true) {
+    if (true) {
       toast({
         title: text.notification.titile,
         description: description,
@@ -73,7 +72,8 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
         ),
       })
     }
-
+    
+    navigate({ to: "./" })
     ev.preventDefault()
   }
 
@@ -92,20 +92,6 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
           </Alert>
         </DialogDescription>
       </DialogHeader>
-
-      <form
-        autoComplete="on"
-        ref={form}
-        onSubmit={onSubmit}
-        id="new-client-form"
-        className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
-          styles?.['custom-form'],
-          {
-            [styles?.['custom-form-off']]: !checked,
-          }
-        )}
-      ></form>
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
@@ -133,9 +119,10 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
           <Button
             className={clsx({ "hover:bg-destructive bg-destructive": checked })}
             variant="default"
-            form="new-client-form"
+            form="delete-client"
             type="submit"
             disabled={!checked}
+            onClick={onSubmit}
           >
             {text.button.delete}
           </Button>

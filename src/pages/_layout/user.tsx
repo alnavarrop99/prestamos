@@ -5,7 +5,6 @@ import { Avatar } from '@/components/ui/avatar';
 import { AvatarFallback } from '@radix-ui/react-avatar';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import styles from "@/styles/global.module.css";
 import clsx from 'clsx';
 import { Button } from '@/components/ui/button';
 import { createContext, useEffect, useState } from 'react';
@@ -106,7 +105,7 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
             </DialogTrigger>
             <DialogTrigger asChild >
               <Link to={"./delete"} disabled={!users.some(({ selected }) => selected )} >
-                <Button disabled={!users.some(({ selected }) => selected )} className={clsx({"bg-destructive": users.some(({ selected }) => selected )})} >
+                <Button disabled={!users.some(({ selected }) => selected )} className={clsx({"bg-destructive hover:bg-destructive": users.some(({ selected }) => selected )})} >
                   {text.button.delete}
                 </Button>
               </Link>

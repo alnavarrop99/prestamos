@@ -338,7 +338,6 @@ export function Layout({
               />
             </Label>
             <div>
-              
               <HoverCard>
                 <HoverCardTrigger>
                   <Badge className="text-sm cursor-pointer" variant="outline">

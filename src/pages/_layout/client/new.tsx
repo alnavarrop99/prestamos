@@ -32,8 +32,6 @@ export function NewClient() {
   const onSubmit: React.FormEventHandler = (ev) => {
     if (!form.current) return
 
-    
-
     const items = Object.fromEntries(
       new FormData(form.current).entries()
     ) as Record<keyof TClient, string>
@@ -56,14 +54,13 @@ export function NewClient() {
         })
       }
 
-
     const timer = setTimeout(action(items), 6 * 1000)
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if ( true) {
+    if (true) {
       toast({
         title: text.notification.titile,
         description,
@@ -95,7 +92,7 @@ export function NewClient() {
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
-        id="new-client-form"
+        id="new-client"
         className={clsx(
           'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
           styles?.['custom-form']
@@ -141,7 +138,6 @@ export function NewClient() {
             </SelectContent>
           </Select>
         </Label>
-        
         <Label>
           <span>{text.form.phone.label} </span>
           <Input
@@ -187,7 +183,7 @@ export function NewClient() {
         </Label>
       </form>
       <DialogFooter className="justify-end">
-        <Button variant="default" form="new-client-form" type="submit">
+        <Button variant="default" form="new-client" type="submit">
           {' '}
           {text.button.update}{' '}
         </Button>

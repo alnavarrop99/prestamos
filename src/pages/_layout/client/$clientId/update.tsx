@@ -56,10 +56,6 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
     setChecked(!checked)
   }
 
-  const onChange: React.ChangeEventHandler< HTMLFormElement > = (ev) => {
-    setForm({ ...clientItems, [ev.target.name as keyof TClient]: ev.target.value })
-  }
-
   const onSubmit: React.FormEventHandler = (ev) => {
     if (!form.current) return;
 
@@ -118,7 +114,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
           {text.title({ state: !checked })}
         </DialogTitle>
         <Separator />
-        <DialogDescription>
+        <DialogDescription className='text-muted-foreground'>
           {text.description({ state: !checked })}
         </DialogDescription>
       </DialogHeader>
@@ -126,7 +122,6 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
-        onChange={onChange}
         id="update-client"
         className={clsx(
           'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
@@ -142,7 +137,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             disabled={!checked}
             name={'nombres' as keyof TClient}
             type="text"
-            value={firstName}
+            defaultValue={firstName}
             placeholder={checked ? text.form.firstName.placeholder : undefined}
           />
         </Label>
@@ -153,7 +148,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             disabled={!checked}
             name={'apellidos' as keyof TClient}
             type="text"
-            value={lastName}
+            defaultValue={lastName}
             placeholder={checked ? text.form.lastName.placeholder : undefined}
           />
         </Label>
@@ -164,13 +159,13 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             disabled={!checked}
             name={'numero_de_identificacion' as keyof TClient}
             type="text"
-            value={id}
+            defaultValue={id}
             placeholder={checked ? text.form.id.placeholder : undefined}
           />
         </Label>
         <Label>
           <span>{text.form.typeId.label} </span>
-          <Select value={idType} disabled={!checked} required name={'tipo_de_identificacion' as keyof TClient} >
+          <Select defaultValue={idType} disabled={!checked} required name={'tipo_de_identificacion' as keyof TClient} >
             <SelectTrigger className={clsx("w-full", { "border border-primary": checked})}>
               <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
@@ -181,7 +176,6 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             </SelectContent>
           </Select>
         </Label>
-        
         <Label>
           <span>{text.form.phone.label} </span>
           <Input
@@ -189,7 +183,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             disabled={!checked}
             name={'celular' as keyof TClient}
             type="tel"
-            value={phone}
+            defaultValue={phone}
             placeholder={checked ? text.form.phone.placeholder : undefined}
           />
         </Label>
@@ -200,7 +194,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             disabled={!checked}
             name={'telefono' as keyof TClient}
             type="tel"
-            value={telephone}
+            defaultValue={telephone}
             placeholder={checked ? text.form.telephone.placeholder : undefined}
           />
         </Label>
@@ -211,7 +205,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             disabled={!checked}
             name={'direccion' as keyof TClient}
             type="text"
-            value={direction}
+            defaultValue={direction}
             placeholder={checked ? text.form.direction.placeholder : undefined}
           />
         </Label>
@@ -222,7 +216,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             disabled={!checked}
             name={'segunda_direccion' as keyof TClient}
             type="text"
-            value={secondDirection}
+            defaultValue={secondDirection}
             placeholder={checked ? text.form.ref.placeholder : undefined}
           />
         </Label>
@@ -233,7 +227,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             disabled={!checked}
             name={'referencia' as keyof TClient}
             type="text"
-            value={ref}
+            defaultValue={ref}
             placeholder={checked ? text.form.ref.placeholder : undefined}
           />
         </Label>
@@ -241,12 +235,12 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Switch
-            id="switch-updates-client"
+            id="edit"
             checked={checked}
             onCheckedChange={onCheckedChange}
           />
           <Label
-            htmlFor="switch-updates-client"
+            htmlFor="edit"
             className={clsx('cursor-pointer')}
           >
             <Badge>{text.button.mode}</Badge>
@@ -255,13 +249,12 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
         <div className="space-x-2">
           <Button
             variant="default"
-            form="update-client-form"
+            form="update-client"
             type="submit"
             disabled={!checked}
           >
             {text.button.update}
           </Button>
-
           <DialogClose asChild>
             <Button
               type="button"
@@ -281,7 +274,7 @@ UpdateClientById.dispalyname = 'UpdateClientById'
 
 const text = {
   title: ({ state }: { state: boolean }) =>
-    (state ? 'Ver' : 'Actualizacion de los datos') + ' cliente:',
+    (state ? 'Dates del ' : 'Actualizacion de los datos') + ' cliente:',
   description: ({ state }: { state: boolean }) =>
     (state ? 'Datos' : 'Actualizacion de los datos') +
     ' del cliente en la plataforma.',

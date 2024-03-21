@@ -119,15 +119,6 @@ export function Clients({
     setStatus({ filter: value as keyof TClient })
   }
 
-  const onClick: React.MouseEventHandler<
-    React.ComponentRef<typeof Button>
-  > = () => {
-    if (open) {
-      !children && navigate({ to: './' })
-    }
-    setStatus({ open: !open })
-  }
-
   return (
     <_selectedClients.Provider
       value={table.getFilteredSelectedRowModel().rows as unknown as TClient[]}
@@ -141,7 +132,6 @@ export function Clients({
           </Badge>
         </div>
         <Separator />
-
         <div>
           <div className="flex items-center gap-2 py-4">
             <Dialog open={open} onOpenChange={onOpenChange}>
@@ -150,25 +140,24 @@ export function Clients({
                   <Button variant="default">{text.buttons.new}</Button>
                 </Link>
               </DialogTrigger>
+              <DialogTrigger asChild>
+                <Link
+                  disabled={!table.getFilteredSelectedRowModel().rows?.length}
+                  to={'./delete'}
+                >
+                  <Button
+                    className={clsx({
+                      'bg-destructive hover:bg-destructive':
+                        table.getFilteredSelectedRowModel().rows?.length,
+                    })}
+                    disabled={!table.getFilteredSelectedRowModel().rows?.length}
+                  >
+                    {text.buttons.delete}
+                  </Button>
+                </Link>
+              </DialogTrigger>
               {children ?? <Outlet />}
             </Dialog>
-
-            <Link
-              disabled={!table.getFilteredSelectedRowModel().rows?.length}
-              to={'./delete'}
-            >
-              <Button
-                className={clsx({
-                  'bg-destructive':
-                    table.getFilteredSelectedRowModel().rows?.length,
-                })}
-                disabled={!table.getFilteredSelectedRowModel().rows?.length}
-                onClick={onClick}
-              >
-                {text.buttons.delete}
-              </Button>
-            </Link>
-
             <Select value={filter} onValueChange={onValueChange}>
               <SelectTrigger className="ms-auto w-auto">
                 <SelectValue placeholder={text.select.placeholder} />
@@ -206,7 +195,6 @@ export function Clients({
                 </SelectItem>
               </SelectContent>
             </Select>
-
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline">
@@ -252,8 +240,8 @@ export function Clients({
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="rounded-md border ">
-            <Table className="overflow-auto">
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
@@ -262,7 +250,7 @@ export function Clients({
                         <TableHead
                           key={header.id}
                           className={clsx(
-                            'first:sticky first:left-0 first:bg-secondary last:sticky last:right-0 last:bg-secondary'
+                            'first:sticky first:left-0 last:sticky last:right-0'
                           )}
                         >
                           {header.isPlaceholder
@@ -288,7 +276,7 @@ export function Clients({
                         <TableCell
                           key={cell.id}
                           className={clsx(
-                            'first:sticky first:left-0 first:bg-secondary last:sticky last:right-0 last:bg-secondary'
+                            'first:sticky first:left-0 last:sticky last:right-0'
                           )}
                         >
                           {flexRender(
