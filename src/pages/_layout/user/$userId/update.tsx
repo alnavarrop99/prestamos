@@ -192,14 +192,15 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
         
       </form>
       <DialogFooter className="justify-end">
-        <Button variant="default" form="new-client-form" type="submit">
+        <Button variant="default" form="new-client-form" type="submit"
+>
           {text.button.update}
         </Button>
         <DialogClose asChild>
           <Button
             type="button"
             variant="secondary"
-            className="font-bold hover:ring-1 hover:ring-primary"
+            className="font-bold hover:ring hover:ring-primary"
           >
             {text.button.close}
           </Button>

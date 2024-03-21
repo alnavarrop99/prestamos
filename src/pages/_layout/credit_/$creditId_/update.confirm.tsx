@@ -122,7 +122,6 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
         >
           <DialogClose asChild>
             <Button
-              className={clsx({ "hover:bg-blue-600": checked })}
               variant="default"
               form="confirm-update-credit"
               type="submit"
@@ -136,7 +135,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
             <Button
               type="button"
               variant="secondary"
-              className="font-bold hover:ring-1 hover:ring-primary"
+              className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
             </Button>

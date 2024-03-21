@@ -193,7 +193,7 @@ export function NewUser() {
           <Button
             type="button"
             variant="secondary"
-            className="font-bold hover:ring-1 hover:ring-primary"
+            className="font-bold hover:ring hover:ring-primary"
           >
             {text.button.close}
           </Button>

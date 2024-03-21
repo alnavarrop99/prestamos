@@ -131,7 +131,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
           )}
         >
           <Button
-            className={clsx({ "hover:bg-destructive": checked })}
+            className={clsx({ "hover:bg-destructive bg-destructive": checked })}
             variant="default"
             form="new-client-form"
             type="submit"
@@ -143,7 +143,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
             <Button
               type="button"
               variant="secondary"
-              className="font-bold hover:ring-1 hover:ring-primary"
+              className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
             </Button>

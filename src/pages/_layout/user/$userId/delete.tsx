@@ -28,7 +28,7 @@ interface TDeleteByUser {
 
 /* eslint-disable-next-line */
 export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
-    const form = useRef<HTMLFormElement>(null)
+  const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const user = Route.useLoaderData() ?? _user
   const { nombre } = user
@@ -139,7 +139,7 @@ export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
           )}
         >
           <Button
-            className={clsx({'hover:bg-destructive': checked})}
+            className={clsx({'bg-destructive hover:bg-destructive': checked})}
             variant="default"
             form="new-client-form"
             type="submit"
@@ -151,7 +151,7 @@ export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
             <Button
               type="button"
               variant="secondary"
-              className="font-bold hover:ring-1 hover:ring-primary"
+              className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
             </Button>

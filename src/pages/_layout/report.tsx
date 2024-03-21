@@ -89,7 +89,7 @@ export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
                 type="submit"
                 form={'report' + id}
                 variant="default"
-                className=" group ms-auto flex gap-2 transition delay-150 duration-500"
+                className=" group ms-auto flex gap-2"
               >
                 {' '}
                 <Download />{' '}

@@ -94,7 +94,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCredit }: TPrint
           <Button
             type="button"
             variant="secondary"
-            className="font-bold hover:ring-1 hover:ring-primary"
+            className="font-bold hover:ring hover:ring-primary"
           >
             {text.button.close}
           </Button>

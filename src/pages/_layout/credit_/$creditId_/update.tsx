@@ -102,12 +102,12 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className='ms-auto' asChild>
               <Link to={'./confirm'}>
-                <Button> {text.button.update}  </Button>
+                <Button variant="default"> {text.button.update}  </Button>
               </Link>
             </DialogTrigger>
 
               <Link to={'../'}>
-                <Button variant="outline"> {text.button.close} </Button>
+                <Button variant="outline" className='hover:ring hover:ring-primary'> {text.button.close} </Button>
               </Link>
 
             {children ?? <Outlet />}

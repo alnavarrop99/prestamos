@@ -13,9 +13,11 @@ type TGetUserId = (params: { userId: number }) => TUser
 type TGetUsers = () => TUser[]
 type TGetUserIdRes = ({params}:{ params: { userId: string }}) => Promise<TUser>
 type TGetUsersRes = () => Promise<TUser[]>
+type TGetCurrentUserRes = () => Promise<TUser>
 
 export const getUserId: TGetUserId = ({ userId }) => getId( users, { id: userId } )
 export const getUsers: TGetUsers = () => gets( users )
 export const getUserIdRes: TGetUserIdRes = async ({ params: { userId }}) => getUserId({ userId: Number.parseInt(userId) })
 export const getUsersRes: TGetUsersRes = async () => getUsers()
+export const getCurrentUserRes: TGetCurrentUserRes = () => getId( users, { id: 4 } )
 

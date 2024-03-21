@@ -5,10 +5,12 @@ import notifications from '@/__mock__/NOTIFICATION.json'
 import { Notifications, ActionIcon } from '@/pages/_layout/notification'
 import { TNotification } from '@/lib/context/notification'
 import { Theme } from '@/components/theme-provider'
+import { getClients } from '@/api/clients'
+import { getUserId } from '@/api/users'
 
 function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
   return (
-    <Layout theme={context.globals.theme}>
+    <Layout theme={context.globals.theme} clients={getClients()} user={getUserId({ userId: 4 })}>
       <Story />
     </Layout>
   )

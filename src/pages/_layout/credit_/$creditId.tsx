@@ -62,8 +62,7 @@ export function CreditById({
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
               <Link to={'./print'}>
-                <Button variant="ghost">
-                  {' '}
+                <Button variant="ghost" className='hover:ring hover:ring-primary'>
                   <Printer />{' '}
                 </Button>
               </Link>
@@ -82,12 +81,12 @@ export function CreditById({
             </DialogTrigger>
 
             <Link to={'./update'}>
-              <Button> {text.button.update} </Button>
+              <Button variant="default"> {text.button.update} </Button>
             </Link>
 
             <DialogTrigger asChild>
               <Link to={'./delete'}>
-                <Button className="hover:bg-destructive">
+                <Button variant="default" className="hover:bg-destructive">
                   {' '}
                   {text.button.delete}{' '}
                 </Button>

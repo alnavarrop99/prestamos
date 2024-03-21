@@ -160,7 +160,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
           )}
         >
           <Button form="pay-selected-credit" type="submit" disabled={!checked} className={clsx({
-            "bg-green-500 hover:bg-green-700": checked,
+            "bg-green-700 hover:bg-green-700": checked,
           })}>
             {text.button.pay}
           </Button>

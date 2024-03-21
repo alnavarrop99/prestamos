@@ -88,7 +88,10 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
           '[&>*:last-child]:animate-pulse': !opt,
         }
       )}>
-        <Button form="print-credit-by-id" type="submit"  
+        <Button
+          variant="default"
+          form="print-credit-by-id"
+          type="submit"  
           disabled={!opt}
         >
           {text.button.print}
@@ -97,7 +100,7 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
           <Button
             type="button"
             variant="secondary"
-            className="font-bold hover:ring-1 hover:ring-primary"
+            className="font-bold hover:ring hover:ring-primary"
           >
             {text.button.close}
           </Button>

@@ -79,7 +79,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
   }
 
   return (
-    <DialogContent className="max-w-lg">
+    <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
         <Separator />
@@ -122,7 +122,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
         >
           <DialogClose asChild>
             <Button
-              className={clsx({ "hover:bg-destructive": checked })}
+              className={clsx({ "hover:bg-destructive bg-destructive": checked })}
               variant="default"
               form="delete-credit-by-id"
               type="submit"
@@ -136,7 +136,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
             <Button
               type="button"
               variant="secondary"
-              className="font-bold hover:ring-1 hover:ring-primary"
+              className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
             </Button>

@@ -116,13 +116,18 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild className='ms-auto'>
               <Link to={'./new'}>
-                <Button className='ms-auto'>{text.button.create}</Button>
+                <Button variant="default" className='ms-auto'>{text.button.create}</Button>
               </Link>
             </DialogTrigger>
             {children ?? <Outlet />}
           </Dialog>
         <Link to={"./delete"} disabled={!users.some(({ selected }) => selected )} >
-          <Button disabled={!users.some(({ selected }) => selected )} className={clsx({"bg-destructive": users.some(({ selected }) => selected )})} onClick={onDeleteUsers}>{text.button.delete}</Button>
+          <Button 
+              disabled={!users.some(({ selected }) => selected )} 
+              className={clsx({"bg-destructive": users.some(({ selected }) => selected )})} 
+              onClick={onDeleteUsers}>
+              {text.button.delete}
+            </Button>
           </Link>
         </div>
         <Separator />
@@ -132,7 +137,7 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
             <div className='gap-2 flex items-center justify-end px-4'>
             <DropdownMenu open={menu} onOpenChange={onCheckChanged({ id, prop: "menu" })}  >
               <DropdownMenuTrigger asChild onClick={onClickStop}>
-                <Button variant="ghost" className="h-8 w-8 p-0">
+                <Button variant="ghost" className="h-8 w-8 p-0 hover:ring hover:ring-primary">
                   <span className="sr-only">{text.menu.aria}</span>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>

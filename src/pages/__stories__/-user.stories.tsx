@@ -10,10 +10,11 @@ import { DeleteUserById } from '@/pages/_layout/user/$userId/delete'
 import { UpdateUserById } from '@/pages/_layout/user/$userId/update'
 import { DeleteSelectedUsers } from '@/pages/_layout/user/delete'
 import { Theme } from '@/components/theme-provider'
+import { getClients } from '@/api/clients'
 
 function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
   return (
-    <Layout theme={context.globals.theme}>
+    <Layout theme={context.globals.theme} clients={getClients()} user={getUserId({ userId: 4 })}>
       <Story />
     </Layout>
   )

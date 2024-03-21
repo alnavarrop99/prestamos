@@ -283,7 +283,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <li><span>Monto Total</span>: { 200 }.</li>
           <li><span>Monto por cuota</span>: { 300 }. </li>
         </ul>
-        <div>
+        <div className='space-x-2'>
           <Button variant="default" form="new-credit" type="submit" className='self-end'>
             {text.button.update}
           </Button>
@@ -291,7 +291,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             <Button
               type="button"
               variant="secondary"
-              className="font-bold hover:ring-1 hover:ring-primary"
+              className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
             </Button>

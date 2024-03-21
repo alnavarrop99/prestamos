@@ -108,7 +108,7 @@ export function Credits({
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
               <Link to={'./new'}>
-                <Button>{text.button.create}</Button>
+                <Button variant="default">{text.button.create}</Button>
               </Link>
             </DialogTrigger>
             {children ?? <Outlet />}
@@ -272,7 +272,7 @@ export function Credits({
                             variant="ghost"
                             onClick={onClick({ creditId: id })}
                             className={clsx(
-                              'invisible px-3 opacity-0 transition delay-150 duration-500 hover:ring hover:ring-primary group-hover:visible group-hover:opacity-100'
+                              'invisible px-3 opacity-0 hover:ring hover:ring-primary group-hover:visible group-hover:opacity-100'
                             )}
                           >
                             <Printer />
@@ -283,7 +283,7 @@ export function Credits({
                             onClick={onClick({ creditId: id })}
                             variant="default"
                             className={clsx(
-                              'invisible bg-green-400 px-3 opacity-0 transition delay-150 duration-500 hover:bg-green-700 group-hover:visible group-hover:opacity-100'
+                              'invisible bg-green-400 px-3 opacity-0 hover:bg-green-700 group-hover:visible group-hover:opacity-100'
                             )}
                           >
                             <Pay />

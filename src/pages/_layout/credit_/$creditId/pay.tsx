@@ -162,8 +162,8 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
             }
           )}
         >
-          <Button form="pay-credit-by-id" type="submit" disabled={!checked} className={clsx({
-            "hover:bg-green-700": checked,
+          <Button variant="default" form="pay-credit-by-id" type="submit" disabled={!checked} className={clsx({
+            "bg-green-500 hover:bg-green-700": checked,
           })}>
             {text.button.pay}
           </Button>
@@ -171,7 +171,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
             <Button
               type="button"
               variant="secondary"
-              className={clsx("font-bold hover:ring-1 hover:ring-primary")}
+              className={clsx("font-bold hover:ring hover:ring-primary")}
             >
               {text.button.close}
             </Button>

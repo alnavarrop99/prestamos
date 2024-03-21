@@ -238,7 +238,7 @@ export function Clients({
                       )?.[id as keyof TClient] ?? ''
                     return (
                       <DropdownMenuCheckboxItem
-                        className="capitalize hover:cursor-pointer"
+                        className="capitalize cursor-pointer"
                         key={column.id}
                         checked={column.getIsVisible()}
                         onCheckedChange={(value) =>
@@ -325,6 +325,7 @@ export function Clients({
                 size="sm"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
+                className='hover:ring hover:ring-primary'
               >
                 {text.buttons.prev}
               </Button>

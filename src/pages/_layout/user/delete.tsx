@@ -132,7 +132,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
           )}
         >
           <Button
-            className={clsx({ "hover:bg-destructive": checked })}
+            className={clsx({ "bg-destructive hover:bg-destructive": checked })}
             variant="default"
             form="new-client-form"
             type="submit"
@@ -144,7 +144,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
             <Button
               type="button"
               variant="secondary"
-              className="font-bold hover:ring-1 hover:ring-primary"
+              className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
             </Button>

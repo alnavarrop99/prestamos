@@ -16,10 +16,11 @@ import { PrintCreditById } from '@/pages/_layout/credit_/$creditId/print'
 import { UpdateConfirmationCredit } from '../_layout/credit_/$creditId_/update.confirm'
 import { getClients } from '@/api/clients'
 import { Theme } from '@/components/theme-provider'
+import { getUserId } from '@/api/users'
 
 function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
   return (
-    <Layout theme={context.globals.theme}>
+    <Layout theme={context.globals.theme} clients={getClients()} user={getUserId({ userId: 4 })}>
       <Story />
     </Layout>
   )
