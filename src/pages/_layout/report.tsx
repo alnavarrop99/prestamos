@@ -75,14 +75,12 @@ export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
                   </Label>
                 ))}
                 <Label>
-                  <span>{text.comment}</span>
+                  <span>{text.comment.label}</span>
                   <Textarea
-                    name="comentario"
+                    name="Comentario"
                     rows={5}
-                    placeholder={'Escriba un comentario'}
-                  >
-                    {' '}
-                  </Textarea>
+                    placeholder={text.comment.placeholder}
+                  ></Textarea>
                 </Label>
               </form>
               <Button
@@ -124,5 +122,8 @@ Report.dispalyname = 'Report'
 
 const text = {
   title: 'Reportajes:',
-  comment: 'Comentario:',
+  comment: {
+    label: 'Comentario:',
+    placeholder: 'Escriba un comentario',
+  },
 }
