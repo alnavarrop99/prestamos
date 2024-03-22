@@ -220,7 +220,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
         <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500 row-start-3'>
           <span>{text.form.frecuency.label} </span>
           <Select required name={'frecuencia_del_credito' as keyof TCredit} defaultValue={text.form.frecuency.items?.[0]}>
-            <SelectTrigger className="w-full border border-primary">
+            <SelectTrigger className="w-full ring-1 ring-ring">
               <SelectValue placeholder={text.form.frecuency.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>

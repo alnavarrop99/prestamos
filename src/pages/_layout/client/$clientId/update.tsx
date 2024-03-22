@@ -166,7 +166,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
         <Label>
           <span>{text.form.typeId.label} </span>
           <Select defaultValue={idType} disabled={!checked} required name={'tipo_de_identificacion' as keyof TClient} >
-            <SelectTrigger className={clsx("w-full", { "border border-primary": checked})}>
+            <SelectTrigger className={clsx("w-full")}>
               <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
