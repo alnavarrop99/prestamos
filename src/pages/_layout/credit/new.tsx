@@ -19,6 +19,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { TCredit } from '@/api/credit'
 import users from '@/__mock__/USERS.json'
 import { useNotifications } from '@/lib/context/notification'
+import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/credit/new')({
   component: NewCredit,
@@ -49,8 +50,9 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
   const form = useRef<HTMLFormElement>(null)
   const clients = Route.useLoaderData() ?? _clients
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
-  const [ { coute, interest }, setCuote ] = useState<{ coute?: number, interest?: number }>({ })
+  const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { setNotification } = useNotifications()
+  const { open, setStatus } = useClientStatus()
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
     const { checked, value } = ev.target as { checked: boolean, value: TCuoteStateType }
@@ -59,9 +61,10 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
     }
   }
 
-  const onChangeValue: ( prop: "coute" | "interest" ) => React.ChangeEventHandler< ComponentRef< typeof Input > > = (prop) => (ev) => {
+  const onChangeValue: ( prop: "coute" | "interest" | "amount" ) => React.ChangeEventHandler< ComponentRef< typeof Input > > = (prop) => (ev) => {
     const { value } = ev.target
-    setCuote( { ...{ interest, coute }, [prop]: value } ) 
+    if(Number.parseInt(value) === 0 && prop === "coute") return;
+    setCuote( { ...{ interest, coute, amount }, [prop]: Number.parseInt(value) } ) 
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
@@ -90,6 +93,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
+    setStatus({ open: !open })
 
     const onClick = () => {
       clearTimeout(timer)
@@ -122,7 +126,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
         <DialogDescription className='text-muted-foreground'>{text.descriiption}</DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
         id="new-credit"
@@ -170,6 +174,8 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             required
             min={0}
             step={50}
+            value={amount}
+            onChange={onChangeValue("amount")}
             name={'cantidad' as keyof TCredit}
             type="number"
             placeholder={text.form.amount.placeholder}
@@ -247,8 +253,8 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             id='credit-installments'
             required
             min={0}
-            max={installmants?.type === "porcentage" ? 100 : 25}
-            step={1}
+            max={installmants?.type === "porcentage" ? 100 : undefined}
+            step={installmants?.type === "porcentage" ? 1 : 50}
             name={installmants?.type === "porcentage" ? 'porcentaje' as keyof TCredit : 'valor_de_mora' as keyof TCredit}
             type="number"
             value={installmants.value}
@@ -265,7 +271,6 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             placeholder={text.form.aditionalDays.placeholder}
           />
         </Label>
-        
         <Label>
           <span>{text.form.comment.label}</span>
           <Textarea
@@ -276,12 +281,12 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
         </Label>
       </form>
       <DialogFooter className="!justify-between !items-center">
-        <ul className={clsx('[&_span]:font-bold [&>li]:list-disc [&>li]:list-inside', { 
-          "invisible": !interest || !coute,
-          "visible": interest && coute
+        <ul className={clsx('[&_span]:font-bold [&>li]:list-disc [&>li]:list-inside transition delay-150 duration-500', { 
+          "opacity-0": !interest || !coute || !amount || interest === 0 || coute === 0 || amount === 0,
+          "opacity-1": interest && coute && amount
         })}>
-          <li><span>Monto Total</span>: { 200 }.</li>
-          <li><span>Monto por cuota</span>: { 300 }. </li>
+          <li><span>Monto Total</span>: { "$" + getAmountTotal({ amount, interest, coute })}.</li>
+          <li><span>Monto por cuota</span>: {"$" + getAmountCuote({ interest, amount, coute })}. </li>
         </ul>
         <div className='space-x-2'>
           <Button variant="default" form="new-credit" type="submit" className='self-end'>
@@ -303,6 +308,20 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
 }
 
 NewCredit.dispalyname = 'NewClient'
+
+const getAmountTotal = ( { interest, coute, amount }: { amount?: number, coute?: number, interest?: number }) => {
+  if( !amount || !coute || !interest ) return 0;
+  if( coute === 0 ) return 0;
+
+  return  Math.ceil(((getAmountCuote({ coute, amount, interest })) * coute));
+}
+
+const getAmountCuote = ( { interest, amount, coute }: { amount?: number, interest?: number, coute?: number }) => {
+  if(  !amount || !interest || !coute ) return 0;
+  if(  coute === 0 ) return 0;
+
+  return Math.ceil(((amount / coute) + (amount / coute  * interest/100)));
+}
 
 const text = {
   title: 'Crear prestamo:',

@@ -29,7 +29,7 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 }
 
 /* eslint-disable-next-line */
-export function Login() {
+export function Login({}: TLoginProps) {
   const ref = useRef<HTMLFormElement>(null)
   const [{ error, password }, setStatus] = useReducer(reducer, {
     password: false,

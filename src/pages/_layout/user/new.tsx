@@ -128,7 +128,7 @@ export function NewUser({}: TNewUserProps) {
         <Label>
           <span className="after:content-['_*_'] after:text-red-500">{text.form.rol.label} </span>
           <Select required name={'rol' as keyof typeof text.form} defaultValue={text.form.rol.items.user}>
-            <SelectTrigger className="w-full border border-primary">
+            <SelectTrigger className="w-full ring ring-ring ring-1">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>

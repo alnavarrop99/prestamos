@@ -99,12 +99,12 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
-            id="checkbox-delete-credit"
+            id="confirmation"
             checked={checked}
             onCheckedChange={onCheckedChange}
           />
           <Label
-            htmlFor="checkbox-delete-credit"
+            htmlFor="confirmation"
             className={clsx('cursor-pointer')}
           >
             {text.button.checkbox}
@@ -123,7 +123,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
           <DialogClose asChild>
             <Button
               variant="default"
-              form="confirm-update-credit"
+              form="confirm-update"
               type="submit"
               disabled={!checked}
               onClick={onSubmit}

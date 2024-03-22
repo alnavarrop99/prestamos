@@ -67,7 +67,6 @@ export function CreditById({
                 </Button>
               </Link>
             </DialogTrigger>
-
             <DialogTrigger asChild>
               <Link to={'./pay'}>
                 <Button
@@ -108,6 +107,10 @@ export function CreditById({
             >
               {credit?.estado}
             </Switch>
+          </div>
+          <div>
+            {' '}
+            <b>{text.details.name}:</b> { "Armando Navarro" + "." }
           </div>
           <div>
             {' '}
@@ -155,10 +158,10 @@ export function CreditById({
           </div>
         </div>
         <Separator />
-        {credit?.cuotas?.length && credit?.pagos?.length && (
+        {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
           <h2 className="text-2xl font-bold"> {text.cuotes.title} </h2>
         )}
-        {credit?.cuotas?.length && credit?.pagos?.length && (
+        {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
           <Table className="w-fit px-4 py-2">
             <TableHeader>
               <TableRow>
@@ -264,7 +267,7 @@ const text = {
   },
   details: {
     title: 'Detalles del prestamo:',
-    id: 'Numero del credito',
+    name: 'Nombre del cliente',
     amount: 'Monto total',
     interest: 'Tasa de interes',
     pay: 'Pagos realizados',

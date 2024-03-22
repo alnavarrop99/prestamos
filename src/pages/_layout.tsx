@@ -133,7 +133,7 @@ export function Layout({
   }
 
   const onSwitch = (checked: boolean) => {
-    if (_theme) return
+    if (_theme) return;
 
     if (checked) {
       setTheme('dark')
@@ -331,10 +331,8 @@ export function Layout({
                     | '/user'
                     | '/',
                 })}
-                {...{
-                  onChange,
-                  onKeyDown,
-                }}
+                onChange={onChange}
+                onKeyDown={onKeyDown}
               />
             </Label>
             <div>
@@ -355,7 +353,6 @@ export function Layout({
                   </ul>
                 </HoverCardContent>
               </HoverCard>
-              
               {!offline && (
                 <Network
                   className={clsx('ms-auto animate-bounce', {

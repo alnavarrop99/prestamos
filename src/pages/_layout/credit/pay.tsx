@@ -17,6 +17,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { _creditSelected } from "@/pages/_layout/credit";
 import { useNotifications } from '@/lib/context/notification'
+import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/credit/pay')({
   component: PaySelectedCredit,
@@ -33,6 +34,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
   const [checked, setChecked] = useState(false)
   const credit = useContext(_creditSelected) ?? _credit
   const { setNotification } = useNotifications()
+  const { open, setStatus } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -67,6 +69,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
+    setStatus({ open: !open })
 
     const onClick = () => {
       clearTimeout(timer)
@@ -103,7 +106,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
-        id="pay-selected-credit"
+        id="pay-credit"
         className={clsx(
           'grid-rows-subgrid grid gap-3 grid-cols-2 gap-y-4 [&>label]:space-y-2',
           styles?.["custom-form"]
@@ -159,7 +162,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
             }
           )}
         >
-          <Button form="pay-selected-credit" type="submit" disabled={!checked} className={clsx({
+          <Button form="pay-credit" type="submit" disabled={!checked} className={clsx({
             "bg-green-500 hover:bg-green-700": checked,
           })}>
             {text.button.pay}

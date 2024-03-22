@@ -20,7 +20,7 @@ import {
   HoverCardTrigger,
 } from '@radix-ui/react-hover-card'
 import { Separator } from '@/components/ui/separator'
-import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
+import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
 import clsx from 'clsx'
 import {
   AlertCircle,
@@ -33,6 +33,8 @@ import { createContext, useMemo, useState } from 'react'
 import { getCreditsRes, type TCredit } from '@/api/credit'
 import { useClientStatus } from '@/lib/context/client'
 import { Navigate } from '@tanstack/react-router'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { format } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
@@ -64,7 +66,8 @@ export function Credits({
     () => credits?.filter(({ estado }) => !estado)?.length,
     [credits]
   )
-  const { open = _open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
+  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
+  const navigate = useNavigate()
 
   const onActive = (checked: boolean) => {
     setActive(checked)
@@ -81,8 +84,11 @@ export function Credits({
       setCredit(credits.find(({ id }) => id === creditId))
     }
 
-  const onOpenChange = (checked: boolean) => {
-    setStatus({ open: checked })
+  const onOpenChange = (open: boolean) => {
+    if (!open) {
+      !children && navigate({ to: './' })
+    }
+    setStatus({ open })
   }
 
   return (
@@ -132,7 +138,6 @@ export function Credits({
                 id,
                 cantidad,
                 comentario,
-                porcentaje,
                 numero_de_cuotas,
                 cuotas,
                 valor_de_mora,
@@ -140,6 +145,8 @@ export function Credits({
                 const status: 'warn' | 'info' | undefined = valor_de_mora
                   ? 'warn'
                   : 'info'
+                const currentPay = pagos?.length ? pagos?.map( ( pay ) => pay?.valor_del_pago ?? 0 )?.reduce( (acc, prev) => (acc+=prev) ) :  0
+
                 return (
                   <Link
                     key={id}
@@ -155,11 +162,11 @@ export function Credits({
                               {'Armando Navarro'}
                             </Link>
                           </CardTitle>
-                          <HoverCard>
+                          { !!pagos?.length && <HoverCard>
                             <HoverCardTrigger>
                               <Info
                                 className={clsx(
-                                  'duration-400 opacity-0 transition delay-150 hover:stroke-blue-500 group-hover:opacity-100',
+                                  'duration-400 opacity-0 transition delay-150 stroke-blue-500 hover:stroke-blue-700 group-hover:opacity-100',
                                   { invisible: !cuotas?.length }
                                 )}
                               />
@@ -168,21 +175,21 @@ export function Credits({
                               align="center"
                               className="z-10 py-4"
                             >
-                              <Card className="max-h-64 overflow-y-auto ring-1 ring-blue-500">
-                                <CardHeader className="text-md font-bold">
+                              <Card>
+                                <CardHeader className="text-md font-bold text-center">
                                   <CardTitle>{text.details.pay}</CardTitle>
                                   <Separator />
                                 </CardHeader>
                                 <CardContent>
-                                  {pagos?.length && (
-                                    <Timeline className="w-fit px-4 py-2 text-sm">
+                                  <ScrollArea className='max-h-52 w-64 overflow-y-auto'>
+                                  { <Timeline className="w-fit px-4 py-2 text-sm">
                                       {pagos?.map(
                                         (items) =>
                                           items && (
                                             <TimelineItem key={items?.id}>
                                               {' '}
                                               <span className="font-bold">
-                                                {items?.fecha_de_pago}:{' '}
+                                                {format(items?.fecha_de_pago, "dd-MM-yyyy")}:{' '}
                                               </span>{' '}
                                               <Badge>
                                                 ${items?.valor_del_pago}
@@ -190,13 +197,12 @@ export function Credits({
                                             </TimelineItem>
                                           )
                                       )}
-                                    </Timeline>
-                                  )}
+                                    </Timeline> }
+                                  </ScrollArea>
                                 </CardContent>
                               </Card>
                             </HoverCardContent>
-                          </HoverCard>
-
+                          </HoverCard> }
                           <Badge className='text-md after:duration-400 ms-auto after:opacity-0 after:transition after:delay-150 group-hover:after:opacity-100 group-hover:after:content-["_\219D"]'>
                             {' '}
                             {id}{' '}
@@ -234,13 +240,13 @@ export function Credits({
                         <div className="flex items-center gap-8">
                           <Progress
                             className="border border-primary"
-                            max={100}
-                            value={porcentaje}
+                            max={cantidad}
+                            value={currentPay}
                           />
                           <span>
                             {' '}
                             <b>$</b>
-                            {((porcentaje / 100) * cantidad).toFixed(1)}{' '}
+                            {(currentPay).toFixed(1)}{' '}
                           </span>
                         </div>
                         <ul className="list-inside list-disc">
@@ -252,7 +258,7 @@ export function Credits({
                           <li>
                             {' '}
                             <b> {text.details.pays} </b>:{' '}
-                            {pagos?.length + '/' + numero_de_cuotas}.
+                            {(pagos?.length ?? 0) + '/' + numero_de_cuotas}.
                           </li>
                           <li>
                             {' '}
@@ -262,33 +268,38 @@ export function Credits({
                         </ul>
                       </CardContent>
                       <CardFooter className="flex items-center gap-2">
-                        <Badge> {fecha_de_aprobacion} </Badge>
-                        <Link
-                          className="ms-auto"
-                          to={'./print'}
-                          params={{ creditsId: id }}
-                        >
-                          <Button
-                            variant="ghost"
-                            onClick={onClick({ creditId: id })}
-                            className={clsx(
-                              'invisible px-3 opacity-0 hover:ring hover:ring-primary group-hover:visible group-hover:opacity-100'
-                            )}
-                          >
-                            <Printer />
-                          </Button>
-                        </Link>
-                        <Link to={'./pay'} params={{ creditId: id }}>
-                          <Button
-                            onClick={onClick({ creditId: id })}
-                            variant="default"
-                            className={clsx(
-                              'invisible bg-green-400 px-3 opacity-0 hover:bg-green-700 group-hover:visible group-hover:opacity-100'
-                            )}
-                          >
-                            <Pay />
-                          </Button>
-                        </Link>
+                        <Badge> {format(fecha_de_aprobacion, "dd-MM-yyyy")} </Badge>
+                        <Dialog open={open} onOpenChange={onOpenChange}>
+                          <DialogTrigger asChild className="ms-auto" >
+                            <Link
+                              to={'./print'}
+                              params={{ creditsId: id }}
+                            >
+                              <Button
+                                variant="ghost"
+                                onClick={onClick({ creditId: id })}
+                                className={clsx(
+                                  'invisible px-3 opacity-0 hover:ring hover:ring-primary group-hover:visible group-hover:opacity-100'
+                                )}
+                              >
+                                <Printer />
+                              </Button>
+                            </Link>
+                          </DialogTrigger>
+                          <DialogTrigger asChild>
+                            <Link to={'./pay'} params={{ creditId: id }}>
+                              <Button
+                                onClick={onClick({ creditId: id })}
+                                variant="default"
+                                className={clsx(
+                                  'invisible bg-green-400 px-3 opacity-0 hover:bg-green-700 group-hover:visible group-hover:opacity-100'
+                                )}
+                              >
+                                <Pay />
+                              </Button>
+                            </Link>
+                          </DialogTrigger>
+                        </Dialog>
                       </CardFooter>
                     </Card>
                   </Link>

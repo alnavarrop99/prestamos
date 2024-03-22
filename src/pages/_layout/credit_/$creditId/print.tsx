@@ -63,7 +63,7 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
-        id="print-credit-by-id"
+        id="print-credit"
         className={clsx(
           'grid-rows-subgrid grid gap-3 gap-y-4 [&>label]:space-y-2',
           styles?.["custom-form"]
@@ -72,7 +72,7 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
         <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500'>
           <span>{text.form.options.label} </span>
           <Select required name={'options' as keyof typeof text.form} value={opt} onValueChange={onValueChange}>
-            <SelectTrigger className="w-full border border-primary">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder={text.form.options.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
@@ -90,7 +90,7 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
       )}>
         <Button
           variant="default"
-          form="print-credit-by-id"
+          form="print-credit"
           type="submit"  
           disabled={!opt}
         >

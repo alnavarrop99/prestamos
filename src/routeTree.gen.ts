@@ -139,7 +139,7 @@ const LayoutCreditCreditIdUpdateRoute = LayoutCreditCreditIdUpdateImport.update(
   {
     path: '/credit/$creditId/update',
     getParentRoute: () => LayoutRoute,
-  } as any,
+  } as any
 )
 
 const LayoutCreditCreditIdPrintRoute = LayoutCreditCreditIdPrintImport.update({
@@ -156,21 +156,21 @@ const LayoutCreditCreditIdDeleteRoute = LayoutCreditCreditIdDeleteImport.update(
   {
     path: '/delete',
     getParentRoute: () => LayoutCreditCreditIdRoute,
-  } as any,
+  } as any
 )
 
 const LayoutClientClientIdUpdateRoute = LayoutClientClientIdUpdateImport.update(
   {
     path: '/$clientId/update',
     getParentRoute: () => LayoutClientRoute,
-  } as any,
+  } as any
 )
 
 const LayoutClientClientIdDeleteRoute = LayoutClientClientIdDeleteImport.update(
   {
     path: '/$clientId/delete',
     getParentRoute: () => LayoutClientRoute,
-  } as any,
+  } as any
 )
 
 const LayoutCreditCreditIdUpdateConfirmRoute =

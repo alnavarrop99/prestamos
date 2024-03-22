@@ -106,7 +106,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
-        id="pay-credit-by-id"
+        id="pay-credit"
         className={clsx(
           'grid-rows-subgrid grid gap-3 grid-cols-2 gap-y-4 [&>label]:space-y-2',
           styles?.["custom-form"]
@@ -162,7 +162,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
             }
           )}
         >
-          <Button variant="default" form="pay-credit-by-id" type="submit" disabled={!checked} className={clsx({
+          <Button variant="default" form="pay-credit" type="submit" disabled={!checked} className={clsx({
             "bg-green-500 hover:bg-green-700": checked,
           })}>
             {text.button.pay}

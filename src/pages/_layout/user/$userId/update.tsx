@@ -145,7 +145,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
         <Label>
           <span>{text.form.rol.label} </span>
           <Select required name={'rol' as keyof TUser} defaultValue={rol}>
-            <SelectTrigger className="w-full border border-primary">
+            <SelectTrigger className="w-full">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>

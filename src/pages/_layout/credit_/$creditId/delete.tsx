@@ -99,12 +99,12 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
-            id="checkbox-delete-credit"
+            id="confirmation"
             checked={checked}
             onCheckedChange={onCheckedChange}
           />
           <Label
-            htmlFor="checkbox-delete-credit"
+            htmlFor="confirmation"
             className={clsx('cursor-pointer')}
           >
             {text.button.checkbox}
@@ -124,7 +124,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
             <Button
               className={clsx({ "hover:bg-destructive bg-destructive": checked })}
               variant="default"
-              form="delete-credit-by-id"
+              form="delete-credit"
               type="submit"
               disabled={!checked}
               onClick={onSubmit}

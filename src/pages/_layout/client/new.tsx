@@ -128,7 +128,7 @@ export function NewClient() {
         <Label>
           <span>{text.form.typeId.label} </span>
           <Select required name={'tipo_de_identificacion' as keyof TClient} defaultValue={text.form.typeId.items.id}>
-            <SelectTrigger className="w-full border border-primary">
+            <SelectTrigger className="w-full ring ring-ring ring-1">
               <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
             <SelectContent>
