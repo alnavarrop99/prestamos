@@ -99,12 +99,12 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
-            id="checkbox-delete-credit"
+            id="confirmation"
             checked={checked}
             onCheckedChange={onCheckedChange}
           />
           <Label
-            htmlFor="checkbox-delete-credit"
+            htmlFor="confirmation"
             className={clsx('cursor-pointer')}
           >
             {text.button.checkbox}
@@ -122,9 +122,8 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
         >
           <DialogClose asChild>
             <Button
-              className={clsx({ "hover:bg-blue-600": checked })}
               variant="default"
-              form="confirm-update-credit"
+              form="confirm-update"
               type="submit"
               disabled={!checked}
               onClick={onSubmit}
@@ -136,7 +135,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
             <Button
               type="button"
               variant="secondary"
-              className="font-bold hover:ring-1 hover:ring-primary"
+              className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
             </Button>

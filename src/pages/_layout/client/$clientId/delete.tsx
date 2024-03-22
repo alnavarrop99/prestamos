@@ -5,8 +5,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
-import styles from '@/styles/global.module.css'
+import { useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -28,7 +27,6 @@ interface TDeleteByClient {
 
 /* eslint-disable-next-line */
 export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByClient) {
-  const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const client = Route.useLoaderData() ?? _client
   const { nombres: firstName, apellidos: lastName } = client
@@ -100,20 +98,6 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
           </Alert>
         </DialogDescription>
       </DialogHeader>
-
-      <form
-        autoComplete="on"
-        ref={form}
-        onSubmit={onSubmit}
-        id="new-client-form"
-        className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
-          styles?.['custom-form'],
-          {
-            [styles?.['custom-form-off']]: !checked,
-          }
-        )}
-      ></form>
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
@@ -139,11 +123,12 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
           )}
         >
           <Button
-            className={clsx({'hover:bg-destructive': checked})}
+            className={clsx({'hover:bg-destructive bg-destructive': checked})}
             variant="default"
-            form="new-client-form"
+            form="delete-client"
             type="submit"
             disabled={!checked}
+            onClick={onSubmit}
           >
             {text.button.delete}
           </Button>
@@ -151,7 +136,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
             <Button
               type="button"
               variant="secondary"
-              className="font-bold hover:ring-1 hover:ring-primary"
+              className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
             </Button>

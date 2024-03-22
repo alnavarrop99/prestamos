@@ -29,7 +29,7 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 }
 
 /* eslint-disable-next-line */
-export function Login() {
+export function Login({}: TLoginProps) {
   const ref = useRef<HTMLFormElement>(null)
   const [{ error, password }, setStatus] = useReducer(reducer, {
     password: false,
@@ -132,11 +132,11 @@ const text = {
     'Por favor introdusca sus credenciales para acceder a su cuenta.',
   ],
   username: {
-    placeholder: 'Escriba su @username aqui',
+    placeholder: 'Escriba su @username',
     label: 'Username:',
   },
   password: {
-    placeholder: 'Escriba su ****** aqui',
+    placeholder: 'Escriba su contraseña',
     label: 'Password:',
   },
   remember: 'Recuerdame.',

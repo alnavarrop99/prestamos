@@ -6,34 +6,32 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
 import { Checkbox } from '@/components/ui/checkbox'
 import { type TPayment } from "@/api/payment";
-import { getCreditIdRes, type TCredit } from '@/api/credit'
+import { type TCredit } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
-import { useClientStatus } from '@/lib/context/client'
+import { _creditSelected } from "@/pages/_layout/credit";
 import { useNotifications } from '@/lib/context/notification'
 
-export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
-  component: PayCreditById,
-  loader: getCreditIdRes
+export const Route = createFileRoute('/_layout/credit/pay')({
+  component: PaySelectedCredit,
 })
 
 /* eslint-disable-next-line */
-interface TPaymentCreditByIdProps {
+interface TPaySelectedCreditProps {
   credit?: TCredit
 }
 
 /* eslint-disable-next-line */
-export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCreditByIdProps ) {
+export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySelectedCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const credit = Route.useLoaderData() ?? _credit
-  const { open, setStatus } = useClientStatus()
+  const credit = useContext(_creditSelected) ?? _credit
   const { setNotification } = useNotifications()
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -43,13 +41,14 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
   const onSubmit: React.FormEventHandler = (ev) => {
     if (!form.current) return
 
+    
     const items = Object.fromEntries(
       new FormData(form.current).entries()
     ) as Record<keyof TPayment, string>
 
     const description = text.notification.decription({
       // TODO
-      username: "Armando Navarro",
+      username: "",
       number: 0,
     })
 
@@ -58,7 +57,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
       () => {
         console.table(props)
         console.table(credit)
-        setNotification({
+      setNotification({
           notification: {
             date: new Date(),
             action: "POST",
@@ -66,8 +65,6 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
           }
         })
       }
-
-    setStatus({ open: !open })
 
     const timer = setTimeout(action(items), 6 * 1000)
 
@@ -106,7 +103,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
-        id="pay-credit"
+        id="pay-selected-credit"
         className={clsx(
           'grid-rows-subgrid grid gap-3 grid-cols-2 gap-y-4 [&>label]:space-y-2',
           styles?.["custom-form"]
@@ -142,12 +139,12 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
-            id="checkbox-payment"
+            id="checkbox-payment-credit"
             checked={checked}
             onCheckedChange={onCheckedChange}
           />
           <Label
-            htmlFor="checkbox-payment"
+            htmlFor="checkbox-payment-credit"
             className={clsx('cursor-pointer')}
           >
             {text.button.checkbox}
@@ -162,8 +159,8 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
             }
           )}
         >
-          <Button variant="default" form="pay-credit" type="submit" disabled={!checked} className={clsx({
-            "bg-green-500 hover:bg-green-700": checked,
+          <Button form="pay-selected-credit" type="submit" disabled={!checked} className={clsx({
+            "bg-green-700 hover:bg-green-700": checked,
           })}>
             {text.button.pay}
           </Button>
@@ -182,7 +179,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
   )
 }
 
-PayCreditById.dispalyname = 'PayCreditById'
+PaySelectedCredit.dispalyname = 'PayCreditById'
 
 const text = {
   title: 'Realizar un pago:',

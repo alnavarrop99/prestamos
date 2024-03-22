@@ -75,21 +75,19 @@ export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
                   </Label>
                 ))}
                 <Label>
-                  <span>{text.comment}</span>
+                  <span>{text.comment.label}</span>
                   <Textarea
-                    name="comentario"
+                    name="Comentario"
                     rows={5}
-                    placeholder={'Escriba un comentario'}
-                  >
-                    {' '}
-                  </Textarea>
+                    placeholder={text.comment.placeholder}
+                  ></Textarea>
                 </Label>
               </form>
               <Button
                 type="submit"
                 form={'report' + id}
                 variant="default"
-                className=" group ms-auto flex gap-2 transition delay-150 duration-500"
+                className=" group ms-auto flex gap-2"
               >
                 {' '}
                 <Download />{' '}
@@ -124,5 +122,8 @@ Report.dispalyname = 'Report'
 
 const text = {
   title: 'Reportajes:',
-  comment: 'Comentario:',
+  comment: {
+    label: 'Comentario:',
+    placeholder: 'Escriba un comentario',
+  },
 }

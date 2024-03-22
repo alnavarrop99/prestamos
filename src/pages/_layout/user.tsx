@@ -5,7 +5,6 @@ import { Avatar } from '@/components/ui/avatar';
 import { AvatarFallback } from '@radix-ui/react-avatar';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import styles from "@/styles/global.module.css";
 import clsx from 'clsx';
 import { Button } from '@/components/ui/button';
 import { createContext, useEffect, useState } from 'react';
@@ -85,7 +84,7 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
     setStatus({ open })
   }
 
-  const onOpenLink: ({id}: {id: number}) => React.MouseEventHandler< React.ComponentRef< typeof Link > > = ({id}) => (ev) => {
+  const onOpenChangeById: ({id}: {id: number}) => React.MouseEventHandler< React.ComponentRef< typeof DropdownMenuItem > > = ({id}) => (ev) => {
     ev.stopPropagation()
 
     const user = users.find( ({ id: userId }) => id === userId )
@@ -94,10 +93,6 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
 
     onOpenChange( !open )
     onCheckChanged({id, prop: "menu"})( !menu )
-  }
-
-  const onDeleteUsers: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
-    setStatus({open: !open})
   }
 
   useEffect(() => {
@@ -116,59 +111,67 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild className='ms-auto'>
               <Link to={'./new'}>
-                <Button className='ms-auto'>{text.button.create}</Button>
+                <Button variant="default" className='ms-auto'>{text.button.create}</Button>
+              </Link>
+            </DialogTrigger>
+            <DialogTrigger asChild >
+              <Link to={"./delete"} disabled={!users.some(({ selected }) => selected )} >
+                <Button disabled={!users.some(({ selected }) => selected )} className={clsx({"bg-destructive hover:bg-destructive": users.some(({ selected }) => selected )})} >
+                  {text.button.delete}
+                </Button>
               </Link>
             </DialogTrigger>
             {children ?? <Outlet />}
           </Dialog>
-        <Link to={"./delete"} disabled={!users.some(({ selected }) => selected )} >
-          <Button disabled={!users.some(({ selected }) => selected )} className={clsx({"bg-destructive": users.some(({ selected }) => selected )})} onClick={onDeleteUsers}>{text.button.delete}</Button>
-          </Link>
         </div>
         <Separator />
       <div className='flex flex-wrap gap-4 [&>*]:flex-auto'>
       { users?.map( ({id, rol, nombre: name, clientes: clients, selected, active, menu }) =>
-          <Card key={id} className={clsx("group shadow-lg max-w-sm py-4 cursor-pointer", styles?.["scale-users"])} onClick={onClick({id})}>
+          <Card key={id} className={clsx("group shadow-lg max-w-sm py-4 cursor-pointer transition delay-150 duration-500 hover:scale-105")} onClick={onClick({id})}>
             <div className='gap-2 flex items-center justify-end px-4'>
-            <DropdownMenu open={menu} onOpenChange={onCheckChanged({ id, prop: "menu" })}  >
-              <DropdownMenuTrigger asChild onClick={onClickStop}>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">{text.menu.aria}</span>
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent onClick={onClickStop}
-                align="center"
-                className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
-              >
-                <DropdownMenuLabel className="text-md">
-                  {text.menu.title}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem >
-                  {text.menu.client} <UsersList />
-                </DropdownMenuItem>
-                <DropdownMenuItem  >
-                  <Link
-                      onClick={onOpenLink({ id })}
-                      className="flex h-full w-full items-center justify-between gap-2"
-                      to={"./$userId/update"}
-                      params={{ userId: id }} >
-                    {text.menu.update} <UserUpdate />
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem  >
-                  <Link
-                    onClick={onOpenLink({ id })}
-                    className="flex h-full w-full items-center justify-between gap-2"
-                    to={"./$userId/delete"} 
-                    params={{ userId: id }}>
-                    {text.menu.delete} <UserDelete />
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-              <Checkbox name={"selected" as keyof typeof users[0]} checked={selected} onCheckedChange={onCheckChanged({id, prop: "selected"})} />
+            <Dialog open={open} onOpenChange={onOpenChange}>
+              <DropdownMenu open={menu} onOpenChange={onCheckChanged({ id, prop: "menu" })}  >
+                <DropdownMenuTrigger asChild onClick={onClickStop}>
+                  <Button variant="ghost" className="h-8 w-8 p-0 hover:ring hover:ring-primary">
+                    <span className="sr-only">{text.menu.aria}</span>
+                    <MoreHorizontal className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent onClick={onClickStop}
+                  align="center"
+                  className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
+                >
+                  <DropdownMenuLabel className="text-md">
+                    {text.menu.title}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={onOpenChangeById({ id })}>
+                    {text.menu.client} <UsersList />
+                  </DropdownMenuItem>
+                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
+                    <DialogTrigger asChild>
+                      <Link
+                          className="flex h-full w-full items-center justify-between gap-2"
+                          to={"./$userId/update"}
+                          params={{ userId: id }} >
+                        {text.menu.update} <UserUpdate />
+                      </Link>
+                    </DialogTrigger>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
+                    <DialogTrigger asChild>
+                      <Link
+                        className="flex h-full w-full items-center justify-between gap-2"
+                        to={"./$userId/delete"} 
+                        params={{ userId: id }}>
+                        {text.menu.delete} <UserDelete />
+                      </Link>
+                    </DialogTrigger>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </Dialog>
+            <Checkbox name={"selected" as keyof typeof users[0]} checked={selected} onCheckedChange={onCheckChanged({id, prop: "selected"})} />
             </div>
               <CardHeader>
                  <CardTitle className='flex items-center gap-2'>

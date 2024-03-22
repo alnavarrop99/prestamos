@@ -35,10 +35,12 @@ import { useRootStatus } from '@/lib/context/layout'
 import { getClientsRes, type TClient } from '@/api/clients'
 import { Theme, useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import { getCurrentUserRes, TUser } from '@/api/users'
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
-  loader: getClientsRes,
+  loader: async () => ( {clients: await getClientsRes(), user: await getCurrentUserRes()})
 })
 
 /* eslint-disable-next-line */
@@ -51,21 +53,21 @@ interface TStatus {
 
 /* eslint-disable-next-line */
 interface TNavigationProps {
-  clients?: TClient[]
-  theme: Theme
+  clients?: TClient[],
+  user?: TUser,
+  theme?: Theme
 }
 
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
 
-const username = 'Admin99'
-
 /* eslint-disable-next-line */
 export function Layout({
   children,
   theme: _theme,
   clients: _clients = [] as TClient[],
+  user: _user = {} as TUser,
 }: React.PropsWithChildren<TNavigationProps>) {
   const [{ offline, open = false, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
@@ -75,10 +77,10 @@ export function Layout({
     setSearch: status.setSearch,
     search: status.search,
   }))
-  const clientsDB = Route.useLoaderData() ?? _clients
+  const { clients: clientsDB, user: userDB } = Route.useLoaderData() ?? { clients: _clients, user: _user }
   const [clients, setClients] = useState(clientsDB)
-  const { theme, setTheme } = useTheme()
-
+  const [ user ] = useState(userDB)
+  const { theme, setTheme } = useTheme() 
   const route = useChildMatches()
 
   useEffect(() => {
@@ -131,10 +133,11 @@ export function Layout({
   }
 
   const onSwitch = (checked: boolean) => {
-    if (_theme) return
+    if (_theme) return;
 
     if (checked) {
       setTheme('dark')
+      return;
     }
     setTheme('light')
   }
@@ -231,10 +234,10 @@ export function Layout({
             </Link>
           </div>
           <div>
-            <div>
+            <Label className='flex gap-2 items-center cursor-pointer'>
               {theme === 'dark' ? <Moon /> : <Sun />}
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
-            </div>
+            </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
               <Popover
                 open={search && !!route?.at(0)?.pathname?.match(/^\/+$/g)}
@@ -328,21 +331,28 @@ export function Layout({
                     | '/user'
                     | '/',
                 })}
-                {...{
-                  onChange,
-                  onKeyDown,
-                }}
+                onChange={onChange}
+                onKeyDown={onKeyDown}
               />
             </Label>
-
             <div>
-              <Avatar className="border border-primary">
-                <AvatarImage src={text.avatar.src} alt="user-img" />
-                <AvatarFallback>{text.avatar.name}</AvatarFallback>
-              </Avatar>
-              <Badge className="text-sm" variant="outline">
-                {text.avatar.description({ username })}
-              </Badge>
+              <HoverCard>
+                <HoverCardTrigger>
+                  <Badge className="text-sm cursor-pointer" variant="outline">
+                    {user.nombre.split(" ").map( char => char.at(0) ).join("")}
+                  </Badge>
+                </HoverCardTrigger>
+                <HoverCardContent>
+                  <Avatar className="border border-primary">
+                    <AvatarImage src={text.avatar.src} alt="user-img" />
+                    <AvatarFallback>{text.avatar.name}</AvatarFallback>
+                  </Avatar>
+                  <ul className='[&>li]:w-fit space-y-2'>
+                    <li><span className='font-bold'>{user.nombre}</span></li>
+                    <li> <Badge> {user?.rol} </Badge></li>
+                  </ul>
+                </HoverCardContent>
+              </HoverCard>
               {!offline && (
                 <Network
                   className={clsx('ms-auto animate-bounce', {

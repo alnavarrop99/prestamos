@@ -27,7 +27,7 @@ interface TPassoword {
 interface TNewUserProps { }
 
 /* eslint-disable-next-line */
-export function NewUser() {
+export function NewUser({}: TNewUserProps) {
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
   const { setNotification } = useNotifications()
@@ -128,7 +128,7 @@ export function NewUser() {
         <Label>
           <span className="after:content-['_*_'] after:text-red-500">{text.form.rol.label} </span>
           <Select required name={'rol' as keyof typeof text.form} defaultValue={text.form.rol.items.user}>
-            <SelectTrigger className="w-full border border-primary">
+            <SelectTrigger className="w-full ring ring-ring ring-1">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
@@ -137,7 +137,6 @@ export function NewUser() {
             </SelectContent>
           </Select>
         </Label>
-
         <div className='[&>label]:after:content-["_*_"] [&>label]:after:text-red-500'>
           <Label htmlFor='user-password'>
             <span>{text.form.password.current.label} </span>
@@ -160,7 +159,6 @@ export function NewUser() {
             />
           </div>
         </div>
-
         <div className='[&>label]:after:content-["_*_"] [&>label]:after:text-red-500'>
           <Label htmlFor='user-confirmation'>
             <span>{text.form.password.confirmation.label} </span>
@@ -183,7 +181,6 @@ export function NewUser() {
             />
           </div>
         </div>
-        
       </form>
       <DialogFooter className="justify-end">
         <Button variant="default" form="new-client-form" type="submit">
@@ -193,7 +190,7 @@ export function NewUser() {
           <Button
             type="button"
             variant="secondary"
-            className="font-bold hover:ring-1 hover:ring-primary"
+            className="font-bold hover:ring hover:ring-primary"
           >
             {text.button.close}
           </Button>
@@ -250,6 +247,3 @@ const text = {
     },
   },
 }
-
-
-

@@ -16,6 +16,7 @@ import styles from "@/styles/global.module.css"
 import { type TCredit } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { _creditSelected } from "@/pages/_layout/credit";
+import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/credit/print')({
   component: PrintSelectedCredit,
@@ -35,6 +36,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCredit }: TPrint
   const form = useRef<HTMLFormElement>(null)
   const [ opt, setOpt ] = useState<TOptState | undefined>(undefined)
   const credit = useContext(_creditSelected) ?? _credit
+  const { open, setStatus } = useClientStatus()
 
   const onValueChange = ( value: string ) => {
     setOpt(value as TOptState)
@@ -44,6 +46,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCredit }: TPrint
     if (!form.current || !opt) return
 
     console.table(credit)
+    setStatus({ open: !open })
 
     form.current.reset()
     ev.preventDefault()
@@ -60,7 +63,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCredit }: TPrint
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
-        id="print-selected-credit"
+        id="print-credit"
         className={clsx(
           'grid-rows-subgrid grid gap-3 gap-y-4 [&>label]:space-y-2',
           styles?.["custom-form"]
@@ -68,8 +71,8 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCredit }: TPrint
       >
         <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500'>
           <span>{text.form.options.label} </span>
-          <Select required name={'options' as keyof typeof text.form} value={opt} onValueChange={onValueChange}>
-            <SelectTrigger className="w-full border border-primary">
+          <Select required name={'options'} value={opt} onValueChange={onValueChange}>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder={text.form.options.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
@@ -85,7 +88,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCredit }: TPrint
           '[&>*:last-child]:animate-pulse': !opt,
         }
       )}>
-        <Button form="print-selected-credit" type="submit"  
+        <Button form="print-credit" type="submit"  
           disabled={!opt}
         >
           {text.button.print}
@@ -94,7 +97,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCredit }: TPrint
           <Button
             type="button"
             variant="secondary"
-            className="font-bold hover:ring-1 hover:ring-primary"
+            className="font-bold hover:ring hover:ring-primary"
           >
             {text.button.close}
           </Button>

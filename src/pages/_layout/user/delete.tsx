@@ -5,17 +5,16 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { useContext, useRef, useState } from 'react'
-import styles from '@/styles/global.module.css'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useClientStatus } from '@/lib/context/client'
 import { TUser } from '@/api/users'
 import { _selectUsers } from "@/pages/_layout/user"
 import { useNotifications } from '@/lib/context/notification'
+import { useClientStatus } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/user/delete')({
   component: DeleteSelectedUsers,
@@ -28,11 +27,10 @@ interface TDeleteSelectedUsersProps {
 
 /* eslint-disable-next-line */
 export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelectedUsersProps) {
-  const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const users = useContext(_selectUsers) ?? _users
-  const { open, setStatus } = useClientStatus()
   const { setNotification } = useNotifications()
+  const { open, setStatus } = useClientStatus()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -54,7 +52,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
     }
 
     const timer = setTimeout(action(users), 6 * 1000)
-    setStatus({open: !open})
+    setStatus({ open: !open })
 
     const onClick = () => {
       clearTimeout(timer)
@@ -93,29 +91,15 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
           </Alert>
         </DialogDescription>
       </DialogHeader>
-
-      <form
-        autoComplete="on"
-        ref={form}
-        onSubmit={onSubmit}
-        id="new-client-form"
-        className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
-          styles?.['custom-form'],
-          {
-            [styles?.['custom-form-off']]: !checked,
-          }
-        )}
-      ></form>
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
-            id="switch-updates-client"
+            id="confirmation"
             checked={checked}
             onCheckedChange={onCheckedChange}
           />
           <Label
-            htmlFor="switch-updates-client"
+            htmlFor="confirmation"
             className={clsx('cursor-pointer')}
           >
             {text.button.checkbox}
@@ -131,20 +115,21 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
             }
           )}
         >
-          <Button
-            className={clsx({ "hover:bg-destructive": checked })}
-            variant="default"
-            form="new-client-form"
-            type="submit"
-            disabled={!checked}
-          >
-            {text.button.delete}
-          </Button>
+            <Button
+              className={clsx({ "bg-destructive hover:bg-destructive": checked })}
+              variant="default"
+              form="delete-user"
+              type="submit"
+              disabled={!checked}
+              onClick={onSubmit}
+            >
+              {text.button.delete}
+            </Button>
           <DialogClose asChild>
             <Button
               type="button"
               variant="secondary"
-              className="font-bold hover:ring-1 hover:ring-primary"
+              className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
             </Button>

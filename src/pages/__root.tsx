@@ -1,6 +1,7 @@
 import { Toaster } from '@/components/ui/toaster'
 import { Outlet, createRootRoute } from '@tanstack/react-router'
 import { _404 } from '@/pages/__404'
+import { ThemeProvider } from '@/components/theme-provider'
 
 export const Route = createRootRoute({
   component: Root,
@@ -11,7 +12,9 @@ export function Root() {
   return (
     <>
       <Toaster />
-      <Outlet />
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <Outlet />
+      </ThemeProvider>
     </>
   )
 }

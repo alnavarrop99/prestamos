@@ -3,10 +3,13 @@ import $ from '@/lib/render'
 import { Layout } from '@/pages/_layout'
 import { getReports } from '@/api/report'
 import { Report } from '@/pages/_layout/report'
+import { getClients } from '@/api/clients'
+import { getUserId } from '@/api/users'
+import { Theme } from '@/components/theme-provider'
 
 function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
   return (
-    <Layout theme={context.globals.theme}>
+    <Layout theme={context.globals.theme} clients={getClients()} user={getUserId({ userId: 4 })}>
       <Story />
     </Layout>
   )

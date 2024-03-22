@@ -9,12 +9,13 @@ import { Layout } from '@/pages/_layout'
 import React, { Fragment } from 'react'
 import { Toaster } from '@/components/ui/toaster'
 import clients from '@/__mock__/CLIENTS.json'
-import { getClientId, type TClient } from '@/api/clients'
+import { getClientId, getClients, type TClient } from '@/api/clients'
 import { Theme } from '@/components/theme-provider'
+import { getUserId } from '@/api/users'
 
 function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
   return (
-    <Layout theme={context.globals.theme}>
+    <Layout theme={context.globals.theme} clients={getClients()} user={getUserId({ userId: 4 })}>
       <Story />
     </Layout>
   )
