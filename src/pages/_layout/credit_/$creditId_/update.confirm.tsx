@@ -15,6 +15,7 @@ import { useClientStatus } from '@/lib/context/client'
 import { _creditUpdate } from "@/pages/_layout/credit_/$creditId_/update";
 import { TCredit } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
+import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')({
   component: UpdateConfirmationCredit,
@@ -31,6 +32,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
   const credit = useContext(_creditUpdate) ?? _credit
   const { open, setStatus } = useClientStatus()
   const { setNotification } = useNotifications()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -55,6 +57,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
 
     const timer = setTimeout(action(credit), 6 * 1000)
     setStatus({open: !open})
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)

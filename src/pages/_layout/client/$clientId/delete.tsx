@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -32,6 +32,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
   const { nombres: firstName, apellidos: lastName } = client
   const { setStatus, open } = useClientStatus()
   const { setNotification } = useNotifications()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -59,6 +60,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
 
     const timer = setTimeout(action(client), 6 * 1000)
     setStatus({ open: !open, })
+    navigate({to: "../../"})
 
     const onClick = () => {
       clearTimeout(timer)

@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -31,6 +31,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
   const users = useContext(_selectUsers) ?? _users
   const { setNotification } = useNotifications()
   const { open, setStatus } = useClientStatus()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -52,7 +53,9 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
     }
 
     const timer = setTimeout(action(users), 6 * 1000)
+
     setStatus({ open: !open })
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)

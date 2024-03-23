@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { ComponentRef, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
@@ -43,6 +43,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
   const { rol, nombre } = Route.useLoaderData() ?? _user
   const { setNotification } = useNotifications()
   const { open, setStatus } = useClientStatus()
+  const navigate = useNavigate()
 
   const onClick: ( {prop}:{ prop: keyof TPassowordVisibilityState } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setVisibility( { ...visibility, [ prop ]: !visibility?.[prop]  } )
@@ -82,6 +83,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
 
     const timer = setTimeout(action(items), 6 * 1000)
     setStatus({ open: !open })
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)

@@ -16,6 +16,7 @@ import styles from "@/styles/global.module.css"
 import { type TCredit, getCreditIdRes } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { useClientStatus } from '@/lib/context/client'
+import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
   component: PrintCreditById,
@@ -37,6 +38,7 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
   const [ opt, setOpt ] = useState<TOptState | undefined>(undefined)
   const credit = Route.useLoaderData() ?? _credit
   const { open, setStatus } = useClientStatus()
+  const navigate = useNavigate()
 
   const onValueChange = ( value: string ) => {
     setOpt(value as TOptState)
@@ -47,6 +49,7 @@ export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCr
 
     console.table(credit)
     setStatus({ open: !open })
+    navigate({to: "../"})
 
     form.current.reset()
     ev.preventDefault()

@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
@@ -32,6 +32,7 @@ export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
   const { nombre } = user
   const { setNotification } = useNotifications()
   const { open, setStatus } = useClientStatus()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -57,8 +58,9 @@ export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
         })
       }
   
-    setStatus({ open: !open })
     const timer = setTimeout(action(user), 6 * 1000)
+    setStatus({ open: !open })
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)

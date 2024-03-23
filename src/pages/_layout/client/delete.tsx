@@ -53,6 +53,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
 
     const timer = setTimeout(action(clients), 6 * 1000)
     setStatus({open: !open})
+    navigate({ to: "../" })
 
     const onClick = () => {
       clearTimeout(timer)
@@ -73,7 +74,6 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
       })
     }
     
-    navigate({ to: "./" })
     ev.preventDefault()
   }
 

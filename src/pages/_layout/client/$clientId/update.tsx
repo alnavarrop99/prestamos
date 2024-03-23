@@ -5,8 +5,8 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
-import { useReducer, useRef, useState } from 'react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
@@ -21,11 +21,6 @@ export const Route = createFileRoute('/_layout/client/$clientId/update')({
   loader: getClientIdRes
 })
 
-const reducer: React.Reducer<TClient, TClient> = (prev, state) => ({
-  ...prev,
-  ...state,
-})
-
 /* eslint-disable-next-line */
 interface TUpdateClientByIdProps {
   client?: TClient
@@ -36,9 +31,9 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const client = Route.useLoaderData() ?? _client
-  const [clientItems, setForm] = useReducer(reducer, client)
   const { open, setStatus } = useClientStatus()
   const { setNotification } = useNotifications()
+  const navigate = useNavigate()
 
   const { 
     nombres: firstName,
@@ -50,7 +45,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
     referencia: ref,
     celular: phone, 
     telefono: telephone,
-  } =  clientItems
+  } =  client
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -84,6 +79,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
 
     const timer = setTimeout(action(items), 6 * 1000)
     setStatus({ open: !open })
+    navigate({to: ".../../"})
 
     const onClick = () => {
       clearTimeout(timer)

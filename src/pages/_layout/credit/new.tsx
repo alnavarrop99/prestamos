@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import React, { ComponentRef, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -53,6 +53,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { setNotification } = useNotifications()
   const { open, setStatus } = useClientStatus()
+  const navigate = useNavigate()
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
     const { checked, value } = ev.target as { checked: boolean, value: TCuoteStateType }
@@ -94,6 +95,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
 
     const timer = setTimeout(action(items), 6 * 1000)
     setStatus({ open: !open })
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)

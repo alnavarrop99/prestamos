@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -35,6 +35,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
   const credit = Route.useLoaderData() ?? _credit
   const { open, setStatus } = useClientStatus()
   const { setNotification } = useNotifications()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -67,9 +68,9 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
         })
       }
 
-    setStatus({ open: !open })
-
     const timer = setTimeout(action(items), 6 * 1000)
+    setStatus({ open: !open })
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)

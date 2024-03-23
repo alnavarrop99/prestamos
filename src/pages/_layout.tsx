@@ -2,10 +2,12 @@ import {
   createFileRoute,
   Outlet,
   useChildMatches,
+  useNavigate,
 } from '@tanstack/react-router'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import {
+    ArrowLeftCircle,
   BadgeCent,
   BadgeDollarSign,
   Calendar as CalendarIcon,
@@ -37,6 +39,13 @@ import { Theme, useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { getCurrentUserRes, TUser } from '@/api/users'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
+import { getRoute } from "@/lib/route";
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
@@ -81,7 +90,8 @@ export function Layout({
   const [clients, setClients] = useState(clientsDB)
   const [ user ] = useState(userDB)
   const { theme, setTheme } = useTheme() 
-  const route = useChildMatches()
+  const rchild = useChildMatches()
+  const navigate = useNavigate(  )
 
   useEffect(() => {
     const onNotwork = () => {
@@ -142,6 +152,10 @@ export function Layout({
     setTheme('light')
   }
 
+  const onBack: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    window.history.back() 
+  }
+
   return (
     <div
       className={clsx(
@@ -180,7 +194,7 @@ export function Layout({
                       {({ isActive }) => (
                         <Button
                           variant={!isActive ? 'link' : 'default'}
-                          className={clsx({ 'p-2': open })}
+                          className={clsx("delay-50 duration-300 font-bold", { 'p-2': open })}
                         >
                           {!open ? title : <Icon />}
                         </Button>
@@ -240,14 +254,14 @@ export function Layout({
             </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
               <Popover
-                open={search && !!route?.at(0)?.pathname?.match(/^\/+$/g)}
+                open={search && !!rchild?.at(0)?.pathname?.match(/^\/+$/g)}
                 onOpenChange={onSearchChange}
               >
                 <PopoverTrigger>
                   <Button
                     className={clsx('rounded-br-none rounded-tr-none p-2')}
                     variant={
-                      !search && route?.at(0)?.pathname?.match(/^\/+$/g)
+                      !search && rchild?.at(0)?.pathname?.match(/^\/+$/g)
                         ? 'ghost'
                         : 'default'
                     }
@@ -257,7 +271,7 @@ export function Layout({
                       className={clsx(
                         {
                           '!hidden':
-                            search || !route?.at(0)?.pathname?.match(/^\/+$/g),
+                            search || !rchild?.at(0)?.pathname?.match(/^\/+$/g),
                         },
                         styles?.['search-badge-animation']
                       )}
@@ -325,7 +339,7 @@ export function Layout({
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
                 placeholder={text.search.placeholder({
-                  pathname: route?.at(0)?.pathname as
+                  pathname: rchild?.at(0)?.pathname as
                     | '/client'
                     | '/credit'
                     | '/user'
@@ -365,7 +379,39 @@ export function Layout({
           </div>
         </div>
       </header>
-      <main className="!px-10 py-8">{children ?? <Outlet />}</main>
+      <main className="space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
+        <div>
+          <Button onClick={onBack} variant="ghost" className='text-sm [&>svg]:w-5 [&>svg]:h-5 p-2'><ArrowLeftCircle /></Button>
+          <Breadcrumb>
+            <BreadcrumbList>
+            { getRoute( { pathname: rchild?.[0]?.pathname })?.map( ( { name, route }, i, list ) =>{
+                if( !route ) {
+                  return (
+                  <>
+                    <BreadcrumbItem>
+                      <span className='font-bold'> {name} </span>
+                    </BreadcrumbItem>
+                    { i !== list?.length - 1 && <BreadcrumbSeparator /> }
+                  </>
+                  )
+                }
+                return (
+                <>
+                  <BreadcrumbItem>
+                    <Link to={route}>
+                      <span className={"hover:underline font-bold"}> {name} </span>
+                    </Link>
+                  </BreadcrumbItem>
+                  { i !== list?.length - 1 && <BreadcrumbSeparator /> }
+                </>
+                )
+              }
+              ) }
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+        <div className='px-8'>{children ?? <Outlet />}</div>
+      </main>
       <footer className="py-4">
         <Separator className="my-4" />
         <div className="flex justify-between">

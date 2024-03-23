@@ -17,6 +17,7 @@ import { type TCredit } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { _creditSelected } from "@/pages/_layout/credit";
 import { useClientStatus } from '@/lib/context/client'
+import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/print')({
   component: PrintSelectedCredit,
@@ -37,6 +38,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCredit }: TPrint
   const [ opt, setOpt ] = useState<TOptState | undefined>(undefined)
   const credit = useContext(_creditSelected) ?? _credit
   const { open, setStatus } = useClientStatus()
+  const navigate = useNavigate()
 
   const onValueChange = ( value: string ) => {
     setOpt(value as TOptState)
@@ -47,6 +49,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCredit }: TPrint
 
     console.table(credit)
     setStatus({ open: !open })
+    navigate({to: "../"})
 
     form.current.reset()
     ev.preventDefault()

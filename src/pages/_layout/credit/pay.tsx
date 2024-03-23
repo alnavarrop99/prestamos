@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useContext, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -35,6 +35,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
   const credit = useContext(_creditSelected) ?? _credit
   const { setNotification } = useNotifications()
   const { open, setStatus } = useClientStatus()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -70,6 +71,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
 
     const timer = setTimeout(action(items), 6 * 1000)
     setStatus({ open: !open })
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)
