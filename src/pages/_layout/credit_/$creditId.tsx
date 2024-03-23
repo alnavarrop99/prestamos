@@ -163,7 +163,7 @@ export function CreditById({
         )}
         {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
           <Table className="w-fit px-4 py-2">
-            <TableHeader>
+            <TableHeader className='bg-muted'>
               <TableRow>
                 <TableHead></TableHead>
                 <TableHead>{text.cuotes.payDate}</TableHead>
