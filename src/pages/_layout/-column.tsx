@@ -106,7 +106,7 @@ export const columns: ColumnDef<TClient>[] = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const { id } = row.original
+      const { id, celular, nombres, apellidos, numero_de_identificacion  } = row.original
 
       /* eslint-disable-next-line */
       const { open, setStatus } = useClientStatus(({ open, setStatus }) => ({
@@ -120,7 +120,7 @@ export const columns: ColumnDef<TClient>[] = [
       const onClickCopy: React.MouseEventHandler<
         React.ComponentRef<typeof DropdownMenuItem>
       > = () => {
-        navigator.clipboard.writeText(id.toFixed())
+        navigator.clipboard.writeText( [ nombres, apellidos, celular, numero_de_identificacion ].join(" ") )
       }
 
       const onClick: React.MouseEventHandler<

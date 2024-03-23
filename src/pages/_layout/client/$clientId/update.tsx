@@ -30,7 +30,8 @@ interface TUpdateClientByIdProps {
 export function UpdateClientById({ client: _client = {} as TClient }: TUpdateClientByIdProps) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const client = Route.useLoaderData() ?? _client
+  const clientDB = Route.useLoaderData() ?? _client
+  const [ client, setClient ] = useState(clientDB) 
   const { open, setStatus } = useClientStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
@@ -45,7 +46,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
     referencia: ref,
     celular: phone, 
     telefono: telephone,
-  } =  client
+  } =  clientDB
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -103,6 +104,12 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
     ev.preventDefault()
   }
 
+  const onChange: React.ChangeEventHandler<HTMLFormElement> = (ev) => {
+    const { name, value } = ev.target
+    if(!name || !value) return;
+    setClient( { ...client, [name]: value } )
+  }
+
   return (
     <DialogContent className="max-w-2xl">
       <DialogHeader>
@@ -118,6 +125,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}
+        onChange={onChange}
         id="update-client"
         className={clsx(
           'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
@@ -247,7 +255,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             variant="default"
             form="update-client"
             type="submit"
-            disabled={!checked}
+            disabled={!checked || Object.values(clientDB).flat().every( ( value, i ) => value === Object.values(client).flat()?.[i] ) }
           >
             {text.button.update}
           </Button>
@@ -270,7 +278,7 @@ UpdateClientById.dispalyname = 'UpdateClientById'
 
 const text = {
   title: ({ state }: { state: boolean }) =>
-    (state ? 'Dates del ' : 'Actualizacion de los datos') + ' cliente:',
+    (state ? 'Datos del ' : 'Actualizacion de los datos') + ' cliente:',
   description: ({ state }: { state: boolean }) =>
     (state ? 'Datos' : 'Actualizacion de los datos') +
     ' del cliente en la plataforma.',
