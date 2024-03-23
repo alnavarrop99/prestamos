@@ -2,12 +2,11 @@ import {
   createFileRoute,
   Outlet,
   useChildMatches,
-  useNavigate,
 } from '@tanstack/react-router'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import {
-    ArrowLeftCircle,
+  ArrowLeftCircle,
   BadgeCent,
   BadgeDollarSign,
   Calendar as CalendarIcon,
@@ -37,7 +36,11 @@ import { useRootStatus } from '@/lib/context/layout'
 import { getClientsRes, type TClient } from '@/api/clients'
 import { Theme, useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
 import { getCurrentUserRes, TUser } from '@/api/users'
 import {
   Breadcrumb,
@@ -45,11 +48,14 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { getRoute } from "@/lib/route";
+import { getRoute } from '@/lib/route'
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
-  loader: async () => ( {clients: await getClientsRes(), user: await getCurrentUserRes()})
+  loader: async () => ({
+    clients: await getClientsRes(),
+    user: await getCurrentUserRes(),
+  }),
 })
 
 /* eslint-disable-next-line */
@@ -62,8 +68,8 @@ interface TStatus {
 
 /* eslint-disable-next-line */
 interface TNavigationProps {
-  clients?: TClient[],
-  user?: TUser,
+  clients?: TClient[]
+  user?: TUser
   theme?: Theme
 }
 
@@ -86,12 +92,14 @@ export function Layout({
     setSearch: status.setSearch,
     search: status.search,
   }))
-  const { clients: clientsDB, user: userDB } = Route.useLoaderData() ?? { clients: _clients, user: _user }
+  const { clients: clientsDB, user: userDB } = Route.useLoaderData() ?? {
+    clients: _clients,
+    user: _user,
+  }
   const [clients, setClients] = useState(clientsDB)
-  const [ user ] = useState(userDB)
-  const { theme, setTheme } = useTheme() 
+  const [user] = useState(userDB)
+  const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
-  const navigate = useNavigate(  )
 
   useEffect(() => {
     const onNotwork = () => {
@@ -143,17 +151,19 @@ export function Layout({
   }
 
   const onSwitch = (checked: boolean) => {
-    if (_theme) return;
+    if (_theme) return
 
     if (checked) {
       setTheme('dark')
-      return;
+      return
     }
     setTheme('light')
   }
 
-  const onBack: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
-    window.history.back() 
+  const onBack: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
+    window.history.back()
   }
 
   return (
@@ -194,7 +204,9 @@ export function Layout({
                       {({ isActive }) => (
                         <Button
                           variant={!isActive ? 'link' : 'default'}
-                          className={clsx("delay-50 duration-300 font-bold", { 'p-2': open })}
+                          className={clsx('delay-50 font-bold duration-300', {
+                            'p-2': open,
+                          })}
                         >
                           {!open ? title : <Icon />}
                         </Button>
@@ -248,7 +260,7 @@ export function Layout({
             </Link>
           </div>
           <div>
-            <Label className='flex gap-2 items-center cursor-pointer'>
+            <Label className="flex cursor-pointer items-center gap-2">
               {theme === 'dark' ? <Moon /> : <Sun />}
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
@@ -352,8 +364,11 @@ export function Layout({
             <div>
               <HoverCard>
                 <HoverCardTrigger>
-                  <Badge className="text-sm cursor-pointer" variant="outline">
-                    {user.nombre.split(" ").map( char => char.at(0) ).join("")}
+                  <Badge className="cursor-pointer text-sm" variant="outline">
+                    {user.nombre
+                      .split(' ')
+                      .map((char) => char.at(0))
+                      .join('')}
                   </Badge>
                 </HoverCardTrigger>
                 <HoverCardContent>
@@ -361,9 +376,14 @@ export function Layout({
                     <AvatarImage src={text.avatar.src} alt="user-img" />
                     <AvatarFallback>{text.avatar.name}</AvatarFallback>
                   </Avatar>
-                  <ul className='[&>li]:w-fit space-y-2'>
-                    <li><span className='font-bold'>{user.nombre}</span></li>
-                    <li> <Badge> {user?.rol} </Badge></li>
+                  <ul className="space-y-2 [&>li]:w-fit">
+                    <li>
+                      <span className="font-bold">{user.nombre}</span>
+                    </li>
+                    <li>
+                      {' '}
+                      <Badge> {user?.rol} </Badge>
+                    </li>
                   </ul>
                 </HoverCardContent>
               </HoverCard>
@@ -381,36 +401,46 @@ export function Layout({
       </header>
       <main className="space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
         <div>
-          <Button onClick={onBack} variant="ghost" className='text-sm [&>svg]:w-5 [&>svg]:h-5 p-2'><ArrowLeftCircle /></Button>
+          <Button
+            onClick={onBack}
+            variant="ghost"
+            className="p-2 text-sm [&>svg]:h-5 [&>svg]:w-5"
+          >
+            <ArrowLeftCircle />
+          </Button>
           <Breadcrumb>
             <BreadcrumbList>
-            { getRoute( { pathname: rchild?.[0]?.pathname })?.map( ( { name, route }, i, list ) =>{
-                if( !route ) {
+              {getRoute({ pathname: rchild?.[0]?.pathname })?.map(
+                ({ name, route }, i, list) => {
+                  if (!route) {
+                    return (
+                      <>
+                        <BreadcrumbItem>
+                          <span className="font-bold"> {name} </span>
+                        </BreadcrumbItem>
+                        {i !== list?.length - 1 && <BreadcrumbSeparator />}
+                      </>
+                    )
+                  }
                   return (
-                  <>
-                    <BreadcrumbItem>
-                      <span className='font-bold'> {name} </span>
-                    </BreadcrumbItem>
-                    { i !== list?.length - 1 && <BreadcrumbSeparator /> }
-                  </>
+                    <>
+                      <BreadcrumbItem>
+                        <Link to={route}>
+                          <span className={'font-bold hover:underline'}>
+                            {' '}
+                            {name}{' '}
+                          </span>
+                        </Link>
+                      </BreadcrumbItem>
+                      {i !== list?.length - 1 && <BreadcrumbSeparator />}
+                    </>
                   )
                 }
-                return (
-                <>
-                  <BreadcrumbItem>
-                    <Link to={route}>
-                      <span className={"hover:underline font-bold"}> {name} </span>
-                    </Link>
-                  </BreadcrumbItem>
-                  { i !== list?.length - 1 && <BreadcrumbSeparator /> }
-                </>
-                )
-              }
-              ) }
+              )}
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className='px-8'>{children ?? <Outlet />}</div>
+        <div className="px-8">{children ?? <Outlet />}</div>
       </main>
       <footer className="py-4">
         <Separator className="my-4" />
