@@ -23,7 +23,7 @@ import { Printer } from 'lucide-react'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { CircleDollarSign as Pay } from 'lucide-react'
 import { format } from 'date-fns'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
   component: CreditById,
@@ -43,14 +43,14 @@ export function CreditById({
   credit: _credit = {} as TCredit,
 }: React.PropsWithChildren<TCreditByIdProps>) {
   const credit = Route.useLoaderData() ?? _credit
-  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
+  const { open, setOpen } = useStatus() 
   const navigate = useNavigate()
 
   const onOpenChange = (checked: boolean) => {
     if (open) {
       navigate({ to: Route.to })
     }
-    setStatus({ open: checked })
+    setOpen({ open: checked })
   }
 
   return (

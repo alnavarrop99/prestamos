@@ -11,9 +11,8 @@ import { createContext, useEffect, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, UserCog as UserUpdate, UserX as UserDelete, Users as UsersList } from 'lucide-react';
-import { useRootStatus } from '@/lib/context/layout';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { useClientStatus } from '@/lib/context/client';
+import { useStatus } from '@/lib/context/layout';
 import { Separator } from '@/components/ui/separator';
 
 export const Route = createFileRoute('/_layout/user')({
@@ -45,8 +44,8 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
   const usersDB = _usersDB.map<TUsersState>( (items) => ({...items, selected: false, menu: false }))
   const [users, setUsers] = useState<TUsersState[]>( usersDB )
   const navigate = useNavigate()
-  const { value } = useRootStatus()
-  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
+  const { value } = useStatus()
+  const { open, setOpen } = useStatus() 
 
   const onCheckChanged = ( { id: index, prop }: { id: number, prop: keyof Omit<typeof users[0], "id" | "rol" | "clientes" | "nombre"> } ) => ( checked: boolean ) => {
     const list = users.map( ( { ...user } ) => {
@@ -81,7 +80,7 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
     if (!open) {
       !children && navigate({ to: './' })
     }
-    setStatus({ open })
+    setOpen({ open })
   }
 
   const onOpenChangeById: ({id}: {id: number}) => React.MouseEventHandler< React.ComponentRef< typeof DropdownMenuItem > > = ({id}) => (ev) => {
@@ -175,7 +174,7 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
             </div>
               <CardHeader>
                  <CardTitle className='flex items-center gap-2'>
-                  <Avatar className='grid place-items-center w-16 h-16 border border-primary '> 
+                  <Avatar className='grid place-items-center w-16 h-16 ring-2 ring-ring '> 
                     <AvatarFallback className='uppercase text-2xl'>
                       {name.split(" ").map( val => val.at(0) ).join("")}
                     </AvatarFallback>

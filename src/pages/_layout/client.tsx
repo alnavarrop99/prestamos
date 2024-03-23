@@ -35,8 +35,7 @@ import {
   useNavigate,
   Navigate,
 } from '@tanstack/react-router'
-import { useClientStatus } from '@/lib/context/client'
-import { useRootStatus } from '@/lib/context/layout'
+import { useStatus } from '@/lib/context/layout'
 import {
   Select,
   SelectContent,
@@ -58,6 +57,7 @@ export const Route = createFileRoute('/_layout/client')({
 interface TClientsProps {
   clients?: TClient[]
   open?: boolean
+  filter?: keyof TClient
 }
 
 export const _selectedClients = createContext<TClient[] | undefined>(undefined)
@@ -65,6 +65,7 @@ export const _selectedClients = createContext<TClient[] | undefined>(undefined)
 /* eslint-disable-next-line */
 export function Clients({
   children,
+  filter: _filter = "nombres",
   open: _open,
   clients: _clients = [] as TClient[],
 }: React.PropsWithChildren<TClientsProps>) {
@@ -72,16 +73,8 @@ export function Clients({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const {
-    open = _open,
-    filter = 'nombres' as keyof TClient,
-    setStatus,
-  } = useClientStatus(({ open = _open, filter, setStatus }) => ({
-    open,
-    filter,
-    setStatus,
-  }))
-  const { value } = useRootStatus(({ value }) => ({ value }))
+  const { open = _open, filter = _filter, setOpen, setValue, setSearch } = useStatus()
+  const { value } = useStatus(({ value }) => ({ value }))
   const navigate = useNavigate({ from: '/client' })
   const clients = Route.useLoaderData() ?? _clients
 
@@ -112,11 +105,11 @@ export function Clients({
     if (open) {
       !children && navigate({ to: './' })
     }
-    setStatus({ open: !open })
+    setOpen({ open: !open })
   }
 
   const onValueChange = (value: string) => {
-    setStatus({ filter: value as keyof TClient })
+    // setStatus({ filter: value as keyof TClient })
   }
 
   return (

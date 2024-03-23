@@ -11,7 +11,7 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { getCreditIdRes, type TCredit } from "@/api/credit";
 import { useNotifications } from '@/lib/context/notification'
 
@@ -29,7 +29,7 @@ interface TDeleteCreditByIdProps {
 export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCreditByIdProps) {
   const [checked, setChecked] = useState(false)
   const credit = Route.useLoaderData() ?? _credit
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
 
@@ -46,16 +46,14 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
     const action = (credit?: TCredit) => () => {
       console.table(credit)
       setNotification({
-        notification: {
-          date: new Date(),
-          action: "DELETE",
-          description,
-        }
+        date: new Date(),
+        action: "DELETE",
+        description,
       })
     }
 
     const timer = setTimeout(action(credit), 6 * 1000)
-    setStatus({open: !open})
+    setOpen({open: !open})
     navigate({to: "../"})
 
     const onClick = () => {

@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { type TClient } from '@/api/clients'
 
 export const columns: ColumnDef<TClient>[] = [
@@ -109,10 +109,7 @@ export const columns: ColumnDef<TClient>[] = [
       const { id, celular, nombres, apellidos, numero_de_identificacion  } = row.original
 
       /* eslint-disable-next-line */
-      const { open, setStatus } = useClientStatus(({ open, setStatus }) => ({
-        open,
-        setStatus,
-      }))
+      const { open, setOpen } = useStatus()
 
       /* eslint-disable-next-line */
       const [{ menu }, setMenu] = useState<{ menu?: boolean }>({ menu: false })
@@ -127,7 +124,7 @@ export const columns: ColumnDef<TClient>[] = [
         React.ComponentRef<typeof DropdownMenuItem>
       > = () => {
         setMenu({ menu: !menu })
-        setStatus({ open: !open })
+        setOpen({ open: !open })
       }
 
       return (

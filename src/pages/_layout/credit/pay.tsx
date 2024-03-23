@@ -17,7 +17,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { _creditSelected } from "@/pages/_layout/credit";
 import { useNotifications } from '@/lib/context/notification'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout/credit/pay')({
   component: PaySelectedCredit,
@@ -34,7 +34,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
   const [checked, setChecked] = useState(false)
   const credit = useContext(_creditSelected) ?? _credit
   const { setNotification } = useNotifications()
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
   const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -60,16 +60,14 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
         console.table(props)
         console.table(credit)
       setNotification({
-          notification: {
-            date: new Date(),
-            action: "POST",
-            description,
-          }
+          date: new Date(),
+          action: "POST",
+          description,
         })
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
-    setStatus({ open: !open })
+    setOpen({ open: !open })
     navigate({to: "../"})
 
     const onClick = () => {

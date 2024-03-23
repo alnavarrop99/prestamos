@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { getClientIdRes, type TClient } from '@/api/clients'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
@@ -32,7 +32,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
   const [checked, setChecked] = useState(false)
   const clientDB = Route.useLoaderData() ?? _client
   const [ client, setClient ] = useState(clientDB) 
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
 
@@ -70,16 +70,14 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
       () => {
         console.table(props)
         setNotification({
-          notification: {
-            date: new Date(),
-            action: "PATH",
-            description,
-          }
+          date: new Date(),
+          action: "PATH",
+          description,
         })
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
-    setStatus({ open: !open })
+    setOpen({ open: !open })
     navigate({to: "../../"})
 
     const onClick = () => {
@@ -122,7 +120,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
         </DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
         onChange={onChange}

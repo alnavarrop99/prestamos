@@ -46,11 +46,9 @@ export function NewClient() {
       () => {
         console.table(props)
         setNotification({
-          notification: {
-            date: new Date(),
-            action: "POST",
-            description,
-          }
+          date: new Date(),
+          action: "POST",
+          description,
         })
       }
 

@@ -31,7 +31,7 @@ import {
 } from 'lucide-react'
 import { createContext, useMemo, useState } from 'react'
 import { getCreditsRes, type TCredit } from '@/api/credit'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { Navigate } from '@tanstack/react-router'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { format } from 'date-fns'
@@ -66,7 +66,7 @@ export function Credits({
     () => credits?.filter(({ estado }) => !estado)?.length,
     [credits]
   )
-  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
+  const { open, setOpen } = useStatus() 
   const navigate = useNavigate()
 
   const onActive = (checked: boolean) => {
@@ -80,7 +80,7 @@ export function Credits({
   }) => React.MouseEventHandler<React.ComponentRef<typeof Button>> =
     ({ creditId }) =>
     () => {
-      setStatus({ open: !open })
+      setOpen({ open: !open })
       setCredit(credits.find(({ id }) => id === creditId))
     }
 
@@ -88,7 +88,7 @@ export function Credits({
     if (!open) {
       !children && navigate({ to: './' })
     }
-    setStatus({ open })
+    setOpen({ open })
   }
 
   return (

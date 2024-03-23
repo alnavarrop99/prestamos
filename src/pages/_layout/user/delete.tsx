@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { TUser } from '@/api/users'
 import { _selectUsers } from "@/pages/_layout/user"
 import { useNotifications } from '@/lib/context/notification'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout/user/delete')({
   component: DeleteSelectedUsers,
@@ -30,7 +30,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
   const [checked, setChecked] = useState(false)
   const users = useContext(_selectUsers) ?? _users
   const { setNotification } = useNotifications()
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
   const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -44,17 +44,15 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
     const action = (clients?: TUser[]) => () => {
       console.table(clients)
       setNotification({
-        notification: {
-          date: new Date(),
-          action: "DELETE",
-          description,
-        }
+        date: new Date(),
+        action: "DELETE",
+        description,
       })
     }
 
     const timer = setTimeout(action(users), 6 * 1000)
 
-    setStatus({ open: !open })
+    setOpen({ open: !open })
     navigate({to: "../"})
 
     const onClick = () => {

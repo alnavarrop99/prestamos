@@ -32,7 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { useRootStatus } from '@/lib/context/layout'
+import { useStatus } from '@/lib/context/layout'
 import { getClientsRes, type TClient } from '@/api/clients'
 import { Theme, useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
@@ -87,7 +87,7 @@ export function Layout({
   const [{ offline, open = false, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
   })
-  const { setValue, setSearch, search } = useRootStatus((status) => ({
+  const { setValue, setSearch, search } = useStatus((status) => ({
     setValue: status.setValue,
     setSearch: status.setSearch,
     search: status.search,

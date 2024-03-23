@@ -15,7 +15,7 @@ import { type TPayment } from "@/api/payment";
 import { getCreditIdRes, type TCredit } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
@@ -33,7 +33,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const credit = Route.useLoaderData() ?? _credit
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
 
@@ -60,16 +60,14 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
         console.table(props)
         console.table(credit)
         setNotification({
-          notification: {
-            date: new Date(),
-            action: "POST",
-            description,
-          }
+          date: new Date(),
+          action: "POST",
+          description,
         })
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
-    setStatus({ open: !open })
+    setOpen({ open: !open })
     navigate({to: "../"})
 
     const onClick = () => {

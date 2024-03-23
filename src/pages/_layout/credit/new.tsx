@@ -19,7 +19,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { TCredit } from '@/api/credit'
 import users from '@/__mock__/USERS.json'
 import { useNotifications } from '@/lib/context/notification'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout/credit/new')({
   component: NewCredit,
@@ -52,7 +52,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { setNotification } = useNotifications()
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
   const navigate = useNavigate()
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
@@ -85,16 +85,14 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
       () => {
         console.table(props)
         setNotification({
-          notification: {
-            date: new Date(),
-            action: "POST",
-            description,
-          }
+          date: new Date(),
+          action: "POST",
+          description,
         })
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
-    setStatus({ open: !open })
+    setOpen({ open: !open })
     navigate({to: "../"})
 
     const onClick = () => {

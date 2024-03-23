@@ -11,7 +11,7 @@ import clsx from 'clsx'
 import { ComponentRef, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { type TUser, getUserIdRes } from '@/api/users'
-import { useClientStatus } from '@/lib/context/client'
+import {useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
@@ -42,7 +42,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
   const form = useRef<HTMLFormElement>(null)
   const { rol, nombre } = Route.useLoaderData() ?? _user
   const { setNotification } = useNotifications()
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
   const navigate = useNavigate()
 
   const onClick: ( {prop}:{ prop: keyof TPassowordVisibilityState } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
@@ -73,16 +73,14 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
       () => {
         console.table(props)
         setNotification({
-          notification: {
-            date: new Date(),
-            action: "PATH",
-            description,
-          }
+          date: new Date(),
+          action: "PATH",
+          description,
         })
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
-    setStatus({ open: !open })
+    setOpen({ open: !open })
     navigate({to: "../../"})
 
     const onClick = () => {

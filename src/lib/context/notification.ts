@@ -9,11 +9,11 @@ export interface TNotification {
 
 interface TNotificationContext {
   notifications?: TNotification[]
-  setNotification: (params: { notification: TNotification }) => void
+  setNotification: (params: TNotification) => void
 }
 
 export const useNotifications = create<TNotificationContext>()((set) => ({
-  setNotification: ({ notification }) =>
+  setNotification: ({ ...notification }) =>
     set(({ notifications }) => {
       if (!notifications) return { notifications: [notification] }
       return { notifications: [...notifications, { id: (notification?.id ?? 0) + 1,  ...notification }] }
