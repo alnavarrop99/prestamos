@@ -80,7 +80,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
 
     const timer = setTimeout(action(items), 6 * 1000)
     setStatus({ open: !open })
-    navigate({to: ".../../"})
+    navigate({to: "../../"})
 
     const onClick = () => {
       clearTimeout(timer)

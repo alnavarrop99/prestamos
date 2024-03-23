@@ -60,7 +60,7 @@ export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
   
     const timer = setTimeout(action(user), 6 * 1000)
     setStatus({ open: !open })
-    navigate({to: "../"})
+    navigate({to: "../../"})
 
     const onClick = () => {
       clearTimeout(timer)
