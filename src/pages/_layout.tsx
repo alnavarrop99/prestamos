@@ -21,7 +21,7 @@ import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { useEffect, useReducer, useState } from 'react'
+import React, { useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -48,7 +48,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { getRoute } from '@/lib/route'
+import { getRoute, getSearch, TSearch } from '@/lib/route'
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
@@ -71,6 +71,7 @@ interface TNavigationProps {
   clients?: TClient[]
   user?: TUser
   theme?: Theme
+  open?: boolean
 }
 
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
@@ -82,16 +83,14 @@ export function Layout({
   children,
   theme: _theme,
   clients: _clients = [] as TClient[],
+  open: _open = false,
   user: _user = {} as TUser,
 }: React.PropsWithChildren<TNavigationProps>) {
-  const [{ offline, open = false, calendar }, setStatus] = useReducer(reducer, {
+  const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
+    open: _open
   })
-  const { setValue, setSearch, search } = useStatus((status) => ({
-    setValue: status.setValue,
-    setSearch: status.setSearch,
-    search: status.search,
-  }))
+  const { setValue, setSearch, search, value } = useStatus()
   const { clients: clientsDB, user: userDB } = Route.useLoaderData() ?? {
     clients: _clients,
     user: _user,
@@ -121,15 +120,14 @@ export function Layout({
 
   const onChange: React.ChangeEventHandler<
     React.ComponentRef<typeof Input>
-  > = async (ev) => {
+  > = (ev) => {
     const { value } = ev.currentTarget
     setValue({ value })
-
-    if (!clients || !clients?.length) return
 
     const query = clientsDB?.filter(({ ...props }) =>
       Object.values(props).join(' ').toLowerCase().includes(value.toLowerCase())
     )
+
     setClients(query)
   }
 
@@ -138,15 +136,26 @@ export function Layout({
   > = (ev) => {
     const { key } = ev
 
-    if (!clients || !clients?.length) return
+    if (!clients || !clients?.length) return;
+    const { pathname } = rchild?.[0]
 
-    if (key === 'Enter') {
+    if (key === 'Enter' && pathname !== "/user" as TSearch && pathname !== "/client" as TSearch) {
       setSearch({ search: !search })
     }
   }
 
+  const onSelect: ( { clientId }: {clientId: number} ) =>  React.MouseEventHandler< HTMLLIElement > = ({ clientId }) => () => {
+    const client = clients?.find( ({ id }) => id === clientId )
+    if(!client) return;
+
+    const { nombres, apellidos } = client
+    setValue({value: nombres + " " + apellidos})
+    setSearch({ search: !search })
+    setClients([client])
+  }
+
   const onSearchChange = () => {
-    if (!clients || !clients?.length) return
+    if (!clients || !clients?.length) return;
     setSearch({ search: !search })
   }
 
@@ -266,24 +275,19 @@ export function Layout({
             </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
               <Popover
-                open={search && !!rchild?.at(0)?.pathname?.match(/^\/+$/g)}
+                open={search}
                 onOpenChange={onSearchChange}
               >
                 <PopoverTrigger>
                   <Button
                     className={clsx('rounded-br-none rounded-tr-none p-2')}
-                    variant={
-                      !search && rchild?.at(0)?.pathname?.match(/^\/+$/g)
-                        ? 'ghost'
-                        : 'default'
-                    }
+                    variant={ !search ? 'ghost' : 'default' }
                   >
                     <User />
                     <Badge
                       className={clsx(
                         {
-                          '!hidden':
-                            search || !rchild?.at(0)?.pathname?.match(/^\/+$/g),
+                          '!hidden': search,
                         },
                         styles?.['search-badge-animation']
                       )}
@@ -308,37 +312,27 @@ export function Layout({
                           id,
                           numero_de_identificacion: SSN,
                         }) => (
-                          <li key={id} className="group cursor-pointer">
-                            <Link to={'/user/$userId'} params={{ userId: id }}>
-                              {({ isActive }) => (
-                                <>
-                                  <Avatar>
-                                    <AvatarFallback>
-                                      {firstName.at(0) ??
-                                        'N' + lastName.at(0) ??
-                                        'A'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p
-                                      className={clsx('font-bold', {
-                                        "group-hover:after:content-['#']":
-                                          !isActive,
-                                      })}
-                                    >
-                                      {firstName + ' ' + lastName}
-                                    </p>
-                                    <p className="italic">
-                                      {SSN.slice(0, 4) +
-                                        '...' +
-                                        SSN.slice(-4, SSN.length)}
-                                    </p>
-                                  </div>
-                                  {isActive && (
-                                    <Badge> {text.search.current} </Badge>
-                                  )}
-                                </>
-                              )}
+                          <li key={id} className="group cursor-pointer" onClick={onSelect({ clientId: id })}>
+                            <Link to={'/client'}>
+                              <Avatar>
+                                <AvatarFallback>
+                                  {firstName.at(0) ??
+                                    'N' + lastName.at(0) ??
+                                    'A'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p
+                                  className={clsx("font-bold group-hover:after:content-['#']")}
+                                >
+                                  {firstName + ' ' + lastName}
+                                </p>
+                                <p className="italic">
+                                  {SSN.slice(0, 4) +
+                                    '...' +
+                                    SSN.slice(-4, SSN.length)}
+                                </p>
+                              </div>
                             </Link>
                           </li>
                         )
@@ -350,15 +344,10 @@ export function Layout({
               <Input
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
-                placeholder={text.search.placeholder({
-                  pathname: rchild?.at(0)?.pathname as
-                    | '/client'
-                    | '/credit'
-                    | '/user'
-                    | '/',
-                })}
+                placeholder={text.search.placeholder({ pathname: rchild?.at(0)?.pathname })}
                 onChange={onChange}
                 onKeyDown={onKeyDown}
+                value={value}
               />
             </Label>
             <div>
@@ -414,16 +403,16 @@ export function Layout({
                 ({ name, route }, i, list) => {
                   if (!route) {
                     return (
-                      <>
+                      <React.Fragment key={i}>
                         <BreadcrumbItem>
                           <span className="font-bold"> {name} </span>
                         </BreadcrumbItem>
                         {i !== list?.length - 1 && <BreadcrumbSeparator />}
-                      </>
+                      </React.Fragment>
                     )
                   }
                   return (
-                    <>
+                    <React.Fragment key={i}>
                       <BreadcrumbItem>
                         <Link to={route}>
                           <span className={'font-bold hover:underline'}>
@@ -433,7 +422,7 @@ export function Layout({
                         </Link>
                       </BreadcrumbItem>
                       {i !== list?.length - 1 && <BreadcrumbSeparator />}
-                    </>
+                    </React.Fragment>
                   )
                 }
               )}
@@ -474,21 +463,8 @@ const text = {
     description: ({ username }: { username: string }) => username,
   },
   search: {
-    placeholder: ({
-      pathname,
-    }: {
-      pathname?: '/client' | '/user' | '/credit' | '/'
-    }) =>
-      'Buscar ' +
-      (pathname
-        ? {
-            '/client': 'clientes',
-            '/user': 'usuarios',
-            '/credit': 'prestamos',
-            '/': 'clientes activos',
-          }[pathname]
-        : '') +
-      ' ...',
+    placeholder: ({ pathname }: { pathname?: string }) =>
+      'Buscar ' + getSearch({ pathname }),
     title: 'Clientes:',
     current: 'actual',
   },

@@ -8,17 +8,31 @@ const translate = {
   "/update": "Editar",
 }
 
+const search = {
+  "/user": "usuarios",
+  "/client": "clientes",
+}
+
+export type TTranslete = keyof typeof translate
+export type TSearch = keyof typeof search
+
 export const getRoute = ( {pathname}: {pathname: string} ) => {
   return pathname?.split("/")?.map( ( pathname => {
-    if( ("/" + pathname) === "/update" as keyof typeof translate ){
+    if( ("/" + pathname) === "/update" as TTranslete ){
       return ({
-        name: translate?.[("/" + pathname) as keyof typeof translate] ?? pathname.replace(/\//g, ""),
+        name: translate?.[("/" + pathname) as TTranslete] ?? pathname.replace(/\//g, ""),
         route: undefined
       })
     }
     return ({
-      name: translate?.[("/" + pathname) as keyof typeof translate] ?? pathname.replace(/\//g, ""),
-      route: translate?.[("/" + pathname) as keyof typeof translate] ? "/" + pathname : undefined
+      name: translate?.[("/" + pathname) as TTranslete] ?? pathname.replace(/\//g, ""),
+      route: translate?.[("/" + pathname) as TTranslete] ? "/" + pathname : undefined
     })})
   )
+}
+
+export const getSearch = ( { pathname }: { pathname?: string } ) => {
+  const name = search?.[pathname as TSearch];
+  if( !pathname || !name ) return "clientes activos ...";
+  return (name + " ...");
 }

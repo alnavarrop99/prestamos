@@ -8,7 +8,7 @@ import { Link } from '@tanstack/react-router'
 import { useStatus } from '@/lib/context/layout'
 import { type TClient } from '@/api/clients'
 
-export const columns: ColumnDef<TClient>[] = [
+export const columns: ColumnDef<(Record< (keyof TClient) | "fullName", any >)>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -31,7 +31,8 @@ export const columns: ColumnDef<TClient>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'nombres' as keyof TClient,
+    // {row.original.nombres + ' ' + row.original.apellidos}
+    accessorKey: "fullName" as keyof TClient,
     header: ({ column }) => {
       return (
         <Button
@@ -45,7 +46,7 @@ export const columns: ColumnDef<TClient>[] = [
     },
     cell: ({ row }) => (
       <p className="copitalize min-w-32">
-        {row.original.nombres + ' ' + row.original.apellidos}
+        {row.getValue("fullName")}
       </p>
     ),
   },

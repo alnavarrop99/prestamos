@@ -50,14 +50,17 @@ import { Separator } from '@/components/ui/separator'
 
 export const Route = createFileRoute('/_layout/client')({
   component: Clients,
-  loader: getClientsRes,
+  loader: async () => {
+    const clients = await getClientsRes()
+    return clients?.map( ( { nombres, apellidos, ...props } ) => ({ fullName: nombres + " " + apellidos ,...props }) )
+  },
 })
 
 /* eslint-disable-next-line */
 interface TClientsProps {
   clients?: TClient[]
   open?: boolean
-  filter?: keyof TClient
+  filter?: keyof (TClient & Record<"fullName", string>)
 }
 
 export const _selectedClients = createContext<TClient[] | undefined>(undefined)
@@ -65,7 +68,7 @@ export const _selectedClients = createContext<TClient[] | undefined>(undefined)
 /* eslint-disable-next-line */
 export function Clients({
   children,
-  filter: _filter = "nombres",
+  filter: _filter = "fullName",
   open: _open,
   clients: _clients = [] as TClient[],
 }: React.PropsWithChildren<TClientsProps>) {
@@ -73,10 +76,10 @@ export function Clients({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const { open = _open, filter = _filter, setOpen, setValue, setSearch } = useStatus()
-  const { value } = useStatus(({ value }) => ({ value }))
-  const navigate = useNavigate({ from: '/client' })
+  const { open, setOpen, value } = useStatus( ({ open, ...props }) => ({ open: _open, ...props }) )
+  const navigate = useNavigate()
   const clients = Route.useLoaderData() ?? _clients
+  const [ filter, setFilter ] = useState(_filter)
 
   const table = useReactTable({
     data: clients,
@@ -109,7 +112,7 @@ export function Clients({
   }
 
   const onValueChange = (value: string) => {
-    // setStatus({ filter: value as keyof TClient })
+    setFilter( value as keyof TClient )
   }
 
   return (
@@ -157,7 +160,7 @@ export function Clients({
               </SelectTrigger>
               <SelectContent className="[&>div]:cursor-pointer">
                 <SelectItem
-                  value={'nombres' as keyof TClient}
+                  value={'fullName' as keyof TClient}
                   className="cursor-pointer"
                 >
                   {text.select.items.fullName}
