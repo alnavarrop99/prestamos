@@ -89,7 +89,7 @@ export function NewClient() {
         <DialogDescription className='text-muted-foreground'>{text.descriiption}</DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
         id="new-client"

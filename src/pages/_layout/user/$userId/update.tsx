@@ -116,7 +116,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
         <DialogDescription>{text.descriiption}</DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
         id="update-user"

@@ -98,7 +98,7 @@ export function NewUser({}: TNewUserProps) {
         <DialogDescription>{text.descriiption}</DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
         id="new-client-form"

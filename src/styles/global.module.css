@@ -33,7 +33,7 @@
   }
 
   & *:has(*:required) > span::after {
-    content: '*';
+    content: ' * ';
     color: theme(colors.red.500);
   }
 }

@@ -104,7 +104,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
         <DialogDescription className='text-muted-foreground'><p>{text.descriiption}</p></DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
         id="pay-credit"
