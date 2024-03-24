@@ -27,13 +27,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
-import React, { createContext, useEffect, useState } from 'react'
+import React, { createContext, useEffect, useMemo, useState } from 'react'
 import {
   Outlet,
   createFileRoute,
   Link,
   useNavigate,
-  Navigate,
 } from '@tanstack/react-router'
 import { useStatus } from '@/lib/context/layout'
 import {
@@ -47,6 +46,7 @@ import { getClientsRes, type TClient } from '@/api/clients'
 import clsx from 'clsx'
 import { columns } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
+import { useClientByUsers } from '@/lib/context/client'
 
 export const Route = createFileRoute('/_layout/client')({
   component: Clients,
@@ -54,6 +54,10 @@ export const Route = createFileRoute('/_layout/client')({
     const clients = await getClientsRes()
     return clients?.map( ( { nombres, apellidos, ...props } ) => ({ fullName: nombres + " " + apellidos ,...props }) )
   },
+  validateSearch: ( search: { clients?: number[] } ) => {
+    if( !search?.clients?.length ) return ({ clients: [] });
+    return search
+  }
 })
 
 /* eslint-disable-next-line */
@@ -76,13 +80,19 @@ export function Clients({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const { open, setOpen, value } = useStatus( ({ open, ...props }) => ({ open: _open, ...props }) )
+  const { open = _open, setOpen, value } = useStatus()
   const navigate = useNavigate()
-  const clients = Route.useLoaderData() ?? _clients
+  const clientsDB = Route.useLoaderData() ?? _clients
   const [ filter, setFilter ] = useState(_filter)
+  const search = Route.useSearch()
+  const { clients } = useClientByUsers( ({ clients }) => ({ clients: clients ?? clientsDB }) )
+  const data  = useMemo(() =>{
+    if( !search?.clients?.length ) return clients
+    return clients?.filter( ( { id: userId } ) => search?.clients?.includes(userId) )
+  }, [ clients ])
 
   const table = useReactTable({
-    data: clients,
+    data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -104,11 +114,11 @@ export function Clients({
     table.getColumn(filter)?.setFilterValue(value)
   }, [value, filter])
 
-  const onOpenChange: (open: boolean) => void = () => {
-    if (open) {
-      !children && navigate({ to: './' })
+  const onOpenChange: (open: boolean) => void = (open) => {
+    if (!open) {
+      !children && navigate({ to: Route.to })
     }
-    setOpen({ open: !open })
+    setOpen({ open })
   }
 
   const onValueChange = (value: string) => {
@@ -119,7 +129,6 @@ export function Clients({
     <_selectedClients.Provider
       value={table.getFilteredSelectedRowModel().rows as unknown as TClient[]}
     >
-      {!children && <Navigate to={'/client'} />}
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>

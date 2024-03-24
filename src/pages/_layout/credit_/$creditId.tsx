@@ -43,14 +43,14 @@ export function CreditById({
   credit: _credit = {} as TCredit,
 }: React.PropsWithChildren<TCreditByIdProps>) {
   const credit = Route.useLoaderData() ?? _credit
-  const { open, setOpen } = useStatus() 
+  const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
 
-  const onOpenChange = (checked: boolean) => {
-    if (open) {
+  const onOpenChange = (open: boolean) => {
+    if (!open) {
       navigate({ to: Route.to })
     }
-    setOpen({ open: checked })
+    setOpen({ open })
   }
 
   return (

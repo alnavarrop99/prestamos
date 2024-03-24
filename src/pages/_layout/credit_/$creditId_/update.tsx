@@ -50,15 +50,15 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
   const creditDB = Route.useLoaderData() ?? _credit
   const [credit, setCredit] = useState(creditDB)
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
-  const { open, setOpen } = useStatus() 
+  const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
   const form = credit?.pagos.map( () => useRef<HTMLFormElement>(null) )
 
-  const onOpenChange = (checked: boolean) => {
+  const onOpenChange = (open: boolean) => {
     if(open){
       navigate({ to: Route.to }) 
     }
-    setOpen( { open: checked } ) 
+    setOpen( { open } ) 
   }
 
   const onChangeStatus = ( checked: boolean ) => {

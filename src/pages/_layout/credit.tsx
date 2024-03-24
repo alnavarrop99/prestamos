@@ -32,7 +32,6 @@ import {
 import { createContext, useMemo, useState } from 'react'
 import { getCreditsRes, type TCredit } from '@/api/credit'
 import { useStatus } from '@/lib/context/layout'
-import { Navigate } from '@tanstack/react-router'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { format } from 'date-fns'
 
@@ -66,7 +65,7 @@ export function Credits({
     () => credits?.filter(({ estado }) => !estado)?.length,
     [credits]
   )
-  const { open, setOpen } = useStatus() 
+  const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
 
   const onActive = (checked: boolean) => {
@@ -86,14 +85,13 @@ export function Credits({
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
-      !children && navigate({ to: './' })
+      !children && navigate({ to: Route.to })
     }
     setOpen({ open })
   }
 
   return (
     <_creditSelected.Provider value={credit}>
-      {!children && <Navigate to={Route.to} />}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Switch

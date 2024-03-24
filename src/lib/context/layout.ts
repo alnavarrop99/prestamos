@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-interface TSearchContext {
+interface TStatus {
   open: boolean
   search?: boolean
   value?: string
@@ -9,7 +9,7 @@ interface TSearchContext {
   setOpen: ( {open}: { open: boolean } ) => void
 }
 
-export const useStatus = create<TSearchContext>()((set) => ({
+export const useStatus = create<TStatus>()((set) => ({
   open: false,
   setSearch: ({ search }) => set(() => ({ search })),
   setValue: ({ value }) => set(() => ({ value })),

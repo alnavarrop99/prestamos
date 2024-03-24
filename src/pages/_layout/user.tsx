@@ -1,6 +1,6 @@
 import { type TUser, getUsersRes } from '@/api/users'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Link, Navigate, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Avatar } from '@/components/ui/avatar';
 import { AvatarFallback } from '@radix-ui/react-avatar';
 import { Switch } from '@/components/ui/switch';
@@ -40,12 +40,11 @@ export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
 
 /* eslint-disable-next-line */
 export function Users({children, open: _open, users: _users=[] as TUser[] }: React.PropsWithChildren<TUsersProps>) {
-  const _usersDB = (Route.useLoaderData()  ?? _users)
-  const usersDB = _usersDB.map<TUsersState>( (items) => ({...items, selected: false, menu: false }))
-  const [users, setUsers] = useState<TUsersState[]>( usersDB )
+  const usersDB = (Route.useLoaderData()  ?? _users)
+  const [users, setUsers] = useState<TUsersState[]>( usersDB.map<TUsersState>( (items) => ({...items, selected: false, menu: false })) )
   const navigate = useNavigate()
   const { value } = useStatus()
-  const { open, setOpen } = useStatus() 
+  const { open = _open, setOpen } = useStatus() 
 
   const onCheckChanged = ( { id: index, prop }: { id: number, prop: keyof Omit<typeof users[0], "id" | "rol" | "clientes" | "nombre"> } ) => ( checked: boolean ) => {
     const list = users.map( ( { ...user } ) => {
@@ -78,7 +77,7 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
 
   const onOpenChange = ( open: boolean ) => {
     if (!open) {
-      !children && navigate({ to: './' })
+      !children && navigate({ to: Route.to })
     }
     setOpen({ open })
   }
@@ -100,7 +99,6 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
 
   return (
     <_selectUsers.Provider value={users.filter( ({ selected }) => selected  )}>
-    {!children && < Navigate to={"/user"} />}
     <div className='space-y-4'>
       <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
@@ -144,29 +142,37 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
                     {text.menu.title}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onOpenChangeById({ id })}>
-                    {text.menu.client} <UsersList />
+                  <DropdownMenuItem disabled={ !clients.length }>
+                      <Link
+                        className="flex h-full w-full items-center justify-between gap-2"
+                        to={"/client"}
+                        search={{
+                          clients: clients?.map( ({ id }) => id )
+                        }}
+                      >
+                        {text.menu.client} <UsersList />
+                      </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
                     <DialogTrigger asChild>
+                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
                       <Link
                           className="flex h-full w-full items-center justify-between gap-2"
                           to={"./$userId/update"}
                           params={{ userId: id }} >
                         {text.menu.update} <UserUpdate />
                       </Link>
-                    </DialogTrigger>
                   </DropdownMenuItem>
-                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
+                    </DialogTrigger>
                     <DialogTrigger asChild>
+                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
                       <Link
                         className="flex h-full w-full items-center justify-between gap-2"
                         to={"./$userId/delete"} 
                         params={{ userId: id }}>
                         {text.menu.delete} <UserDelete />
                       </Link>
-                    </DialogTrigger>
                   </DropdownMenuItem>
+                    </DialogTrigger>
                 </DropdownMenuContent>
               </DropdownMenu>
             </Dialog>

@@ -11,7 +11,7 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { getClientsRes, type TClient } from "@/api/clients";
+import { getClientsRes, type TClient, getClientId } from "@/api/clients";
 import styles from "@/styles/global.module.css"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
@@ -20,10 +20,19 @@ import { TCredit } from '@/api/credit'
 import users from '@/__mock__/USERS.json'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
+import { getUserId } from '@/api/users'
+
+type TSearch = {
+  clientId: number
+}
 
 export const Route = createFileRoute('/_layout/credit/new')({
   component: NewCredit,
-  loader: getClientsRes
+  loader: getClientsRes,
+  validateSearch: ( search: TSearch ) => {
+    if(!search) return ({} as TSearch)
+    return search
+  }
 })
 
 /* eslint-disable-next-line */
@@ -54,6 +63,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
   const { setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
+  const { clientId } = Route.useSearch()
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
     const { checked, value } = ev.target as { checked: boolean, value: TCuoteStateType }
@@ -143,6 +153,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             type="text"
             placeholder={text.form.cliente.placeholder}
             list='credit-clients'
+            defaultValue={getClientId({ clientId }).nombres + " " + getClientId({ clientId }).apellidos}
           />
           <datalist id='credit-clients' >
             {clients?.map( ( { nombres, apellidos, id } ) => <option key={id} value={[nombres, apellidos].join(" ")} />  )}
@@ -163,6 +174,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             name={'garante' as keyof TCredit}
             type="text"
             placeholder={text.form.ref.placeholder}
+            defaultValue={ getClientId({ clientId })?.referencia }
           />
         </Label>
         <Label className='row-start-2'>
@@ -219,7 +231,11 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
         </Label>
         <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500 row-start-3'>
           <span>{text.form.frecuency.label} </span>
-          <Select required name={'frecuencia_del_credito' as keyof TCredit} defaultValue={text.form.frecuency.items?.[0]}>
+          <Select 
+            required
+            name={'frecuencia_del_credito' as keyof TCredit}
+            defaultValue={text.form.frecuency.items?.[0]}
+          >
             <SelectTrigger className="w-full ring-1 ring-ring">
               <SelectValue placeholder={text.form.frecuency.placeholder} />
             </SelectTrigger>
@@ -236,6 +252,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             type="text"
             placeholder={text.form.user.placeholder}
             list='credit-user'
+            defaultValue={ getUserId({ userId: getClientId({ clientId }).owner.id })?.nombre}
           />
           <datalist id='credit-user' >
             {users?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )}
