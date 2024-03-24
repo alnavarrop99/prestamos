@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { getClientIdRes, type TClient } from '@/api/clients'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
@@ -30,8 +30,9 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
   const [checked, setChecked] = useState(false)
   const client = Route.useLoaderData() ?? _client
   const { nombres: firstName, apellidos: lastName } = client
-  const { setStatus, open } = useClientStatus()
+  const { setOpen, open } = useStatus()
   const { setNotification } = useNotifications()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -48,17 +49,16 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
       ({ ...props }: TClient) =>
       () => {
         console.table(props)
-        setNotification({
-          notification: {
-            date: new Date(),
-            action: "DELETE",
-            description,
-          }
+        setNotification( {
+          date: new Date(),
+          action: "DELETE",
+          description,
         })
       }
 
     const timer = setTimeout(action(client), 6 * 1000)
-    setStatus({ open: !open, })
+    setOpen({ open: !open, })
+    navigate({to: "../../"})
 
     const onClick = () => {
       clearTimeout(timer)

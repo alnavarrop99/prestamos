@@ -5,25 +5,20 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
-import { useReducer, useRef, useState } from 'react'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { getClientIdRes, type TClient } from '@/api/clients'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
   loader: getClientIdRes
-})
-
-const reducer: React.Reducer<TClient, TClient> = (prev, state) => ({
-  ...prev,
-  ...state,
 })
 
 /* eslint-disable-next-line */
@@ -35,10 +30,11 @@ interface TUpdateClientByIdProps {
 export function UpdateClientById({ client: _client = {} as TClient }: TUpdateClientByIdProps) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const client = Route.useLoaderData() ?? _client
-  const [clientItems, setForm] = useReducer(reducer, client)
-  const { open, setStatus } = useClientStatus()
+  const clientDB = Route.useLoaderData() ?? _client
+  const [ client, setClient ] = useState(clientDB) 
+  const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
+  const navigate = useNavigate()
 
   const { 
     nombres: firstName,
@@ -50,7 +46,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
     referencia: ref,
     celular: phone, 
     telefono: telephone,
-  } =  clientItems
+  } =  clientDB
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -74,16 +70,15 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
       () => {
         console.table(props)
         setNotification({
-          notification: {
-            date: new Date(),
-            action: "PATH",
-            description,
-          }
+          date: new Date(),
+          action: "PATH",
+          description,
         })
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
-    setStatus({ open: !open })
+    setOpen({ open: !open })
+    navigate({to: "../../"})
 
     const onClick = () => {
       clearTimeout(timer)
@@ -107,6 +102,12 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
     ev.preventDefault()
   }
 
+  const onChange: React.ChangeEventHandler<HTMLFormElement> = (ev) => {
+    const { name, value } = ev.target
+    if(!name || !value) return;
+    setClient( { ...client, [name]: value } )
+  }
+
   return (
     <DialogContent className="max-w-2xl">
       <DialogHeader>
@@ -119,9 +120,10 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
         </DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
+        onChange={onChange}
         id="update-client"
         className={clsx(
           'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
@@ -166,7 +168,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
         <Label>
           <span>{text.form.typeId.label} </span>
           <Select defaultValue={idType} disabled={!checked} required name={'tipo_de_identificacion' as keyof TClient} >
-            <SelectTrigger className={clsx("w-full", { "border border-primary": checked})}>
+            <SelectTrigger className={clsx("w-full")}>
               <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
@@ -251,7 +253,7 @@ export function UpdateClientById({ client: _client = {} as TClient }: TUpdateCli
             variant="default"
             form="update-client"
             type="submit"
-            disabled={!checked}
+            disabled={!checked || Object.values(clientDB).flat().every( ( value, i ) => value === Object.values(client).flat()?.[i] ) }
           >
             {text.button.update}
           </Button>
@@ -274,7 +276,7 @@ UpdateClientById.dispalyname = 'UpdateClientById'
 
 const text = {
   title: ({ state }: { state: boolean }) =>
-    (state ? 'Dates del ' : 'Actualizacion de los datos') + ' cliente:',
+    (state ? 'Datos del ' : 'Actualizacion de los datos') + ' cliente:',
   description: ({ state }: { state: boolean }) =>
     (state ? 'Datos' : 'Actualizacion de los datos') +
     ' del cliente en la plataforma.',

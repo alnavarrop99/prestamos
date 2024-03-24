@@ -17,7 +17,7 @@ import clients from "@/__mock__/CLIENTS.json";
 import users from '@/__mock__/USERS.json'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import clsx from 'clsx'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { type TPayment } from '@/api/payment'
 import { Navigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
@@ -50,15 +50,15 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
   const creditDB = Route.useLoaderData() ?? _credit
   const [credit, setCredit] = useState(creditDB)
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
-  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
+  const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
   const form = credit?.pagos.map( () => useRef<HTMLFormElement>(null) )
 
-  const onOpenChange = (checked: boolean) => {
+  const onOpenChange = (open: boolean) => {
     if(open){
       navigate({ to: Route.to }) 
     }
-    setStatus( { open: checked } ) 
+    setOpen( { open } ) 
   }
 
   const onChangeStatus = ( checked: boolean ) => {
@@ -99,7 +99,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
     const formList = form?.filter( item => item.current )
 
     if( form.every( (item) => !item.current ) ) {
-      setStatus({ open: !open })
+      setOpen({ open: !open })
       navigate({ to: "./confirm" })
     }
 
@@ -114,7 +114,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
     const activeForms = form?.map( ( { current }, id ) => ({ id, current  }) )?.filter( ({ current }) => current )
 
     if( payId === Math.max( ...activeForms.map( ({ id }) => id ) ) && activeForms?.every( ( { current } ) => current?.checkValidity() ) ) {
-      setStatus({ open: !open })
+      setOpen({ open: !open })
       navigate({ to: "./confirm" })
     }
     ev.preventDefault()

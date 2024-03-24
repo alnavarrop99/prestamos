@@ -11,7 +11,7 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { type TClient } from "@/api/clients"
 import { _selectedClients } from "@/pages/_layout/client";
 import { useNotifications } from '@/lib/context/notification'
@@ -29,7 +29,7 @@ interface TDeleteClientProps {
 export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: TDeleteClientProps) {
   const [checked, setChecked] = useState(false)
   const clients = useContext(_selectedClients) ?? _clients
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
 
@@ -43,16 +43,15 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
     const action = (clients?: TClient[]) => () => {
       console.table(clients)
       setNotification({
-          notification: {
-            date: new Date(),
-            action: "DELETE",
-            description,
-          }
+          date: new Date(),
+          action: "DELETE",
+          description,
         })
     }
 
     const timer = setTimeout(action(clients), 6 * 1000)
-    setStatus({open: !open})
+    setOpen({open: !open})
+    navigate({ to: "../" })
 
     const onClick = () => {
       clearTimeout(timer)
@@ -73,7 +72,6 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
       })
     }
     
-    navigate({ to: "./" })
     ev.preventDefault()
   }
 

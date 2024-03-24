@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -15,7 +15,7 @@ import { type TPayment } from "@/api/payment";
 import { getCreditIdRes, type TCredit } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
@@ -33,8 +33,9 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const credit = Route.useLoaderData() ?? _credit
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -59,17 +60,15 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
         console.table(props)
         console.table(credit)
         setNotification({
-          notification: {
-            date: new Date(),
-            action: "POST",
-            description,
-          }
+          date: new Date(),
+          action: "POST",
+          description,
         })
       }
 
-    setStatus({ open: !open })
-
     const timer = setTimeout(action(items), 6 * 1000)
+    setOpen({ open: !open })
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)
@@ -103,7 +102,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
         <DialogDescription className='text-muted-foreground'><p>{text.descriiption}</p></DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
         id="pay-credit"

@@ -1,6 +1,6 @@
 import { type TUser, getUsersRes } from '@/api/users'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Link, Navigate, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Avatar } from '@/components/ui/avatar';
 import { AvatarFallback } from '@radix-ui/react-avatar';
 import { Switch } from '@/components/ui/switch';
@@ -11,9 +11,8 @@ import { createContext, useEffect, useState } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { MoreHorizontal, UserCog as UserUpdate, UserX as UserDelete, Users as UsersList } from 'lucide-react';
-import { useRootStatus } from '@/lib/context/layout';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { useClientStatus } from '@/lib/context/client';
+import { useStatus } from '@/lib/context/layout';
 import { Separator } from '@/components/ui/separator';
 
 export const Route = createFileRoute('/_layout/user')({
@@ -41,12 +40,11 @@ export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
 
 /* eslint-disable-next-line */
 export function Users({children, open: _open, users: _users=[] as TUser[] }: React.PropsWithChildren<TUsersProps>) {
-  const _usersDB = (Route.useLoaderData()  ?? _users)
-  const usersDB = _usersDB.map<TUsersState>( (items) => ({...items, selected: false, menu: false }))
-  const [users, setUsers] = useState<TUsersState[]>( usersDB )
+  const usersDB = (Route.useLoaderData()  ?? _users)
+  const [users, setUsers] = useState<TUsersState[]>( usersDB.map<TUsersState>( (items) => ({...items, selected: false, menu: false })) )
   const navigate = useNavigate()
-  const { value } = useRootStatus()
-  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
+  const { value } = useStatus()
+  const { open = _open, setOpen } = useStatus() 
 
   const onCheckChanged = ( { id: index, prop }: { id: number, prop: keyof Omit<typeof users[0], "id" | "rol" | "clientes" | "nombre"> } ) => ( checked: boolean ) => {
     const list = users.map( ( { ...user } ) => {
@@ -79,9 +77,9 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
 
   const onOpenChange = ( open: boolean ) => {
     if (!open) {
-      !children && navigate({ to: './' })
+      !children && navigate({ to: Route.to })
     }
-    setStatus({ open })
+    setOpen({ open })
   }
 
   const onOpenChangeById: ({id}: {id: number}) => React.MouseEventHandler< React.ComponentRef< typeof DropdownMenuItem > > = ({id}) => (ev) => {
@@ -101,7 +99,6 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
 
   return (
     <_selectUsers.Provider value={users.filter( ({ selected }) => selected  )}>
-    {!children && < Navigate to={"/user"} />}
     <div className='space-y-4'>
       <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
@@ -145,29 +142,37 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
                     {text.menu.title}
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={onOpenChangeById({ id })}>
-                    {text.menu.client} <UsersList />
+                  <DropdownMenuItem disabled={ !clients.length }>
+                      <Link
+                        className="flex h-full w-full items-center justify-between gap-2"
+                        to={"/client"}
+                        search={{
+                          clients: clients?.map( ({ id }) => id )
+                        }}
+                      >
+                        {text.menu.client} <UsersList />
+                      </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
                     <DialogTrigger asChild>
+                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
                       <Link
                           className="flex h-full w-full items-center justify-between gap-2"
                           to={"./$userId/update"}
                           params={{ userId: id }} >
                         {text.menu.update} <UserUpdate />
                       </Link>
-                    </DialogTrigger>
                   </DropdownMenuItem>
-                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
+                    </DialogTrigger>
                     <DialogTrigger asChild>
+                  <DropdownMenuItem  onClick={onOpenChangeById({ id })}>
                       <Link
                         className="flex h-full w-full items-center justify-between gap-2"
                         to={"./$userId/delete"} 
                         params={{ userId: id }}>
                         {text.menu.delete} <UserDelete />
                       </Link>
-                    </DialogTrigger>
                   </DropdownMenuItem>
+                    </DialogTrigger>
                 </DropdownMenuContent>
               </DropdownMenu>
             </Dialog>
@@ -175,7 +180,7 @@ export function Users({children, open: _open, users: _users=[] as TUser[] }: Rea
             </div>
               <CardHeader>
                  <CardTitle className='flex items-center gap-2'>
-                  <Avatar className='grid place-items-center w-16 h-16 border border-primary '> 
+                  <Avatar className='grid place-items-center w-16 h-16 ring-2 ring-ring '> 
                     <AvatarFallback className='uppercase text-2xl'>
                       {name.split(" ").map( val => val.at(0) ).join("")}
                     </AvatarFallback>

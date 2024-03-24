@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useContext, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -17,7 +17,7 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { _creditSelected } from "@/pages/_layout/credit";
 import { useNotifications } from '@/lib/context/notification'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout/credit/pay')({
   component: PaySelectedCredit,
@@ -34,7 +34,8 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
   const [checked, setChecked] = useState(false)
   const credit = useContext(_creditSelected) ?? _credit
   const { setNotification } = useNotifications()
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -43,7 +44,6 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
   const onSubmit: React.FormEventHandler = (ev) => {
     if (!form.current) return
 
-    
     const items = Object.fromEntries(
       new FormData(form.current).entries()
     ) as Record<keyof TPayment, string>
@@ -60,16 +60,15 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
         console.table(props)
         console.table(credit)
       setNotification({
-          notification: {
-            date: new Date(),
-            action: "POST",
-            description,
-          }
+          date: new Date(),
+          action: "POST",
+          description,
         })
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
-    setStatus({ open: !open })
+    setOpen({ open: !open })
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)
@@ -103,7 +102,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
         <DialogDescription className='text-muted-foreground'><p>{text.descriiption}</p></DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
         id="pay-credit"

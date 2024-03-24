@@ -70,15 +70,14 @@ export function Login({}: TLoginProps) {
             <p>{text?.description?.[1]}</p>
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent >
           <form
             id="login"
-            className="flex flex-col gap-4"
+            className="flex flex-col gap-4 [&>label>span]:font-bold"
             {...{ ref, onSubmit }}
           >
             <Label>
-              {' '}
-              {text.username.label}
+              <span>{text.username.label}</span>
               <Input
                 name="username"
                 type="text"
@@ -87,7 +86,7 @@ export function Login({}: TLoginProps) {
             </Label>
             <Label>
               {' '}
-              {text.password.label}
+              <span>{text.password.label}</span>
               <div className="flex items-center gap-x-2">
                 <Input
                   type={!password ? 'password' : 'text'}

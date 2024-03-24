@@ -11,10 +11,11 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle  } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
 import { _creditUpdate } from "@/pages/_layout/credit_/$creditId_/update";
 import { TCredit } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
+import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')({
   component: UpdateConfirmationCredit,
@@ -29,8 +30,9 @@ interface TUpdateConfirmationCreditProps {
 export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TUpdateConfirmationCreditProps) {
   const [checked, setChecked] = useState(false)
   const credit = useContext(_creditUpdate) ?? _credit
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
+  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -45,16 +47,15 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
     const action = (credit?: TCredit) => () => {
       console.table(credit)
       setNotification({
-          notification: {
-            date: new Date(),
-            action: "PATH",
-            description,
-          }
+          date: new Date(),
+          action: "PATH",
+          description,
         })
     }
 
     const timer = setTimeout(action(credit), 6 * 1000)
-    setStatus({open: !open})
+    setOpen({open: !open})
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)

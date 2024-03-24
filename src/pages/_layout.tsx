@@ -6,6 +6,7 @@ import {
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import {
+  ArrowLeftCircle,
   BadgeCent,
   BadgeDollarSign,
   Calendar as CalendarIcon,
@@ -20,7 +21,7 @@ import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import { useEffect, useReducer, useState } from 'react'
+import React, { useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -31,16 +32,30 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { useRootStatus } from '@/lib/context/layout'
+import { useStatus } from '@/lib/context/layout'
 import { getClientsRes, type TClient } from '@/api/clients'
 import { Theme, useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card'
 import { getCurrentUserRes, TUser } from '@/api/users'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
+import { getRoute, getSearch, TSearch } from '@/lib/route'
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
-  loader: async () => ( {clients: await getClientsRes(), user: await getCurrentUserRes()})
+  loader: async () => ({
+    clients: await getClientsRes(),
+    user: await getCurrentUserRes(),
+  }),
 })
 
 /* eslint-disable-next-line */
@@ -53,9 +68,10 @@ interface TStatus {
 
 /* eslint-disable-next-line */
 interface TNavigationProps {
-  clients?: TClient[],
-  user?: TUser,
+  clients?: TClient[]
+  user?: TUser
   theme?: Theme
+  open?: boolean
 }
 
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
@@ -67,21 +83,22 @@ export function Layout({
   children,
   theme: _theme,
   clients: _clients = [] as TClient[],
+  open: _open = false,
   user: _user = {} as TUser,
 }: React.PropsWithChildren<TNavigationProps>) {
-  const [{ offline, open = false, calendar }, setStatus] = useReducer(reducer, {
+  const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
+    open: _open
   })
-  const { setValue, setSearch, search } = useRootStatus((status) => ({
-    setValue: status.setValue,
-    setSearch: status.setSearch,
-    search: status.search,
-  }))
-  const { clients: clientsDB, user: userDB } = Route.useLoaderData() ?? { clients: _clients, user: _user }
+  const { setValue, setSearch, search, value } = useStatus()
+  const { clients: clientsDB, user: userDB } = Route.useLoaderData() ?? {
+    clients: _clients,
+    user: _user,
+  }
   const [clients, setClients] = useState(clientsDB)
-  const [ user ] = useState(userDB)
-  const { theme, setTheme } = useTheme() 
-  const route = useChildMatches()
+  const [user] = useState(userDB)
+  const { theme, setTheme } = useTheme()
+  const rchild = useChildMatches()
 
   useEffect(() => {
     const onNotwork = () => {
@@ -103,15 +120,14 @@ export function Layout({
 
   const onChange: React.ChangeEventHandler<
     React.ComponentRef<typeof Input>
-  > = async (ev) => {
+  > = (ev) => {
     const { value } = ev.currentTarget
     setValue({ value })
-
-    if (!clients || !clients?.length) return
 
     const query = clientsDB?.filter(({ ...props }) =>
       Object.values(props).join(' ').toLowerCase().includes(value.toLowerCase())
     )
+
     setClients(query)
   }
 
@@ -120,26 +136,43 @@ export function Layout({
   > = (ev) => {
     const { key } = ev
 
-    if (!clients || !clients?.length) return
+    if (!clients || !clients?.length) return;
+    const { pathname } = rchild?.[0]
 
-    if (key === 'Enter') {
+    if (key === 'Enter' && pathname !== "/user" as TSearch && pathname !== "/client" as TSearch) {
       setSearch({ search: !search })
     }
   }
 
+  const onSelect: ( { clientId }: {clientId: number} ) =>  React.MouseEventHandler< HTMLLIElement > = ({ clientId }) => () => {
+    const client = clients?.find( ({ id }) => id === clientId )
+    if(!client) return;
+
+    const { nombres, apellidos } = client
+    setValue({value: nombres + " " + apellidos})
+    setSearch({ search: !search })
+    setClients([client])
+  }
+
   const onSearchChange = () => {
-    if (!clients || !clients?.length) return
+    if (!clients || !clients?.length) return;
     setSearch({ search: !search })
   }
 
   const onSwitch = (checked: boolean) => {
-    if (_theme) return;
+    if (_theme) return
 
     if (checked) {
       setTheme('dark')
-      return;
+      return
     }
     setTheme('light')
+  }
+
+  const onBack: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
+    window.history.back()
   }
 
   return (
@@ -180,7 +213,9 @@ export function Layout({
                       {({ isActive }) => (
                         <Button
                           variant={!isActive ? 'link' : 'default'}
-                          className={clsx({ 'p-2': open })}
+                          className={clsx('delay-50 font-bold duration-300', {
+                            'p-2': open,
+                          })}
                         >
                           {!open ? title : <Icon />}
                         </Button>
@@ -234,30 +269,25 @@ export function Layout({
             </Link>
           </div>
           <div>
-            <Label className='flex gap-2 items-center cursor-pointer'>
+            <Label className="flex cursor-pointer items-center gap-2">
               {theme === 'dark' ? <Moon /> : <Sun />}
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
               <Popover
-                open={search && !!route?.at(0)?.pathname?.match(/^\/+$/g)}
+                open={search}
                 onOpenChange={onSearchChange}
               >
                 <PopoverTrigger>
                   <Button
                     className={clsx('rounded-br-none rounded-tr-none p-2')}
-                    variant={
-                      !search && route?.at(0)?.pathname?.match(/^\/+$/g)
-                        ? 'ghost'
-                        : 'default'
-                    }
+                    variant={ !search ? 'ghost' : 'default' }
                   >
                     <User />
                     <Badge
                       className={clsx(
                         {
-                          '!hidden':
-                            search || !route?.at(0)?.pathname?.match(/^\/+$/g),
+                          '!hidden': search,
                         },
                         styles?.['search-badge-animation']
                       )}
@@ -282,37 +312,27 @@ export function Layout({
                           id,
                           numero_de_identificacion: SSN,
                         }) => (
-                          <li key={id} className="group cursor-pointer">
-                            <Link to={'/user/$userId'} params={{ userId: id }}>
-                              {({ isActive }) => (
-                                <>
-                                  <Avatar>
-                                    <AvatarFallback>
-                                      {firstName.at(0) ??
-                                        'N' + lastName.at(0) ??
-                                        'A'}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div>
-                                    <p
-                                      className={clsx('font-bold', {
-                                        "group-hover:after:content-['#']":
-                                          !isActive,
-                                      })}
-                                    >
-                                      {firstName + ' ' + lastName}
-                                    </p>
-                                    <p className="italic">
-                                      {SSN.slice(0, 4) +
-                                        '...' +
-                                        SSN.slice(-4, SSN.length)}
-                                    </p>
-                                  </div>
-                                  {isActive && (
-                                    <Badge> {text.search.current} </Badge>
-                                  )}
-                                </>
-                              )}
+                          <li key={id} className="group cursor-pointer" onClick={onSelect({ clientId: id })}>
+                            <Link to={'/client'}>
+                              <Avatar>
+                                <AvatarFallback>
+                                  {firstName.at(0) ??
+                                    'N' + lastName.at(0) ??
+                                    'A'}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p
+                                  className={clsx("font-bold group-hover:after:content-['#']")}
+                                >
+                                  {firstName + ' ' + lastName}
+                                </p>
+                                <p className="italic">
+                                  {SSN.slice(0, 4) +
+                                    '...' +
+                                    SSN.slice(-4, SSN.length)}
+                                </p>
+                              </div>
                             </Link>
                           </li>
                         )
@@ -324,22 +344,20 @@ export function Layout({
               <Input
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
-                placeholder={text.search.placeholder({
-                  pathname: route?.at(0)?.pathname as
-                    | '/client'
-                    | '/credit'
-                    | '/user'
-                    | '/',
-                })}
+                placeholder={text.search.placeholder({ pathname: rchild?.at(0)?.pathname })}
                 onChange={onChange}
                 onKeyDown={onKeyDown}
+                value={value}
               />
             </Label>
             <div>
               <HoverCard>
                 <HoverCardTrigger>
-                  <Badge className="text-sm cursor-pointer" variant="outline">
-                    {user.nombre.split(" ").map( char => char.at(0) ).join("")}
+                  <Badge className="cursor-pointer text-sm" variant="outline">
+                    {user.nombre
+                      .split(' ')
+                      .map((char) => char.at(0))
+                      .join('')}
                   </Badge>
                 </HoverCardTrigger>
                 <HoverCardContent>
@@ -347,9 +365,14 @@ export function Layout({
                     <AvatarImage src={text.avatar.src} alt="user-img" />
                     <AvatarFallback>{text.avatar.name}</AvatarFallback>
                   </Avatar>
-                  <ul className='[&>li]:w-fit space-y-2'>
-                    <li><span className='font-bold'>{user.nombre}</span></li>
-                    <li> <Badge> {user?.rol} </Badge></li>
+                  <ul className="space-y-2 [&>li]:w-fit">
+                    <li>
+                      <span className="font-bold">{user.nombre}</span>
+                    </li>
+                    <li>
+                      {' '}
+                      <Badge> {user?.rol} </Badge>
+                    </li>
                   </ul>
                 </HoverCardContent>
               </HoverCard>
@@ -365,7 +388,49 @@ export function Layout({
           </div>
         </div>
       </header>
-      <main className="!px-10 py-8">{children ?? <Outlet />}</main>
+      <main className="space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
+        <div>
+          <Button
+            onClick={onBack}
+            variant="ghost"
+            className="p-2 text-sm [&>svg]:h-5 [&>svg]:w-5"
+          >
+            <ArrowLeftCircle />
+          </Button>
+          <Breadcrumb>
+            <BreadcrumbList>
+              {getRoute({ pathname: rchild?.[0]?.pathname })?.map(
+                ({ name, route }, i, list) => {
+                  if (!route) {
+                    return (
+                      <React.Fragment key={i}>
+                        <BreadcrumbItem>
+                          <span className="font-bold"> {name} </span>
+                        </BreadcrumbItem>
+                        {i !== list?.length - 1 && <BreadcrumbSeparator />}
+                      </React.Fragment>
+                    )
+                  }
+                  return (
+                    <React.Fragment key={i}>
+                      <BreadcrumbItem>
+                        <Link to={route}>
+                          <span className={'font-bold hover:underline'}>
+                            {' '}
+                            {name}{' '}
+                          </span>
+                        </Link>
+                      </BreadcrumbItem>
+                      {i !== list?.length - 1 && <BreadcrumbSeparator />}
+                    </React.Fragment>
+                  )
+                }
+              )}
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
+        <div className="px-8">{children ?? <Outlet />}</div>
+      </main>
       <footer className="py-4">
         <Separator className="my-4" />
         <div className="flex justify-between">
@@ -398,21 +463,8 @@ const text = {
     description: ({ username }: { username: string }) => username,
   },
   search: {
-    placeholder: ({
-      pathname,
-    }: {
-      pathname?: '/client' | '/user' | '/credit' | '/'
-    }) =>
-      'Buscar ' +
-      (pathname
-        ? {
-            '/client': 'clientes',
-            '/user': 'usuarios',
-            '/credit': 'prestamos',
-            '/': 'clientes activos',
-          }[pathname]
-        : '') +
-      ' ...',
+    placeholder: ({ pathname }: { pathname?: string }) =>
+      'Buscar ' + getSearch({ pathname }),
     title: 'Clientes:',
     current: 'actual',
   },

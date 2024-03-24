@@ -32,7 +32,6 @@ export function NewUser({}: TNewUserProps) {
   const form = useRef<HTMLFormElement>(null)
   const { setNotification } = useNotifications()
 
-
   const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
   }
@@ -54,11 +53,9 @@ export function NewUser({}: TNewUserProps) {
       () => {
         console.table(props)
         setNotification({
-          notification: {
-            date: new Date(),
-            action: "POST",
-            description,
-          }
+          date: new Date(),
+          action: "POST",
+          description,
         })
       }
 
@@ -98,7 +95,7 @@ export function NewUser({}: TNewUserProps) {
         <DialogDescription>{text.descriiption}</DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
         id="new-client-form"

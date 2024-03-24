@@ -1,4 +1,4 @@
-import { Separator } from '@radix-ui/react-separator'
+import { Separator } from '@/components/ui/separator'
 import { createFileRoute } from '@tanstack/react-router'
 import { useNotifications, type TNotification } from "@/lib/context/notification";
 import { Card, CardDescription, CardTitle } from '@/components/ui/card';
@@ -21,20 +21,25 @@ export function Notifications({ notifications: _notifications = [] as TNotificat
   const { notifications } = useNotifications( ({ notifications }) => ({ notifications: notifications ?? _notifications }) )
   return (
     <div className='space-y-2'>
-      <h1 className="text-3xl font-bold">{text.title}</h1>
+      <div className="flex items-center gap-2">
+        <h1 className="text-3xl font-bold">{text.title}</h1>
+        {!!notifications?.length && <Badge className="px-3 text-xl"> {notifications?.length} </Badge>}
+      </div>
       <Separator />
+      <div className='space-y-6 py-2'>
       { !notifications?.length && <p> {text.notfound} </p> }
       { !!notifications?.length && notifications?.map( ({ id, description, action, date }) => 
-        <Card key={id} className={clsx('!m-4 space-y-2 p-8 ring-2', {
+        <Card key={id} className={clsx('shadow-lg space-y-2 p-6 ring-2', {
             "ring-green-500": action === "POST",
             "ring-blue-500": action === "PATH",
             "ring-red-500": action === "DELETE",
           })}>
           <CardTitle className='flex items-center gap-4'> <ActionIcon action={action} />  {getAction(action)} </CardTitle>
-          <CardDescription> <p>{description}</p> </CardDescription>
+          <CardDescription className='text-lg'> <p>{description}</p> </CardDescription>
           <div className='flex justify-end'><Badge>{format(date, "dd-MM-yyyy")}</Badge></div>
         </Card> 
       ) }
+      </div>
     </div>
   )
 }

@@ -5,13 +5,13 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import React, { ComponentRef, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { getClientsRes, type TClient } from "@/api/clients";
+import { getClientsRes, type TClient, getClientId } from "@/api/clients";
 import styles from "@/styles/global.module.css"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
@@ -19,11 +19,20 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { TCredit } from '@/api/credit'
 import users from '@/__mock__/USERS.json'
 import { useNotifications } from '@/lib/context/notification'
-import { useClientStatus } from '@/lib/context/client'
+import { useStatus } from '@/lib/context/layout'
+import { getUserId } from '@/api/users'
+
+type TSearch = {
+  clientId: number
+}
 
 export const Route = createFileRoute('/_layout/credit/new')({
   component: NewCredit,
-  loader: getClientsRes
+  loader: getClientsRes,
+  validateSearch: ( search: TSearch ) => {
+    if(!search) return ({} as TSearch)
+    return search
+  }
 })
 
 /* eslint-disable-next-line */
@@ -52,7 +61,9 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { setNotification } = useNotifications()
-  const { open, setStatus } = useClientStatus()
+  const { open, setOpen } = useStatus()
+  const navigate = useNavigate()
+  const { clientId } = Route.useSearch()
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
     const { checked, value } = ev.target as { checked: boolean, value: TCuoteStateType }
@@ -84,16 +95,15 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
       () => {
         console.table(props)
         setNotification({
-          notification: {
-            date: new Date(),
-            action: "POST",
-            description,
-          }
+          date: new Date(),
+          action: "POST",
+          description,
         })
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
-    setStatus({ open: !open })
+    setOpen({ open: !open })
+    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)
@@ -143,6 +153,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             type="text"
             placeholder={text.form.cliente.placeholder}
             list='credit-clients'
+            defaultValue={getClientId({ clientId }).nombres + " " + getClientId({ clientId }).apellidos}
           />
           <datalist id='credit-clients' >
             {clients?.map( ( { nombres, apellidos, id } ) => <option key={id} value={[nombres, apellidos].join(" ")} />  )}
@@ -163,6 +174,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             name={'garante' as keyof TCredit}
             type="text"
             placeholder={text.form.ref.placeholder}
+            defaultValue={ getClientId({ clientId })?.referencia }
           />
         </Label>
         <Label className='row-start-2'>
@@ -219,8 +231,12 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
         </Label>
         <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500 row-start-3'>
           <span>{text.form.frecuency.label} </span>
-          <Select required name={'frecuencia_del_credito' as keyof TCredit} defaultValue={text.form.frecuency.items?.[0]}>
-            <SelectTrigger className="w-full border border-primary">
+          <Select 
+            required
+            name={'frecuencia_del_credito' as keyof TCredit}
+            defaultValue={text.form.frecuency.items?.[0]}
+          >
+            <SelectTrigger className="w-full ring-1 ring-ring">
               <SelectValue placeholder={text.form.frecuency.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
@@ -236,6 +252,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             type="text"
             placeholder={text.form.user.placeholder}
             list='credit-user'
+            defaultValue={ getUserId({ userId: getClientId({ clientId }).owner.id })?.nombre}
           />
           <datalist id='credit-user' >
             {users?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )}

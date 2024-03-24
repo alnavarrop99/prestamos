@@ -1,14 +1,14 @@
 import { ColumnDef } from '@tanstack/react-table'
-import { ArrowUpDown, Copy, MoreHorizontal, UserCog2 as UserUpdate, UserX2 as UserDelete, } from 'lucide-react'
+import { ArrowUpDown, Copy, MoreHorizontal, UserCog2 as UserUpdate, UserX2 as UserDelete, UserPlus2 as UserPay, } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger, } from '@/components/ui/dropdown-menu'
 import { useState } from 'react'
-import { Link } from '@tanstack/react-router'
-import { useClientStatus } from '@/lib/context/client'
+import { Link, useNavigate } from '@tanstack/react-router'
+import { useStatus } from '@/lib/context/layout'
 import { type TClient } from '@/api/clients'
 
-export const columns: ColumnDef<TClient>[] = [
+export const columns: ColumnDef<(Record< (keyof TClient) | "fullName", any >)>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -31,7 +31,8 @@ export const columns: ColumnDef<TClient>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: 'nombres' as keyof TClient,
+    // {row.original.nombres + ' ' + row.original.apellidos}
+    accessorKey: "fullName" as keyof TClient,
     header: ({ column }) => {
       return (
         <Button
@@ -45,7 +46,7 @@ export const columns: ColumnDef<TClient>[] = [
     },
     cell: ({ row }) => (
       <p className="copitalize min-w-32">
-        {row.original.nombres + ' ' + row.original.apellidos}
+        {row.getValue("fullName")}
       </p>
     ),
   },
@@ -106,32 +107,46 @@ export const columns: ColumnDef<TClient>[] = [
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const { id } = row.original
+      const { id, celular, nombres, apellidos, numero_de_identificacion } = row.original
 
       /* eslint-disable-next-line */
-      const { open, setStatus } = useClientStatus(({ open, setStatus }) => ({
-        open,
-        setStatus,
-      }))
+      const { open, setOpen } = useStatus()
 
       /* eslint-disable-next-line */
       const [{ menu }, setMenu] = useState<{ menu?: boolean }>({ menu: false })
 
+      /* eslint-disable-next-line */
+      const navigate = useNavigate()
+
       const onClickCopy: React.MouseEventHandler<
         React.ComponentRef<typeof DropdownMenuItem>
       > = () => {
-        navigator.clipboard.writeText(id.toFixed())
+        navigator.clipboard.writeText( [ nombres, apellidos, celular, numero_de_identificacion ].join(" ") )
       }
 
-      const onClick: React.MouseEventHandler<
-        React.ComponentRef<typeof DropdownMenuItem>
-      > = () => {
-        setMenu({ menu: !menu })
-        setStatus({ open: !open })
+      const onClick: React.MouseEventHandler< React.ComponentRef< typeof DropdownMenuItem > > = ( ) => {
+        const _open = !open
+        const _menu = !menu
+        if (!_open) {
+          navigate({ to: '/client' })
+        }
+        setOpen({ open: _open })
+        setMenu({ menu: _menu })
+      }
+
+      const onClickPay: React.MouseEventHandler< React.ComponentRef< typeof DropdownMenuItem > > = ( ) => {
+        const _open = !open
+        const _menu = !menu
+        setOpen({ open: _open })
+        setMenu({ menu: _menu })
+      }
+
+      const onMenuChange = ( menu: boolean ) => {
+        setMenu({ menu })
       }
 
       return (
-        <DropdownMenu open={menu} onOpenChange={() => setMenu({ menu: !menu })}>
+        <DropdownMenu open={menu} onOpenChange={onMenuChange}>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="h-8 w-8 p-0">
               <span className="sr-only">{text.menu.aria}</span>
@@ -146,8 +161,17 @@ export const columns: ColumnDef<TClient>[] = [
               {text.menu.title}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onClickCopy}>
+            <DropdownMenuItem onClick={onClickCopy} >
               {text.menu.copy} <Copy />
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onClickPay}>
+              <Link
+                className="flex h-full w-full items-center justify-between gap-2"
+                to={'/credit/new'}
+                search={{ clientId: id }}
+              >
+                {text.menu.pay} <UserPay />
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onClick}>
               <Link
@@ -158,7 +182,7 @@ export const columns: ColumnDef<TClient>[] = [
                 {text.menu.update} <UserUpdate />
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={onClick}>
+            <DropdownMenuItem onClick={onClick} >
               <Link
                 className="flex h-full w-full items-center justify-between gap-2"
                 to={'./$clientId/delete'}
@@ -179,8 +203,9 @@ const text = {
     aria: 'Mas Opciones',
     title: 'Acciones:',
     copy: 'Copiar datos del cliente',
-    update: 'Ver | Actualizar Cliente',
-    delete: 'Eliminar Cliente',
+    update: 'Ver | Actualizar cliente',
+    pay: 'Asignar prestamo al cliente',
+    delete: 'Eliminar cliente',
   },
   columns: {
     fullName: 'Nombre y apellidos',

@@ -31,8 +31,7 @@ import {
 } from 'lucide-react'
 import { createContext, useMemo, useState } from 'react'
 import { getCreditsRes, type TCredit } from '@/api/credit'
-import { useClientStatus } from '@/lib/context/client'
-import { Navigate } from '@tanstack/react-router'
+import { useStatus } from '@/lib/context/layout'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { format } from 'date-fns'
 
@@ -66,7 +65,7 @@ export function Credits({
     () => credits?.filter(({ estado }) => !estado)?.length,
     [credits]
   )
-  const { open, setStatus } = useClientStatus( ({ open, setStatus }) => ({ open: open ?? _open, setStatus  }) ) 
+  const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
 
   const onActive = (checked: boolean) => {
@@ -80,20 +79,19 @@ export function Credits({
   }) => React.MouseEventHandler<React.ComponentRef<typeof Button>> =
     ({ creditId }) =>
     () => {
-      setStatus({ open: !open })
+      setOpen({ open: !open })
       setCredit(credits.find(({ id }) => id === creditId))
     }
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
-      !children && navigate({ to: './' })
+      !children && navigate({ to: Route.to })
     }
-    setStatus({ open })
+    setOpen({ open })
   }
 
   return (
     <_creditSelected.Provider value={credit}>
-      {!children && <Navigate to={Route.to} />}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Switch

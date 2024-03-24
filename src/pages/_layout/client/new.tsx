@@ -46,11 +46,9 @@ export function NewClient() {
       () => {
         console.table(props)
         setNotification({
-          notification: {
-            date: new Date(),
-            action: "POST",
-            description,
-          }
+          date: new Date(),
+          action: "POST",
+          description,
         })
       }
 
@@ -89,7 +87,7 @@ export function NewClient() {
         <DialogDescription className='text-muted-foreground'>{text.descriiption}</DialogDescription>
       </DialogHeader>
       <form
-        autoComplete="on"
+        autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
         id="new-client"
