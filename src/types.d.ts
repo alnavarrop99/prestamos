@@ -309,11 +309,11 @@ declare module '@types' {
     nombre: string
   }
 
-  export interface User {
+  export interface TUser {
+    id: number
     nombre: string
-    password: string
-    rol_id?: number
-    id?: number
+    rol: string
+    clientes?: number[]
   }
 
   export interface UserCreate {

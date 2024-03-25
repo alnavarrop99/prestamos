@@ -1,4 +1,5 @@
-import { type TUser, getUsersRes } from '@/api/users'
+import { getUsersRes } from '@/api/users'
+import type { TUser } from '@types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Link,
@@ -47,7 +48,7 @@ interface TUsersProps {
 interface TUsersState extends TUser {
   selected: boolean
   menu: boolean
-  active: boolean
+  active?: boolean
 }
 
 /* eslint-disable-next-line */
@@ -187,15 +188,7 @@ export function Users({
         <div className="flex flex-wrap gap-4 [&>*]:flex-auto">
           {users?.length &&
             users?.map(
-              ({
-                id,
-                rol,
-                nombre: name,
-                clientes: clients,
-                selected,
-                active,
-                menu,
-              }) => (
+              ({ id, rol, nombre, clientes, selected, active, menu }) => (
                 <Card
                   key={id}
                   className={clsx(
@@ -227,12 +220,14 @@ export function Users({
                             {text.menu.title}
                           </DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          <DropdownMenuItem disabled={!clients.length}>
+                          <DropdownMenuItem
+                            disabled={!clientes || !clientes.length}
+                          >
                             <Link
                               className="flex h-full w-full items-center justify-between gap-2"
                               to={'/client'}
                               search={{
-                                clients: clients?.map(({ id }) => id),
+                                clients: clientes,
                               }}
                             >
                               {text.menu.client} <UsersList />
@@ -277,13 +272,13 @@ export function Users({
                     <CardTitle className="flex items-center gap-2">
                       <Avatar className="grid h-16 w-16 place-items-center ring-2 ring-ring ">
                         <AvatarFallback className="text-2xl uppercase">
-                          {name
+                          {nombre
                             .split(' ')
                             .map((val) => val.at(0))
                             .join('')}
                         </AvatarFallback>
                       </Avatar>
-                      {name}
+                      {nombre}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="flex justify-between [&>*]:flex [&>*]:cursor-pointer [&>*]:items-center [&>*]:gap-2">
@@ -297,13 +292,15 @@ export function Users({
                       {' '}
                       {rol}{' '}
                     </Badge>
-                    <Switch
-                      checked={active}
-                      onCheckedChange={onCheckChanged({ id, prop: 'active' })}
-                      onClick={onClickStop}
-                    >
-                      {' '}
-                    </Switch>
+                    {active && (
+                      <Switch
+                        checked={active}
+                        onCheckedChange={onCheckChanged({ id, prop: 'active' })}
+                        onClick={onClickStop}
+                      >
+                        {' '}
+                      </Switch>
+                    )}
                   </CardContent>
                 </Card>
               )
