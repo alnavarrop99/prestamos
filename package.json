@@ -118,5 +118,10 @@
     "vite-plugin-progress": "^0.0.7",
     "vite-plugin-svgr": "^4.2.0",
     "vitest": "^0.34.6"
+  },
+  "msw": {
+    "workerDirectory": [
+      "src/mock"
+    ]
   }
 }
