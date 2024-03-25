@@ -1,5 +1,6 @@
 import { getUsersRes } from '@/api/users'
-import type { TUser } from '@types'
+import { type TRoles } from "@/api/rol";
+import { type TUser } from "@/api/users";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Link,
@@ -50,9 +51,6 @@ interface TUsersState extends TUser {
   menu: boolean
   active?: boolean
 }
-
-/* eslint-disable-next-line */
-export type TRole = 'Administrador' | 'Cliente' | 'Usuario'
 
 export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
 
@@ -284,9 +282,9 @@ export function Users({
                   <CardContent className="flex justify-between [&>*]:flex [&>*]:cursor-pointer [&>*]:items-center [&>*]:gap-2">
                     <Badge
                       className={clsx('hover:bg-[auto]', {
-                        'bg-red-500': rol === ('Administrador' as TRole),
-                        'bg-blue-500': rol === ('Cliente' as TRole),
-                        'bg-green-500': rol === ('Usuario' as TRole),
+                        'bg-red-500': rol === ('Administrador' as TRoles),
+                        'bg-blue-500': rol === ('Cliente' as TRoles),
+                        'bg-green-500': rol === ('Usuario' as TRoles),
                       })}
                     >
                       {' '}

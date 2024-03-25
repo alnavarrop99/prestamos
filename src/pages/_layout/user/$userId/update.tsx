@@ -10,9 +10,11 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { ComponentRef, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { type TUser, getUserIdRes } from '@/api/users'
+import { getUserIdRes, pathUsersRes, type TUser } from '@/api/users'
 import {useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
+import { useMutation } from '@tanstack/react-query'
+import { getRolName, getRols } from '@/api/rol'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
   component: UpdateUserById,
@@ -35,33 +37,61 @@ interface TUpdateUserById {
   user?: TUser
 }
 
+type TFormName = "firstName" | "lastName" | "rol" | "password" | "newPassword"
+
 /* eslint-disable-next-line */
 export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
   const [ visibility, setVisibility ] = useState<TPassowordVisibilityState>({})
   const [ password, setPassword ] = useState<TPassowordValueState | undefined>(undefined)
   const form = useRef<HTMLFormElement>(null)
-  const { rol, nombre } = Route.useLoaderData() ?? _user
+  const _userDB = (Route.useLoaderData() ?? _user)
+  const userDB = { ..._userDB, password: "" }
+  const [ user, setUser ] = useState(userDB)
   const { setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
+  const updateUser = useMutation( {
+    mutationKey: ["update-user"],
+    mutationFn: pathUsersRes,
+  })
 
   const onClick: ( {prop}:{ prop: keyof TPassowordVisibilityState } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setVisibility( { ...visibility, [ prop ]: !visibility?.[prop]  } )
   }
 
-  const onChange: React.ChangeEventHandler< ComponentRef< typeof Input > > = (ev) => {
+  const onChangePassword: React.ChangeEventHandler< ComponentRef< typeof Input > > = (ev) => {
     const { name, value } = ev?.target
     setPassword( { ...password, [ name ]: value  } )
-    console.log( { [ name ]: value  } )
   }
 
+  const onChange:  React.ChangeEventHandler< HTMLFormElement > = (ev) => {
+    const { name, value } = ev.target
+    
+    if( name === "firstName" as TFormName || name === "lastName" as TFormName  ){
+      return;
+    }
+
+    setUser( { ...user, [ name ]: value } )
+  }
+
+  const onChangeName: ( filed: "firstName" | "lastName" ) => React.ChangeEventHandler< React.ComponentRef< typeof Input > > = (field) => (ev) => {
+    ev.stopPropagation()
+    const { value } = ev.target
+    const { nombre } = user
+    if( field === "firstName" ){
+      setUser( { ...user, nombre: value + nombre.split(" ")?.[1] } )
+    }
+    else if ( field === "lastName"  ){
+      setUser( { ...user, nombre: nombre.split(" ")?.[0] + value } )
+    }
+  }
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current) return;
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof TUser | "firstName" | "lastName", string>
+    ) as Record<TFormName, string>
 
     const { firstName, lastName } = items
     const description = text.notification.decription({
@@ -69,9 +99,16 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
     })
 
     const action =
-      ({ ...props }: Record<string, string>) =>
+      ({ ...items }: Record<TFormName, string>) =>
       () => {
-        console.table(props)
+        const { firstName, lastName, rol, newPassword } = items
+        updateUser.mutate({ 
+          userId: id, 
+          params: { 
+            rol_id: Number.parseInt(rol), 
+            password: newPassword !== "" ? newPassword : undefined, 
+            nombre: firstName + " " + lastName
+          } })
         setNotification({
           date: new Date(),
           action: "PATH",
@@ -87,24 +124,24 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
       clearTimeout(timer)
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from new user">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from new user">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     form.current.reset()
     ev.preventDefault()
   }
+
+  const { rol, nombre, id } = userDB
 
   return (
     <DialogContent className="max-w-lg">
@@ -117,6 +154,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
         autoComplete="off"
         ref={form}
         onSubmit={onSubmit}
+        onChange={onChange}
         id="update-user"
         className={clsx(
           'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>:is(label,div)]:space-y-2 [&>*]:col-span-full [&_label>span]:font-bold',
@@ -126,31 +164,34 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
           <span>{text.form.firstName.label}</span>{' '}
           <Input
             required
-            name={'firstName' as keyof typeof text.form}
+            name={'firstName' as TFormName}
             type="text"
             placeholder={text.form.firstName.placeholder}
             defaultValue={nombre.split(" ")?.at(0)}
+            onChange={onChangeName("firstName")}
           />
         </Label>
         <Label className='!col-span-1' >
           <span>{text.form.lastName.label} </span>
           <Input
             required
-            name={'lastName'}
+            name={'lastName' as TFormName}
             type="text"
             placeholder={text.form.lastName.placeholder}
             defaultValue={nombre.split(" ")?.at(1)}
+            onChange={onChangeName("lastName")}
           />
         </Label>
         <Label>
           <span>{text.form.rol.label} </span>
-          <Select required name={'rol' as keyof TUser} defaultValue={rol}>
+          <Select required name={'rol' as TFormName} defaultValue={ ""+getRolName({ rolName: rol })?.id }>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              <SelectItem value={text.form.rol.items.admin}>{text.form.rol.items.admin}</SelectItem>
-              <SelectItem value={text.form.rol.items.user}>{text.form.rol.items.user}</SelectItem>
+              { getRols()?.map( ({ id, name }) => 
+                <SelectItem key={id} value={""+id}>{name}</SelectItem>
+              ) }
             </SelectContent>
           </Select>
         </Label>
@@ -169,11 +210,11 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
             </Button>
             <Input
               id='user-password'
-              name={'password'}
+              name={'password' as TFormName}
               type={!password ? "password" : "text"}
               placeholder={text.form.password.current.placeholder}
               value={password?.password}
-              onChange={onChange}
+              onChange={onChangePassword}
             />
           </div>
         </div>
@@ -192,18 +233,19 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
             </Button>
             <Input
               id='user-new'
-              name={'new'}
+              name={'newPassword' as TFormName}
               required={!!password?.password}
               type={!visibility.confirmation ? "password" : "text"}
               placeholder={text.form.password.new.placeholder}
               value={password?.confirmation}
-              onChange={onChange}
+              onChange={onChangePassword}
             />
           </div>
         </div>
       </form>
       <DialogFooter className="justify-end">
         <Button 
+          disabled={ Object.values(userDB)?.every( ( value, i ) => ( value === Object.values(user)?.[i] ) ) }
           variant="default" 
           form="update-user" 
           type="submit">

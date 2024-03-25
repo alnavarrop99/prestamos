@@ -12,6 +12,9 @@ import styles from '@/styles/global.module.css'
 import { useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useNotifications } from '@/lib/context/notification'
+import { useMutation } from '@tanstack/react-query'
+import { postUsersRes } from '@/api/users'
+import { getRolId, getRols } from "@/api/rol";
 
 export const Route = createFileRoute('/_layout/user/new')({
   component: NewUser,
@@ -27,10 +30,17 @@ interface TPassoword {
 interface TNewUserProps { }
 
 /* eslint-disable-next-line */
+type TFormName = "firstName" | "lastName" | "rol" | "password" | "confirmation"
+
+/* eslint-disable-next-line */
 export function NewUser({}: TNewUserProps) {
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
   const { setNotification } = useNotifications()
+  const createUser = useMutation( {
+    mutationKey: ["create-user"],
+    mutationFn: postUsersRes,
+  })
 
   const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
@@ -41,17 +51,18 @@ export function NewUser({}: TNewUserProps) {
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof (typeof text.form & typeof text.form.password), string>
+    ) as Record<TFormName, string>
 
-    const { firstName, lastName } = items
+    const { firstName, lastName, password, confirmation } = items
     const description = text.notification.decription({
       username: firstName + ' ' + lastName,
     })
 
     const action =
-      ({ ...props }: Record<keyof (typeof text.form & typeof text.form.password), string>) =>
+      ({ ...items }: Record<TFormName, string>) =>
       () => {
-        console.table(props)
+        const { firstName, lastName, password, rol } = items
+        createUser.mutate({ nombre: firstName + " " + lastName, password: password, rol_id: Number(rol) })
         setNotification({
           date: new Date(),
           action: "POST",
@@ -66,7 +77,7 @@ export function NewUser({}: TNewUserProps) {
       clearTimeout(timer)
     }
 
-    if ( true) {
+    if ( password === confirmation ) {
       toast({
         title: text.notification.titile,
         description,
@@ -108,7 +119,7 @@ export function NewUser({}: TNewUserProps) {
           <span>{text.form.firstName.label}</span>{' '}
           <Input
             required
-            name={'firstName' as keyof typeof text.form}
+            name={'firstName' as TFormName}
             type="text"
             placeholder={text.form.firstName.placeholder}
           />
@@ -117,20 +128,24 @@ export function NewUser({}: TNewUserProps) {
           <span>{text.form.lastName.label} </span>
           <Input
             required
-            name={'lastName' as keyof typeof text.form}
+            name={'lastName' as TFormName}
             type="text"
             placeholder={text.form.lastName.placeholder}
           />
         </Label>
         <Label>
           <span className="after:content-['_*_'] after:text-red-500">{text.form.rol.label} </span>
-          <Select required name={'rol' as keyof typeof text.form} defaultValue={text.form.rol.items.user}>
+          <Select 
+              required
+              name={'rol' as TFormName} 
+              defaultValue={""+getRolId({ rolId: 1 })?.id}>
             <SelectTrigger className="w-full ring ring-ring ring-1">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              <SelectItem value={text.form.rol.items.admin}>{text.form.rol.items.admin}</SelectItem>
-              <SelectItem value={text.form.rol.items.user}>{text.form.rol.items.user}</SelectItem>
+              { getRols()?.map( ( { name, id } ) =>
+                <SelectItem key={id} value={""+id}>{name}</SelectItem>
+              ) }
             </SelectContent>
           </Select>
         </Label>
@@ -150,7 +165,7 @@ export function NewUser({}: TNewUserProps) {
             <Input
               id='user-password'
               required
-              name={'password' as keyof typeof text.form.password}
+              name={'password' as TFormName}
               type={!password ? "password" : "text"}
               placeholder={text.form.password.current.placeholder}
             />
@@ -172,7 +187,7 @@ export function NewUser({}: TNewUserProps) {
             <Input
               id='user-confirmation'
               required
-              name={'confirmation' as keyof typeof text.form.password}
+              name={'confirmation' as TFormName}
               type={!confirmation ? "password" : "text"}
               placeholder={text.form.password.confirmation.placeholder}
             />

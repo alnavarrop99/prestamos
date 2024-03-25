@@ -41,7 +41,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { getCurrentUserRes, TUser } from '@/api/users'
+import { getCurrentUserRes, type TUser } from '@/api/users'
 import {
   Breadcrumb,
   BreadcrumbItem,
