@@ -6,6 +6,7 @@ import {
   Link,
   Outlet,
   createFileRoute,
+  notFound,
   useNavigate,
 } from '@tanstack/react-router'
 import { Avatar } from '@/components/ui/avatar'
@@ -151,9 +152,7 @@ export function Users({
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
-          {users?.length && (
             <Badge className="px-3 text-xl">{users?.length}</Badge>
-          )}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild className="ms-auto">
               <Link to={'./new'}>
@@ -184,7 +183,7 @@ export function Users({
         </div>
         <Separator />
         <div className="flex flex-wrap gap-4 [&>*]:flex-auto">
-          {users?.length &&
+          {!!users?.length ?
             users?.map(
               ({ id, rol, nombre, clientes, selected, active, menu }) => (
                 <Card
@@ -302,7 +301,7 @@ export function Users({
                   </CardContent>
                 </Card>
               )
-            )}
+            ) : <span>{text.notFound}</span>}
         </div>
       </div>
     </_selectUsers.Provider>
@@ -313,6 +312,7 @@ Users.dispalyname = 'UsersList'
 
 const text = {
   title: 'Usuarios:',
+  notFound: 'No se encontraron usuarios',
   button: {
     create: 'Nuevo',
     delete: 'Eliminar',

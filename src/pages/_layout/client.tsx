@@ -44,7 +44,7 @@ import {
 } from '@/components/ui/select'
 import { getClientsRes, type TClient } from '@/api/clients'
 import clsx from 'clsx'
-import { columns } from '@/pages/_layout/-column'
+import { columns, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
 import { useClientByUsers } from '@/lib/context/client'
 
@@ -62,19 +62,19 @@ export const Route = createFileRoute('/_layout/client')({
 
 /* eslint-disable-next-line */
 interface TClientsProps {
-  clients?: TClient[]
+  clients?: TClientTable[]
   open?: boolean
   filter?: keyof (TClient & Record<"fullName", string>)
 }
 
-export const _selectedClients = createContext<TClient[] | undefined>(undefined)
+export const _selectedClients = createContext<TClientTable[] | undefined>(undefined)
 
 /* eslint-disable-next-line */
 export function Clients({
   children,
   filter: _filter = "fullName",
   open: _open,
-  clients: _clients = [] as TClient[],
+  clients: _clients = [] as TClientTable[],
 }: React.PropsWithChildren<TClientsProps>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
@@ -82,11 +82,11 @@ export function Clients({
   const [rowSelection, setRowSelection] = useState({})
   const { open = _open, setOpen, value } = useStatus()
   const navigate = useNavigate()
-  const clientsDB = Route.useLoaderData() ?? _clients
+  const clientsDB: TClientTable[] = Route.useLoaderData() ?? _clients
   const [ filter, setFilter ] = useState(_filter)
   const search = Route.useSearch()
   const { clients } = useClientByUsers( ({ clients }) => ({ clients: clients ?? clientsDB }) )
-  const data  = useMemo(() =>{
+  const data = useMemo(() =>{
     if( !search?.clients?.length ) return clients
     return clients?.filter( ( { id: userId } ) => search?.clients?.includes(userId) )
   }, [ clients ])
@@ -126,8 +126,7 @@ export function Clients({
   }
 
   return (
-    <_selectedClients.Provider
-      value={table.getFilteredSelectedRowModel().rows as unknown as TClient[]}
+    <_selectedClients.Provider value={table.getFilteredSelectedRowModel().rows as unknown as TClientTable[]}
     >
       <div className="space-y-2">
         <div className="flex items-center gap-2">
@@ -210,26 +209,7 @@ export function Clients({
                 {table
                   .getAllColumns()
                   .filter((column) => column.getCanHide())
-                  .map((column) => {
-                    // TODO: this fuctions offuse the code but is necesary because the api is in spanish and the frontend is in english
-                    const getColumnsName = (id: string) =>
-                      (
-                        ({
-                          numero_de_identificacion:
-                            'id' as keyof typeof text.dropdown.items,
-                          telefono:
-                            'telephone' as keyof typeof text.dropdown.items,
-                          celular: 'phone' as keyof typeof text.dropdown.items,
-                          direccion:
-                            'direction' as keyof typeof text.dropdown.items,
-                          nombres:
-                            'firstName' as keyof typeof text.dropdown.items,
-                          apellidos:
-                            'lastName' as keyof typeof text.dropdown.items,
-                          referencia: 'ref' as keyof typeof text.dropdown.items,
-                        }) as Record<keyof TClient, string>
-                      )?.[id as keyof TClient] ?? ''
-                    return (
+                  .map((column) => 
                       <DropdownMenuCheckboxItem
                         className="capitalize cursor-pointer"
                         key={column.id}
@@ -238,10 +218,9 @@ export function Clients({
                           column.toggleVisibility(!!value)
                         }
                       >
-                        {text.dropdown.items?.[getColumnsName(column.id)] ?? ''}
+                        {text.dropdown.items?.[getMenuItem(column.id as TMenuItems)]}
                       </DropdownMenuCheckboxItem>
-                    )
-                  })}
+                  )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -339,6 +318,20 @@ export function Clients({
 }
 
 Clients.displayname = 'ClientsList'
+
+type TMenuItems = "numero_de_identificacion" | "telefono" | "celular" | "direccion" | "fullName" | "apellidos" | "referencia"
+const getMenuItem = ( name: TMenuItems ) => {
+  const data = {
+    numero_de_identificacion: 'id' as keyof TClientTable,
+    telefono: 'telephone' as keyof TClientTable,
+    celular: 'phone' as keyof TClientTable,
+    direccion: 'direction' as keyof TClientTable,
+    fullName: 'firstName' as keyof TClientTable,
+    apellidos: 'lastName' as keyof TClientTable,
+    referencia: 'ref' as keyof TClientTable,
+  }
+  return data?.[name] ?? "fullName"
+}
 
 const text = {
   title: 'Clientes:',

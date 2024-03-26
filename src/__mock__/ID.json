@@ -1,0 +1,3 @@
+[ { "id": 1, "name": "Cedula" },
+ { "id": 2, "name": "Pasaporte" }, 
+ { "id": 3, "name": "Carnet de conducir" } ]

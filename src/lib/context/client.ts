@@ -1,12 +1,12 @@
+import { TClientTable } from '@/pages/_layout/-column'
 import { create } from 'zustand'
 
-type TCLient = (typeof import('@/__mock__/CLIENTS.json'))[0]
-interface TClient {
-  clients?: TCLient[]
-  setClient: ({ clients }: { clients: TCLient[] }) => void
+interface TClientByUsers {
+  clients?: TClientTable[]
+  setClient: ({ clients }: { clients: TClientTable[] }) => void
 }
 
-export const useClientByUsers = create<TClient>()((set) => ({
+export const useClientByUsers = create<TClientByUsers>()((set) => ({
   setClient: ({ clients }) => set(() => ({ clients })),
 }))
 

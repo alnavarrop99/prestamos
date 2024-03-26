@@ -7,8 +7,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useStatus } from '@/lib/context/layout'
 import { type TClient } from '@/api/clients'
+import { getIdById } from '@/api/id'
 
-export const columns: ColumnDef<(Record< (keyof TClient) | "fullName", any >)>[] = [
+export type TClientTable =  TClient & Record< "fullName", string >
+export const columns: ColumnDef<TClientTable>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -31,8 +33,7 @@ export const columns: ColumnDef<(Record< (keyof TClient) | "fullName", any >)>[]
     enableHiding: false,
   },
   {
-    // {row.original.nombres + ' ' + row.original.apellidos}
-    accessorKey: "fullName" as keyof TClient,
+    accessorKey: "fullName" as keyof TClientTable,
     header: ({ column }) => {
       return (
         <Button
@@ -51,7 +52,7 @@ export const columns: ColumnDef<(Record< (keyof TClient) | "fullName", any >)>[]
     ),
   },
   {
-    accessorKey: 'direccion' as keyof TClient,
+    accessorKey: 'direccion' as keyof TClientTable,
     header: ({column}) => {
       return <Button
           variant="ghost"
@@ -62,36 +63,35 @@ export const columns: ColumnDef<(Record< (keyof TClient) | "fullName", any >)>[]
         </Button>
     },
     cell: ({ row }) => <p className='min-w-32'>
-      {row.getValue('direccion' as keyof TClient) + ". " +
-      row.original.segunda_direccion}
+      {row.getValue('direccion' as keyof TClientTable) + "."}
     </p>,
   },
   {
-    accessorKey: 'celular' as keyof TClient,
+    accessorKey: 'celular' as keyof TClientTable,
     header: () => {
       return <p>{text.columns.phone}</p>
     },
-    cell: ({ row }) => <p className="lowercase w-32">{row.getValue('celular' as keyof TClient)}</p>
+    cell: ({ row }) => <p className="lowercase w-32">{row.getValue('celular' as keyof TClientTable)}</p>
   },
   {
-    accessorKey: 'telefono' as keyof TClient,
+    accessorKey: 'telefono' as keyof TClientTable,
     header: () => {
       return <p>{text.columns.telephone}</p>
     },
-    cell: ({ row }) => <p className="lowercase w-32">{row.getValue('telefono' as keyof TClient)}</p>
+    cell: ({ row }) => <p className="lowercase w-32">{row.getValue('telefono' as keyof TClientTable)}</p>
   },
   {
-    accessorKey: 'numero_de_identificacion' as keyof TClient,
+    accessorKey: 'numero_de_identificacion' as keyof TClientTable,
     header: () => {
       return <p>{text.columns.id}</p>
     },
     cell: ({ row }) => <div className='w-32'>
-      <p className='capitalize font-bold'>{row.original.tipo_de_identificacion}</p>
-      <p>{row.getValue('numero_de_identificacion' as keyof TClient)}</p>
+      <p className='capitalize font-bold'>{getIdById({ id: row.original.tipo_de_identificacion})?.name}</p>
+      <p>{row.getValue('numero_de_identificacion' as keyof TClientTable)}</p>
     </div>,
   },
   {
-    accessorKey: 'referencia' as keyof TClient,
+    accessorKey: 'referencia' as keyof TClientTable,
     header: ({column}) => {
      return <Button
           variant="ghost"
@@ -101,7 +101,7 @@ export const columns: ColumnDef<(Record< (keyof TClient) | "fullName", any >)>[]
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
     },
-    cell: ({ row }) => <p className='w-32'>{row.getValue('referencia' as keyof TClient)}</p>
+    cell: ({ row }) => <p className='w-32'>{row.getValue('referencia' as keyof TClientTable)}</p>
   },
   {
     id: 'actions',
