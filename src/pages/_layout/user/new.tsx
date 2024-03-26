@@ -9,12 +9,13 @@ import { toast } from '@/components/ui/use-toast'
 import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
 import styles from '@/styles/global.module.css'
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { postUsersRes } from '@/api/users'
+import { TUser, postUsersRes } from '@/api/users'
 import { getRolId, getRols } from "@/api/rol";
+import { TUsersState, _usersContext } from '../user'
 
 export const Route = createFileRoute('/_layout/user/new')({
   component: NewUser,
@@ -34,12 +35,19 @@ type TFormName = "firstName" | "lastName" | "rol" | "password" | "confirmation"
 
 /* eslint-disable-next-line */
 export function NewUser({}: TNewUserProps) {
+  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
   const { setNotification } = useNotifications()
-  const createUser = useMutation( {
+
+  const onSuccess: (data: TUser) => unknown = (newUser) => {
+    setUsers( [ ...users?.slice(0, -1), { ...(users?.at(-1) ?? {} as TUsersState), ...newUser } ]  )
+  }
+
+  const { mutate: createUser } = useMutation( {
     mutationKey: ["create-user"],
     mutationFn: postUsersRes,
+    onSuccess,
   })
 
   const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
@@ -62,7 +70,7 @@ export function NewUser({}: TNewUserProps) {
       ({ ...items }: Record<TFormName, string>) =>
       () => {
         const { firstName, lastName, password, rol } = items
-        createUser.mutate({ nombre: firstName + " " + lastName, password: password, rol_id: Number(rol) })
+        createUser({ nombre: firstName + " " + lastName, password: password, rol_id: Number(rol) })
         setNotification({
           date: new Date(),
           action: "POST",
@@ -72,6 +80,15 @@ export function NewUser({}: TNewUserProps) {
 
 
     const timer = setTimeout(action(items), 6 * 1000)
+    setUsers( [...users, { 
+      nombre: firstName + " " + lastName,
+      rol: getRolId( { rolId: Number?.parseInt(items?.rol) } )?.name,
+      id: (users?.at(-1)?.id ?? 0) + 1,
+      menu: false,
+      active: false,
+      selected: false,
+      clientes: []
+    }] )
 
     const onClick = () => {
       clearTimeout(timer)
@@ -139,7 +156,7 @@ export function NewUser({}: TNewUserProps) {
               required
               name={'rol' as TFormName} 
               defaultValue={""+getRolId({ rolId: 1 })?.id}>
-            <SelectTrigger className="w-full ring ring-ring ring-1">
+            <SelectTrigger className="w-full ring-ring ring-1">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>

@@ -6,7 +6,6 @@ import {
   Link,
   Outlet,
   createFileRoute,
-  notFound,
   useNavigate,
 } from '@tanstack/react-router'
 import { Avatar } from '@/components/ui/avatar'
@@ -47,13 +46,14 @@ interface TUsersProps {
 }
 
 /* eslint-disable-next-line */
-interface TUsersState extends TUser {
+export interface TUsersState extends TUser {
   selected: boolean
   menu: boolean
   active?: boolean
 }
 
 export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
+export const _usersContext = createContext<[TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>] | undefined>(undefined)
 
 /* eslint-disable-next-line */
 export function Users({
@@ -148,6 +148,7 @@ export function Users({
   }, [value])
 
   return (
+    <_usersContext.Provider value={ [ users, setUsers ] }>
     <_selectUsers.Provider value={users?.filter(({ selected }) => selected)}>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
@@ -305,6 +306,7 @@ export function Users({
         </div>
       </div>
     </_selectUsers.Provider>
+    </_usersContext.Provider>
   )
 }
 

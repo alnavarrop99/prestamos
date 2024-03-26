@@ -50,7 +50,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
   const { setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
-  const updateUser = useMutation( {
+  const {mutate: updateUser} = useMutation( {
     mutationKey: ["update-user"],
     mutationFn: pathUsersRes,
   })

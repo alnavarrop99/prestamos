@@ -11,10 +11,9 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { _selectUsers } from "@/pages/_layout/user"
+import { TUsersState, _selectUsers, _usersContext } from "@/pages/_layout/user"
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { type TUser } from '@/api/users'
 
 export const Route = createFileRoute('/_layout/user/delete')({
   component: DeleteSelectedUsers,
@@ -22,13 +21,14 @@ export const Route = createFileRoute('/_layout/user/delete')({
 
 /* eslint-disable-next-line */
 interface TDeleteSelectedUsersProps {
-  users?: TUser[]
+  users?: TUsersState[]
 }
 
 /* eslint-disable-next-line */
-export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelectedUsersProps) {
+export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDeleteSelectedUsersProps) {
   const [checked, setChecked] = useState(false)
-  const users = useContext(_selectUsers) ?? _users
+  const selectUsers = useContext(_selectUsers) ?? _users
+  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
   const { setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
@@ -39,10 +39,10 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
 
   const onSubmit: React.FormEventHandler = (ev) => {
     const description = text.notification.decription({
-      length: users?.length,
+      length: selectUsers?.length,
     })
-    const action = (clients?: TUser[]) => () => {
-      console.table(clients)
+    const action = (selectedUsers?: TUsersState[]) => () => {
+      import.meta.env.DEV && console.table(selectedUsers);
       setNotification({
         date: new Date(),
         action: "DELETE",
@@ -50,13 +50,15 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
       })
     }
 
-    const timer = setTimeout(action(users), 6 * 1000)
+    const timer = setTimeout(action(selectUsers), 6 * 1000)
 
     setOpen({ open: !open })
     navigate({to: "../"})
+    setUsers( users?.filter( ({ id }) => !selectUsers?.map(({ id }) => id)?.includes(id) ) ?? [] )
 
     const onClick = () => {
       clearTimeout(timer)
+      setUsers( users?.map( (user) => ({ ...user, selected: false }) ) )
     }
 
     if ( true) {
@@ -87,7 +89,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ length: users?.length })}
+              {text.alert.description({ length: selectUsers?.length })}
             </AlertDescription>
           </Alert>
         </DialogDescription>

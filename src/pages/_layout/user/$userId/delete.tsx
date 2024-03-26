@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { getUserIdRes, type TUser } from '@/api/users'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
+import { TUsersState, _usersContext } from '../../user'
 
 export const Route = createFileRoute('/_layout/user/$userId/delete')({
   component: DeleteUserById,
@@ -22,33 +23,32 @@ export const Route = createFileRoute('/_layout/user/$userId/delete')({
 
 /* eslint-disable-next-line */
 interface TDeleteByUser {
-  user?: TUser
+  user?: TUsersState
 }
 
 /* eslint-disable-next-line */
-export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
+export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser) {
   const [checked, setChecked] = useState(false)
-  const user = Route.useLoaderData() ?? _user
-  const { nombre } = user
+  const selectedUser = Route.useLoaderData() ?? _user
+  const { nombre } = selectedUser
   const { setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
+  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    if(!user) return;
+    if(!selectedUser) return;
 
     const description = text.notification.decription({
       username: nombre,
     })
 
-    const action =
-      ({ ...props }: TUser) =>
-      () => {
-        console.table(props)
+    const action = (selectedUser: TUser) => () => {
+        import.meta.env.DEV && console.table(selectedUser);
         setNotification({
           date: new Date(),
           action: "DELETE",
@@ -56,12 +56,14 @@ export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
         })
       }
   
-    const timer = setTimeout(action(user), 6 * 1000)
+    const timer = setTimeout(action(selectedUser), 6 * 1000)
     setOpen({ open: !open })
     navigate({to: "../../"})
+    setUsers( users?.filter( ({ id }) => (id !== selectedUser?.id ) ) ?? [] )
 
     const onClick = () => {
       clearTimeout(timer)
+      setUsers( users )
     }
 
     if (true) {
