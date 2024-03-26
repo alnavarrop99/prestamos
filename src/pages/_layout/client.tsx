@@ -42,7 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getClientsRes, type TClient } from '@/api/clients'
+import { getClientsRes } from '@/api/clients'
 import clsx from 'clsx'
 import { columns, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
@@ -52,27 +52,32 @@ export const Route = createFileRoute('/_layout/client')({
   component: Clients,
   loader: async () => {
     const clients = await getClientsRes()
-    return clients?.map<TClientTable>( ( { nombres, apellidos, ...props } ) => ({ fullName: nombres + " " + apellidos ,...props }) )
+    return clients?.map<TClientTable>(({ nombres, apellidos, ...props }) => ({
+      fullName: nombres + ' ' + apellidos,
+      ...props,
+    }))
   },
-  validateSearch: ( search: { clients?: number[] } ) => {
-    if( !search?.clients?.length ) return ({ clients: [] });
+  validateSearch: (search: { clients?: number[] }) => {
+    if (!search?.clients?.length) return { clients: [] }
     return search
-  }
+  },
 })
 
 /* eslint-disable-next-line */
 interface TClientsProps {
   clients?: TClientTable[]
   open?: boolean
-  filter?: keyof (TClient & Record<"fullName", string>)
+  filter?: keyof TClientTable
 }
 
-export const _selectedClients = createContext<TClientTable[] | undefined>(undefined)
+export const _selectedClients = createContext<TClientTable[] | undefined>(
+  undefined
+)
 
 /* eslint-disable-next-line */
 export function Clients({
   children,
-  filter: _filter = "fullName",
+  filter: _filter = 'fullName',
   open: _open,
   clients: _clients = [] as TClientTable[],
 }: React.PropsWithChildren<TClientsProps>) {
@@ -83,13 +88,17 @@ export function Clients({
   const { open = _open, setOpen, value } = useStatus()
   const navigate = useNavigate()
   const clientsDB: TClientTable[] = Route.useLoaderData() ?? _clients
-  const [ filter, setFilter ] = useState(_filter)
+  const [filter, setFilter] = useState(_filter)
   const search = Route.useSearch()
-  const { clients } = useClientByUsers( ({ clients }) => ({ clients: clients ?? clientsDB }) )
-  const data = useMemo(() =>{
-    if( !search?.clients?.length ) return clients
-    return clients?.filter( ( { id: userId } ) => search?.clients?.includes(userId) )
-  }, [ clients ])
+  const { clients } = useClientByUsers(({ clients }) => ({
+    clients: clients ?? clientsDB,
+  }))
+  const data = useMemo(() => {
+    if (!search?.clients?.length) return clients
+    return clients?.filter(
+      ({ id: userId }) => search?.clients?.includes(userId)
+    )
+  }, [clients])
 
   const table = useReactTable({
     data,
@@ -122,11 +131,15 @@ export function Clients({
   }
 
   const onValueChange = (value: string) => {
-    setFilter( value as keyof TClient )
+    setFilter(value as keyof TClientTable)
   }
 
   return (
-    <_selectedClients.Provider value={table.getFilteredSelectedRowModel()?.rows?.map( ({ original }) => (original) )} >
+    <_selectedClients.Provider
+      value={table
+        .getFilteredSelectedRowModel()
+        ?.rows?.map(({ original }) => original)}
+    >
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
@@ -167,34 +180,43 @@ export function Clients({
               </SelectTrigger>
               <SelectContent className="[&>div]:cursor-pointer">
                 <SelectItem
-                  value={'fullName' as keyof TClient}
+                  value={'fullName' as keyof TClientTable}
                   className="cursor-pointer"
                 >
                   {text.select.items.fullName}
                 </SelectItem>
                 <SelectItem
-                  value={'numero_de_identificacion' as keyof TClient}
+                  value={'numero_de_identificacion' as keyof TClientTable}
                   className="cursor-pointer"
                 >
                   {text.select.items.id}
                 </SelectItem>
                 <SelectItem
-                  value={'direccion' as keyof TClient}
+                  value={'direccion' as keyof TClientTable}
                   className="cursor-pointer"
                 >
                   {text.select.items.direction}
                 </SelectItem>
                 <SelectItem
-                  value={'celular' as keyof TClient}
+                  value={'celular' as keyof TClientTable}
                   className="cursor-pointer"
                 >
                   {text.select.items.phone}
                 </SelectItem>
                 <SelectItem
-                  value={'telefono' as keyof TClient}
+                  value={'telefono' as keyof TClientTable}
                   className="cursor-pointer"
                 >
                   {text.select.items.telephone}
+                </SelectItem>
+                <SelectItem value={'referencia'} className="cursor-pointer">
+                  {text.select.items.ref}
+                </SelectItem>
+                <SelectItem
+                  value={'email' as keyof TClientTable}
+                  className="cursor-pointer"
+                >
+                  {text.select.items.email}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -208,24 +230,28 @@ export function Clients({
                 {table
                   .getAllColumns()
                   .filter((column) => column.getCanHide())
-                  .map((column) => 
-                      <DropdownMenuCheckboxItem
-                        className="capitalize cursor-pointer"
-                        key={column.id}
-                        checked={column.getIsVisible()}
-                        onCheckedChange={(value) =>
-                          column.toggleVisibility(!!value)
-                        }
-                      >
-                        {text.dropdown.items?.[getMenuItem(column.id as TMenuItems)]}
-                      </DropdownMenuCheckboxItem>
-                  )}
+                  .map((column) => (
+                    <DropdownMenuCheckboxItem
+                      className="cursor-pointer capitalize"
+                      key={column.id}
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
+                    >
+                      {
+                        text.dropdown.items?.[
+                          getMenuItem(column.id as TMenuItems)
+                        ]
+                      }
+                    </DropdownMenuCheckboxItem>
+                  ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
-          <div className="rounded-md border overflow-x-auto">
+          <div className="overflow-x-auto rounded-md border">
             <Table>
-              <TableHeader className='bg-muted'>
+              <TableHeader className="bg-muted">
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
                     {headerGroup.headers.map((header) => {
@@ -296,7 +322,7 @@ export function Clients({
                 size="sm"
                 onClick={() => table.previousPage()}
                 disabled={!table.getCanPreviousPage()}
-                className='hover:ring hover:ring-primary'
+                className="hover:ring hover:ring-primary"
               >
                 {text.buttons.prev}
               </Button>
@@ -318,8 +344,16 @@ export function Clients({
 
 Clients.displayname = 'ClientsList'
 
-type TMenuItems = "numero_de_identificacion" | "telefono" | "celular" | "direccion" | "fullName" | "apellidos" | "referencia"
-const getMenuItem = ( name: TMenuItems ) => {
+type TMenuItems =
+  | 'numero_de_identificacion'
+  | 'telefono'
+  | 'celular'
+  | 'direccion'
+  | 'fullName'
+  | 'apellidos'
+  | 'referencia'
+  | 'email'
+const getMenuItem = (name: TMenuItems) => {
   const data = {
     numero_de_identificacion: 'id' as keyof TClientTable,
     telefono: 'telephone' as keyof TClientTable,
@@ -328,8 +362,9 @@ const getMenuItem = ( name: TMenuItems ) => {
     fullName: 'firstName' as keyof TClientTable,
     apellidos: 'lastName' as keyof TClientTable,
     referencia: 'ref' as keyof TClientTable,
+    email: 'email' as keyof TClientTable,
   }
-  return data?.[name] ?? "fullName"
+  return data?.[name] ?? 'fullName'
 }
 
 const text = {
@@ -348,7 +383,7 @@ const text = {
     telephone: 'Telefono',
     ref: 'Referencia',
     direction: 'Direccion',
-    secondDirection: 'Segunda Direccion',
+    email: 'Correo',
   },
   buttons: {
     next: 'Siguiente',
