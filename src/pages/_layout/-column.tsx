@@ -9,7 +9,7 @@ import { useStatus } from '@/lib/context/layout'
 import { type TClient } from '@/api/clients'
 import { getIdById } from '@/api/id'
 
-export type TClientTable =  TClient & Record< "fullName", string >
+export type TClientTable =  Omit<TClient, "nombres"| "apellidos"> & Record< "fullName", string >
 export const columns: ColumnDef<TClientTable>[] = [
   {
     id: 'select',
@@ -52,6 +52,21 @@ export const columns: ColumnDef<TClientTable>[] = [
     ),
   },
   {
+    accessorKey: 'email' as keyof TClientTable,
+    header: ({column}) => {
+      return <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        >
+          {text.columns.email}
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+    },
+    cell: ({ row }) => <p className='min-w-32'>
+      {row.getValue('email' as keyof TClientTable) + "."}
+    </p>,
+  },
+  {
     accessorKey: 'direccion' as keyof TClientTable,
     header: ({column}) => {
       return <Button
@@ -91,7 +106,7 @@ export const columns: ColumnDef<TClientTable>[] = [
     </div>,
   },
   {
-    accessorKey: 'referencia' as keyof TClientTable,
+    accessorKey: 'referencia_id' as keyof TClientTable,
     header: ({column}) => {
      return <Button
           variant="ghost"
@@ -101,13 +116,13 @@ export const columns: ColumnDef<TClientTable>[] = [
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
     },
-    cell: ({ row }) => <p className='w-32'>{row.getValue('referencia' as keyof TClientTable)}</p>
+    cell: ({ row }) => <p className='w-32'>{row.getValue('referencia_id' as keyof TClientTable)}</p>
   },
   {
     id: 'actions',
     enableHiding: false,
     cell: ({ row }) => {
-      const { id, celular, nombres, apellidos, numero_de_identificacion } = row.original
+      const { id, celular, fullName, numero_de_identificacion } = row.original
 
       /* eslint-disable-next-line */
       const { open, setOpen } = useStatus()
@@ -121,7 +136,7 @@ export const columns: ColumnDef<TClientTable>[] = [
       const onClickCopy: React.MouseEventHandler<
         React.ComponentRef<typeof DropdownMenuItem>
       > = () => {
-        navigator.clipboard.writeText( [ nombres, apellidos, celular, numero_de_identificacion ].join(" ") )
+        navigator.clipboard.writeText( [ fullName, celular, numero_de_identificacion ].join(" ") )
       }
 
       const onClick: React.MouseEventHandler< React.ComponentRef< typeof DropdownMenuItem > > = ( ) => {
@@ -209,6 +224,7 @@ const text = {
   },
   columns: {
     fullName: 'Nombre y apellidos',
+    email: 'Email',
     firstName: 'Nombre',
     lastName: 'Apellidos',
     id: 'I.D.',

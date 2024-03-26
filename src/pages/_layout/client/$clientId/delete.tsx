@@ -11,9 +11,10 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { getClientIdRes, type TClient } from '@/api/clients'
+import { TClient, deleteClientsIdRes, getClientIdRes } from '@/api/clients'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
+import { useMutation } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteClientById,
@@ -32,23 +33,26 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
   const { nombres: firstName, apellidos: lastName } = client
   const { setOpen, open } = useStatus()
   const { setNotification } = useNotifications()
+  const { mutate: deleteClient } = useMutation({
+    mutationKey: ["delete-client-by-id"],
+    mutationFn: deleteClientsIdRes
+  })
   const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler<React.ComponentRef< typeof Button >> = (ev) => {
     if(!client) return;
 
     const description = text.notification.decription({
       username: firstName + ' ' + lastName,
     })
 
-    const action =
-      ({ ...props }: TClient) =>
+    const action = ({ ...props }: TClient) =>
       () => {
-        console.table(props)
+        deleteClient({ clientId: props.id })
         setNotification( {
           date: new Date(),
           action: "DELETE",

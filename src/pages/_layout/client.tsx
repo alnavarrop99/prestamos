@@ -52,7 +52,7 @@ export const Route = createFileRoute('/_layout/client')({
   component: Clients,
   loader: async () => {
     const clients = await getClientsRes()
-    return clients?.map( ( { nombres, apellidos, ...props } ) => ({ fullName: nombres + " " + apellidos ,...props }) )
+    return clients?.map<TClientTable>( ( { nombres, apellidos, ...props } ) => ({ fullName: nombres + " " + apellidos ,...props }) )
   },
   validateSearch: ( search: { clients?: number[] } ) => {
     if( !search?.clients?.length ) return ({ clients: [] });
@@ -126,8 +126,7 @@ export function Clients({
   }
 
   return (
-    <_selectedClients.Provider value={table.getFilteredSelectedRowModel().rows as unknown as TClientTable[]}
-    >
+    <_selectedClients.Provider value={table.getFilteredSelectedRowModel()?.rows?.map( ({ original }) => (original) )} >
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>

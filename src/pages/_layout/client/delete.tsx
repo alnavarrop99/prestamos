@@ -12,9 +12,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { type TClient } from "@/api/clients"
+import { deleteClientsIdRes } from "@/api/clients"
 import { _selectedClients } from "@/pages/_layout/client";
 import { useNotifications } from '@/lib/context/notification'
+import { useMutation } from '@tanstack/react-query'
+import { type TClientTable } from '@/pages/_layout/-column'
 
 export const Route = createFileRoute('/_layout/client/delete')({
   component: DeleteSelectedClients,
@@ -22,16 +24,20 @@ export const Route = createFileRoute('/_layout/client/delete')({
 
 /* eslint-disable-next-line */
 interface TDeleteClientProps {
-  clients?: TClient[]
+  clients?: TClientTable[]
 }
 
 /* eslint-disable-next-line */
-export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: TDeleteClientProps) {
+export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[] }: TDeleteClientProps) {
   const [checked, setChecked] = useState(false)
   const clients = useContext(_selectedClients) ?? _clients
   const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
+  const { mutate: deleteClient } = useMutation({
+    mutationKey: ["delete-client"],
+    mutationFn: deleteClientsIdRes
+  })
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -40,8 +46,11 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClient[] }: T
   const onSubmit: React.FormEventHandler = (ev) => {
     const description = text.notification.decription({ length: clients?.length })
 
-    const action = (clients?: TClient[]) => () => {
-      console.table(clients)
+    const action = (clients?: TClientTable[]) => () => {
+      if(!clients?.length) return;
+      for ( const { id } of clients ){
+        deleteClient({ clientId: id })
+      }
       setNotification({
           date: new Date(),
           action: "DELETE",

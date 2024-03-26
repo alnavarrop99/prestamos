@@ -16,9 +16,11 @@ import { useRef } from 'react'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
-import { type TClient } from "@/api/clients";
+import { postClientsRes, type TClient } from "@/api/clients";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNotifications } from '@/lib/context/notification'
+import { useMutation } from '@tanstack/react-query'
+import { getIDs, getIdById } from '@/api/id'
 
 export const Route = createFileRoute('/_layout/client/new')({
   component: NewClient,
@@ -28,13 +30,17 @@ export const Route = createFileRoute('/_layout/client/new')({
 export function NewClient() {
   const form = useRef<HTMLFormElement>(null)
   const { setNotification } = useNotifications()
+  const {mutate: createClient} = useMutation( {
+    mutationKey: ["create-client"],
+    mutationFn: postClientsRes
+  } )
 
   const onSubmit: React.FormEventHandler = (ev) => {
     if (!form.current) return
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof TClient, string>
+    ) as Record<keyof TClient | "referencia", string>
 
     const { nombres: firstName, apellidos: lastName } = items
     const description = text.notification.decription({
@@ -42,9 +48,15 @@ export function NewClient() {
     })
 
     const action =
-      ({ ...props }: Record<keyof TClient, string>) =>
+      ({ referencia, ...props }: Record<keyof TClient | "referencia", string>) =>
       () => {
-        console.table(props)
+        createClient({
+          ...props,
+          tipo_de_identificacion: Number.parseInt(props?.tipo_de_identificacion),
+          estado: 1,
+          // TODO: referencia_id because referencia is the name
+          referencia_id: 0,
+        })
         setNotification({
           date: new Date(),
           action: "POST",
@@ -125,14 +137,14 @@ export function NewClient() {
         </Label>
         <Label>
           <span>{text.form.typeId.label} </span>
-          <Select required name={'tipo_de_identificacion' as keyof TClient} defaultValue={text.form.typeId.items.id}>
-            <SelectTrigger className="w-full ring ring-ring ring-1">
+          <Select required name={'tipo_de_identificacion' as keyof TClient} defaultValue={""+getIdById({ id: 1 })?.id}>
+            <SelectTrigger className="w-full ring-ring ring-1">
               <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={text.form.typeId.items.id}>{text.form.typeId.items.id}</SelectItem>
-              <SelectItem value={text.form.typeId.items.passport}>{text.form.typeId.items.passport}</SelectItem>
-              <SelectItem value={text.form.typeId.items.driverId}>{text.form.typeId.items.driverId}</SelectItem>
+              { getIDs()?.map( ({ id, name }) => 
+                <SelectItem key={id} value={""+id}>{name}</SelectItem>
+              ) }
             </SelectContent>
           </Select>
         </Label>
@@ -148,6 +160,7 @@ export function NewClient() {
         <Label>
           <span>{text.form.telephone.label} </span>
           <Input
+            required
             name={'telefono' as keyof TClient}
             type="tel"
             placeholder={text.form.telephone.placeholder}
@@ -163,18 +176,19 @@ export function NewClient() {
           />
         </Label>
         <Label>
-          <span>{text.form.secondDirection.label}</span>
+          <span>{text.form.email.label}</span>
           <Input
-            name={'segunda_direccion' as keyof TClient}
-            type="text"
-            placeholder={text.form.secondDirection.placeholder}
+            required
+            name={'email' as keyof TClient}
+            type="email"
+            placeholder={text.form.email.placeholder}
           />
         </Label>
         <Label>
           <span>{text.form.ref.label}</span>
           <Input
             required
-            name={'referencia' as keyof TClient}
+            name={'referencia'}
             type="text"
             placeholder={text.form.ref.placeholder}
           />
@@ -220,27 +234,27 @@ const text = {
   form: {
     firstName: {
       label: 'Nombre:',
-      placeholder: 'Escriba el nombre del cliente',
+      placeholder: 'Escriba el nombre',
     },
     lastName: {
       label: 'Apellidos:',
-      placeholder: 'Escriba el apellido del cliente',
+      placeholder: 'Escriba el apellido',
     },
     phone: {
       label: 'Celular:',
-      placeholder: 'Escriba el celular del cliente',
+      placeholder: 'Escriba el celular',
     },
     telephone: {
       label: 'Telefono:',
-      placeholder: 'Escriba el telefono del cliente',
+      placeholder: 'Escriba el telefono',
     },
     direction: {
       label: 'Direccion:',
-      placeholder: 'Escriba la direccion del cliente',
+      placeholder: 'Escriba la direccion',
     },
-    secondDirection: {
-      label: '2da Direccion:',
-      placeholder: 'Escriba la 2da direccion del cliente',
+    email: {
+      label: 'Email:',
+      placeholder: 'Escriba el email',
     },
     id: {
       label: 'ID:',
@@ -251,7 +265,7 @@ const text = {
       placeholder: 'Seleccione una opcion',
       items: {
         passport: "Passaporte",
-        id: "I.D.",
+        id: "Cedula",
         driverId: "Carnet de Conducir"
       }
     },
