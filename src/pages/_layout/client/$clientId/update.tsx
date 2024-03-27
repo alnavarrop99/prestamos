@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
@@ -17,6 +17,7 @@ import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { getIDs, getIdById } from '@/api/id'
+import { _clientContext } from '../../client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
@@ -41,6 +42,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
     mutationKey: ["update-client-by-id"],
     mutationFn: pathClientsIdRes
   })
+  const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -51,16 +53,15 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof Omit<TClientList, "id">, string>
+    ) as Record<keyof TClient | "referencia", string>
 
     const { nombres: firstName, apellidos: lastName } = items
     const description = text.notification.decription({
       username: firstName + ' ' + lastName,
     })
 
-
     const action =
-      ({ ...items }: Record<keyof Omit<TClientList, "id">, string>) =>
+      ({ ...items }: Record<keyof Omit<TClient, "id">, string>) =>
       () => {
         const { id } = client
         updateClient({ clientId: id, params: {
@@ -80,9 +81,27 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
     navigate({to: "../../"})
+    setClients( { clients: clients?.map( ({ id }, i, list) => {
+      if(id === client?.id){
+        return ({ 
+          ...list?.[i],
+          numero_de_identificacion: items.numero_de_identificacion,
+          email: items?.email,
+          estado: 1,
+          celular: items?.celular,
+          fullName: firstName + " " + lastName,
+          telefono: items?.telefono,
+          direccion:items?.direccion,
+          comentarios: items?.comentarios,
+          tipo_de_identificacion: Number.parseInt(items?.referencia),
+        })
+      }
+      return list?.[i]
+    } ) } )
 
     const onClick = () => {
       clearTimeout(timer)
+    setClients( { clients } )
     }
 
     if (true) {
@@ -138,7 +157,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
           <Input
             required
             disabled={!checked}
-            name={'nombres' as keyof TClientList}
+            name={'nombres' as keyof TClient}
             type="text"
             defaultValue={client?.nombres}
             placeholder={checked ? text.form.firstName.placeholder : undefined}
@@ -172,7 +191,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
             defaultValue={""+getIdById({ id: client?.tipo_de_identificacion })?.id}
             disabled={!checked}
             required
-            name={'tipo_de_identificacion' as keyof TClientList}
+            name={'tipo_de_identificacion' as keyof TClient}
           >
             <SelectTrigger className={clsx("w-full")}>
               <SelectValue placeholder={text.form.typeId.placeholder} />

@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
@@ -15,6 +15,7 @@ import { TClient, deleteClientsIdRes, getClientIdRes } from '@/api/clients'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
+import { _clientContext } from '../../client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteClientById,
@@ -38,6 +39,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
     mutationFn: deleteClientsIdRes
   })
   const navigate = useNavigate()
+  const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -52,7 +54,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
 
     const action = ({ ...props }: TClient) =>
       () => {
-        deleteClient({ clientId: props.id })
+        deleteClient({ clientId: props?.id })
         setNotification( {
           date: new Date(),
           action: "DELETE",
@@ -63,9 +65,11 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
     const timer = setTimeout(action(client), 6 * 1000)
     setOpen({ open: !open, })
     navigate({to: "../../"})
+    setClients( { clients: clients?.filter( ( { id } ) => client?.id !== id ) } )
 
     const onClick = () => {
       clearTimeout(timer)
+      setClients({ clients} )
     }
 
     if (true) {

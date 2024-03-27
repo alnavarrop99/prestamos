@@ -12,15 +12,17 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { useRef } from 'react'
+import { useContext, useRef } from 'react'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
-import { postClientsRes, type TClient } from "@/api/clients";
+import { postClientsRes, TClientList, type TClient } from "@/api/clients";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { getIDs, getIdById } from '@/api/id'
+import { _clientContext } from '../client'
+import { TClientTable } from '../-column'
 
 export const Route = createFileRoute('/_layout/client/new')({
   component: NewClient,
@@ -30,10 +32,17 @@ export const Route = createFileRoute('/_layout/client/new')({
 export function NewClient() {
   const form = useRef<HTMLFormElement>(null)
   const { setNotification } = useNotifications()
+
+  const onSuccess: (data: TClientList) => unknown = (newClient) => {
+    setClients({ clients: [ ...clients.slice(0, -1), { ...(clients?.at(-1) ?? {} as TClientTable), ...newClient } ] })
+  }
+
   const {mutate: createClient} = useMutation( {
     mutationKey: ["create-client"],
-    mutationFn: postClientsRes
+    mutationFn: postClientsRes,
+    onSuccess
   } )
+  const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
 
   const onSubmit: React.FormEventHandler = (ev) => {
     if (!form.current) return
@@ -48,7 +57,7 @@ export function NewClient() {
     })
 
     const action =
-      ({ referencia, ...props }: Record<keyof TClient | "referencia", string>) =>
+      ({ ...props }: Record<keyof TClient | "referencia", string>) =>
       () => {
         createClient({
           ...props,
@@ -65,9 +74,26 @@ export function NewClient() {
       }
 
     const timer = setTimeout(action(items), 6 * 1000)
+    setClients({ clients: [ ...clients, {
+      numero_de_identificacion: items.numero_de_identificacion,
+      id: (clients?.at(-1)?.id ?? 0) + 1,
+      email: items?.email,
+      estado: 1,
+      celular: items?.celular,
+      fullName: firstName + " " + lastName,
+      telefono: items?.telefono,
+      direccion:items?.direccion,
+      comentarios: items?.comentarios,
+      tipo_de_identificacion: Number.parseInt(items?.referencia),
+      // TODO: 
+      referencia_id: 0,
+      owner: undefined,
+    }] } )
+          
 
     const onClick = () => {
       clearTimeout(timer)
+      setClients({ clients })
     }
 
     if (true) {

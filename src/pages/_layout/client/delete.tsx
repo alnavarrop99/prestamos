@@ -13,7 +13,7 @@ import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
 import { deleteClientsIdRes } from "@/api/clients"
-import { _selectedClients } from "@/pages/_layout/client";
+import { _clientContext, _selectedClients } from "@/pages/_layout/client";
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { type TClientTable } from '@/pages/_layout/-column'
@@ -30,10 +30,11 @@ interface TDeleteClientProps {
 /* eslint-disable-next-line */
 export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[] }: TDeleteClientProps) {
   const [checked, setChecked] = useState(false)
-  const clients = useContext(_selectedClients) ?? _clients
+  const selectedclients = useContext(_selectedClients) ?? _clients
   const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
+  const [ clients, setClients, resetRowSelection ] = useContext(_clientContext) ?? [[], (({})=>{}), (()=>{})]
   const { mutate: deleteClient } = useMutation({
     mutationKey: ["delete-client"],
     mutationFn: deleteClientsIdRes
@@ -44,7 +45,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    const description = text.notification.decription({ length: clients?.length })
+    const description = text.notification.decription({ length: selectedclients?.length })
 
     const action = (clients?: TClientTable[]) => () => {
       if(!clients?.length) return;
@@ -58,12 +59,15 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
         })
     }
 
-    const timer = setTimeout(action(clients), 6 * 1000)
+    const timer = setTimeout(action(selectedclients), 6 * 1000)
     setOpen({open: !open})
     navigate({ to: "../" })
+    setClients( { clients: clients?.filter( ( { id } ) => !selectedclients?.map(({ id }) => id )?.includes(id) ) } )
+    resetRowSelection()
 
     const onClick = () => {
       clearTimeout(timer)
+      setClients({ clients })
     }
 
     if (true) {
@@ -94,7 +98,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ length: clients?.length })}
+              {text.alert.description({ length: selectedclients?.length })}
             </AlertDescription>
           </Alert>
         </DialogDescription>

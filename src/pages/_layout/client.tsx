@@ -70,9 +70,8 @@ interface TClientsProps {
   filter?: keyof TClientTable
 }
 
-export const _selectedClients = createContext<TClientTable[] | undefined>(
-  undefined
-)
+export const _selectedClients = createContext<TClientTable[] | undefined>( undefined)
+export const _clientContext = createContext< [ clients: TClientTable[], setClient: (({ clients }: { clients: TClientTable[] }) => void), resetSelectedRow: (defaultState?: boolean | undefined) => void ] | undefined>( undefined)
 
 /* eslint-disable-next-line */
 export function Clients({
@@ -90,8 +89,9 @@ export function Clients({
   const clientsDB: TClientTable[] = Route.useLoaderData() ?? _clients
   const [filter, setFilter] = useState(_filter)
   const search = Route.useSearch()
-  const { clients } = useClientByUsers(({ clients }) => ({
+  const { clients, setClient } = useClientByUsers(({ clients, setClient }) => ({
     clients: clients ?? clientsDB,
+    setClient
   }))
   const data = useMemo(() => {
     if (!search?.clients?.length) return clients
@@ -132,9 +132,11 @@ export function Clients({
 
   const onValueChange = (value: string) => {
     setFilter(value as keyof TClientTable)
+    table.resetRowSelection()
   }
 
   return (
+    <_clientContext.Provider value={[ clients, setClient, table.resetRowSelection ]}>
     <_selectedClients.Provider
       value={table
         .getFilteredSelectedRowModel()
@@ -339,6 +341,7 @@ export function Clients({
         </div>
       </div>
     </_selectedClients.Provider>
+    </_clientContext.Provider>
   )
 }
 
