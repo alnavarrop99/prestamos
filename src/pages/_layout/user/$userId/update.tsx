@@ -213,14 +213,14 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
               type="button"
               className="w-fit p-1.5"
               onClick={onClick({ prop: "password" })}
-              variant={!password ? 'outline' : 'default'}
+              variant={!visibility.password ? 'outline' : 'default'}
             >
-              {!password ? <Eye /> : <EyeOff />}
+              {!visibility.password ? <Eye /> : <EyeOff />}
             </Button>
             <Input
               id='user-password'
               name={'password' as TFormName}
-              type={!password ? "password" : "text"}
+              type={!visibility.password ? "password" : "text"}
               placeholder={text.form.password.current.placeholder}
               value={password?.password}
               onChange={onChangePassword}

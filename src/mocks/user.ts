@@ -6,7 +6,7 @@ import { TUser, TUserPostBody } from '@/api/users'
 type TUserDB = typeof _users[0]
 const users = new Map<number, TUserDB>( _users?.map( ( { id }, i, list ) => [ id, (list?.[i]) ] ) )
 
-const list = http.all(import.meta.env.VITE_API + '/users/list', async () => {
+const listUsers = http.all(import.meta.env.VITE_API + '/users/list', async () => {
   return HttpResponse.json<TUser[]>(
     Array.from(users?.values())?.map(({ rol: _rol, clientes: _clientes, ...items }) => {
       const rol = getRolId({ rolId: _rol?.id })?.name ?? 'Usuario'
@@ -16,7 +16,7 @@ const list = http.all(import.meta.env.VITE_API + '/users/list', async () => {
   )
 })
 
-const create = http.post( import.meta.env.VITE_API + '/users/create', async ({ request }) => {
+const createUser = http.post( import.meta.env.VITE_API + '/users/create', async ({ request }) => {
   const newUser = (await request.json()) as TUserPostBody
   if( !newUser ) {
     throw new Error("Fail Body request")
@@ -31,7 +31,7 @@ const create = http.post( import.meta.env.VITE_API + '/users/create', async ({ r
   }, { status: 201 } )
 } )
 
-const update = http.patch( import.meta.env.VITE_API + '/users/:usuario_id', async ({params, request }) => {
+const updateUserById = http.patch( import.meta.env.VITE_API + '/users/:usuario_id', async ({params, request }) => {
   const currentUser = (await request.json()) as TUserPostBody
   const { usuario_id } = params as { usuario_id?: string }
   if( !currentUser || !usuario_id ) {
@@ -46,10 +46,10 @@ const update = http.patch( import.meta.env.VITE_API + '/users/:usuario_id', asyn
     id: users.get( userId )?.id ?? 0,
     rol: getRolId({ rolId: rol_id })?.name as TRoles ?? "Usuario",
     nombre: users.get( userId )?.nombre ?? "",
-  }, { status: 201 } )
+  })
 })
 
-const userId = http.get( import.meta.env.VITE_API + '/users/by_id/:id_usuario', async ({params}) => {
+const userById = http.get( import.meta.env.VITE_API + '/users/by_id/:id_usuario', async ({params}) => {
   const { id_usuario } = params as { id_usuario: string }
   if( !id_usuario || !users?.has( Number.parseInt(id_usuario) )) {
     throw new Error("Fail get request")
@@ -68,4 +68,4 @@ const currentUser = http.get( import.meta.env.VITE_API + '/users/get_current', a
   return HttpResponse.json<TUser>({ id, rol: getRolId({ rolId })?.name, nombre }) 
 } )
 
-export default [list, create, update, userId, currentUser]
+export default [listUsers, createUser, updateUserById, userById, currentUser]
