@@ -8,13 +8,14 @@ import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import clsx from 'clsx'
-import { ComponentRef, useRef, useState } from 'react'
+import { ComponentRef, useContext, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { getUserIdRes, pathUsersRes, type TUser } from '@/api/users'
+import { getUserIdRes, pathUsersRes } from '@/api/users'
 import {useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { getRolName, getRols } from '@/api/rol'
+import { getRolId, getRolName, getRols } from '@/api/rol'
+import { TUsersState, _usersContext } from '@/pages/_layout/user'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
   component: UpdateUserById,
@@ -34,19 +35,20 @@ interface TPassowordValueState{
 
 /* eslint-disable-next-line */
 interface TUpdateUserById {
-  user?: TUser
+  user?: TUsersState
 }
 
 type TFormName = "firstName" | "lastName" | "rol" | "password" | "newPassword"
 
 /* eslint-disable-next-line */
-export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
+export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserById) {
   const [ visibility, setVisibility ] = useState<TPassowordVisibilityState>({})
   const [ password, setPassword ] = useState<TPassowordValueState | undefined>(undefined)
   const form = useRef<HTMLFormElement>(null)
   const _userDB = (Route.useLoaderData() ?? _user)
   const userDB = { ..._userDB, password: "" }
   const [ user, setUser ] = useState(userDB)
+  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
   const { setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
@@ -93,7 +95,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
       new FormData(form.current).entries()
     ) as Record<TFormName, string>
 
-    const { firstName, lastName } = items
+    const { firstName, lastName, rol } = items
     const description = text.notification.decription({
       username: firstName + ' ' + lastName,
     })
@@ -102,7 +104,7 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
       ({ ...items }: Record<TFormName, string>) =>
       () => {
         const { firstName, lastName, rol, newPassword } = items
-        updateUser.mutate({ 
+        updateUser({ 
           userId: id, 
           params: { 
             rol_id: Number.parseInt(rol), 
@@ -119,8 +121,15 @@ export function UpdateUserById({ user: _user = {} as TUser }: TUpdateUserById) {
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
     navigate({to: "../../"})
+    setUsers( users?.map( ({ id, ...items }, i, list) => {
+      if( user.id === id ){
+        return ({ ...items, id, nombre: firstName + " " + lastName, rol: getRolId({ rolId: Number.parseInt(rol) })?.name })
+      } 
+      return list[i]
+    } ) )
 
     const onClick = () => {
+      setUsers(users)
       clearTimeout(timer)
     }
 
