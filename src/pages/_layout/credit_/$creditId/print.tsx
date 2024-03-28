@@ -13,7 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import styles from "@/styles/global.module.css"
-import { type TCredit, getCreditById } from '@/api/credit'
+import { type TCREDIT_GET, getCreditById } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { useNavigate } from '@tanstack/react-router'
@@ -25,7 +25,7 @@ export const Route = createFileRoute('/_layout/credit/$creditId/print')({
 
 /* eslint-disable-next-line */
 interface TPaymentCreditByIdProps {
-  credit?: TCredit
+  credit?: TCREDIT_GET
 }
 
 /* eslint-disable-next-line */
@@ -33,7 +33,7 @@ type TOptState = "last" | "especific"
   
 
 /* eslint-disable-next-line */
-export function PrintCreditById( { credit: _credit = {} as TCredit }: TPaymentCreditByIdProps ) {
+export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPaymentCreditByIdProps ) {
   const form = useRef<HTMLFormElement>(null)
   const [ opt, setOpt ] = useState<TOptState | undefined>(undefined)
   const credit = Route.useLoaderData() ?? _credit

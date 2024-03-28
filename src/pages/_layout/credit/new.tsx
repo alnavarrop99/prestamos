@@ -11,16 +11,15 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { getClientsRes, type TClient, getClientId } from "@/api/clients";
+import { getClientsRes, type TClient } from "@/api/clients";
 import styles from "@/styles/global.module.css"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
-import { TCredit } from '@/api/credit'
-import users from '@/__mock__/USERS.json'
+import { type  TCREDIT_GET } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { getUserId } from '@/api/users'
+import { getMoraTypeByName } from '@/api/moraType'
 
 type TSearch = {
   clientId: number
@@ -149,20 +148,20 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <span>{text.form.cliente.label} </span>
           <Input
             required
-            name={'client' as keyof TCredit}
+            name={'nombre_del_cliente' as keyof TCREDIT_GET}
             type="text"
             placeholder={text.form.cliente.placeholder}
             list='credit-clients'
-            defaultValue={getClientId({ clientId }).nombres + " " + getClientId({ clientId }).apellidos}
+            // defaultValue={getClientId({ clientId }).nombres + " " + getClientId({ clientId }).apellidos}
           />
           <datalist id='credit-clients' >
-            {clients?.map( ( { nombres, apellidos, id } ) => <option key={id} value={[nombres, apellidos].join(" ")} />  )}
+            {/*clients?.map( ( { nombres, apellidos, id } ) => <option key={id} value={[nombres, apellidos].join(" ")} />  )*/}
           </datalist>
         </Label>
         <Label>
           <span>{text.form.date.label} </span>
           <DatePicker
-            name={"fecha_de_aprobacion" as keyof TCredit}
+            name={"fecha_de_aprobacion" as keyof TCREDIT_GET}
             label={text.form.date.placeholder}
             className='border border-primary' 
           />
@@ -171,10 +170,10 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <span>{text.form.ref.label} </span>
           <Input
             required
-            name={'garante' as keyof TCredit}
+            name={'garante_id' as keyof TCREDIT_GET}
             type="text"
             placeholder={text.form.ref.placeholder}
-            defaultValue={ getClientId({ clientId })?.referencia }
+            // defaultValue={ getClientId({ clientId })?.referencia }
           />
         </Label>
         <Label className='row-start-2'>
@@ -188,7 +187,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             step={50}
             value={amount}
             onChange={onChangeValue("amount")}
-            name={'cantidad' as keyof TCredit}
+            name={'monto' as keyof TCREDIT_GET}
             type="number"
             placeholder={text.form.amount.placeholder}
           />
@@ -204,7 +203,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             min={0}
             max={100}
             step={1}
-            name={'porcentaje' as keyof TCredit}
+            name={'tasa_de_interes' as keyof TCREDIT_GET}
             value={interest}
             onChange={onChangeValue("interest")}
             type="number"
@@ -222,7 +221,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             min={0}
             max={25}
             step={1}
-            name={'numero_de_cuotas' as keyof TCredit}
+            name={'numero_de_cuotas' as keyof TCREDIT_GET}
             value={coute}
             onChange={onChangeValue("coute")}
             type="number"
@@ -233,7 +232,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <span>{text.form.frecuency.label} </span>
           <Select 
             required
-            name={'frecuencia_del_credito' as keyof TCredit}
+            name={'frecuencia_del_credito_id' as keyof TCREDIT_GET}
             defaultValue={text.form.frecuency.items?.[0]}
           >
             <SelectTrigger className="w-full ring-1 ring-ring">
@@ -248,22 +247,22 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <span>{text.form.user.label} </span>
           <Input
             required
-            name={'user' as keyof TCredit}
+            name={'owner_id' as keyof TCREDIT_GET}
             type="text"
             placeholder={text.form.user.placeholder}
             list='credit-user'
-            defaultValue={ getUserId({ userId: getClientId({ clientId }).owner.id })?.nombre}
+            defaultValue={clientId}
           />
           <datalist id='credit-user' >
-            {users?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )}
+            {/*users?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )*/}
           </datalist>
         </Label>
         <Label htmlFor='credit-installments' className='row-start-4'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
           <span className='after:content-["_*_"] after:text-red-500'>{text.form.installments.label} </span>
-          <RadioGroup name='coute-type' defaultValue={'porcentage' as keyof typeof text.form.installments.placeholder} onChange={onChangeType}  >
-            <Label><RadioGroupItem value={'value' as keyof typeof text.form.installments.placeholder} /> <Badge>$</Badge> </Label>
-            <Label><RadioGroupItem value={'porcentage' as keyof typeof text.form.installments.placeholder} /> <Badge>%</Badge> </Label>
+          <RadioGroup name={'tipo_de_mora_id' as keyof TCREDIT_GET} defaultValue={ getMoraTypeByName({ moraTypeName: "porcentaje" })?.nombre } onChange={onChangeType}  >
+            <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "valor" })?.nombre } /> <Badge>$</Badge> </Label>
+            <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "porcentaje" })?.nombre } /> <Badge>%</Badge> </Label>
           </RadioGroup>
           </div>
           <Input
@@ -272,7 +271,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
             min={0}
             max={installmants?.type === "porcentage" ? 100 : undefined}
             step={installmants?.type === "porcentage" ? 1 : 50}
-            name={installmants?.type === "porcentage" ? 'porcentaje' as keyof TCredit : 'valor_de_mora' as keyof TCredit}
+            name={'valor_de_mora' as keyof TCREDIT_GET }
             type="number"
             value={installmants.value}
             placeholder={text.form.installments.placeholder?.[installmants.type]}
@@ -283,7 +282,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <Input
             min={0}
             max={10}
-            name={'dias_adicionales' as keyof TCredit}
+            name={'dias_adicionales' as keyof TCREDIT_GET}
             type="number"
             placeholder={text.form.aditionalDays.placeholder}
           />
@@ -292,7 +291,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <span>{text.form.comment.label}</span>
           <Textarea
             rows={5}
-            name={'comentario' as keyof TCredit}
+            name={'comentario' as keyof TCREDIT_GET}
             placeholder={text.form.comment.placeholder}
           />
         </Label>

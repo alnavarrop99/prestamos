@@ -2,9 +2,9 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Dialog } from '@radix-ui/react-dialog'
 import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
-import { createContext, useRef, useState } from 'react'
+import { createContext, useMemo, useRef, useState } from 'react'
 import { Switch } from '@/components/ui/switch'
-import { type TCredit, getCreditById } from '@/api/credit'
+import { type TCREDIT_GET, getCreditById, TCUOTES } from '@/api/credit'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@radix-ui/react-label'
 import { Input } from '@/components/ui/input'
@@ -13,14 +13,12 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
 import { Badge } from '@/components/ui/badge'
-import clients from "@/__mock__/CLIENTS.json";
-import users from '@/__mock__/USERS.json'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import clsx from 'clsx'
 import { useStatus } from '@/lib/context/layout'
-import { type TPayment } from '@/api/payment'
 import { Navigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
+import { getMoraTypeById, getMoraTypeByName } from '@/api/moraType'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,
@@ -29,7 +27,7 @@ export const Route = createFileRoute('/_layout/credit/$creditId/update')({
 
 /* eslint-disable-next-line */
 interface TUpdateCreditProps {
-  credit?: TCredit,
+  credit?: TCREDIT_GET,
   open?: boolean
 }
 
@@ -39,20 +37,20 @@ interface TCuotesState {
   type: "value" | "porcentage"
 }
 
-export const _creditUpdate = createContext<TCredit | undefined>(undefined)
+export const _creditUpdate = createContext<TCREDIT_GET | undefined>(undefined)
 
 const initialCuotes: TCuotesState = {
   type: "porcentage" 
 }
 
 /* eslint-disable-next-line */
-export function UpdateCreditById( { children, open: _open, credit: _credit = {} as TCredit }: React.PropsWithChildren<TUpdateCreditProps> ) {
+export function UpdateCreditById( { children, open: _open, credit: _credit = {} as TCREDIT_GET }: React.PropsWithChildren<TUpdateCreditProps> ) {
   const creditDB = Route.useLoaderData() ?? _credit
   const [credit, setCredit] = useState(creditDB)
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
-  const form = credit?.pagos.map( () => useRef<HTMLFormElement>(null) )
+  const form = (credit?.pagos ?? []).map( () => useRef<HTMLFormElement>(null) ) 
 
   const onOpenChange = (open: boolean) => {
     if(open){
@@ -62,7 +60,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
   }
 
   const onChangeStatus = ( checked: boolean ) => {
-    setCredit({ ...credit, estado: checked })
+    setCredit({ ...credit, estado: checked ? 1 : 0 })
   }
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
@@ -76,23 +74,25 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
     const { value, name }: {name?: string, value?: string} = ev.target
     if( !name || !value ) return;
 
-    setCredit( { ...credit, [ name as keyof TCredit ]: value } )
+    setCredit( { ...credit, [ name as keyof TCREDIT_GET ]: value } )
   }
 
-  const onChangePaymentById: ( params :{ paymentId?: number } ) => React.ChangeEventHandler<HTMLFormElement> = ({ paymentId }) => (ev) => {
+  const onChangeCuoteById: ( params :{ cuoteId?: number } ) => React.ChangeEventHandler<HTMLFormElement> = ({ cuoteId }) => (ev) => {
     const { value, name }: {name?: string, value?: string} = ev.target
-    const { pagos } = credit
+    const { cuotas, pagos } = credit
+    if(!credit || !value || !name || !pagos) return;
 
-    const payments = pagos?.map( ( item ) => {
-      if( item?.id === paymentId ) {
+    const cuotes = cuotas?.map( ( item ) => {
+      if( item?.id === cuoteId ) {
         return { ...item, [name]: value }
       }
       return item
     })
+    const payments = pagos?.map( ( items, i ) => {
+      return ({...items, valor_del_pago: cuotes?.[i]?.valor_pagado ?? items?.valor_del_pago, fecha_de_pago: cuotes?.[i]?.fecha_de_pago ?? items?.fecha_de_pago })
+    })
 
-    if(!payments?.length || !value || !name) return;
-
-    setCredit({ ...credit, pagos: payments })
+    setCredit({ ...credit, pagos: payments, cuotas: cuotes })
   }
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
@@ -110,15 +110,19 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
     ev.preventDefault()
   }
 
-  const onPaySubmit: ( params:{ payId: number } ) => React.FormEventHandler<HTMLFormElement> = ( { payId } ) => (ev) => {
+  const onCuoteSubmit: ( params:{ cuoteId: number } ) => React.FormEventHandler<HTMLFormElement> = ( { cuoteId } ) => (ev) => {
     const activeForms = form?.map( ( { current }, id ) => ({ id, current  }) )?.filter( ({ current }) => current )
 
-    if( payId === Math.max( ...activeForms.map( ({ id }) => id ) ) && activeForms?.every( ( { current } ) => current?.checkValidity() ) ) {
+    if( cuoteId === Math.max( ...activeForms.map( ({ id }) => id ) ) && activeForms?.every( ( { current } ) => current?.checkValidity() ) ) {
       setOpen({ open: !open })
       navigate({ to: "./confirm" })
     }
     ev.preventDefault()
   }
+
+  const active = useMemo(() =>
+    Object.values(creditDB).flat().every( ( value, i ) => value === Object.values(credit).flat()?.[i]
+  ), [ ...Object.values(credit)?.flat() ])
 
   return (
     <_creditUpdate.Provider value={credit}>
@@ -131,7 +135,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                 className='ms-auto'
                 variant="default"
                 form={'edit-credit'}
-                disabled={ Object.values(creditDB).flat().every( ( value, i ) => value === Object.values(credit).flat()?.[i] ) }
+                disabled={active}
               >
                 {text.button.update}
               </Button>
@@ -148,7 +152,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               <CardTitle className='text-2xl font-bold'>
                 {text.form.details.title}
               </CardTitle>
-              <Switch checked={credit.estado} onCheckedChange={onChangeStatus}>{ credit.estado }</Switch>
+              <Switch checked={!!credit.estado} onCheckedChange={onChangeStatus} />
              </div>
           </CardHeader>
           <CardContent >
@@ -161,21 +165,21 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                 <span>{text.form.details.clients.label}</span>
                 <Input
                   required
-                  name={'cliente' as keyof TCredit}
+                  name={'nombre_del_cliente' as keyof TCREDIT_GET}
                   type="text"
                   placeholder={text.form.details.clients.placeholder}
                   list='credit-clients'
-                  defaultValue={clients[0].nombres + " " + clients?.[0].apellidos}
+                  defaultValue={credit?.nombre_del_cliente}
                 />
                 <datalist id='credit-clients' >
-                  {clients?.map( ( { nombres, apellidos, id } ) => <option key={id} value={[nombres, apellidos].join(" ")} />  )}
+                  {/*clients?.map( ( { nombres, apellidos, id } ) => <option key={id} value={[nombres, apellidos].join(" ")} />  )*/}
                 </datalist>
               </Label>
              <Label>
                <span>{text.form.details.date.label}</span>
                <DatePicker 
                   required
-                  name={'fecha_de_aprobacion' as keyof TCredit}
+                  name={'fecha_de_aprobacion' as keyof TCREDIT_GET}
                   date={new Date(credit.fecha_de_aprobacion)} 
                   label={text.form.details.date.placeholder} />
              </Label>
@@ -183,9 +187,9 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                 <span>{text.form.details.ref.label}</span>
                 <Input
                   required
-                  name={'garante' as keyof TCredit}
+                  name={'garante_id' as keyof TCREDIT_GET}
                   type="text"
-                  defaultValue={clients[0].referencia}
+                  defaultValue={credit?.garante_id}
                   placeholder={text.form.details.ref.placeholder}
                 />
             </Label>
@@ -198,9 +202,9 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               required
               min={0}
               step={50}
-              name={'cantidad' as keyof TCredit}
+              name={'monto' as keyof TCREDIT_GET}
               type="number"
-              defaultValue={credit.cantidad}
+              defaultValue={credit.monto}
               placeholder={text.form.details.amount.placeholder}
             />
           </Label>
@@ -214,8 +218,8 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               min={0}
               max={100}
               step={1}
-              name={'porcentaje' as keyof TCredit}
-              defaultValue={credit.porcentaje}
+              name={'tasa_de_interes' as keyof TCREDIT_GET}
+              defaultValue={Math.round(credit.tasa_de_interes * 100)}
               type="number"
               placeholder={text.form.details.interest.placeholder}
             />
@@ -230,7 +234,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               min={0}
               max={25}
               step={1}
-              name={'numero_de_cuotas' as keyof TCredit}
+              name={'numero_de_cuotas' as keyof TCREDIT_GET}
               defaultValue={credit.numero_de_cuotas}
               type="number"
               placeholder={text.form.details.cuotes.label}
@@ -240,7 +244,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
             <span>{text.form.details.frecuency.label}</span>
             <Select
               required
-              name={'frecuencia_del_credito' as keyof TCredit}
+              name={'frecuencia_del_credito_id' as keyof TCREDIT_GET}
               defaultValue={credit?.frecuencia_del_credito.nombre}
             >
               <SelectTrigger className="w-full">
@@ -255,22 +259,22 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
             <span>{text.form.details.users.label}</span>
             <Input
               required
-              name={'cobrador' as keyof TCredit}
-              value={users?.[0].nombre}
+              name={'cobrador_id' as keyof TCREDIT_GET}
+              value={credit?.cobrador_id}
               type="text"
               placeholder={text.form.details.users.placeholder}
               list='credit-user'
             />
             <datalist id='credit-user' >
-              {users?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )}
+              {/*users?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )*/}
             </datalist>
           </Label>
           <Label htmlFor='credit-installments' className='row-start-4'>
             <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
               <span>{ text.form.details.installmants.label }</span>
-              <RadioGroup defaultValue={'porcentage'} onChange={onChangeType} >
-                <Label><RadioGroupItem value={'value'} /> <Badge>$</Badge> </Label>
-                <Label><RadioGroupItem value={'porcentage'} /> <Badge>%</Badge> </Label>
+              <RadioGroup name={'tipo_de_mora_id' as keyof TCREDIT_GET} defaultValue={ ""+getMoraTypeById({ moraTypeId: credit.tipo_de_mora_id })?.id } onChange={onChangeType} >
+                <Label><RadioGroupItem value={''+getMoraTypeByName({ moraTypeName: "valor" })?.id} /> <Badge>$</Badge> </Label>
+                <Label><RadioGroupItem value={''+getMoraTypeByName({ moraTypeName: "porcentaje" })?.id} /> <Badge>%</Badge> </Label>
               </RadioGroup>
             </div>
             <Input
@@ -279,9 +283,9 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               min={0}
               max={installmants?.type === "porcentage" ? 100 : undefined}
               step={installmants?.type === "porcentage" ? 1 : 50}
-              name={installmants?.type === "porcentage" ? 'porcentaje' as keyof TCredit : 'valor_de_mora' as keyof TCredit}
+              name={'tipo_de_mora_id' as keyof TCREDIT_GET}
               type="number"
-              defaultValue={credit?.cuotas?.at(0)?.valor_de_mora}
+              defaultValue={credit?.valor_de_mora}
               placeholder={text.form.details.installmants.label}
             />
         </Label>
@@ -290,22 +294,24 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               min={0}
               max={25}
               type='number'
-              name={'dias_adicionales' as keyof TCredit} 
+              name={'dias_adicionales' as keyof TCREDIT_GET} 
               defaultValue={credit.dias_adicionales} 
               placeholder={text.form.details.aditionalsDays.placeholder} 
             />
           </Label>
          <Label ><span>{text.form.details.comment.label}</span>
             <Textarea 
-              name={'comentario' as keyof TCredit} 
-              rows={5} placeholder={text.form.details.comment.placeholder} >
-                { credit.comentario }
+              name={'comentario' as keyof TCREDIT_GET} 
+              rows={5} 
+              placeholder={text.form.details.comment.placeholder} 
+            >
+              { credit.comentario }
           </Textarea>
           </Label>
             </form>
           </CardContent>
         </Card>
-        { credit?.pagos && <Card className='shadow-lg hover:shadow-xl transition delay-150 duration-400'> 
+        { credit?.pagos?.length && credit?.cuotas?.length && <Card className='shadow-lg hover:shadow-xl transition delay-150 duration-400'> 
           <CardHeader>
             <CardTitle className='text-2xl font-bold'>
               {text.form.pay.title}
@@ -313,30 +319,30 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
           </CardHeader>
           <CardContent>
             <Accordion type='multiple'>
-              {credit?.pagos.map(( pay, i ) =>
+              {credit?.cuotas.slice(0, credit?.pagos?.length+1)?.map(( cuote, i ) =>
                 <AccordionItem
-                  key={pay?.id}
-                  value={pay?.id?.toString() ?? ""}
+                  key={cuote?.id}
+                  value={cuote?.id?.toString() ?? ""}
                 >
                   <AccordionTrigger
                     className={clsx("gap-2 !no-underline [&>span]:italic before:not-italic before:font-bold before:content-['_+_'] [&[data-state='open']]:before:content-['_-_'] "
                   )} >
-                    <span>{format(pay?.fecha_de_pago ?? new Date(), "dd-MM-yyyy")}</span>
-                    <Badge className='ms-auto'>{pay?.id}</Badge>
+                    <span>{format(cuote?.fecha_de_pago, "dd-MM-yyyy")}</span>
+                    <Badge className='ms-auto'>{cuote?.id}</Badge>
                   </AccordionTrigger>
                   <AccordionContent asChild >
                     <form
                       className='px-4 grid grid-cols-2 gap-4 items-end [&>label_span]:font-bold [&>label]:space-y-2 [&>label:last-child]:col-span-full [&>label>div]:flex [&>label>div]:gap-2 [&>label>div]:items-center [&>label>div]:justify-between'
-                      id={ 'edit-pay-' + pay?.id }
-                      onChange={onChangePaymentById({ paymentId: pay?.id })}
-                      onSubmit={onPaySubmit({ payId: i })}
+                      id={ 'edit-pay-' + cuote?.id }
+                      onChange={onChangeCuoteById({ cuoteId: cuote?.id })}
+                      onSubmit={onCuoteSubmit({ cuoteId: cuote?.id })}
                       ref={form?.[i]}
                     >
                     <Label>
                       <span>{text.form.pay.payDate.label}</span>
                       <DatePicker
-                        name={"fecha_de_pago" as keyof TPayment}
-                        date={new Date(pay?.fecha_de_pago ?? new Date())}
+                        name={"fecha_de_pago" as keyof TCUOTES}
+                        date={new Date(cuote?.fecha_de_pago)}
                         label={text.form.pay.payDate.placeholder} 
                       />
                     </Label>
@@ -349,8 +355,8 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                         type='number'
                         min={0}
                         step={50}
-                        name={"valor_del_pago" as keyof TPayment} 
-                        defaultValue={pay?.valor_del_pago} 
+                        name={"valor_pagado" as keyof TCUOTES} 
+                        defaultValue={cuote?.valor_pagado} 
                         placeholder={text.form.pay.payValue.placeholder} 
                         />
                     </Label>
@@ -359,14 +365,14 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                         <span>{text.form.pay.installmantsDate.label}</span>
                       </div>
                       <DatePicker
-                        name={"fecha_de_aplicacion_de_mora" as keyof TPayment}
-                        date={new Date(pay?.fecha_de_pago ?? new Date())}
+                        name={"fecha_de_aplicacion_de_mora" as keyof TCUOTES}
+                        date={new Date(cuote?.fecha_de_pago)}
                         label={text.form.pay.installmantsDate.placeholder} 
                       />
                     </Label>
                     <Label> <span>{text.form.pay.comment.label}</span>
                       <Textarea
-                        name={"comentario" as keyof TPayment}
+                        name={"comentario" as keyof TCUOTES}
                         rows={3}
                         placeholder={text.form.pay.comment.placeholder}>
                         { credit.comentario }

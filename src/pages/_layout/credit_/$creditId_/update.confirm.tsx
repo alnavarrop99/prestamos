@@ -13,7 +13,7 @@ import { AlertCircle  } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
 import { _creditUpdate } from "@/pages/_layout/credit_/$creditId_/update";
-import { TCredit } from '@/api/credit'
+import { type TCREDIT_GET } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useNavigate } from '@tanstack/react-router'
 
@@ -23,11 +23,11 @@ export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')
 
 /* eslint-disable-next-line */
 interface TUpdateConfirmationCreditProps {
-  credit?: TCredit
+  credit?: TCREDIT_GET
 }
 
 /* eslint-disable-next-line */
-export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TUpdateConfirmationCreditProps) {
+export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }: TUpdateConfirmationCreditProps) {
   const [checked, setChecked] = useState(false)
   const credit = useContext(_creditUpdate) ?? _credit
   const { open, setOpen } = useStatus()
@@ -40,11 +40,10 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
 
   const onSubmit: React.FormEventHandler = (ev) => {
     const description = text.notification.decription({
-      // TODO
-      username: "Armando Navarro",
+      username: credit?.nombre_del_cliente,
     })
 
-    const action = (credit?: TCredit) => () => {
+    const action = (credit?: TCREDIT_GET) => () => {
       console.table(credit)
       setNotification({
           date: new Date(),
@@ -90,8 +89,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCredit }: TU
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
               {text.alert.description({ 
-                // TODO
-                username: "Armando Navarro" 
+                username: credit?.nombre_del_cliente 
               })}
             </AlertDescription>
           </Alert>

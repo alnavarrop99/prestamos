@@ -1,11 +1,12 @@
 import {
   Link,
+  Match,
   Navigate,
   Outlet,
   createFileRoute,
   useNavigate,
 } from '@tanstack/react-router'
-import { type TCredit, getCreditById } from '@/api/credit'
+import { type TCREDIT_GET, getCreditById } from '@/api/credit'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -32,7 +33,7 @@ export const Route = createFileRoute('/_layout/credit/$creditId')({
 
 /* eslint-disable-next-line */
 interface TCreditByIdProps {
-  credit?: TCredit
+  credit?: TCREDIT_GET
   open?: boolean
 }
 
@@ -40,7 +41,7 @@ interface TCreditByIdProps {
 export function CreditById({
   children,
   open: _open,
-  credit: _credit = {} as TCredit,
+  credit: _credit = {} as TCREDIT_GET,
 }: React.PropsWithChildren<TCreditByIdProps>) {
   const credit = Route.useLoaderData() ?? _credit
   const { open = _open, setOpen } = useStatus() 
@@ -78,7 +79,6 @@ export function CreditById({
                 </Button>
               </Link>
             </DialogTrigger>
-
             <Link to={'./update'}>
               <Button variant="default"> {text.button.update} </Button>
             </Link>
@@ -91,7 +91,6 @@ export function CreditById({
                 </Button>
               </Link>
             </DialogTrigger>
-
             {children ?? <Outlet />}
           </Dialog>
         </div>
@@ -103,32 +102,32 @@ export function CreditById({
             <b>{text.details.status}:</b>{' '}
             <Switch
               className={clsx({ 'cursor-not-allowed': true })}
-              checked={credit?.estado}
+              checked={!!credit?.estado}
             >
               {credit?.estado}
             </Switch>
           </div>
           <div>
             {' '}
-            <b>{text.details.name}:</b> { "Armando Navarro" + "." }
+            <b>{text.details.name}:</b> { credit?.nombre_del_cliente + "." }
           </div>
           <div>
             {' '}
-            <b>{text.details.amount}:</b> {'$' + credit?.cantidad + '.'}
+            <b>{text.details.amount}:</b> {'$' + credit?.monto + '.'}
           </div>
           <div>
             {' '}
             <b>{text.details.cuote}:</b>{' '}
-            {'$' + credit?.cuotas?.[0]?.valor_de_cuota + '.'}
+            {'$' + credit?.valor_de_cuota + '.'}
           </div>
           <div>
             {' '}
-            <b>{text.details.interest}:</b> {credit?.porcentaje + '%'}
+            <b>{text.details.interest}:</b> {Math.round(credit?.tasa_de_interes * 100) + '%'}
           </div>
           <div>
             {' '}
             <b>{text.details.pay}:</b>{' '}
-            {credit.pagos.length + '/' + credit.numero_de_cuotas + '.'}
+            {credit.pagos?.length + '/' + credit.numero_de_cuotas + '.'}
           </div>
           <div>
             {' '}
@@ -139,7 +138,7 @@ export function CreditById({
             {' '}
             <b>{text.details.date}:</b>{' '}
             {credit?.fecha_de_aprobacion
-              ? format(credit?.fecha_de_aprobacion, 'MM-dd-yyyy') + '.'
+              ? format(credit?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'
               : null}
           </div>
           <div>
@@ -162,14 +161,14 @@ export function CreditById({
           <h2 className="text-2xl font-bold"> {text.cuotes.title} </h2>
         )}
         {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
-          <Table className="w-fit px-4 py-2">
+          <Table className="w-full px-4 py-2">
             <TableHeader className='bg-muted'>
               <TableRow>
                 <TableHead></TableHead>
                 <TableHead>{text.cuotes.payDate}</TableHead>
-                <TableHead>{text.cuotes.installmantsDate}</TableHead>
                 <TableHead>{text.cuotes.payValue}</TableHead>
                 <TableHead>{text.cuotes.payCuote}</TableHead>
+                <TableHead>{text.cuotes.installmantsDate}</TableHead>
                 <TableHead>{text.cuotes.payInstallmants}</TableHead>
                 <TableHead>{text.cuotes.payStatus}</TableHead>
               </TableRow>
@@ -179,7 +178,7 @@ export function CreditById({
                 <TableRow key={cuota?.id}>
                   <TableCell>
                     {' '}
-                    <b>{cuota?.id}</b>{' '}
+                    <b>{cuota?.numero_de_cuota}</b>{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
@@ -189,19 +188,19 @@ export function CreditById({
                   </TableCell>
                   <TableCell>
                     {' '}
+                    <b>$</b>
+                    {cuota?.valor_pagado?.toFixed(2)}{' '}
+                  </TableCell>
+                  <TableCell>
+                    {' '}
+                    <b>$</b>
+                    {cuota?.valor_de_cuota?.toFixed(2)}{' '}
+                  </TableCell>
+                  <TableCell>
+                    {' '}
                     {cuota?.fecha_de_aplicacion_de_mora
                       ? format(cuota?.fecha_de_aplicacion_de_mora, 'MM-dd-yyyy')
                       : null}{' '}
-                  </TableCell>
-                  <TableCell>
-                    {' '}
-                    <b>$</b>
-                    {cuota?.valor_pagado}{' '}
-                  </TableCell>
-                  <TableCell>
-                    {' '}
-                    <b>$</b>
-                    {cuota?.valor_de_cuota}{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
@@ -224,8 +223,7 @@ export function CreditById({
                   {text.cuotes.total}:
                 </TableCell>
                 <TableCell colSpan={2} className="text-right">
-                  {' '}
-                  <GetPay credit={credit} />{' '}
+                  <GetPay credit={credit} />
                 </TableCell>
               </TableRow>
             </TableFooter>
@@ -238,23 +236,19 @@ export function CreditById({
 
 CreditById.dispalyname = 'CreditById'
 
-function GetPay({ credit }: { credit: TCredit }) {
-  if (!credit.cuotas || !credit.pagos) return
+function GetPay({ credit }: { credit: TCREDIT_GET }) {
+  if (!credit.cuotas || !credit.pagos) return;
 
   return (
     <>
-      {' '}
-      <b>$</b>{' '}
-      {credit.pagos
-        .map((pay) => pay?.valor_del_pago ?? 0)
+      <b>$</b>
+      {credit.cuotas
+        .map((pay) => pay?.valor_pagado)
         .reduce((prev, acc) => (acc += prev))
         .toFixed(2)}
       <b>&#8193;/&#8193;</b>
-      <b>$</b>{' '}
-      {credit.cuotas
-        .map((cuote) => cuote?.valor_de_cuota ?? 0)
-        .reduce((prev, acc) => (acc += prev))
-        .toFixed(2)}{' '}
+      <b>$</b>
+      {credit?.monto}
     </>
   )
 }
@@ -271,21 +265,21 @@ const text = {
     amount: 'Monto total',
     interest: 'Tasa de interes',
     pay: 'Pagos realizados',
-    cuote: 'Monta de la cuota',
-    installmants: 'Monta de la mora',
+    cuote: 'Monta Cuota',
+    installmants: 'Monta Mora',
     frecuency: 'Frecuencia del credito',
     status: 'Estado',
     date: 'Fecha de aprobacion',
     comment: 'Comentario',
-    cuotes: 'Numero de cuotas',
+    cuotes: 'Numero de Cuotas',
     aditionalsDays: 'Dias adicionales',
   },
   cuotes: {
     title: 'Historial de pagos:',
     payDate: 'Fecha de pago',
-    installmantsDate: 'Fecha de mora',
-    payValue: 'Monto del pago',
-    payCuote: 'Monto de la cuota',
+    installmantsDate: 'Fecha de aplicacion de mora',
+    payValue: 'Monto del Pago',
+    payCuote: 'Monto Cuota',
     payInstallmants: 'Monto de la mora',
     payStatus: 'Pagada',
     total: 'Monto Total',

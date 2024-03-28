@@ -4,14 +4,11 @@ import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
-import { Progress } from '@/components/ui/progress'
-import { Switch } from '@/components/ui/switch'
 import { Timeline, TimelineItem } from '@/components/ui/timeline'
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog'
 import {
@@ -29,48 +26,37 @@ import {
   CircleDollarSign as Pay,
   Info,
 } from 'lucide-react'
-import { createContext, useMemo, useState } from 'react'
-import { getCredits, type TCredit } from '@/api/credit'
+import { createContext, useState } from 'react'
+import { getCreditsFilter, type TCREDIT_GET_FILTER_ALL, type TCREDIT_GET_FILTER } from '@/api/credit'
 import { useStatus } from '@/lib/context/layout'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { format } from 'date-fns'
+import { Progress } from '@/components/ui/progress'
+import styles from "@/styles/global.module.css";
 
 export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
-  loader: getCredits,
+  loader: getCreditsFilter(),
 })
 
 /* eslint-disable-next-line */
 interface TCreditsProps {
-  credits: TCredit[]
+  credits: TCREDIT_GET_FILTER_ALL
   open?: boolean
 }
 
-export const _creditSelected = createContext<TCredit | undefined>(undefined)
+export const _creditSelected = createContext<TCREDIT_GET_FILTER | undefined>(undefined)
 
 /* eslint-disable-next-line */
 export function Credits({
   children,
   open: _open,
-  credits: _credits = [] as TCredit[],
+  credits: _credits = [] as TCREDIT_GET_FILTER[],
 }: React.PropsWithChildren<TCreditsProps>) {
   const credits = Route.useLoaderData() ?? _credits
-  const [credit, setCredit] = useState<TCredit | undefined>(undefined)
-  const [active, setActive] = useState<boolean>(true)
-  const activeLength = useMemo(
-    () => credits?.filter(({ estado }) => estado)?.length,
-    [credits]
-  )
-  const inactiveLength = useMemo(
-    () => credits?.filter(({ estado }) => !estado)?.length,
-    [credits]
-  )
+  const [credit, setCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
-
-  const onActive = (checked: boolean) => {
-    setActive(checked)
-  }
 
   const onClick: ({
     creditId,
@@ -90,24 +76,21 @@ export function Credits({
     setOpen({ open })
   }
 
+  const onOpenUser: React.MouseEventHandler< React.ComponentRef< typeof Link > > = () => {
+    onOpenChange(!open)
+  }
+
   return (
     <_creditSelected.Provider value={credit}>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Switch
-            id="acitve-credits"
-            checked={active}
-            onCheckedChange={onActive}
-          >
-            {' '}
-          </Switch>
           <Label htmlFor="acitve-credits" className="cursor-pointer">
             <h1 className="text-3xl font-bold">
-              {text.title + (active ? ' Activos' : ' Inactivos')}
+              {text.title}
             </h1>
           </Label>
           <Badge className="px-3 text-xl">
-            {active ? activeLength : inactiveLength}
+            {credits?.length}
           </Badge>
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
@@ -121,29 +104,23 @@ export function Credits({
         <Separator />
         <div
           className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5', {
-            '[&>*]:basis-1/4':
-              (active && !!activeLength && activeLength > 15) ||
-              (!active && inactiveLength && inactiveLength > 15),
-          })}
+            '[&>*]:basis-1/4': !!credits?.length && credits?.length > 15})}
         >
-          {credits
-            ?.filter(({ estado }) => estado === active)
-            ?.map(
-              ({
-                pagos,
-                fecha_de_aprobacion,
-                frecuencia_del_credito,
-                id,
-                cantidad,
-                comentario,
-                numero_de_cuotas,
-                cuotas,
-                valor_de_mora,
-              }) => {
-                const status: 'warn' | 'info' | undefined = valor_de_mora
+          {credits?.map( ({
+            id,
+            cliente_id,
+            frecuencia,
+            valor_de_la_mora,
+            numero_de_cuota,
+            numero_de_cuotas,
+            valor_de_cuota,
+            nombre_del_cliente,
+            fecha_de_cuota,
+            monto
+          }) => {
+                const status: 'warn' | 'info' | undefined = valor_de_la_mora > 0
                   ? 'warn'
-                  : 'info'
-                const currentPay = pagos?.length ? pagos?.map( ( pay ) => pay?.valor_del_pago ?? 0 )?.reduce( (acc, prev) => (acc+=prev) ) :  0
+                  : undefined
 
                 return (
                   <Link
@@ -152,20 +129,20 @@ export function Credits({
                     to="./$creditId"
                     params={{ creditId: id }}
                   >
-                    <Card className="h-fit shadow-lg transition delay-150 duration-500 group-hover:scale-105 group-hover:shadow-xl ">
+                    <Card className={clsx("h-full shadow-lg transition delay-150 duration-500 group-hover:scale-105 group-hover:shadow-xl grid justify-streetch items-end", styles?.["grid__credit--card"])}>
                       <CardHeader>
                         <div className="flex items-center gap-2">
                           <CardTitle className="flex-row items-center">
-                            <Link className="hover:underline">
-                              {'Armando Navarro'}
+                            <Link onClick={onOpenUser} to={"/client/$clientId/update"} params={{clientId: cliente_id}} className="hover:underline">
+                              {nombre_del_cliente}
                             </Link>
                           </CardTitle>
-                          { !!pagos?.length && <HoverCard>
+                          { false && <HoverCard>
                             <HoverCardTrigger>
                               <Info
                                 className={clsx(
                                   'duration-400 opacity-0 transition delay-150 stroke-blue-500 hover:stroke-blue-700 group-hover:opacity-100',
-                                  { invisible: !cuotas?.length }
+                                  { invisible: numero_de_cuota }
                                 )}
                               />
                             </HoverCardTrigger>
@@ -181,17 +158,16 @@ export function Credits({
                                 <CardContent>
                                   <ScrollArea className='max-h-52 w-64 overflow-y-auto'>
                                   { <Timeline className="w-fit px-4 py-2 text-sm">
-                                      {pagos?.map(
+                                      {[1,2,3,4]?.map(
                                         (items) =>
                                           items && (
-                                            <TimelineItem key={items?.id}>
-                                              {' '}
+                                            <TimelineItem key={items}>
                                               <span className="font-bold">
-                                                {format(items?.fecha_de_pago, "dd-MM-yyyy")}:{' '}
-                                              </span>{' '}
+                                                {/*format(items?.fecha_de_pago, "dd-MM-yyyy")*/}:
+                                              </span>
                                               <Badge>
-                                                ${items?.valor_del_pago}
-                                              </Badge>{' '}
+                                                ${ /* items?.valor_del_pago */}
+                                              </Badge>
                                             </TimelineItem>
                                           )
                                       )}
@@ -202,14 +178,13 @@ export function Credits({
                             </HoverCardContent>
                           </HoverCard> }
                           <Badge className='text-md after:duration-400 ms-auto after:opacity-0 after:transition after:delay-150 group-hover:after:opacity-100 group-hover:after:content-["_\219D"]'>
-                            {' '}
-                            {id}{' '}
+                            {id}
                           </Badge>
                         </div>
-                        <CardDescription>
+                       {/* <CardDescription>
                           <p>{comentario}</p>
-                        </CardDescription>
-                      </CardHeader>
+                        </CardDescription> */}
+                    </CardHeader>
                       <CardContent className="space-y-2">
                         {status && (
                           <Alert
@@ -217,16 +192,16 @@ export function Credits({
                               status === 'warn' ? 'destructive' : 'default'
                             }
                           >
-                            {status === 'warn' && (
+                            {status && status === 'warn' && (
                               <AlertCircle className="h-4 w-4" />
                             )}
-                            {status === 'info' && (
+                            {status && status === 'info' && (
                               <AlertTriangle className="h-4 w-4" />
                             )}
                             <AlertTitle>
                               {text.alert?.[status]?.title}
                             </AlertTitle>
-                            {status === 'info' && (
+                            {status && status === 'info' && (
                               <AlertDescription>
                                 {text.alert?.info?.description({
                                   date: new Date(),
@@ -238,35 +213,35 @@ export function Credits({
                         <div className="flex items-center gap-8">
                           <Progress
                             className="border border-primary"
-                            max={cantidad}
-                            value={currentPay}
+                            max={100}
+                            value={numero_de_cuota/numero_de_cuotas * 100}
                           />
                           <span>
-                            {' '}
                             <b>$</b>
-                            {(currentPay).toFixed(1)}{' '}
+                            {(monto).toFixed(2)}
                           </span>
                         </div>
                         <ul className="list-inside list-disc">
                           <li>
-                            {' '}
-                            <b> {text.details.amount} </b>: <b>$</b>
-                            {cantidad}.
+                            <b> {text.details.pay} </b>:
+                            {numero_de_cuota + "/" + numero_de_cuotas}.
                           </li>
                           <li>
-                            {' '}
-                            <b> {text.details.pays} </b>:{' '}
-                            {(pagos?.length ?? 0) + '/' + numero_de_cuotas}.
+                            <b> {text.details.cuote} </b>: <b>$</b>
+                            {valor_de_cuota.toFixed(2)}.
                           </li>
+                          {valor_de_la_mora > 0 && <li>
+                            <b> {text.details.mora} </b>:
+                            <b>$</b>{valor_de_la_mora}.
+                          </li>}
                           <li>
-                            {' '}
-                            <b> {text.details.frecuency} </b>:{' '}
-                            {frecuencia_del_credito.nombre}.
+                            <b> {text.details.frecuency} </b>:
+                            {frecuencia.nombre}.
                           </li>
                         </ul>
                       </CardContent>
                       <CardFooter className="flex items-center gap-2">
-                        <Badge> {format(fecha_de_aprobacion, "dd-MM-yyyy")} </Badge>
+                        <Badge> {format(fecha_de_cuota, "dd-MM-yyyy")} </Badge>
                         <Dialog open={open} onOpenChange={onOpenChange}>
                           <DialogTrigger asChild className="ms-auto" >
                             <Link
@@ -330,9 +305,10 @@ const text = {
     deactivate: 'Desactivar',
   },
   details: {
-    amount: 'Monto Total',
-    pays: 'Pagos activos',
+    pay: 'Numero de cuotas',
+    cuote: 'Valor Cuota',
+    mora: 'Valor Mora',
     frecuency: 'Frecuencia',
-    pay: 'Historial de pagos',
+    history: 'Historial de pagos',
   },
 }

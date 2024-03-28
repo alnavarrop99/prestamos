@@ -21,7 +21,7 @@ export const credits = new Map<number, TCREDIT_DB>( _credits?.map<[number,TCREDI
 export const cuotes = new Map<number, TCUOTE_DB>( _cuotes?.map( ({ id }, i, list) => [ id, { ...list?.[i], mora: !!list?.[i]?.mora }  ]))
 export const moras = new Map<number, TMORA_DB>( _mora?.map( ({ id }, i, list) => [ id, list?.[i] ]))
 
-const allCredits = http.all(import.meta.env.VITE_API + '/clientes/list', async () => {
+const allCredits = http.all(import.meta.env.VITE_API + '/creditos/list', async () => {
   return HttpResponse.json<TCREDIT_GET_ALL>(
     Array.from(credits?.values())?.map<TCREDIT_GET>(({ 
       id,
@@ -45,7 +45,7 @@ const allCredits = http.all(import.meta.env.VITE_API + '/clientes/list', async (
       cuotas: [ ...Array.from({ length: cuoteLength })?.map( (_, i, list) => ({ 
           id: cuoteId + i,
           fecha_de_pago: new Date( cuotes?.get(cuoteId)?.fecha_de_pago ?? "" ),
-          pagada: list?.length === i && !cuotes?.get( cuoteId )?.mora,
+          pagada: (list?.length === i || cuotes?.get( cuoteId )?.mora) || true,
           credito_id: id,
           valor_pagado: payments?.get( cuotes?.get( cuoteId )?.pago_id ?? 0 )?.valor_del_pago ?? 0,
           valor_de_mora: moras?.get( mora_id )?.valor_de_mora ?? 0,
@@ -79,17 +79,19 @@ const allCredits = http.all(import.meta.env.VITE_API + '/clientes/list', async (
   )
 })
 
-const filterCredits = http.all(import.meta.env.VITE_API + '/creditos/filtrar_prestamos', async ( { request } ) => {
-  const { fecha_de_pago, cliente, saldo_en_mora, saldo_por_pagar } = request.json() as TCREDIT_GET_FILTER_BODY
+const filterCredits = http.post(import.meta.env.VITE_API + '/creditos/filtrar_prestamos', async ( { request } ) => {
+  const { fecha_de_pago, cliente, saldo_en_mora, saldo_por_pagar } = (await request.json()) as TCREDIT_GET_FILTER_BODY
   return HttpResponse.json<TCREDIT_GET_FILTER_ALL>(
-    Array.from(credits?.values())?.filter( ({ cuotas: { id: cuoteId }, cliente_id, mora_id, }) => {
+    Array.from(credits?.values())?.filter( ({ cuotas: { id: cuoteId, cantidad: cuoteLength }, cliente_id, pagos: { cantidad: paymentLength } }) => {
       return fecha_de_pago === cuotes?.get( cuoteId )?.fecha_de_pago || 
       cliente === clients?.get( cliente_id )?.nombres + " " + clients?.get( cliente_id )?.apellidos || 
-      saldo_en_mora === moras?.get(mora_id)?.valor_de_mora ||
-      saldo_por_pagar === payments?.get( cuotes?.get( cuoteId )?.pago_id ?? 0 )?.valor_del_pago ||
-      !fecha_de_pago || !cliente || !saldo_por_pagar || !saldo_por_pagar
-    } )?.map<TCREDIT_GET_FILTER>(({ cuotas: { id: cuoteId, cantidad: cuoteNumber }, mora_id, frecuencia_del_credito_id, cobrador_id, tasa_de_interes }) => ({
-      valor_de_la_mora: moras?.get(mora_id)?.valor_de_mora ?? 0,
+      saldo_en_mora === cuotes?.get(cuoteId)?.mora ||
+      saldo_por_pagar === paymentLength < cuoteLength ||
+      !fecha_de_pago || !cliente || !saldo_en_mora || !saldo_por_pagar
+    } )?.map<TCREDIT_GET_FILTER>(({ id ,cuotas: { id: cuoteId, cantidad: cuoteNumber }, mora_id, frecuencia_del_credito_id, tasa_de_interes, cliente_id, monto, pagos: { cantidad: paymentLength } }) => ({
+      id,
+      cliente_id,
+      valor_de_la_mora: cuotes?.get( cuoteId )?.mora ? (moras?.get(mora_id)?.valor_de_mora ?? 0) : 0,
       frecuencia: {
         id: frecuencia_del_credito_id,
         nombre: getFrecuencyById({ frecuencyId: frecuencia_del_credito_id })?.nombre ?? "",
@@ -97,8 +99,10 @@ const filterCredits = http.all(import.meta.env.VITE_API + '/creditos/filtrar_pre
       }, 
       fecha_de_cuota: new Date( cuotes?.get( cuoteId )?.fecha_de_pago ?? "" ),
       valor_de_cuota: (payments?.get( cuotes?.get( cuoteId )?.pago_id ?? 0 )?.valor_del_pago ?? 0) - (payments?.get( cuotes?.get( cuoteId )?.pago_id ?? 0 )?.valor_del_pago ?? 1) * (tasa_de_interes ?? 1),
-      numero_de_cuota: cuoteNumber,
-      nombre_del_cliente: clients?.get(cobrador_id)?.nombres + " " + clients?.get(cobrador_id)?.apellidos,
+      monto,
+      numero_de_cuotas: cuoteNumber,
+      numero_de_cuota: paymentLength,
+      nombre_del_cliente: clients?.get(cliente_id)?.nombres + " " + clients?.get(cliente_id)?.apellidos,
     }))
   )
 })
@@ -259,7 +263,7 @@ const getCreditById = http.get( import.meta.env.VITE_API + '/creditos/by_id/:cre
       valor_de_mora: moras?.get( mora_id )?.valor_de_mora ?? 0,
       valor_de_cuota: ( payments?.get( cuotes?.get( cuoteId )?.pago_id ?? 0 )?.valor_del_pago ?? 0) - ( payments?.get( cuotes?.get( cuoteId )?.pago_id ?? 0 )?.valor_del_pago ?? 0) * tasa_de_interes,
       numero_de_cuota: cuoteLength,
-      pagada: list?.length === i && !cuotes?.get( cuoteId )?.mora,
+      pagada: list?.length !== i || !cuotes?.get( cuoteId )?.mora,
       valor_pagado:  payments?.get( cuotes?.get( cuoteId )?.pago_id ?? 0 )?.valor_del_pago ?? 0,
       fecha_de_aplicacion_de_mora: new Date()
     })) ],

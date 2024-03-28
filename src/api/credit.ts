@@ -44,13 +44,13 @@ export interface TCUOTES {
   credito_id: number,
 }
 
-interface TMORA {
+export interface TMORA {
   id: number
   tipo_enumerador_id: number
   nombre: string
 }
 
-interface TFRECUENCY {
+export interface TFRECUENCY {
   id: number
   tipo_enumerador_id: number
   nombre: string
@@ -62,7 +62,6 @@ export interface TCREDIT_GET extends TCREDIT_BASE {
   fecha_de_cuota: Date
   valor_de_cuota: number
   numero_de_cuota: number
-  valor_de_la_mora: number
   garante_id?: number
   frecuencia_del_credito: TFRECUENCY
   tipo_de_mora: TMORA
@@ -78,19 +77,23 @@ export type TCREDIT_GET_CUOTES_FOR_PAY = TCREDIT_BASE
 
 // GET FILTERS
 export interface TCREDIT_GET_FILTER {
+  id: number
+  cliente_id: number
   nombre_del_cliente: string
   fecha_de_cuota: Date
   valor_de_cuota: number
   numero_de_cuota: number
+  numero_de_cuotas: number
+  monto: number
   valor_de_la_mora: number
   frecuencia: TFRECUENCY
 }
 
 export interface TCREDIT_GET_FILTER_BODY {
-  fecha_de_pago?: Date,
-  saldo_por_pagar?: boolean,
-  saldo_en_mora?: boolean,
-  cliente?: string
+  fecha_de_pago?: Date 
+  saldo_por_pagar?: boolean
+  saldo_en_mora?: boolean 
+  cliente?: string 
 }
 
 export type TCREDIT_GET_FILTER_ALL = TCREDIT_GET_FILTER[]
@@ -113,36 +116,36 @@ export type TCREDIT_DELETE = TCREDIT_BASE
 // FUNCTION TYPES
 type TGetCreditById = (params: { params: { creditId: string } }) => Promise<TCREDIT_GET>
 type TGetCredits = () => Promise<TCREDIT_GET_ALL>
-type TGetCreditsFilter = (params: TCREDIT_GET_FILTER_BODY) => Promise<TCREDIT_GET_FILTER_ALL>
+type TGetCreditsFilter = ( params?: TCREDIT_GET_FILTER_BODY) => () => Promise<TCREDIT_GET_FILTER_ALL>
 type TPostCredit = (params: TCREDIT_POST_BODY) => Promise<TCREDIT_POST>
 type TDeleteCreditById = (params: { params: { creditId: string } }) => Promise<TCREDIT_DELETE>
 type TPatchCreditById = (params: { params: { creditId: string, updateCredit: TCREDIT_PATCH_BODY } }) => Promise<TCREDIT_PATCH>
 
 // FUNCTION DEFINITIONS
 export const getCreditById: TGetCreditById = async ({ params: { creditId} }) => {
-  const creditById = await fetch("/creditos/by_id/" + creditId,{
+  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/by_id/" + creditId,{
     method: "GET",
   })
   return creditById.json()
 }
 
 export const getCredits: TGetCredits =  async () => {
-  const creditById = await fetch("/creditos/list",{
+  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/list",{
     method: "GET"
   })
   return creditById.json()
 }
 
-export const getCreditsFilter: TGetCreditsFilter =  async ({ ...filter }) => {
-  const creditById = await fetch("/creditos/filtrar_prestamos",{
-    method: "GET",
+export const getCreditsFilter: TGetCreditsFilter = ( filter = {} ) => async () => {
+  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/filtrar_prestamos",{
+    method: "POST",
     body: JSON.stringify(filter)
   })
   return creditById.json()
 }
 
 export const postCredit: TPostCredit =  async ( newCredit ) => {
-  const creditById = await fetch("/creditos/create",{
+  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/create",{
     method: "POST",
     body: JSON.stringify(newCredit)
   })
@@ -150,14 +153,14 @@ export const postCredit: TPostCredit =  async ( newCredit ) => {
 }
 
 export const deleteCreditById: TDeleteCreditById =  async ({ params: { creditId } }) => {
-const creditById = await fetch("/creditos/delete/" + creditId,{
+const creditById = await fetch(import.meta.env.VITE_API + "/creditos/delete/" + creditId,{
     method: "DELETE",
   })
   return creditById.json()
 }
 
 export const patchCreditsById: TPatchCreditById =  async ({ params: { creditId, updateCredit } }) => {
-  const creditById = await fetch("/creditos/" + creditId,{
+  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/" + creditId,{
     method: "PATCH",
     body: JSON.stringify(updateCredit)
   })

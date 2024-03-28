@@ -1,13 +1,14 @@
 import { HttpResponse, http } from 'msw'
 import _payments from '@/mocks/__mock__/PAYMENTS.json'
-import { TCUOTE_DB, credits } from '@/mocks/credit'
-import { cuotes } from '@/mocks/credit'
+import { TCUOTE_DB } from '@/mocks/credit'
+import _credits from "@/mocks/__mock__/CREDITS.json";
+import _cuotes from "@/mocks/__mock__/CUOTES.json";
 import { clients } from "@/mocks/client"
 import type { TPAYMENT_GET, TPAYMENT_POST, TPAYMENT_GET_ALL, TPAYMENT_POST_BODY, TPAYMENT_PATCH_BODY, TPAYMENT_PATCH, TPAYMENT_DELETE } from '@/api/payment'
 
 type TPAYMENT_DB = typeof _payments[0]
-export const payments = new Map<number, TPAYMENT_DB & { credit_id: number }>( Array.from(credits?.values())?.map<[number,TPAYMENT_DB & { credit_id: number }]>( ( { id, cuotas: { id: cuote_id } } ) => {
-  const cuote = cuotes?.get(cuote_id) ?? {} as TCUOTE_DB
+export const payments = new Map<number, TPAYMENT_DB & { credit_id: number }>( _credits?.map<[number,TPAYMENT_DB & { credit_id: number }]>( ( { id, cuotas: { id: cuoteId } } ) => {
+  const cuote = _cuotes?.find( ({ id }) => (id === cuoteId) ) ?? {} as TCUOTE_DB
   const { pago_id } = cuote
   const payment = _payments?.find( ({ id }) => id === pago_id ) ?? {} as TPAYMENT_DB
   return [payment?.id ?? 0, { ...payment, credit_id: id }]

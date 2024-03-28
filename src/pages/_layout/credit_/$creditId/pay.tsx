@@ -11,8 +11,8 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
 import { Checkbox } from '@/components/ui/checkbox'
-import { type TPayment } from "@/api/payment";
-import { getCreditById, type TCredit } from '@/api/credit'
+import { type TPAYMENT_GET } from "@/api/payment";
+import { getCreditById, type TCREDIT_GET } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { useStatus } from '@/lib/context/layout'
@@ -25,11 +25,11 @@ export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
 
 /* eslint-disable-next-line */
 interface TPaymentCreditByIdProps {
-  credit?: TCredit
+  credit?: TCREDIT_GET
 }
 
 /* eslint-disable-next-line */
-export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCreditByIdProps ) {
+export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPaymentCreditByIdProps ) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const credit = Route.useLoaderData() ?? _credit
@@ -46,16 +46,15 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof TPayment, string>
+    ) as Record<keyof TPAYMENT_GET, string>
 
     const description = text.notification.decription({
-      // TODO
-      username: "Armando Navarro",
-      number: 0,
+      username: credit?.nombre_del_cliente,
+      number: Number.parseInt(items?.valor_del_pago),
     })
 
     const action =
-      ({ ...props }: Record<keyof TPayment, string>) =>
+      ({ ...props }: Record<keyof TPAYMENT_GET, string>) =>
       () => {
         console.table(props)
         console.table(credit)
@@ -117,14 +116,14 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
             required
             min={0}
             step={50}
-            name={'valor_del_pago' as keyof TPayment}
+            name={'valor_del_pago' as keyof TPAYMENT_GET}
             type="number"
             placeholder={text.form.amount.placeholder}
           />
         </Label>
         <Label className='!col-span-1'>
           <span>{text.form.date.label} </span>
-          <DatePicker name={"fecha_de_pago" as keyof TPayment}
+          <DatePicker name={"fecha_de_pago" as keyof TPAYMENT_GET}
             label={text.form.date.placeholder}
             className='border border-primary'
           />
@@ -132,7 +131,7 @@ export function PayCreditById( { credit: _credit = {} as TCredit }: TPaymentCred
         <Label className='cols-span-full'>
           <span>{text.form.comment.label}</span>
           <Textarea
-            name={"comentario" as keyof TPayment}
+            name={"comentario" as keyof TPAYMENT_GET}
             rows={5}
             placeholder={text.form.comment.placeholder}
           />

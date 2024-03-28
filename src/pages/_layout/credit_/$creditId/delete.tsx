@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { getCreditById, type TCredit } from "@/api/credit";
+import { getCreditById, type TCREDIT_GET } from "@/api/credit";
 import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
@@ -22,11 +22,11 @@ export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
 
 /* eslint-disable-next-line */
 interface TDeleteCreditByIdProps {
-  credit?: TCredit
+  credit?: TCREDIT_GET
 }
 
 /* eslint-disable-next-line */
-export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCreditByIdProps) {
+export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDeleteCreditByIdProps) {
   const [checked, setChecked] = useState(false)
   const credit = Route.useLoaderData() ?? _credit
   const { open, setOpen } = useStatus()
@@ -39,11 +39,10 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
 
   const onSubmit: React.FormEventHandler = (ev) => {
     const description = text.notification.decription({
-      // TODO
-      username: "Armando Navarro",
+      username: credit?.nombre_del_cliente,
     })
 
-    const action = (credit?: TCredit) => () => {
+    const action = (credit?: TCREDIT_GET) => () => {
       console.table(credit)
       setNotification({
         date: new Date(),
@@ -89,8 +88,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
               {text.alert.description({ 
-                // TODO
-                username: "Armando Navarro" 
+                username: credit?.nombre_del_cliente 
               })}
             </AlertDescription>
           </Alert>
