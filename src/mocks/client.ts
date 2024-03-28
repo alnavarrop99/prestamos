@@ -2,10 +2,10 @@ import { HttpResponse, http } from 'msw'
 import _clients from '@/mocks/__mock__/CLIENTS.json'
 import { type TClientPostBody, type TClientList } from '@/api/clients'
 
-type TClientDB = typeof _clients[0]
-const clients = new Map<number, TClientDB>( _clients?.map( ( { id }, i, list ) => ([ id, (list?.[i] ?? {} as TClientDB) ]) ) )
+type TClIENT_DB = typeof _clients[0]
+export const clients = new Map<number, TClIENT_DB>( _clients?.map( ( { id }, i, list ) => ([ id, (list?.[i] ?? {} as TClIENT_DB) ]) ) )
 
-const listClient = http.all(import.meta.env.VITE_API + '/clientes/list', async () => {
+const allClients = http.all(import.meta.env.VITE_API + '/clientes/list', async () => {
   return HttpResponse.json<TClientList[]>(
     Array.from(clients?.values())?.map(({ owner: { id: ownerId }, ...items }) => ({ owner_id: ownerId, ...items }))
   )
@@ -32,38 +32,42 @@ const updateClientById = http.patch( import.meta.env.VITE_API + '/clientes/:clie
     throw new Error("Fail update request")
   }
   const clientId = Number.parseInt(cliente_id)
-  clients?.set( clientId, { ...(clients?.get(clientId) ?? {} as TClientDB), ...currentClient } )
+  clients?.set( clientId, { ...(clients?.get(clientId) ?? {} as TClIENT_DB), ...currentClient } )
+
   return HttpResponse.json<TClientList>({
     ...currentClient,
     id: Number.parseInt(cliente_id),
   })
 } )
 
-const clientById = http.get( import.meta.env.VITE_API + '/clientes/by_id/:cliente_id', async ({params}) => {
+const getClientById = http.get( import.meta.env.VITE_API + '/clientes/by_id/:cliente_id', async ({params}) => {
   const { cliente_id } = params as { cliente_id: string }
   if( !cliente_id || !clients?.has( Number.parseInt(cliente_id) ) ) {
     throw new Error("Fail get request")
   }
   const clientId = Number.parseInt(cliente_id)
-  const { owner: { id: ownerId }, ...items } = clients?.get(clientId) ?? {} as TClientDB
+
+  const { owner: { id: ownerId }, ...items } = clients?.get(clientId) ?? {} as TClIENT_DB
   return HttpResponse.json<TClientList>({ ...items, owner_id: ownerId }) 
 } )
 
-const deleteClientId = http.delete( import.meta.env.VITE_API + '/clientes/delete/:cliente_id', async ( { params } ) => {
+const deleteClientById = http.delete( import.meta.env.VITE_API + '/clientes/delete/:cliente_id', async ( { params } ) => {
   const { cliente_id } = params as { cliente_id: string }
   if( !cliente_id || !clients?.has( Number.parseInt(cliente_id) ) ) {
     throw new Error("Fail delete request")
   }
   const clientId = Number.parseInt(cliente_id)
-  const deleteClient = clients?.get( clientId ) ?? {} as TClientDB
+  const deleteClient = clients?.get( clientId ) ?? {} as TClIENT_DB
+  clients?.delete( clientId )
+
   const { owner: { id: ownerId }, ...items } = deleteClient
   return HttpResponse.json<TClientList>({ ...items, owner_id: ownerId }) 
 })
 
 export default [
-  listClient,
+  allClients,
   createClient,
   updateClientById,
-  clientById,
-  deleteClientId
+  getClientById,
+  deleteClientById
 ]

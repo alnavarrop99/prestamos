@@ -12,12 +12,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { getCreditIdRes, type TCredit } from "@/api/credit";
+import { getCreditById, type TCredit } from "@/api/credit";
 import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
   component: DeleteCreditById,
-  loader: getCreditIdRes
+  loader: getCreditById
 })
 
 /* eslint-disable-next-line */

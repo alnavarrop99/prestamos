@@ -12,7 +12,7 @@ import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
 import { Checkbox } from '@/components/ui/checkbox'
 import { type TPayment } from "@/api/payment";
-import { getCreditIdRes, type TCredit } from '@/api/credit'
+import { getCreditById, type TCredit } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { useStatus } from '@/lib/context/layout'
@@ -20,7 +20,7 @@ import { useNotifications } from '@/lib/context/notification'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
   component: PayCreditById,
-  loader: getCreditIdRes
+  loader: getCreditById
 })
 
 /* eslint-disable-next-line */

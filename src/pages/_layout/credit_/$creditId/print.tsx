@@ -13,14 +13,14 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import styles from "@/styles/global.module.css"
-import { type TCredit, getCreditIdRes } from '@/api/credit'
+import { type TCredit, getCreditById } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { useNavigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
   component: PrintCreditById,
-  loader: getCreditIdRes
+  loader: getCreditById
 })
 
 /* eslint-disable-next-line */

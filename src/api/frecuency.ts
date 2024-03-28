@@ -11,7 +11,7 @@ type TGetFrecuencyId = (params: { frecuencyId: number }) => TFrecuency
 type TGetFrecuencyName = (params: { frecuencyName: TFrecuencyType }) => TFrecuency
 type TGetFrecuencys = () => TFrecuency[]
 
-export const getRolId: TGetFrecuencyId = ({ frecuencyId }) => getId( frecuency, { id: frecuencyId } )
-export const getRolName: TGetFrecuencyName = ({ frecuencyName, }) => (frecuency?.find( ({ nombre }) => (nombre === frecuencyName)) ?? frecuency?.[0]) as TFrecuency
-export const getRols: TGetFrecuencys = () => gets( frecuency )
+export const getFrecuencyById: TGetFrecuencyId = ({ frecuencyId }) => getId( frecuency, { id: frecuencyId } )
+export const getFrecuencyByName: TGetFrecuencyName = ({ frecuencyName, }) => (frecuency?.find( ({ nombre }) => (nombre === frecuencyName)) ?? frecuency?.[0]) as TFrecuency
+export const getFrecuency: TGetFrecuencys = () => gets( frecuency )
 

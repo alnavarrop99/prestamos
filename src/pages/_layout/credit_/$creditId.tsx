@@ -5,7 +5,7 @@ import {
   createFileRoute,
   useNavigate,
 } from '@tanstack/react-router'
-import { type TCredit, getCreditIdRes } from '@/api/credit'
+import { type TCredit, getCreditById } from '@/api/credit'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -27,7 +27,7 @@ import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
   component: CreditById,
-  loader: getCreditIdRes,
+  loader: getCreditById,
 })
 
 /* eslint-disable-next-line */

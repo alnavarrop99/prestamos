@@ -4,7 +4,7 @@ import { Dialog } from '@radix-ui/react-dialog'
 import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { createContext, useRef, useState } from 'react'
 import { Switch } from '@/components/ui/switch'
-import { type TCredit, getCreditIdRes } from '@/api/credit'
+import { type TCredit, getCreditById } from '@/api/credit'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@radix-ui/react-label'
 import { Input } from '@/components/ui/input'
@@ -24,7 +24,7 @@ import { format } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,
-  loader: getCreditIdRes
+  loader: getCreditById
 })
 
 /* eslint-disable-next-line */

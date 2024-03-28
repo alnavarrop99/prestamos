@@ -30,14 +30,14 @@ import {
   Info,
 } from 'lucide-react'
 import { createContext, useMemo, useState } from 'react'
-import { getCreditsRes, type TCredit } from '@/api/credit'
+import { getCredits, type TCredit } from '@/api/credit'
 import { useStatus } from '@/lib/context/layout'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { format } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
-  loader: getCreditsRes,
+  loader: getCredits,
 })
 
 /* eslint-disable-next-line */
