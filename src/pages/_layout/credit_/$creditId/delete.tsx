@@ -12,12 +12,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { getCreditById, type TCREDIT_GET } from "@/api/credit";
+import { type TCREDIT_GET_ALL, type TCREDIT_GET } from "@/api/credit";
 import { useNotifications } from '@/lib/context/notification'
+import { useContextCredit } from '@/pages/_layout/credit_/-hook'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
   component: DeleteCreditById,
-  loader: getCreditById
 })
 
 /* eslint-disable-next-line */
@@ -28,10 +28,10 @@ interface TDeleteCreditByIdProps {
 /* eslint-disable-next-line */
 export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDeleteCreditByIdProps) {
   const [checked, setChecked] = useState(false)
-  const credit = Route.useLoaderData() ?? _credit
   const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
+  const { creditById = _credit, creditsAll = [] as TCREDIT_GET_ALL, setCreditsAll } = useContextCredit()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -39,7 +39,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
 
   const onSubmit: React.FormEventHandler = (ev) => {
     const description = text.notification.decription({
-      username: credit?.nombre_del_cliente,
+      username: creditById?.nombre_del_cliente,
     })
 
     const action = (credit?: TCREDIT_GET) => () => {
@@ -51,12 +51,14 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
       })
     }
 
-    const timer = setTimeout(action(credit), 6 * 1000)
+    const timer = setTimeout(action(creditById), 6 * 1000)
     setOpen({open: !open})
-    navigate({to: "../"})
+    navigate({to: "../../"})
+    setCreditsAll( creditsAll?.filter( ({ id }) => id !== creditById?.id ) )
 
     const onClick = () => {
       clearTimeout(timer)
+      setCreditsAll(creditsAll)
     }
 
     if (true) {
@@ -88,7 +90,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
               {text.alert.description({ 
-                username: credit?.nombre_del_cliente 
+                username: creditById?.nombre_del_cliente 
               })}
             </AlertDescription>
           </Alert>

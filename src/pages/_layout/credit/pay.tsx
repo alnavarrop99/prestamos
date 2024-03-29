@@ -56,8 +56,8 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
     const action =
       ({ ...props }: Record<keyof TPAYMENT_GET, string>) =>
       () => {
-        console.table(props)
-        console.table(credit)
+      console.table(props)
+      console.table(credit)
       setNotification({
           date: new Date(),
           action: "POST",

@@ -40,6 +40,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TP
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
 
+
   const onValueChange = ( value: string ) => {
     setOpt(value as TOptState)
   }

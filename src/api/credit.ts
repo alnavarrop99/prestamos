@@ -13,7 +13,7 @@ export interface TCREDIT_BASE {
   frecuencia_del_credito_id: number
   dias_adicionales: number
   tipo_de_mora_id: number
-  valor_de_mora: number
+  valor_de_mora?: number
   owner_id: number
 }
 
@@ -39,7 +39,7 @@ export interface TCUOTES {
   fecha_de_aplicacion_de_mora?: Date
   valor_pagado: number
   valor_de_cuota: number,
-  valor_de_mora: number,
+  valor_de_mora?: number,
   pagada: boolean,
   credito_id: number,
 }
@@ -70,7 +70,7 @@ export interface TCREDIT_GET extends TCREDIT_BASE {
 }
 
 // GET ALL
-export type TCREDIT_GET_ALL = TCREDIT_BASE[]
+export type TCREDIT_GET_ALL = TCREDIT_GET[]
 
 // GET CUOTES
 export type TCREDIT_GET_CUOTES_FOR_PAY = TCREDIT_BASE
@@ -82,10 +82,10 @@ export interface TCREDIT_GET_FILTER {
   nombre_del_cliente: string
   fecha_de_cuota: Date
   valor_de_cuota: number
+  valor_de_mora?: number
   numero_de_cuota: number
   numero_de_cuotas: number
   monto: number
-  valor_de_la_mora: number
   frecuencia: TFRECUENCY
 }
 

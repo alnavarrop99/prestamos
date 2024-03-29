@@ -16,10 +16,12 @@ import styles from "@/styles/global.module.css"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
-import { type  TCREDIT_GET } from '@/api/credit'
+import { type  TCREDIT_GET, TCREDIT_GET_ALL } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { getMoraTypeByName } from '@/api/moraType'
+import { getMoraTypeById, getMoraTypeByName } from '@/api/moraType'
+import { getFrecuency, getFrecuencyById, getFrecuencyByName } from '@/api/frecuency'
+import { useContextCredit } from '@/pages/_layout/credit_/-hook'
 
 type TSearch = {
   clientId: number
@@ -56,13 +58,14 @@ const initialCuotes: TCuotesState = {
 /* eslint-disable-next-line */
 export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
-  const clients = Route.useLoaderData() ?? _clients
+  const clientsDB = Route.useLoaderData() ?? _clients
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
   const { clientId } = Route.useSearch()
+  const { creditsAll = [] as TCREDIT_GET_ALL, setCreditsAll } = useContextCredit()
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
     const { checked, value } = ev.target as { checked: boolean, value: TCuoteStateType }
@@ -82,15 +85,15 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof TClient, string>
+    ) as Record<keyof TCREDIT_GET, string>
 
-    const { nombres: firstName, apellidos: lastName } = items
+    const { nombre_del_cliente } = items
     const description = text.notification.decription({
-      username: firstName + ' ' + lastName,
+      username: nombre_del_cliente,
     })
 
     const action =
-      ({ ...props }: Record<keyof TClient, string>) =>
+      ({ ...props }: Record<keyof TCREDIT_GET, string>) =>
       () => {
         console.table(props)
         setNotification({
@@ -103,9 +106,44 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
     navigate({to: "../"})
+    setCreditsAll( [ ...creditsAll, { 
+      owner_id: +items?.owner_id,
+      frecuencia_del_credito: {
+        id: getFrecuencyById( { frecuencyId: +items?.frecuencia_del_credito_id } )?.id,
+        tipo_enumerador_id: getFrecuencyById( { frecuencyId: +items?.frecuencia_del_credito_id } )?.id,
+        nombre: getFrecuencyById( { frecuencyId: +items?.frecuencia_del_credito_id } )?.nombre
+      },
+      id: creditsAll?.length + 1,
+      frecuencia_del_credito_id: getFrecuencyById( { frecuencyId: +items?.frecuencia_del_credito_id } )?.id,
+      valor_de_cuota: +items?.valor_de_cuota,
+      valor_de_mora: +items?.valor_de_mora,
+      numero_de_cuotas: +items?.numero_de_cuotas,
+      monto: +items?.monto,
+      estado: 1,
+      pagos: [],
+      cuotas: [],
+      comentario: items?.comentario,
+      
+      tipo_de_mora_id: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora })?.id,
+      tipo_de_mora: {
+        id: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora })?.id,
+        nombre: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora })?.nombre,
+        tipo_enumerador_id: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora })?.id,
+      },
+      fecha_de_cuota: new Date(),
+      numero_de_cuota: +items?.numero_de_cuota,
+      tasa_de_interes: +items?.tasa_de_interes,
+      dias_adicionales: +items?.dias_adicionales,
+      nombre_del_cliente: items?.nombre_del_cliente,
+      fecha_de_aprobacion: new Date( items?.fecha_de_aprobacion ),
+      // TODO: 
+      cobrador_id: +items?.cobrador_id,
+      garante_id: +items?.garante_id,
+    } ])
 
     const onClick = () => {
       clearTimeout(timer)
+      setCreditsAll(creditsAll)
     }
 
     if ( true) {
@@ -233,13 +271,13 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
           <Select 
             required
             name={'frecuencia_del_credito_id' as keyof TCREDIT_GET}
-            defaultValue={text.form.frecuency.items?.[0]}
+            defaultValue={""+getFrecuencyByName({ frecuencyName: "Mensual" })?.id}
           >
             <SelectTrigger className="w-full ring-1 ring-ring">
               <SelectValue placeholder={text.form.frecuency.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { text.form.frecuency.items.map( ( item ) => <SelectItem key={item} value={item}>{item}</SelectItem> ) }
+              { getFrecuency().map( ( { id, nombre } ) => <SelectItem key={id} value={""+id}>{nombre}</SelectItem> ) }
             </SelectContent>
           </Select>
         </Label>

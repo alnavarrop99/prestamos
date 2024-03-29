@@ -1,6 +1,5 @@
 import {
   Link,
-  Match,
   Navigate,
   Outlet,
   createFileRoute,
@@ -25,6 +24,9 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { CircleDollarSign as Pay } from 'lucide-react'
 import { format } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
+import { useEffect } from 'react'
+import { useContextCredit } from '@/pages/_layout/credit_/-hook'
+import { getFrecuencyById } from '@/api/frecuency'
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
   component: CreditById,
@@ -43,9 +45,15 @@ export function CreditById({
   open: _open,
   credit: _credit = {} as TCREDIT_GET,
 }: React.PropsWithChildren<TCreditByIdProps>) {
-  const credit = Route.useLoaderData() ?? _credit
+  const creditDB = Route.useLoaderData() ?? _credit
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
+  const { creditById, setCreditById } = useContextCredit()
+  useEffect( () => {
+    if(!creditById){
+      setCreditById(creditDB) 
+    }
+  }, [creditDB])
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
@@ -53,6 +61,8 @@ export function CreditById({
     }
     setOpen({ open })
   }
+
+  if( !creditById ) return <></>;
 
   return (
     <>
@@ -102,65 +112,65 @@ export function CreditById({
             <b>{text.details.status}:</b>{' '}
             <Switch
               className={clsx({ 'cursor-not-allowed': true })}
-              checked={!!credit?.estado}
+              checked={!!creditById?.estado}
             >
-              {credit?.estado}
+              {creditById?.estado}
             </Switch>
           </div>
           <div>
             {' '}
-            <b>{text.details.name}:</b> { credit?.nombre_del_cliente + "." }
+            <b>{text.details.name}:</b> { creditById?.nombre_del_cliente + "." }
           </div>
           <div>
             {' '}
-            <b>{text.details.amount}:</b> {'$' + credit?.monto + '.'}
+            <b>{text.details.amount}:</b> {'$' + Math.round(creditById?.monto) + '.'}
           </div>
           <div>
             {' '}
             <b>{text.details.cuote}:</b>{' '}
-            {'$' + credit?.valor_de_cuota + '.'}
+            {'$' + creditById?.valor_de_cuota + '.'}
           </div>
           <div>
             {' '}
-            <b>{text.details.interest}:</b> {Math.round(credit?.tasa_de_interes * 100) + '%'}
+            <b>{text.details.interest}:</b> {Math.round(creditById?.tasa_de_interes * 100) + '%'}
           </div>
           <div>
             {' '}
             <b>{text.details.pay}:</b>{' '}
-            {credit.pagos?.length + '/' + credit.numero_de_cuotas + '.'}
+            {creditById.pagos?.length + '/' + creditById.numero_de_cuotas + '.'}
           </div>
           <div>
             {' '}
             <b>{text.details.frecuency}:</b>{' '}
-            {credit?.frecuencia_del_credito?.nombre + '.'}
+            {getFrecuencyById({ frecuencyId: creditById?.frecuencia_del_credito_id })?.nombre  + '.'}
           </div>
           <div>
             {' '}
             <b>{text.details.date}:</b>{' '}
-            {credit?.fecha_de_aprobacion
-              ? format(credit?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'
+            {creditById?.fecha_de_aprobacion
+              ? format(creditById?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'
               : null}
           </div>
           <div>
             {' '}
-            <b>{text.details.comment}:</b> {credit?.comentario}
+            <b>{text.details.comment}:</b> {creditById?.comentario}
           </div>
-          <div>
+          { creditById?.valor_de_mora && <div>
             {' '}
             <b>{text.details.installmants}:</b>{' '}
-            {'$' + credit?.valor_de_mora + '.'}
-          </div>
+            {'$' + Math.round(creditById?.valor_de_mora) + '.'}
+          </div>}
           <div>
             {' '}
             <b>{text.details.aditionalsDays}:</b>{' '}
-            {credit?.dias_adicionales + '.'}
+            {creditById?.dias_adicionales + '.'}
           </div>
         </div>
         <Separator />
-        {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
+        {!!creditById?.cuotas?.length && !!creditById?.pagos?.length && (
           <h2 className="text-2xl font-bold"> {text.cuotes.title} </h2>
         )}
-        {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
+        {!!creditById?.cuotas?.length && !!creditById?.pagos?.length && (
           <Table className="w-full px-4 py-2">
             <TableHeader className='bg-muted'>
               <TableRow>
@@ -174,7 +184,7 @@ export function CreditById({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {credit?.cuotas.map((cuota) => (
+              {creditById?.cuotas.map((cuota) => (
                 <TableRow key={cuota?.id}>
                   <TableCell>
                     {' '}
@@ -189,12 +199,12 @@ export function CreditById({
                   <TableCell>
                     {' '}
                     <b>$</b>
-                    {cuota?.valor_pagado?.toFixed(2)}{' '}
+                    {Math.round(cuota?.valor_pagado)}{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
                     <b>$</b>
-                    {cuota?.valor_de_cuota?.toFixed(2)}{' '}
+                    {Math.round(cuota?.valor_de_cuota)}{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
@@ -205,7 +215,7 @@ export function CreditById({
                   <TableCell>
                     {' '}
                     <b>$</b>
-                    {cuota?.valor_de_mora}{' '}
+                    {cuota?.valor_de_mora ? Math.round(cuota.valor_de_mora) : "-"}{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
@@ -223,14 +233,14 @@ export function CreditById({
                   {text.cuotes.total}:
                 </TableCell>
                 <TableCell colSpan={2} className="text-right">
-                  <GetPay credit={credit} />
+                  <GetPay credit={creditById} />
                 </TableCell>
               </TableRow>
             </TableFooter>
           </Table>
         )}
       </div>
-    </>
+      </>
   )
 }
 
@@ -242,13 +252,12 @@ function GetPay({ credit }: { credit: TCREDIT_GET }) {
   return (
     <>
       <b>$</b>
-      {credit.cuotas
+      {Math.round(credit.cuotas
         .map((pay) => pay?.valor_pagado)
-        .reduce((prev, acc) => (acc += prev))
-        .toFixed(2)}
+        .reduce((prev, acc) => (acc += prev)))}
       <b>&#8193;/&#8193;</b>
       <b>$</b>
-      {credit?.monto}
+      {Math.round(credit?.monto)}
     </>
   )
 }

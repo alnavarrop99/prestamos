@@ -12,10 +12,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle  } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { _creditUpdate } from "@/pages/_layout/credit_/$creditId_/update";
 import { type TCREDIT_GET } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useNavigate } from '@tanstack/react-router'
+import { useContextCredit } from '@/pages/_layout/credit_/-hook'
+import { _creditChangeContext } from './update'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')({
   component: UpdateConfirmationCredit,
@@ -29,7 +30,8 @@ interface TUpdateConfirmationCreditProps {
 /* eslint-disable-next-line */
 export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }: TUpdateConfirmationCreditProps) {
   const [checked, setChecked] = useState(false)
-  const credit = useContext(_creditUpdate) ?? _credit
+  const { creditById = _credit, setCreditById } = useContextCredit()
+  const [ creditChange ] = useContext(_creditChangeContext) ?? [ _credit ]
   const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
@@ -40,7 +42,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
 
   const onSubmit: React.FormEventHandler = (ev) => {
     const description = text.notification.decription({
-      username: credit?.nombre_del_cliente,
+      username: creditById?.nombre_del_cliente,
     })
 
     const action = (credit?: TCREDIT_GET) => () => {
@@ -52,9 +54,11 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
         })
     }
 
-    const timer = setTimeout(action(credit), 6 * 1000)
+    const timer = setTimeout(action(creditById), 6 * 1000)
     setOpen({open: !open})
     navigate({to: "../"})
+    setCreditById(creditChange)
+    console.log(creditChange)
 
     const onClick = () => {
       clearTimeout(timer)
@@ -89,7 +93,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
               {text.alert.description({ 
-                username: credit?.nombre_del_cliente 
+                username: creditById?.nombre_del_cliente 
               })}
             </AlertDescription>
           </Alert>

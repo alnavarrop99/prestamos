@@ -26,13 +26,14 @@ import {
   CircleDollarSign as Pay,
   Info,
 } from 'lucide-react'
-import { createContext, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import { getCreditsFilter, type TCREDIT_GET_FILTER_ALL, type TCREDIT_GET_FILTER } from '@/api/credit'
 import { useStatus } from '@/lib/context/layout'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { format } from 'date-fns'
 import { Progress } from '@/components/ui/progress'
 import styles from "@/styles/global.module.css";
+import { useContextCredit } from '@/pages/_layout/credit_/-hook'
 
 export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
@@ -53,10 +54,16 @@ export function Credits({
   open: _open,
   credits: _credits = [] as TCREDIT_GET_FILTER[],
 }: React.PropsWithChildren<TCreditsProps>) {
-  const credits = Route.useLoaderData() ?? _credits
-  const [credit, setCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
+  const creditsDB = Route.useLoaderData() ?? _credits
+  const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
+  const { creditsFilter, setCreditsFilter } = useContextCredit()
+  useEffect(() => {
+    if(!creditsFilter){
+      setCreditsFilter( creditsDB )
+    }
+  }, [])
 
   const onClick: ({
     creditId,
@@ -65,8 +72,9 @@ export function Credits({
   }) => React.MouseEventHandler<React.ComponentRef<typeof Button>> =
     ({ creditId }) =>
     () => {
+      if(!creditsFilter) return;
       setOpen({ open: !open })
-      setCredit(credits.find(({ id }) => id === creditId))
+      setSelectedCredit(creditsFilter.find(({ id }) => id === creditId))
     }
 
   const onOpenChange = (open: boolean) => {
@@ -81,7 +89,7 @@ export function Credits({
   }
 
   return (
-    <_creditSelected.Provider value={credit}>
+    <_creditSelected.Provider value={selectedCredit}>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Label htmlFor="acitve-credits" className="cursor-pointer">
@@ -90,7 +98,7 @@ export function Credits({
             </h1>
           </Label>
           <Badge className="px-3 text-xl">
-            {credits?.length}
+            {creditsFilter?.length}
           </Badge>
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
@@ -104,13 +112,13 @@ export function Credits({
         <Separator />
         <div
           className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5', {
-            '[&>*]:basis-1/4': !!credits?.length && credits?.length > 15})}
+            '[&>*]:basis-1/4': !!creditsFilter?.length && creditsFilter?.length > 15})}
         >
-          {credits?.map( ({
+          {creditsFilter?.map( ({
             id,
             cliente_id,
             frecuencia,
-            valor_de_la_mora,
+            valor_de_mora,
             numero_de_cuota,
             numero_de_cuotas,
             valor_de_cuota,
@@ -118,7 +126,7 @@ export function Credits({
             fecha_de_cuota,
             monto
           }) => {
-                const status: 'warn' | 'info' | undefined = valor_de_la_mora > 0
+                const status: 'warn' | 'info' | undefined = valor_de_mora && valor_de_mora > 0
                   ? 'warn'
                   : undefined
 
@@ -218,7 +226,7 @@ export function Credits({
                           />
                           <span>
                             <b>$</b>
-                            {(monto).toFixed(2)}
+                            {Math.round(monto)}
                           </span>
                         </div>
                         <ul className="list-inside list-disc">
@@ -228,11 +236,11 @@ export function Credits({
                           </li>
                           <li>
                             <b> {text.details.cuote} </b>: <b>$</b>
-                            {valor_de_cuota.toFixed(2)}.
+                            {Math.round(valor_de_cuota)}.
                           </li>
-                          {valor_de_la_mora > 0 && <li>
+                           {valor_de_mora && valor_de_mora > 0 && <li>
                             <b> {text.details.mora} </b>:
-                            <b>$</b>{valor_de_la_mora}.
+                            <b>$</b>{Math.round(valor_de_mora)}.
                           </li>}
                           <li>
                             <b> {text.details.frecuency} </b>:
@@ -241,7 +249,7 @@ export function Credits({
                         </ul>
                       </CardContent>
                       <CardFooter className="flex items-center gap-2">
-                        <Badge> {format(fecha_de_cuota, "dd-MM-yyyy")} </Badge>
+                        <Badge> {format(fecha_de_cuota?.toString(), "dd-MM-yyyy")} </Badge>
                         <Dialog open={open} onOpenChange={onOpenChange}>
                           <DialogTrigger asChild className="ms-auto" >
                             <Link

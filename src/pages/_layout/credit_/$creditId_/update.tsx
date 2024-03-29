@@ -2,9 +2,9 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Dialog } from '@radix-ui/react-dialog'
 import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
-import { createContext, useMemo, useRef, useState } from 'react'
+import {createContext, useMemo, useRef, useState } from 'react'
 import { Switch } from '@/components/ui/switch'
-import { type TCREDIT_GET, getCreditById, TCUOTES } from '@/api/credit'
+import { type TCREDIT_GET, type TCUOTES } from '@/api/credit'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@radix-ui/react-label'
 import { Input } from '@/components/ui/input'
@@ -19,10 +19,11 @@ import { useStatus } from '@/lib/context/layout'
 import { Navigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { getMoraTypeById, getMoraTypeByName } from '@/api/moraType'
+import { useContextCredit } from '@/pages/_layout/credit_/-hook'
+import { getFrecuency } from '@/api/frecuency'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,
-  loader: getCreditById
 })
 
 /* eslint-disable-next-line */
@@ -37,20 +38,24 @@ interface TCuotesState {
   type: "value" | "porcentage"
 }
 
-export const _creditUpdate = createContext<TCREDIT_GET | undefined>(undefined)
-
 const initialCuotes: TCuotesState = {
   type: "porcentage" 
 }
 
+export const _creditChangeContext = createContext<[TCREDIT_GET] | undefined>(undefined)
+
 /* eslint-disable-next-line */
 export function UpdateCreditById( { children, open: _open, credit: _credit = {} as TCREDIT_GET }: React.PropsWithChildren<TUpdateCreditProps> ) {
-  const creditDB = Route.useLoaderData() ?? _credit
-  const [credit, setCredit] = useState(creditDB)
+  const { creditById = _credit } = useContextCredit()
+  const [ creditChange, setCreditChange ] = useState(creditById)
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
-  const form = (credit?.pagos ?? []).map( () => useRef<HTMLFormElement>(null) ) 
+  const form = (creditById?.pagos ?? []).map( () => useRef<HTMLFormElement>(null)) 
+
+  const active = useMemo(() =>
+    Object.values(creditById).flat().every( ( value, i ) => value === Object.values(creditChange).flat()?.[i]
+  ), [ ...Object.values(creditChange)?.flat() ])
 
   const onOpenChange = (open: boolean) => {
     if(open){
@@ -60,7 +65,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
   }
 
   const onChangeStatus = ( checked: boolean ) => {
-    setCredit({ ...credit, estado: checked ? 1 : 0 })
+    setCreditChange({ ...creditChange, estado: checked ? 1 : 0 })
   }
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
@@ -74,13 +79,13 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
     const { value, name }: {name?: string, value?: string} = ev.target
     if( !name || !value ) return;
 
-    setCredit( { ...credit, [ name as keyof TCREDIT_GET ]: value } )
+    setCreditChange( { ...creditChange, [ name as keyof TCREDIT_GET ]: value } )
   }
 
   const onChangeCuoteById: ( params :{ cuoteId?: number } ) => React.ChangeEventHandler<HTMLFormElement> = ({ cuoteId }) => (ev) => {
     const { value, name }: {name?: string, value?: string} = ev.target
-    const { cuotas, pagos } = credit
-    if(!credit || !value || !name || !pagos) return;
+    const { cuotas, pagos } = creditById
+    if(!creditById || !value || !name || !pagos) return;
 
     const cuotes = cuotas?.map( ( item ) => {
       if( item?.id === cuoteId ) {
@@ -92,7 +97,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
       return ({...items, valor_del_pago: cuotes?.[i]?.valor_pagado ?? items?.valor_del_pago, fecha_de_pago: cuotes?.[i]?.fecha_de_pago ?? items?.fecha_de_pago })
     })
 
-    setCredit({ ...credit, pagos: payments, cuotas: cuotes })
+    setCreditChange({ ...creditChange, pagos: payments, cuotas: cuotes })
   }
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
@@ -120,12 +125,8 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
     ev.preventDefault()
   }
 
-  const active = useMemo(() =>
-    Object.values(creditDB).flat().every( ( value, i ) => value === Object.values(credit).flat()?.[i]
-  ), [ ...Object.values(credit)?.flat() ])
-
   return (
-    <_creditUpdate.Provider value={credit}>
+    <_creditChangeContext.Provider value={[creditChange]}>
       <Navigate to={Route.to} />
       <div className='space-y-4'>
         <div className='flex gap-2'>
@@ -152,7 +153,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               <CardTitle className='text-2xl font-bold'>
                 {text.form.details.title}
               </CardTitle>
-              <Switch checked={!!credit.estado} onCheckedChange={onChangeStatus} />
+              <Switch checked={!!creditById.estado} onCheckedChange={onChangeStatus} />
              </div>
           </CardHeader>
           <CardContent >
@@ -169,7 +170,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                   type="text"
                   placeholder={text.form.details.clients.placeholder}
                   list='credit-clients'
-                  defaultValue={credit?.nombre_del_cliente}
+                  defaultValue={creditById?.nombre_del_cliente}
                 />
                 <datalist id='credit-clients' >
                   {/*clients?.map( ( { nombres, apellidos, id } ) => <option key={id} value={[nombres, apellidos].join(" ")} />  )*/}
@@ -180,7 +181,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                <DatePicker 
                   required
                   name={'fecha_de_aprobacion' as keyof TCREDIT_GET}
-                  date={new Date(credit.fecha_de_aprobacion)} 
+                  date={new Date(creditById.fecha_de_aprobacion)} 
                   label={text.form.details.date.placeholder} />
              </Label>
               <Label className='!col-span-1'>
@@ -189,7 +190,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                   required
                   name={'garante_id' as keyof TCREDIT_GET}
                   type="text"
-                  defaultValue={credit?.garante_id}
+                  defaultValue={creditById?.garante_id}
                   placeholder={text.form.details.ref.placeholder}
                 />
             </Label>
@@ -204,7 +205,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               step={50}
               name={'monto' as keyof TCREDIT_GET}
               type="number"
-              defaultValue={credit.monto}
+              defaultValue={creditById.monto}
               placeholder={text.form.details.amount.placeholder}
             />
           </Label>
@@ -219,7 +220,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               max={100}
               step={1}
               name={'tasa_de_interes' as keyof TCREDIT_GET}
-              defaultValue={Math.round(credit.tasa_de_interes * 100)}
+              defaultValue={Math.round(creditById.tasa_de_interes * 100)}
               type="number"
               placeholder={text.form.details.interest.placeholder}
             />
@@ -235,7 +236,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               max={25}
               step={1}
               name={'numero_de_cuotas' as keyof TCREDIT_GET}
-              defaultValue={credit.numero_de_cuotas}
+              defaultValue={creditById.numero_de_cuotas}
               type="number"
               placeholder={text.form.details.cuotes.label}
             />
@@ -245,13 +246,13 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
             <Select
               required
               name={'frecuencia_del_credito_id' as keyof TCREDIT_GET}
-              defaultValue={credit?.frecuencia_del_credito.nombre}
+              defaultValue={""+creditById?.frecuencia_del_credito_id}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={text.form.details.frecuency.placeholder} />
               </SelectTrigger>
               <SelectContent className='[&_*]:cursor-pointer'>
-                { text.form.details.frecuency.items.map( ( item ) => <SelectItem key={item} value={item}>{item}</SelectItem> ) }
+              { getFrecuency().map( ( { id, nombre } ) => <SelectItem key={id} value={""+id}>{nombre}</SelectItem> ) }
               </SelectContent>
             </Select>
         </Label>
@@ -260,7 +261,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
             <Input
               required
               name={'cobrador_id' as keyof TCREDIT_GET}
-              value={credit?.cobrador_id}
+              value={creditById?.cobrador_id}
               type="text"
               placeholder={text.form.details.users.placeholder}
               list='credit-user'
@@ -272,7 +273,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
           <Label htmlFor='credit-installments' className='row-start-4'>
             <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
               <span>{ text.form.details.installmants.label }</span>
-              <RadioGroup name={'tipo_de_mora_id' as keyof TCREDIT_GET} defaultValue={ ""+getMoraTypeById({ moraTypeId: credit.tipo_de_mora_id })?.id } onChange={onChangeType} >
+              <RadioGroup name={'tipo_de_mora_id' as keyof TCREDIT_GET} defaultValue={ ""+getMoraTypeById({ moraTypeId: creditById?.tipo_de_mora_id })?.id } onChange={onChangeType} >
                 <Label><RadioGroupItem value={''+getMoraTypeByName({ moraTypeName: "valor" })?.id} /> <Badge>$</Badge> </Label>
                 <Label><RadioGroupItem value={''+getMoraTypeByName({ moraTypeName: "porcentaje" })?.id} /> <Badge>%</Badge> </Label>
               </RadioGroup>
@@ -285,7 +286,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               step={installmants?.type === "porcentage" ? 1 : 50}
               name={'tipo_de_mora_id' as keyof TCREDIT_GET}
               type="number"
-              defaultValue={credit?.valor_de_mora}
+              defaultValue={creditById?.valor_de_mora}
               placeholder={text.form.details.installmants.label}
             />
         </Label>
@@ -295,7 +296,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               max={25}
               type='number'
               name={'dias_adicionales' as keyof TCREDIT_GET} 
-              defaultValue={credit.dias_adicionales} 
+              defaultValue={creditById.dias_adicionales} 
               placeholder={text.form.details.aditionalsDays.placeholder} 
             />
           </Label>
@@ -305,13 +306,13 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               rows={5} 
               placeholder={text.form.details.comment.placeholder} 
             >
-              { credit.comentario }
+              { creditById.comentario }
           </Textarea>
           </Label>
             </form>
           </CardContent>
         </Card>
-        { credit?.pagos?.length && credit?.cuotas?.length && <Card className='shadow-lg hover:shadow-xl transition delay-150 duration-400'> 
+        { creditById?.pagos?.length && creditById?.cuotas?.length && <Card className='shadow-lg hover:shadow-xl transition delay-150 duration-400'> 
           <CardHeader>
             <CardTitle className='text-2xl font-bold'>
               {text.form.pay.title}
@@ -319,7 +320,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
           </CardHeader>
           <CardContent>
             <Accordion type='multiple'>
-              {credit?.cuotas.slice(0, credit?.pagos?.length+1)?.map(( cuote, i ) =>
+              {creditById?.cuotas.slice(0, creditById?.pagos?.length+1)?.map(( cuote, i ) =>
                 <AccordionItem
                   key={cuote?.id}
                   value={cuote?.id?.toString() ?? ""}
@@ -375,7 +376,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                         name={"comentario" as keyof TCUOTES}
                         rows={3}
                         placeholder={text.form.pay.comment.placeholder}>
-                        { credit.comentario }
+                        { creditById.comentario }
                       </Textarea> 
                     </Label>
                     </form>
@@ -386,7 +387,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
           </CardContent>
         </Card>}
       </div>
-      </_creditUpdate.Provider>
+    </_creditChangeContext.Provider>
   )
 }
 
