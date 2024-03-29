@@ -51,7 +51,7 @@ type TPatchPaymentById = ( params: { params: { paymentId: number, updatePayment:
 
 // FUNCTION DEFINITIONS
 export const getPaymentById: TGetPaymentById = async ({ params: { paymentId } }) => {
-  const payment = await fetch("/pagos/by_id/" + paymentId, {
+  const payment = await fetch(import.meta.env.VITE_API + "/pagos/by_id/" + paymentId, {
     method: "GET",
   })
   return payment.json()
@@ -65,7 +65,7 @@ export const getPayments: TGetPayments = async () => {
 }
 
 export const postPaymentId: TPostPaymentById = async (newPayment) => {
-  const payment = await fetch("/pagos/create", {
+  const payment = await fetch(import.meta.env.VITE_API + "/pagos/create", {
     method: "POST",
     body: JSON.stringify(newPayment)
   })
@@ -73,7 +73,7 @@ export const postPaymentId: TPostPaymentById = async (newPayment) => {
 }
 
 export const potchPaymentById: TPatchPaymentById = async ({ params: { paymentId, updatePayment } }) => {
-  const payment = await fetch("/pagos/" + paymentId, {
+  const payment = await fetch(import.meta.env.VITE_API + "/pagos/" + paymentId, {
     method: "PATCH",
     body: JSON.stringify(updatePayment)
   })
@@ -81,7 +81,7 @@ export const potchPaymentById: TPatchPaymentById = async ({ params: { paymentId,
 }
 
 export const deletePaymentById: TDeletePaymentById = async ({ params: { paymentId } }) => {
-  const payment = await fetch("/pagos/delete/" + paymentId, {
+  const payment = await fetch(import.meta.env.VITE_API + "/pagos/delete/" + paymentId, {
     method: "DELETE",
   })
   return payment.json()

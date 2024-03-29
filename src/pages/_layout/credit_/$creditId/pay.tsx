@@ -11,12 +11,14 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
 import { Checkbox } from '@/components/ui/checkbox'
-import { type TPAYMENT_GET } from "@/api/payment";
+import { postPaymentId, type TPAYMENT_GET } from "@/api/payment";
 import { getCreditById, type TCREDIT_GET } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
+import { useMutation } from '@tanstack/react-query'
+import { useContextCredit } from '../-hook'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
   component: PayCreditById,
@@ -36,6 +38,11 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
   const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
+  const { mutate: createPayment } = useMutation({
+    mutationKey: ["create-pay"],
+    mutationFn: postPaymentId,
+  })
+  const { creditsAll = [], setCreditsAll, creditById = _credit } = useContextCredit()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -58,6 +65,12 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
       () => {
         console.table(props)
         console.table(credit)
+        createPayment({
+          valor_del_pago: +props?.valor_del_pago,
+          comentario: props?.comentario,
+          credito_id: credit?.id,
+          fecha_de_pago: new Date( props?.fecha_de_pago )
+      })
         setNotification({
           date: new Date(),
           action: "POST",
@@ -68,9 +81,28 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
     navigate({to: "../"})
+    setCreditsAll(creditsAll?.map( ({ id }, i, list) => {
+      if( id !== credit?.id  ) return list?.[i]
+
+      const newPayment: TPAYMENT_GET = {
+        valor_del_pago: +items?.valor_del_pago,
+        comentario: items?.comentario,
+        credito_id: credit?.id,
+        fecha_de_pago: new Date( items?.fecha_de_pago ),
+        registrado_por_usuario_id: 0,
+        id: (list?.[i]?.pagos?.length ?? 0) + 1,
+      }
+
+      return ({
+        ...list?.[i],
+        pagos: [ ...list?.[i].pagos ?? [], newPayment ]
+      })
+
+    } ))
 
     const onClick = () => {
       clearTimeout(timer)
+      setCreditsAll(creditsAll)
     }
 
     if ( true) {

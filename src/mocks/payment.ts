@@ -29,7 +29,7 @@ const allPayments = http.all(import.meta.env.VITE_API + '/pagos/list', async () 
 
 const createPayment = http.post( import.meta.env.VITE_API + '/pagos/create', async ({ request }) => {
   const newPayment = (await request.json()) as TPAYMENT_POST_BODY
-  const credit = credits.get(newPayment?.credito_id)
+  const credit = _credits.find( ({ id }) => ( id === newPayment?.credito_id ) )
   if( !newPayment || !credit ) {
     throw new Error("Fail post request")
   }

@@ -16,12 +16,13 @@ import styles from "@/styles/global.module.css"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
-import { type  TCREDIT_GET, TCREDIT_GET_ALL } from '@/api/credit'
+import { type  TCREDIT_GET, TCREDIT_GET_ALL, postCredit, TCREDIT_POST } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { getMoraTypeById, getMoraTypeByName } from '@/api/moraType'
 import { getFrecuency, getFrecuencyById, getFrecuencyByName } from '@/api/frecuency'
 import { useContextCredit } from '@/pages/_layout/credit_/-hook'
+import { useMutation } from '@tanstack/react-query'
 
 type TSearch = {
   clientId: number
@@ -58,7 +59,7 @@ const initialCuotes: TCuotesState = {
 /* eslint-disable-next-line */
 export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
-  const clientsDB = Route.useLoaderData() ?? _clients
+  // const clientsDB = Route.useLoaderData() ?? _clients
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { setNotification } = useNotifications()
@@ -66,6 +67,16 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
   const navigate = useNavigate()
   const { clientId } = Route.useSearch()
   const { creditsAll = [] as TCREDIT_GET_ALL, setCreditsAll } = useContextCredit()
+
+  const onSuccess: ( data: TCREDIT_POST ) => unknown = (newCredit) => {
+    setCreditsAll( [ ...creditsAll?.slice(0, -1), { ...(creditsAll?.at(-1) ?? {} as TCREDIT_GET), ...newCredit   }  ] )
+  }
+
+  const { mutate: createCredit } = useMutation({
+    mutationKey: ["create-crdit"],
+    mutationFn: postCredit,
+    onSuccess
+  })
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
     const { checked, value } = ev.target as { checked: boolean, value: TCuoteStateType }
@@ -95,7 +106,20 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
     const action =
       ({ ...props }: Record<keyof TCREDIT_GET, string>) =>
       () => {
-        console.table(props)
+        createCredit({
+          monto: +props?.monto,
+          estado: 1,
+          comentario: props?.comentario,
+          cobrador_id: +props?.cobrador_id,
+          valor_de_mora: +props?.valor_de_mora,
+          tasa_de_interes: +props?.tasa_de_interes,
+          tipo_de_mora_id: +props?.tipo_de_mora_id,
+          dias_adicionales: +props?.dias_adicionales,
+          numero_de_cuotas: +props?.numero_de_cuotas,
+          fecha_de_aprobacion: new Date( +props.fecha_de_aprobacion ),
+          frecuencia_del_credito_id: +props?.frecuencia_del_credito_id,
+          owner_id: +props?.owner_id, 
+        })
         setNotification({
           date: new Date(),
           action: "POST",
@@ -107,13 +131,13 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
     setOpen({ open: !open })
     navigate({to: "../"})
     setCreditsAll( [ ...creditsAll, { 
+      id: creditsAll?.length + 1,
       owner_id: +items?.owner_id,
       frecuencia_del_credito: {
         id: getFrecuencyById( { frecuencyId: +items?.frecuencia_del_credito_id } )?.id,
         tipo_enumerador_id: getFrecuencyById( { frecuencyId: +items?.frecuencia_del_credito_id } )?.id,
         nombre: getFrecuencyById( { frecuencyId: +items?.frecuencia_del_credito_id } )?.nombre
       },
-      id: creditsAll?.length + 1,
       frecuencia_del_credito_id: getFrecuencyById( { frecuencyId: +items?.frecuencia_del_credito_id } )?.id,
       valor_de_cuota: +items?.valor_de_cuota,
       valor_de_mora: +items?.valor_de_mora,
@@ -123,12 +147,11 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
       pagos: [],
       cuotas: [],
       comentario: items?.comentario,
-      
-      tipo_de_mora_id: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora })?.id,
+      tipo_de_mora_id: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora_id })?.id,
       tipo_de_mora: {
-        id: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora })?.id,
-        nombre: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora })?.nombre,
-        tipo_enumerador_id: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora })?.id,
+        id: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora_id })?.id,
+        nombre: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora_id })?.nombre,
+        tipo_enumerador_id: getMoraTypeById({ moraTypeId: +items?.tipo_de_mora_id })?.id,
       },
       fecha_de_cuota: new Date(),
       numero_de_cuota: +items?.numero_de_cuota,
@@ -139,7 +162,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
       // TODO: 
       cobrador_id: +items?.cobrador_id,
       garante_id: +items?.garante_id,
-    } ])
+    }])
 
     const onClick = () => {
       clearTimeout(timer)

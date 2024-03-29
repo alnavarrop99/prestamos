@@ -184,43 +184,43 @@ export function CreditById({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {creditById?.cuotas.map((cuota) => (
-                <TableRow key={cuota?.id}>
+              {creditById?.pagos.map((payment, i) => (
+                <TableRow key={payment?.id}>
                   <TableCell>
                     {' '}
-                    <b>{cuota?.numero_de_cuota}</b>{' '}
+                    <b>{creditById?.cuotas?.[i]?.numero_de_cuota}</b>{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
-                    {cuota?.fecha_de_pago
-                      ? format(cuota?.fecha_de_pago, 'MM-dd-yyyy')
+                    {payment?.fecha_de_pago
+                      ? format(payment?.fecha_de_pago, 'MM-dd-yyyy')
                       : null}{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
                     <b>$</b>
-                    {Math.round(cuota?.valor_pagado)}{' '}
+                    {Math.round(payment?.valor_del_pago)}{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
                     <b>$</b>
-                    {Math.round(cuota?.valor_de_cuota)}{' '}
+                    {Math.round(creditById?.cuotas?.[i]?.valor_de_cuota ?? 0)}{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
-                    {cuota?.fecha_de_aplicacion_de_mora
-                      ? format(cuota?.fecha_de_aplicacion_de_mora, 'MM-dd-yyyy')
+                    {creditById?.cuotas?.[i]?.fecha_de_aplicacion_de_mora
+                      ? format(creditById?.cuotas?.[i]?.fecha_de_aplicacion_de_mora ?? "", 'MM-dd-yyyy')
                       : null}{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
                     <b>$</b>
-                    {cuota?.valor_de_mora ? Math.round(cuota.valor_de_mora) : "-"}{' '}
+                    {creditById?.cuotas?.[i]?.valor_de_mora ? Math.round(creditById?.cuotas?.[i]?.valor_de_mora ?? 0) : "-"}{' '}
                   </TableCell>
                   <TableCell>
                     {' '}
                     <Switch
-                      checked={cuota?.pagada}
+                      checked={creditById?.cuotas?.[i]?.pagada}
                       className={clsx('cursor-not-allowed')}
                     ></Switch>{' '}
                   </TableCell>
