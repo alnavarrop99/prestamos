@@ -74,7 +74,7 @@ export function CreditById({
             <DialogTrigger className="ms-auto" asChild>
               <Link to={'./print'}>
                 <Button variant="ghost" className='hover:ring hover:ring-primary'>
-                  <Printer />{' '}
+                  <Printer />
                 </Button>
               </Link>
             </DialogTrigger>
@@ -84,8 +84,8 @@ export function CreditById({
                   variant="default"
                   className={clsx('bg-green-500 hover:bg-green-700')}
                 >
-                  {' '}
-                  <Pay />{' '}
+                  
+                  <Pay />
                 </Button>
               </Link>
             </DialogTrigger>
@@ -96,8 +96,8 @@ export function CreditById({
             <DialogTrigger asChild>
               <Link to={'./delete'}>
                 <Button variant="default" className="hover:bg-destructive">
-                  {' '}
-                  {text.button.delete}{' '}
+                  
+                  {text.button.delete}
                 </Button>
               </Link>
             </DialogTrigger>
@@ -108,61 +108,61 @@ export function CreditById({
         <h2 className="text-2xl font-bold"> {text.details.title} </h2>
         <div className="flex flex-col gap-2 px-2 [&>div]:flex [&>div]:gap-2">
           <div>
-            {' '}
-            <b>{text.details.status}:</b>{' '}
+            
+            <b>{text.details.status}:</b>
             <Switch
-              className={clsx({ 'cursor-not-allowed': true })}
+              className={'cursor-not-allowed'}
               checked={!!creditById?.estado}
             >
               {creditById?.estado}
             </Switch>
           </div>
           <div>
-            {' '}
+            
             <b>{text.details.name}:</b> { creditById?.nombre_del_cliente + "." }
           </div>
           <div>
-            {' '}
+            
             <b>{text.details.amount}:</b> {'$' + Math.round(creditById?.monto) + '.'}
           </div>
           <div>
-            {' '}
-            <b>{text.details.cuote}:</b>{' '}
-            {'$' + creditById?.valor_de_cuota + '.'}
+            
+            <b>{text.details.cuote}:</b>
+            {'$' + Math.round(creditById?.valor_de_cuota) + '.'}
           </div>
           <div>
-            {' '}
+            
             <b>{text.details.interest}:</b> {Math.round(creditById?.tasa_de_interes * 100) + '%'}
           </div>
           <div>
-            {' '}
-            <b>{text.details.pay}:</b>{' '}
+            
+            <b>{text.details.pay}:</b>
             {creditById.pagos?.length + '/' + creditById.numero_de_cuotas + '.'}
           </div>
           <div>
-            {' '}
-            <b>{text.details.frecuency}:</b>{' '}
+            
+            <b>{text.details.frecuency}:</b>
             {getFrecuencyById({ frecuencyId: creditById?.frecuencia_del_credito_id })?.nombre  + '.'}
           </div>
           <div>
-            {' '}
-            <b>{text.details.date}:</b>{' '}
+            
+            <b>{text.details.date}:</b>
             {creditById?.fecha_de_aprobacion
               ? format(creditById?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'
               : null}
           </div>
           <div>
-            {' '}
+            
             <b>{text.details.comment}:</b> {creditById?.comentario}
           </div>
           { creditById?.valor_de_mora && <div>
-            {' '}
-            <b>{text.details.installmants}:</b>{' '}
+            
+            <b>{text.details.installmants}:</b>
             {'$' + Math.round(creditById?.valor_de_mora) + '.'}
           </div>}
           <div>
-            {' '}
-            <b>{text.details.aditionalsDays}:</b>{' '}
+            
+            <b>{text.details.aditionalsDays}:</b>
             {creditById?.dias_adicionales + '.'}
           </div>
         </div>
@@ -187,42 +187,42 @@ export function CreditById({
               {creditById?.pagos.map((payment, i) => (
                 <TableRow key={payment?.id}>
                   <TableCell>
-                    {' '}
-                    <b>{creditById?.cuotas?.[i]?.numero_de_cuota}</b>{' '}
+                    
+                    <b>{creditById?.cuotas?.[i]?.numero_de_cuota}</b>
                   </TableCell>
                   <TableCell>
-                    {' '}
+                    
                     {payment?.fecha_de_pago
                       ? format(payment?.fecha_de_pago, 'MM-dd-yyyy')
-                      : null}{' '}
+                      : null}
                   </TableCell>
                   <TableCell>
-                    {' '}
+                    
                     <b>$</b>
-                    {Math.round(payment?.valor_del_pago)}{' '}
+                    {Math.round(payment?.valor_del_pago)}
                   </TableCell>
                   <TableCell>
-                    {' '}
+                    
                     <b>$</b>
-                    {Math.round(creditById?.cuotas?.[i]?.valor_de_cuota ?? 0)}{' '}
+                    {Math.round(creditById?.cuotas?.[i]?.valor_de_cuota ?? 0)}
                   </TableCell>
                   <TableCell>
-                    {' '}
+                    
                     {creditById?.cuotas?.[i]?.fecha_de_aplicacion_de_mora
                       ? format(creditById?.cuotas?.[i]?.fecha_de_aplicacion_de_mora ?? "", 'MM-dd-yyyy')
-                      : null}{' '}
+                      : null}
                   </TableCell>
                   <TableCell>
-                    {' '}
+                    
                     <b>$</b>
-                    {creditById?.cuotas?.[i]?.valor_de_mora ? Math.round(creditById?.cuotas?.[i]?.valor_de_mora ?? 0) : "-"}{' '}
+                    {creditById?.cuotas?.[i]?.valor_de_mora ? Math.round(creditById?.cuotas?.[i]?.valor_de_mora ?? 0) : "-"}
                   </TableCell>
                   <TableCell>
-                    {' '}
+                    
                     <Switch
                       checked={creditById?.cuotas?.[i]?.pagada}
-                      className={clsx('cursor-not-allowed')}
-                    ></Switch>{' '}
+                      className={'cursor-not-allowed'}
+                    ></Switch>
                   </TableCell>
                 </TableRow>
               ))}

@@ -12,9 +12,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { type TCREDIT_GET_ALL, type TCREDIT_GET } from "@/api/credit";
+import { type TCREDIT_GET_ALL, type TCREDIT_GET, deleteCreditById } from "@/api/credit";
 import { useNotifications } from '@/lib/context/notification'
 import { useContextCredit } from '@/pages/_layout/credit_/-hook'
+import { useMutation } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
   component: DeleteCreditById,
@@ -32,6 +33,10 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
   const { creditById = _credit, creditsAll = [] as TCREDIT_GET_ALL, setCreditsAll } = useContextCredit()
+  const { mutate: deleteCredit } = useMutation( {
+    mutationKey: ["delete-credit"],
+    mutationFn: deleteCreditById
+  })
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -44,6 +49,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
 
     const action = (credit?: TCREDIT_GET) => () => {
       console.table(credit)
+      deleteCredit({ creditId: creditById?.id })
       setNotification({
         date: new Date(),
         action: "DELETE",

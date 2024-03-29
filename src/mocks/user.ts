@@ -1,10 +1,7 @@
 import { HttpResponse, http } from 'msw'
-import _users from '@/mocks/__mock__/USERS.json'
 import { TRoles, getRolId } from "@/api/rol"
 import { TUser, TUserPostBody } from '@/api/users'
-
-type TUserDB = typeof _users[0]
-const users = new Map<number, TUserDB>( _users?.map( ( { id }, i, list ) => [ id, (list?.[i]) ] ) )
+import { TUserDB, users } from './data'
 
 const listUsers = http.all(import.meta.env.VITE_API + '/users/list', async () => {
   return HttpResponse.json<TUser[]>(

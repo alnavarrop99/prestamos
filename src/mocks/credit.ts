@@ -1,25 +1,9 @@
 import { HttpResponse, http } from 'msw'
-import { payments } from '@/mocks/payment'
-import _credits from '@/mocks/__mock__/CREDITS.json'
-import _cuotes from '@/mocks/__mock__/CUOTES.json'
-import _mora from '@/mocks/__mock__/MORA.json'
-import { clients } from "@/mocks/client"
 import type { TCREDIT_DELETE, TCREDIT_GET, TCREDIT_GET_ALL, TCREDIT_GET_FILTER, TCREDIT_GET_FILTER_ALL, TCREDIT_GET_FILTER_BODY, TCREDIT_PATCH, TCREDIT_PATCH_BODY, TCREDIT_POST, TCREDIT_POST_BODY } from '@/api/credit'
 import { getFrecuencyById } from '@/api/frecuency'
-import { getMoraTypeById } from '@/api/moraType'
+import { getMoraTypeById, getMoraTypes } from '@/api/moraType'
+import { TCREDIT_DB, TMORA_DB, clients, credits, cuotes, moras, payments } from './data'
 
-export type TCREDIT_DB = typeof _credits[0]
-export type TCUOTE_DB = {
-  mora: boolean;
-  id: number;
-  fecha_de_pago: string;
-  fecha_de_aplicacion_de_mora: string;
-  pago_id: number
-}
-export type TMORA_DB = typeof _mora[0]
-export const credits = new Map<number, TCREDIT_DB>( _credits?.map<[number,TCREDIT_DB]>( ( { id }, i, list ) => [ id, list?.[i] ] ))
-export const cuotes = new Map<number, TCUOTE_DB>( _cuotes?.map( ({ id }, i, list) => [ id, { ...list?.[i], mora: !!list?.[i]?.mora }  ]))
-export const moras = new Map<number, TMORA_DB>( _mora?.map( ({ id }, i, list) => [ id, list?.[i] ]))
 
 const allCredits = http.all(import.meta.env.VITE_API + '/creditos/list', async () => {
   return HttpResponse.json<TCREDIT_GET_ALL>(
@@ -116,7 +100,8 @@ const createCredit = http.post( import.meta.env.VITE_API + '/creditos/create', a
   const {  owner_id , fecha_de_aprobacion, valor_de_mora, dias_adicionales, numero_de_cuotas, tipo_de_mora_id, ...items } = newCredit
   moras?.set( moras?.size + 1, {
     id: moras?.size + 1,
-    valor_de_mora, nombre: getMoraTypeById({ moraTypeId: tipo_de_mora_id })?.nombre,
+    valor_de_mora: valor_de_mora ?? 0,
+    nombre: getMoraTypeById({ moraTypeId: tipo_de_mora_id })?.nombre,
     tipo_de_mora: tipo_de_mora_id
   } )
   cuotes?.set( cuotes?.size + 1, {
@@ -214,6 +199,7 @@ const updateCreditById = http.patch( import.meta.env.VITE_API + '/creditos/:cred
     estado: credit?.estado,
     valor_de_mora: moras.get(credit?.mora_id)?.valor_de_mora ?? 0,
     numero_de_cuotas: credit?.cuotas?.cantidad,
+    cuotas: credit?.cuotas,
   })
 } )
 
@@ -246,7 +232,7 @@ const getCreditById = http.get( import.meta.env.VITE_API + '/creditos/by_id/:cre
     nombre_del_cliente: clients?.get(cliente_id)?.nombres + " " + clients?.get(cliente_id)?.apellidos,
     numero_de_cuota: cuoteLength,
     valor_de_cuota: payments?.get(cuotes?.get(cuoteId)?.pago_id ?? 0)?.valor_del_pago ?? 0,
-    valor_de_la_mora: moras?.get( mora_id )?.valor_de_mora ?? 0,
+    valor_de_la_mora: moras?.get( mora_id ?? 0 )?.valor_de_mora,
     tasa_de_interes,
     pagos: [ ...Array.from({ length: cuoteLength })?.map( (_, i) => ( {
       valor_del_pago: payments?.get( creditId )?.valor_del_pago ?? 0,

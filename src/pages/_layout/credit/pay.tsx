@@ -19,7 +19,6 @@ import { _creditSelected } from "@/pages/_layout/credit";
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { useMutation } from '@tanstack/react-query'
-import { useContextCredit } from '../credit_/-hook'
 
 export const Route = createFileRoute('/_layout/credit/pay')({
   component: PaySelectedCredit,
@@ -38,12 +37,10 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
   const { setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
-
   const { mutate: createPayment } = useMutation({
     mutationKey: ["create-pay"],
     mutationFn: postPaymentId,
   })
-  const { creditsAll = [], setCreditsAll } = useContextCredit()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -82,28 +79,9 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
     navigate({to: "../"})
-    setCreditsAll(creditsAll?.map( ({ id }, i, list) => {
-      if( id !== credit?.id  ) return list?.[i]
-
-      const newPayment: TPAYMENT_GET = {
-        valor_del_pago: +items?.valor_del_pago,
-        comentario: items?.comentario,
-        credito_id: credit?.id,
-        fecha_de_pago: new Date( items?.fecha_de_pago ),
-        registrado_por_usuario_id: 0,
-        id: (list?.[i]?.pagos?.length ?? 0) + 1,
-      }
-
-      return ({
-        ...list?.[i],
-        pagos: [ ...list?.[i].pagos ?? [], newPayment ],
-      })
-
-    } ))
 
     const onClick = () => {
       clearTimeout(timer)
-      setCreditsAll(creditsAll)
     }
 
     if ( true) {

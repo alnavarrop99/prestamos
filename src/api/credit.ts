@@ -108,7 +108,7 @@ export interface TCREDIT_POST extends TCREDIT_BASE {
 
 // PATCH
 export type TCREDIT_PATCH_BODY = TCREDIT_BASE_BODY
-export type TCREDIT_PATCH = TCREDIT_BASE
+export type TCREDIT_PATCH = TCREDIT_GET
 
 // DELETE
 export type TCREDIT_DELETE = TCREDIT_BASE
@@ -118,8 +118,8 @@ type TGetCreditById = (params: { params: { creditId: string } }) => Promise<TCRE
 type TGetCredits = () => Promise<TCREDIT_GET_ALL>
 type TGetCreditsFilter = ( params?: TCREDIT_GET_FILTER_BODY) => () => Promise<TCREDIT_GET_FILTER_ALL>
 type TPostCredit = (params: TCREDIT_POST_BODY) => Promise<TCREDIT_POST>
-type TDeleteCreditById = (params: { params: { creditId: string } }) => Promise<TCREDIT_DELETE>
-type TPatchCreditById = (params: { params: { creditId: string, updateCredit: TCREDIT_PATCH_BODY } }) => Promise<TCREDIT_PATCH>
+type TDeleteCreditById = (params: { creditId: number }) => Promise<TCREDIT_DELETE>
+type TPatchCreditById = (params: { creditId: number, updateCredit: TCREDIT_PATCH_BODY }) => Promise<TCREDIT_PATCH>
 
 // FUNCTION DEFINITIONS
 export const getCreditById: TGetCreditById = async ({ params: { creditId} }) => {
@@ -152,14 +152,14 @@ export const postCredit: TPostCredit =  async ( newCredit ) => {
   return creditById.json()
 }
 
-export const deleteCreditById: TDeleteCreditById =  async ({ params: { creditId } }) => {
+export const deleteCreditById: TDeleteCreditById =  async ({ creditId }) => {
 const creditById = await fetch(import.meta.env.VITE_API + "/creditos/delete/" + creditId,{
     method: "DELETE",
   })
   return creditById.json()
 }
 
-export const patchCreditsById: TPatchCreditById =  async ({ params: { creditId, updateCredit } }) => {
+export const patchCreditsById: TPatchCreditById =  async ({ creditId, updateCredit }) => {
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/" + creditId,{
     method: "PATCH",
     body: JSON.stringify(updateCredit)

@@ -18,7 +18,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { useContextCredit } from '../-hook'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
   component: PayCreditById,
@@ -42,7 +41,6 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
     mutationKey: ["create-pay"],
     mutationFn: postPaymentId,
   })
-  const { creditsAll = [], setCreditsAll, creditById = _credit } = useContextCredit()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -57,7 +55,7 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
 
     const description = text.notification.decription({
       username: credit?.nombre_del_cliente,
-      number: Number.parseInt(items?.valor_del_pago),
+      number: +items?.valor_del_pago,
     })
 
     const action =
@@ -81,31 +79,12 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
     navigate({to: "../"})
-    setCreditsAll(creditsAll?.map( ({ id }, i, list) => {
-      if( id !== credit?.id  ) return list?.[i]
-
-      const newPayment: TPAYMENT_GET = {
-        valor_del_pago: +items?.valor_del_pago,
-        comentario: items?.comentario,
-        credito_id: credit?.id,
-        fecha_de_pago: new Date( items?.fecha_de_pago ),
-        registrado_por_usuario_id: 0,
-        id: (list?.[i]?.pagos?.length ?? 0) + 1,
-      }
-
-      return ({
-        ...list?.[i],
-        pagos: [ ...list?.[i].pagos ?? [], newPayment ]
-      })
-
-    } ))
 
     const onClick = () => {
       clearTimeout(timer)
-      setCreditsAll(creditsAll)
     }
 
-    if ( true) {
+    if (true) {
       // const { nombres: firstName, apellidos: lastName } = items
       toast({
         title: text.notification.titile,

@@ -12,11 +12,12 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle  } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { type TCREDIT_GET } from '@/api/credit'
+import { patchCreditsById, type TCREDIT_PATCH, type TCREDIT_GET } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useNavigate } from '@tanstack/react-router'
-import { useContextCredit } from '@/pages/_layout/credit_/-hook'
 import { _creditChangeContext } from './update'
+import { useMutation } from '@tanstack/react-query'
+import { useContextCredit } from '@/pages/_layout/credit_/-hook'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')({
   component: UpdateConfirmationCredit,
@@ -35,6 +36,16 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
   const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
+
+  const onSuccess: (data: TCREDIT_PATCH) => unknown = (updateCredit) => {
+    setCreditById(updateCredit)
+  }
+
+  const { mutate: updateCredit } = useMutation({
+    mutationKey: ["update-credit"],
+    mutationFn: patchCreditsById,
+    onSuccess,
+  })
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -57,11 +68,15 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
     const timer = setTimeout(action(creditById), 6 * 1000)
     setOpen({open: !open})
     navigate({to: "../"})
+    updateCredit({
+      creditId: creditById?.id,
+      updateCredit: creditChange
+    })
     setCreditById(creditChange)
-    console.log(creditChange)
 
     const onClick = () => {
       clearTimeout(timer)
+    setCreditById(creditById)
     }
 
     if (true) {

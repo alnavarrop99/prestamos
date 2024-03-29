@@ -1,9 +1,6 @@
 import { HttpResponse, http } from 'msw'
-import _clients from '@/mocks/__mock__/CLIENTS.json'
 import { type TClientPostBody, type TClientList } from '@/api/clients'
-
-type TClIENT_DB = typeof _clients[0]
-export const clients = new Map<number, TClIENT_DB>( _clients?.map( ( { id }, i, list ) => ([ id, (list?.[i] ?? {} as TClIENT_DB) ]) ) )
+import { TClIENT_DB, clients } from './data'
 
 const allClients = http.all(import.meta.env.VITE_API + '/clientes/list', async () => {
   return HttpResponse.json<TClientList[]>(

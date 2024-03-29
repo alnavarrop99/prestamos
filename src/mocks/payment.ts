@@ -1,18 +1,6 @@
 import { HttpResponse, http } from 'msw'
-import _payments from '@/mocks/__mock__/PAYMENTS.json'
-import { TCUOTE_DB } from '@/mocks/credit'
-import _credits from "@/mocks/__mock__/CREDITS.json";
-import _cuotes from "@/mocks/__mock__/CUOTES.json";
-import { clients } from "@/mocks/client"
 import type { TPAYMENT_GET, TPAYMENT_POST, TPAYMENT_GET_ALL, TPAYMENT_POST_BODY, TPAYMENT_PATCH_BODY, TPAYMENT_PATCH, TPAYMENT_DELETE } from '@/api/payment'
-
-type TPAYMENT_DB = typeof _payments[0]
-export const payments = new Map<number, TPAYMENT_DB & { credit_id: number }>( _credits?.map<[number,TPAYMENT_DB & { credit_id: number }]>( ( { id, cuotas: { id: cuoteId } } ) => {
-  const cuote = _cuotes?.find( ({ id }) => (id === cuoteId) ) ?? {} as TCUOTE_DB
-  const { pago_id } = cuote
-  const payment = _payments?.find( ({ id }) => id === pago_id ) ?? {} as TPAYMENT_DB
-  return [payment?.id ?? 0, { ...payment, credit_id: id }]
-}))
+import { TPAYMENT_DB, clients, credits, payments } from './data'
 
 const allPayments = http.all(import.meta.env.VITE_API + '/pagos/list', async () => {
   return HttpResponse.json<TPAYMENT_GET_ALL>(
@@ -29,7 +17,7 @@ const allPayments = http.all(import.meta.env.VITE_API + '/pagos/list', async () 
 
 const createPayment = http.post( import.meta.env.VITE_API + '/pagos/create', async ({ request }) => {
   const newPayment = (await request.json()) as TPAYMENT_POST_BODY
-  const credit = _credits.find( ({ id }) => ( id === newPayment?.credito_id ) )
+  const credit = credits?.get( newPayment?.credito_id )
   if( !newPayment || !credit ) {
     throw new Error("Fail post request")
   }
