@@ -1,4 +1,4 @@
-import { type TReport, getReportsRes, getTypeElementForm } from '@/api/report'
+import { type TREPORT_GET, getAllReports, getTypeElementForm } from '@/api/report'
 import {
   Accordion,
   AccordionContent,
@@ -18,16 +18,16 @@ import { useRef } from 'react'
 
 export const Route = createFileRoute('/_layout/report')({
   component: Report,
-  loader: getReportsRes,
+  loader: getAllReports,
 })
 
 /* eslint-disable-next-line */
 interface TReportProps {
-  reports?: TReport[]
+  reports?: TREPORT_GET[]
 }
 
 /* eslint-disable-next-line */
-export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
+export function Report({ reports: _reports = [] as TREPORT_GET[] }: TReportProps) {
   const reports = Route.useLoaderData() ?? _reports
   const form = useRef<HTMLFormElement>(null)
 
