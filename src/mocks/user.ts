@@ -1,7 +1,7 @@
 import { HttpResponse, http } from 'msw'
 import { TRoles, getRolId } from "@/api/rol"
 import { TUser, TUserPostBody } from '@/api/users'
-import { TUserDB, users } from './data'
+import { TUSER_DB, users } from './data'
 
 const listUsers = http.all(import.meta.env.VITE_API + '/users/list', async () => {
   return HttpResponse.json<TUser[]>(
@@ -37,7 +37,7 @@ const updateUserById = http.patch( import.meta.env.VITE_API + '/users/:usuario_i
   const userId = Number.parseInt( usuario_id )
   const { rol_id, nombre } = currentUser
 
-  users?.set( userId, { ...(users?.get(userId) ?? {} as TUserDB), nombre, rol: { id: rol_id }  } )
+  users?.set( userId, { ...(users?.get(userId) ?? {} as TUSER_DB), nombre, rol: { id: rol_id }  } )
 
   return HttpResponse.json<TUser>( { 
     id: users.get( userId )?.id ?? 0,
@@ -52,7 +52,7 @@ const userById = http.get( import.meta.env.VITE_API + '/users/by_id/:id_usuario'
     throw new Error("Fail get request")
   }
   const userId = Number.parseInt(id_usuario)
-  const { id, nombre, rol: { id: rolId } } = users?.get( userId ) ?? {} as TUserDB
+  const { id, nombre, rol: { id: rolId } } = users?.get( userId ) ?? {} as TUSER_DB
   return HttpResponse.json<TUser>({ id, rol: getRolId({ rolId })?.name, nombre }) 
 } )
 
