@@ -5,17 +5,17 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { type TCREDIT_GET_ALL, type TCREDIT_GET, deleteCreditById } from "@/api/credit";
+import { type TCREDIT_GET, deleteCreditById } from "@/api/credit";
 import { useNotifications } from '@/lib/context/notification'
-import { useContextCredit } from '@/pages/_layout/credit_/-hook'
 import { useMutation } from '@tanstack/react-query'
+import { _selectedCredit } from '@/pages/_layout/credit_/$creditId'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
   component: DeleteCreditById,
@@ -28,11 +28,11 @@ interface TDeleteCreditByIdProps {
 
 /* eslint-disable-next-line */
 export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDeleteCreditByIdProps) {
+  const [ credit ] = useContext(_selectedCredit) ?? [ _credit ]
   const [checked, setChecked] = useState(false)
   const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
-  const { creditById = _credit, creditsAll = [] as TCREDIT_GET_ALL, setCreditsAll } = useContextCredit()
   const { mutate: deleteCredit } = useMutation( {
     mutationKey: ["delete-credit"],
     mutationFn: deleteCreditById
@@ -44,12 +44,12 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
 
   const onSubmit: React.FormEventHandler = (ev) => {
     const description = text.notification.decription({
-      username: creditById?.nombre_del_cliente,
+      username: credit?.nombre_del_cliente,
     })
 
-    const action = (credit?: TCREDIT_GET) => () => {
+    const action = (credit: TCREDIT_GET) => () => {
       console.table(credit)
-      deleteCredit({ creditId: creditById?.id })
+      deleteCredit({ creditId: credit?.id })
       setNotification({
         date: new Date(),
         action: "DELETE",
@@ -57,14 +57,12 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
       })
     }
 
-    const timer = setTimeout(action(creditById), 6 * 1000)
+    const timer = setTimeout(action(credit), 6 * 1000)
     setOpen({open: !open})
     navigate({to: "../../"})
-    setCreditsAll( creditsAll?.filter( ({ id }) => id !== creditById?.id ) )
 
     const onClick = () => {
       clearTimeout(timer)
-      setCreditsAll(creditsAll)
     }
 
     if (true) {
@@ -96,7 +94,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
               {text.alert.description({ 
-                username: creditById?.nombre_del_cliente 
+                username: credit?.nombre_del_cliente 
               })}
             </AlertDescription>
           </Alert>

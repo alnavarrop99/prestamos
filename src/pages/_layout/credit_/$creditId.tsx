@@ -24,9 +24,8 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { CircleDollarSign as Pay } from 'lucide-react'
 import { format } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
-import { useEffect } from 'react'
-import { useContextCredit } from '@/pages/_layout/credit_/-hook'
 import { getFrecuencyById } from '@/api/frecuency'
+import { createContext } from 'react'
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
   component: CreditById,
@@ -39,6 +38,8 @@ interface TCreditByIdProps {
   open?: boolean
 }
 
+export const _selectedCredit = createContext<[TCREDIT_GET] | undefined>(undefined)
+
 /* eslint-disable-next-line */
 export function CreditById({
   children,
@@ -48,12 +49,6 @@ export function CreditById({
   const creditDB = Route.useLoaderData() ?? _credit
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
-  const { creditById, setCreditById } = useContextCredit()
-  useEffect( () => {
-    if(!creditById){
-      setCreditById(creditDB) 
-    }
-  }, [creditDB])
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
@@ -62,10 +57,8 @@ export function CreditById({
     setOpen({ open })
   }
 
-  if( !creditById ) return <></>;
-
   return (
-    <>
+    <_selectedCredit.Provider value={[ creditDB ]}>
       {!children && <Navigate to={Route.to} />}
       <div className="space-y-4">
         <div className="flex gap-2">
@@ -112,65 +105,65 @@ export function CreditById({
             <b>{text.details.status}:</b>
             <Switch
               className={'cursor-not-allowed'}
-              checked={!!creditById?.estado}
+              checked={!!creditDB?.estado}
             >
-              {creditById?.estado}
+              {creditDB?.estado}
             </Switch>
           </div>
           <div>
             
-            <b>{text.details.name}:</b> { creditById?.nombre_del_cliente + "." }
+            <b>{text.details.name}:</b> { creditDB?.nombre_del_cliente + "." }
           </div>
           <div>
             
-            <b>{text.details.amount}:</b> {'$' + Math.round(creditById?.monto) + '.'}
+            <b>{text.details.amount}:</b> {'$' + Math.round(creditDB?.monto) + '.'}
           </div>
           <div>
             
             <b>{text.details.cuote}:</b>
-            {'$' + Math.round(creditById?.valor_de_cuota) + '.'}
+            {'$' + Math.round(creditDB?.valor_de_cuota) + '.'}
           </div>
           <div>
             
-            <b>{text.details.interest}:</b> {Math.round(creditById?.tasa_de_interes * 100) + '%'}
+            <b>{text.details.interest}:</b> {Math.round(creditDB?.tasa_de_interes * 100) + '%'}
           </div>
           <div>
             
             <b>{text.details.pay}:</b>
-            {creditById.pagos?.length + '/' + creditById.numero_de_cuotas + '.'}
+            {creditDB.pagos?.length + '/' + creditDB.numero_de_cuotas + '.'}
           </div>
           <div>
             
             <b>{text.details.frecuency}:</b>
-            {getFrecuencyById({ frecuencyId: creditById?.frecuencia_del_credito_id })?.nombre  + '.'}
+            {getFrecuencyById({ frecuencyId: creditDB?.frecuencia_del_credito_id })?.nombre  + '.'}
           </div>
           <div>
             
             <b>{text.details.date}:</b>
-            {creditById?.fecha_de_aprobacion
-              ? format(creditById?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'
+            {creditDB?.fecha_de_aprobacion
+              ? format(creditDB?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'
               : null}
           </div>
           <div>
             
-            <b>{text.details.comment}:</b> {creditById?.comentario}
+            <b>{text.details.comment}:</b> {creditDB?.comentario}
           </div>
-          { creditById?.valor_de_mora && <div>
+          { creditDB?.valor_de_mora && <div>
             
             <b>{text.details.installmants}:</b>
-            {'$' + Math.round(creditById?.valor_de_mora) + '.'}
+            {'$' + Math.round(creditDB?.valor_de_mora) + '.'}
           </div>}
           <div>
             
             <b>{text.details.aditionalsDays}:</b>
-            {creditById?.dias_adicionales + '.'}
+            {creditDB?.dias_adicionales + '.'}
           </div>
         </div>
         <Separator />
-        {!!creditById?.cuotas?.length && !!creditById?.pagos?.length && (
+        {!!creditDB?.cuotas?.length && !!creditDB?.pagos?.length && (
           <h2 className="text-2xl font-bold"> {text.cuotes.title} </h2>
         )}
-        {!!creditById?.cuotas?.length && !!creditById?.pagos?.length && (
+        {!!creditDB?.cuotas?.length && !!creditDB?.pagos?.length && (
           <Table className="w-full px-4 py-2">
             <TableHeader className='bg-muted'>
               <TableRow>
@@ -184,11 +177,11 @@ export function CreditById({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {creditById?.pagos.map((payment, i) => (
+              {creditDB?.pagos.map((payment, i) => (
                 <TableRow key={payment?.id}>
                   <TableCell>
                     
-                    <b>{creditById?.cuotas?.[i]?.numero_de_cuota}</b>
+                    <b>{creditDB?.cuotas?.[i]?.numero_de_cuota}</b>
                   </TableCell>
                   <TableCell>
                     
@@ -204,23 +197,23 @@ export function CreditById({
                   <TableCell>
                     
                     <b>$</b>
-                    {Math.round(creditById?.cuotas?.[i]?.valor_de_cuota ?? 0)}
+                    {Math.round(creditDB?.cuotas?.[i]?.valor_de_cuota ?? 0)}
                   </TableCell>
                   <TableCell>
                     
-                    {creditById?.cuotas?.[i]?.fecha_de_aplicacion_de_mora
-                      ? format(creditById?.cuotas?.[i]?.fecha_de_aplicacion_de_mora ?? "", 'MM-dd-yyyy')
+                    {creditDB?.cuotas?.[i]?.fecha_de_aplicacion_de_mora
+                      ? format(creditDB?.cuotas?.[i]?.fecha_de_aplicacion_de_mora ?? "", 'MM-dd-yyyy')
                       : null}
                   </TableCell>
                   <TableCell>
                     
                     <b>$</b>
-                    {creditById?.cuotas?.[i]?.valor_de_mora ? Math.round(creditById?.cuotas?.[i]?.valor_de_mora ?? 0) : "-"}
+                    {creditDB?.cuotas?.[i]?.valor_de_mora ? Math.round(creditDB?.cuotas?.[i]?.valor_de_mora ?? 0) : "-"}
                   </TableCell>
                   <TableCell>
                     
                     <Switch
-                      checked={creditById?.cuotas?.[i]?.pagada}
+                      checked={creditDB?.cuotas?.[i]?.pagada}
                       className={'cursor-not-allowed'}
                     ></Switch>
                   </TableCell>
@@ -233,14 +226,14 @@ export function CreditById({
                   {text.cuotes.total}:
                 </TableCell>
                 <TableCell colSpan={2} className="text-right">
-                  <GetPay credit={creditById} />
+                  <GetPay credit={creditDB} />
                 </TableCell>
               </TableRow>
             </TableFooter>
           </Table>
         )}
       </div>
-      </>
+      </_selectedCredit.Provider>
   )
 }
 

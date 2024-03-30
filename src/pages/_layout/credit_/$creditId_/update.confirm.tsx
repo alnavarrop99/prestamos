@@ -12,15 +12,15 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle  } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { patchCreditsById, type TCREDIT_PATCH, type TCREDIT_GET } from '@/api/credit'
+import { patchCreditsById, type TCREDIT_GET, getCreditById } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useNavigate } from '@tanstack/react-router'
 import { _creditChangeContext } from './update'
 import { useMutation } from '@tanstack/react-query'
-import { useContextCredit } from '@/pages/_layout/credit_/-hook'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')({
   component: UpdateConfirmationCredit,
+  loader: getCreditById
 })
 
 /* eslint-disable-next-line */
@@ -31,20 +31,15 @@ interface TUpdateConfirmationCreditProps {
 /* eslint-disable-next-line */
 export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }: TUpdateConfirmationCreditProps) {
   const [checked, setChecked] = useState(false)
-  const { creditById = _credit, setCreditById } = useContextCredit()
+  const creditDB = Route.useLoaderData()
   const [ creditChange ] = useContext(_creditChangeContext) ?? [ _credit ]
   const { open, setOpen } = useStatus()
   const { setNotification } = useNotifications()
   const navigate = useNavigate()
 
-  const onSuccess: (data: TCREDIT_PATCH) => unknown = (updateCredit) => {
-    setCreditById(updateCredit)
-  }
-
   const { mutate: updateCredit } = useMutation({
     mutationKey: ["update-credit"],
     mutationFn: patchCreditsById,
-    onSuccess,
   })
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -53,11 +48,14 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
 
   const onSubmit: React.FormEventHandler = (ev) => {
     const description = text.notification.decription({
-      username: creditById?.nombre_del_cliente,
+      username: creditDB?.nombre_del_cliente,
     })
 
-    const action = (credit?: TCREDIT_GET) => () => {
-      console.table(credit)
+    const action = (credit: TCREDIT_GET) => () => {
+      updateCredit({
+        creditId: credit.id,
+        updateCredit: credit
+      })
       setNotification({
           date: new Date(),
           action: "PATH",
@@ -65,18 +63,12 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
         })
     }
 
-    const timer = setTimeout(action(creditById), 6 * 1000)
+    const timer = setTimeout(action(creditChange), 6 * 1000)
     setOpen({open: !open})
     navigate({to: "../"})
-    updateCredit({
-      creditId: creditById?.id,
-      updateCredit: creditChange
-    })
-    setCreditById(creditChange)
-
+    
     const onClick = () => {
       clearTimeout(timer)
-    setCreditById(creditById)
     }
 
     if (true) {
@@ -108,7 +100,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
               {text.alert.description({ 
-                username: creditById?.nombre_del_cliente 
+                username: creditDB?.nombre_del_cliente 
               })}
             </AlertDescription>
           </Alert>

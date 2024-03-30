@@ -1,4 +1,4 @@
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Alert, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,19 +21,17 @@ import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-rout
 import clsx from 'clsx'
 import {
   AlertCircle,
-  AlertTriangle,
   Printer,
   CircleDollarSign as Pay,
   Info,
 } from 'lucide-react'
-import { createContext, useEffect, useState } from 'react'
+import { createContext, useState } from 'react'
 import { getCreditsFilter, type TCREDIT_GET_FILTER_ALL, type TCREDIT_GET_FILTER } from '@/api/credit'
 import { useStatus } from '@/lib/context/layout'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { format } from 'date-fns'
 import { Progress } from '@/components/ui/progress'
 import styles from "@/styles/global.module.css";
-import { useContextCredit } from '@/pages/_layout/credit_/-hook'
 
 export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
@@ -58,12 +56,6 @@ export function Credits({
   const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
-  const { creditsFilter, setCreditsFilter } = useContextCredit()
-  useEffect(() => {
-    if(!creditsFilter){
-      setCreditsFilter( creditsDB )
-    }
-  }, [])
 
   const onClick: ({
     creditId,
@@ -72,9 +64,9 @@ export function Credits({
   }) => React.MouseEventHandler<React.ComponentRef<typeof Button>> =
     ({ creditId }) =>
     () => {
-      if(!creditsFilter) return;
+      if(!creditsDB) return;
       setOpen({ open: !open })
-      setSelectedCredit(creditsFilter.find(({ id }) => id === creditId))
+      setSelectedCredit(creditsDB.find(({ id }) => id === creditId))
     }
 
   const onOpenChange = (open: boolean) => {
@@ -98,7 +90,7 @@ export function Credits({
             </h1>
           </Label>
           <Badge className="px-3 text-xl">
-            {creditsFilter?.length}
+            {creditsDB?.length}
           </Badge>
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
@@ -112,9 +104,9 @@ export function Credits({
         <Separator />
         <div
           className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5', {
-            '[&>*]:basis-1/4': !!creditsFilter?.length && creditsFilter?.length > 15})}
+            '[&>*]:basis-1/4': !!creditsDB?.length && creditsDB?.length > 15})}
         >
-          {creditsFilter?.map( ({
+          {creditsDB?.map( ({
             id,
             cliente_id,
             frecuencia,
@@ -203,19 +195,19 @@ export function Credits({
                             {status && status === 'warn' && (
                               <AlertCircle className="h-4 w-4" />
                             )}
-                            {status && status === 'info' && (
+                            {/*status && status === 'info' && (
                               <AlertTriangle className="h-4 w-4" />
-                            )}
+                            )*/}
                             <AlertTitle>
                               {text.alert?.[status]?.title}
                             </AlertTitle>
-                            {status && status === 'info' && (
+                            {/*status && status === 'info' && (
                               <AlertDescription>
                                 {text.alert?.info?.description({
                                   date: new Date(),
                                 })}
                               </AlertDescription>
-                            )}
+                            )*/}
                           </Alert>
                         )}
                         <div className="flex items-center gap-8">
