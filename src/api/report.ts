@@ -1,3 +1,5 @@
+export type TREPORT_PARAMS_DATE_TYPE = 'fecha' | 'texto' | 'numero' | 'like'
+
 // GET 
 export type TREPORT_GET = {
   id: number
@@ -8,9 +10,11 @@ export type TREPORT_GET = {
     id: number
     codigo: string
     nombre: string
-    tipo_dato: 'fecha' | 'texto' | 'numero' | 'like'
+    tipo_dato: TREPORT_PARAMS_DATE_TYPE
   }[]
 }
+
+export type TREPORT_GET_ALL = TREPORT_GET[]
 
 // POST 
 export type TREPORT_POST = {
@@ -21,11 +25,11 @@ export type TREPORT_POST = {
 export type TREPORT_POST_BODY = {}
 
 // FUNCTION TYPES 
-type TGetAllReport = () => Promise<TREPORT_GET>
+type TGetAllReport = () => Promise<TREPORT_GET_ALL>
 type TPostReportsById = ( params :{ reportId: number, report: TREPORT_POST_BODY } ) => Promise<TREPORT_POST[]>
 
 // FUNCTION UTILS
-export const geetTypeElementForm = ( type: 'fecha' | 'texto' | 'numero' | 'like') => ({ fecha: undefined, texto: 'text', numero: 'number', like: 'text' })[type]
+export const typeDataByName = ( name: 'fecha' | 'texto' | 'numero' | 'like') => ({ fecha: undefined, texto: 'text', numero: 'number', like: 'text' })[name]
 
 // FUNCTION DEFINITIONS 
 export const getAllReport: TGetAllReport = async () => {

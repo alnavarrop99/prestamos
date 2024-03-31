@@ -1,4 +1,4 @@
-import { type TREPORT_GET, getAllReports, getTypeElementForm } from '@/api/report'
+import { getAllReport, type TREPORT_GET_ALL, typeDataByName, postReportById } from '@/api/report'
 import {
   Accordion,
   AccordionContent,
@@ -15,32 +15,42 @@ import clsx from 'clsx'
 import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRef } from 'react'
+import { useMutation } from '@tanstack/react-query'
+import { TPAYMENT_POST_BODY } from '@/api/payment'
 
 export const Route = createFileRoute('/_layout/report')({
   component: Report,
-  loader: getAllReports,
+  loader: getAllReport,
 })
 
 /* eslint-disable-next-line */
 interface TReportProps {
-  reports?: TREPORT_GET[]
+  reports?: TREPORT_GET_ALL
 }
 
 /* eslint-disable-next-line */
-export function Report({ reports: _reports = [] as TREPORT_GET[] }: TReportProps) {
+export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportProps) {
   const reports = Route.useLoaderData() ?? _reports
-  const form = useRef<HTMLFormElement>(null)
+  const form = reports?.map( () => useRef<HTMLFormElement>(null) ) 
+  const { mutate: reportById } = useMutation({
+    mutationKey: ["post-reports-by-id"],
+    mutationFn: postReportById
+  })
 
-  const onSubmit: React.FormEventHandler = (ev) => {
-    if (!form.current) return
+  const onSubmit: ( params: { reportId: number }  ) => React.FormEventHandler = ( { reportId } ) => (ev) =>  {
+    if (!form?.[reportId]) return;
 
     const items = Object.fromEntries(
-      new FormData(form.current).entries()
-    ) as Record<keyof string, string>
+      new FormData(form?.[reportId]?.current ?? undefined).entries()
+    ) as Record<keyof TPAYMENT_POST_BODY, string>
 
     console.table(items)
+    reportById({
+      reportId: reports?.[reportId]?.id,
+      report: items,
+    })
 
-    form.current?.reset()
+    form?.[reportId]?.current?.reset()
     ev.preventDefault()
   }
 
@@ -49,7 +59,7 @@ export function Report({ reports: _reports = [] as TREPORT_GET[] }: TReportProps
       <h1 className="text-3xl font-bold">{text.title}</h1>
       <Separator />
       <Accordion className="my-2 space-y-2" type="multiple">
-        {reports.map(({ nombre, parametros, id, comentario }) => (
+        {reports.map(({ nombre, parametros, id, comentario }, i) => (
           <AccordionItem
             key={id}
             className={clsx('rounded-m px-4 py-2 shadow-lg hover:shadow-xl')}
@@ -63,8 +73,8 @@ export function Report({ reports: _reports = [] as TREPORT_GET[] }: TReportProps
             </AccordionTrigger>
             <AccordionContent className="space-y-2">
               <form
-                ref={form}
-                onSubmit={onSubmit}
+                ref={form?.[i]}
+                onSubmit={onSubmit({ reportId: i })}
                 className="grid grid-cols-2 gap-4 px-6 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
                 id={'report' + id}
               >
@@ -89,8 +99,7 @@ export function Report({ reports: _reports = [] as TREPORT_GET[] }: TReportProps
                 variant="default"
                 className=" group ms-auto flex gap-2"
               >
-                {' '}
-                <Download />{' '}
+                <Download />
               </Button>
             </AccordionContent>
           </AccordionItem>
@@ -111,7 +120,7 @@ function FormElement({
     return <DatePicker label="Seleccione una fecha" name={name} />
   return (
     <Input
-      type={getTypeElementForm(type)}
+      type={typeDataByName(type)}
       placeholder="Escriba el parametro"
       name={name}
     />
