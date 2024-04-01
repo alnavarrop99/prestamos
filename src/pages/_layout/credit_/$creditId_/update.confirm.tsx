@@ -34,7 +34,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
   const creditDB = Route.useLoaderData()
   const [ creditChange ] = useContext(_creditChangeContext) ?? [ _credit ]
   const { open, setOpen } = useStatus()
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
   const navigate = useNavigate()
 
   const { mutate: updateCredit } = useMutation({

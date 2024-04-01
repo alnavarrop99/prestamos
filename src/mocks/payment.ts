@@ -1,8 +1,11 @@
 import { HttpResponse, http } from 'msw'
 import type { TPAYMENT_GET, TPAYMENT_POST, TPAYMENT_GET_ALL, TPAYMENT_POST_BODY, TPAYMENT_PATCH_BODY, TPAYMENT_PATCH, TPAYMENT_DELETE } from '@/api/payment'
-import { TPAYMENT_DB, clients, credits, payments } from './data'
+import { TPAYMENT_DB, clients, credits, payments, token } from './data'
 
-const allPayments = http.all(import.meta.env.VITE_API + '/pagos/list', async () => {
+const allPayments = http.all(import.meta.env.VITE_API + '/pagos/list', async ({request}) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   return HttpResponse.json<TPAYMENT_GET_ALL>(
     Array.from(payments?.values())?.map<TPAYMENT_GET>(({ fecha_de_pago, comentario, valor_del_pago, id, credit_id }) => ({
       id,
@@ -16,6 +19,9 @@ const allPayments = http.all(import.meta.env.VITE_API + '/pagos/list', async () 
 })
 
 const createPayment = http.post( import.meta.env.VITE_API + '/pagos/create', async ({ request }) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const newPayment = (await request.json()) as TPAYMENT_POST_BODY
   const credit = credits?.get( newPayment?.credito_id )
   if( !newPayment || !credit ) {
@@ -40,6 +46,9 @@ const createPayment = http.post( import.meta.env.VITE_API + '/pagos/create', asy
 } )
 
 const updatePaymentById = http.patch( import.meta.env.VITE_API + '/pagos/:pago_id', async ({params, request }) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const upadetePayment = (await request.json()) as TPAYMENT_PATCH_BODY
   const { pago_id } = params as { pago_id?: string }
   if( !upadetePayment || !pago_id ) {
@@ -69,7 +78,10 @@ const updatePaymentById = http.patch( import.meta.env.VITE_API + '/pagos/:pago_i
   })
 } )
 
-const getPaymentById = http.get( import.meta.env.VITE_API + '/pagos/by_id/:pago_id', async ({params}) => {
+const getPaymentById = http.get( import.meta.env.VITE_API + '/pagos/by_id/:pago_id', async ({params, request}) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const { pago_id } = params as { pago_id?: string }
   if( !pago_id ) {
     throw new Error("Fail update request")
@@ -92,7 +104,10 @@ const getPaymentById = http.get( import.meta.env.VITE_API + '/pagos/by_id/:pago_
   })
 } )
 
-const deletePaymentById = http.delete( import.meta.env.VITE_API + '/pagos/delete/:pago_id', async ( { params } ) => {
+const deletePaymentById = http.delete( import.meta.env.VITE_API + '/pagos/delete/:pago_id', async ( { params, request } ) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const { pago_id } = params as { pago_id?: string }
   if( !pago_id ) {
     throw new Error("Fail update request")

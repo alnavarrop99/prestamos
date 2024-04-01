@@ -20,9 +20,9 @@ import { postClientsRes, TClientList, type TClient } from "@/api/clients";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { getIDs, getIdById } from '@/api/id'
-import { _clientContext } from '../client'
-import { TClientTable } from '../-column'
+import { getIDs, getIdById } from '@/lib/type/id'
+import { _clientContext } from '@/pages/_layout/client'
+import { TClientTable } from '@/pages/_layout/-column'
 
 export const Route = createFileRoute('/_layout/client/new')({
   component: NewClient,
@@ -31,7 +31,7 @@ export const Route = createFileRoute('/_layout/client/new')({
 /* eslint-disable-next-line */
 export function NewClient() {
   const form = useRef<HTMLFormElement>(null)
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
 
   const onSuccess: (data: TClientList) => unknown = (newClient) => {
     setClients({ clients: [ ...clients.slice(0, -1), { ...(clients?.at(-1) ?? {} as TClientTable), ...newClient } ] })

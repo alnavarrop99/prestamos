@@ -1,4 +1,4 @@
-import ids from "@/__mock__/ID.json"
+import ids from "@/mocks/__mock__/ID.json"
 import { getId, gets } from "./base"
 
 export type TTypeId = "Pasaporte" | "Cedula" | "Carnet de conducir"

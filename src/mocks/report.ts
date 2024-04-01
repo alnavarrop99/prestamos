@@ -1,8 +1,11 @@
 import { HttpResponse, http } from 'msw'
 import type { TREPORT_GET, TREPORT_GET_ALL, TREPORT_PARAMS_DATE_TYPE, TREPORT_POST } from '@/api/report'
-import { reports } from './data'
+import { reports, token } from './data'
 
-const allReports = http.all(import.meta.env.VITE_API + '/reportes/list', async () => {
+const allReports = http.all(import.meta.env.VITE_API + '/reportes/list', async ({request}) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   return HttpResponse.json<TREPORT_GET_ALL>(
     Array.from(reports?.values())?.map<TREPORT_GET>(( { id, codigo, nombre, comentario, parametros } ) => ({ 
       id, 
@@ -15,6 +18,9 @@ const allReports = http.all(import.meta.env.VITE_API + '/reportes/list', async (
 })
 
 const getPaymentById = http.post( import.meta.env.VITE_API + '/reportes/obtener_reporte_by_codigo/:codigo', async ({ request }) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const reportsData = (await request.json()) as TREPORT_PARAMS_DATE_TYPE
   if( !reportsData ) {
     throw new Error("Fail post request")

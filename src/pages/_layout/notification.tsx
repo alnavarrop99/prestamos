@@ -1,11 +1,12 @@
 import { Separator } from '@/components/ui/separator'
 import { createFileRoute } from '@tanstack/react-router'
 import { useNotifications, type TNotification } from "@/lib/context/notification";
-import { Card, CardDescription, CardTitle } from '@/components/ui/card';
-import { Cross, Zap } from 'lucide-react';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { X } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
+import { Button } from 'react-day-picker';
 
 export const Route = createFileRoute('/_layout/notification')({
   component: Notifications,
@@ -18,7 +19,12 @@ interface TNotificationProps {
 
 /* eslint-disable-next-line */
 export function Notifications({ notifications: _notifications = [] as TNotification[] }: TNotificationProps) {
-  const { notifications } = useNotifications( ({ notifications }) => ({ notifications: notifications ?? _notifications }) )
+  const { notifications, pushNotification: setNotification } = useNotifications( ({ notifications, ...items }) => ({ notifications: notifications ?? _notifications, ...items }) )
+
+  const onDelete: (params: { index: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ index }) => (  ) => {
+    setNotification( notifications?.filter( ( { id } ) => (id !== index ) ) )
+  }
+
   return (
     <div className='space-y-2'>
       <div className="flex items-center gap-2">
@@ -29,14 +35,19 @@ export function Notifications({ notifications: _notifications = [] as TNotificat
       <div className='space-y-6 py-2'>
       { !notifications?.length && <p> {text.notfound} </p> }
       { !!notifications?.length && notifications?.map( ({ id, description, action, date }) => 
-        <Card key={id} className={clsx('shadow-lg space-y-2 p-6 ring-2', {
+        <Card key={id} className={clsx('shadow-lg space-y-2 ring-2', {
             "ring-green-500": action === "POST",
             "ring-blue-500": action === "PATH",
             "ring-red-500": action === "DELETE",
           })}>
-          <CardTitle className='flex items-center gap-4'> <ActionIcon action={action} />  {getAction(action)} </CardTitle>
-          <CardDescription className='text-lg'> <p>{description}</p> </CardDescription>
-          <div className='flex justify-end'><Badge>{format(date, "dd-MM-yyyy")}</Badge></div>
+            <CardHeader>
+              <span className='p-1 ms-auto rounded-full [&>svg]:stroke-destructive hover:bg-destructive [&>svg]:hover:stroke-secondary cursor-pointer'><X /></span>
+              <CardTitle className='flex items-center gap-4'> <ActionIcon action={action} />  {getAction(action)} </CardTitle>
+              <CardDescription className='text-lg'> <p>{description}</p> </CardDescription>
+            </CardHeader>
+            <CardFooter className='flex justify-end'>
+              <div><Badge>{format(date, "dd-MM-yyyy")}</Badge></div>
+            </CardFooter>
         </Card> 
       ) }
       </div>

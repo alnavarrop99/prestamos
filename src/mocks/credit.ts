@@ -1,11 +1,14 @@
 import { HttpResponse, http } from 'msw'
 import type { TCREDIT_DELETE, TCREDIT_GET, TCREDIT_GET_ALL, TCREDIT_GET_FILTER, TCREDIT_GET_FILTER_ALL, TCREDIT_GET_FILTER_BODY, TCREDIT_PATCH, TCREDIT_PATCH_BODY, TCREDIT_POST, TCREDIT_POST_BODY } from '@/api/credit'
-import { getFrecuencyById } from '@/api/frecuency'
-import { getMoraTypeById, getMoraTypes } from '@/api/moraType'
-import { TCREDIT_DB, TMORA_DB, clients, credits, cuotes, moras, payments } from './data'
+import { getFrecuencyById } from '@/lib/type/frecuency'
+import { getMoraTypeById } from '@/lib/type/moraType'
+import { TCREDIT_DB, TMORA_DB, clients, credits, cuotes, moras, payments, token } from './data'
 
 
-const allCredits = http.all(import.meta.env.VITE_API + '/creditos/list', async () => {
+const allCredits = http.all(import.meta.env.VITE_API + '/creditos/list', async ({request}) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   return HttpResponse.json<TCREDIT_GET_ALL>(
     Array.from(credits?.values())?.map<TCREDIT_GET>(({ 
       id,
@@ -64,6 +67,9 @@ const allCredits = http.all(import.meta.env.VITE_API + '/creditos/list', async (
 })
 
 const filterCredits = http.post(import.meta.env.VITE_API + '/creditos/filtrar_prestamos', async ( { request } ) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const { fecha_de_pago, cliente, saldo_en_mora, saldo_por_pagar } = (await request.json()) as TCREDIT_GET_FILTER_BODY
   return HttpResponse.json<TCREDIT_GET_FILTER_ALL>(
     Array.from(credits?.values())?.filter( ({ cuotas: { id: cuoteId, cantidad: cuoteLength }, cliente_id, pagos: { cantidad: paymentLength } }) => {
@@ -92,6 +98,9 @@ const filterCredits = http.post(import.meta.env.VITE_API + '/creditos/filtrar_pr
 })
 
 const createCredit = http.post( import.meta.env.VITE_API + '/creditos/create', async ({ request }) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const newCredit = (await request.json()) as TCREDIT_POST_BODY
   if( !newCredit ) {
     throw new Error("Fail post request")
@@ -148,6 +157,9 @@ const createCredit = http.post( import.meta.env.VITE_API + '/creditos/create', a
 } )
 
 const updateCreditById = http.patch( import.meta.env.VITE_API + '/creditos/:credito_id', async ({params, request }) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const upadeteCredit = (await request.json()) as TCREDIT_PATCH_BODY
   const { credito_id } = params as { credito_id?: string }
   if( !upadeteCredit || !credito_id ) {
@@ -203,7 +215,10 @@ const updateCreditById = http.patch( import.meta.env.VITE_API + '/creditos/:cred
   })
 } )
 
-const getCreditById = http.get( import.meta.env.VITE_API + '/creditos/by_id/:credito_id', async ({params}) => {
+const getCreditById = http.get( import.meta.env.VITE_API + '/creditos/by_id/:credito_id', async ({params, request}) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const { credito_id } = params as { credito_id?: string }
   if( !credito_id ) {
     throw new Error("Fail update request")
@@ -262,7 +277,10 @@ const getCreditById = http.get( import.meta.env.VITE_API + '/creditos/by_id/:cre
   })
 } )
 
-const deleteCreditById = http.delete( import.meta.env.VITE_API + '/creditos/delete/:credito_id', async ( { params } ) => {
+const deleteCreditById = http.delete( import.meta.env.VITE_API + '/creditos/delete/:credito_id', async ( { params, request } ) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const { credito_id } = params as { credito_id?: string }
   if( !credito_id ) {
     throw new Error("Fail update request")

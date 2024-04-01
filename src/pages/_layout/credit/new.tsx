@@ -19,8 +19,8 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { type  TCREDIT_GET, postCredit } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { getMoraTypeByName } from '@/api/moraType'
-import { getFrecuency, getFrecuencyByName } from '@/api/frecuency'
+import { getMoraTypeByName } from '@/lib/type/moraType'
+import { getFrecuency, getFrecuencyByName } from '@/lib/type/frecuency'
 import { useMutation } from '@tanstack/react-query'
 
 type TSearch = {
@@ -61,7 +61,7 @@ export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditPr
   // const clientsDB = Route.useLoaderData() ?? _clients
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
   const { clientId } = Route.useSearch()

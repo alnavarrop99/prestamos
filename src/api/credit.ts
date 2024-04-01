@@ -1,4 +1,5 @@
-import type { TPAYMENT_GET_ALL } from './payment'
+import type { TPAYMENT_GET_ALL } from '@/api/payment'
+import { useToken } from '@/lib/context/login'
 
 // BASE
 export interface TCREDIT_BASE {
@@ -123,46 +124,82 @@ type TPatchCreditById = (params: { creditId: number, updateCredit: TCREDIT_PATCH
 
 // FUNCTION DEFINITIONS
 export const getCreditById: TGetCreditById = async ({ params: { creditId} }) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/by_id/" + creditId,{
     method: "GET",
+    headers
   })
   return creditById.json()
 }
 
 export const getCredits: TGetCredits =  async () => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/list",{
-    method: "GET"
+    method: "GET",
+    headers
   })
   return creditById.json()
 }
 
 export const getCreditsFilter: TGetCreditsFilter = ( filter = {} ) => async () => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/filtrar_prestamos",{
     method: "POST",
-    body: JSON.stringify(filter)
+    body: JSON.stringify(filter),
+    headers
   })
   return creditById.json()
 }
 
 export const postCredit: TPostCredit =  async ( newCredit ) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/create",{
     method: "POST",
-    body: JSON.stringify(newCredit)
+    body: JSON.stringify(newCredit),
+    headers
   })
   return creditById.json()
 }
 
 export const deleteCreditById: TDeleteCreditById =  async ({ creditId }) => {
-const creditById = await fetch(import.meta.env.VITE_API + "/creditos/delete/" + creditId,{
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
+  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/delete/" + creditId,{
     method: "DELETE",
+    headers
   })
   return creditById.json()
 }
 
 export const patchCreditsById: TPatchCreditById =  async ({ creditId, updateCredit }) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/" + creditId,{
     method: "PATCH",
-    body: JSON.stringify(updateCredit)
+    body: JSON.stringify(updateCredit),
+    headers
   })
   return creditById.json()
 }

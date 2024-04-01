@@ -14,7 +14,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { TUser, postUsersRes } from '@/api/users'
-import { getRolId, getRols } from "@/api/rol";
+import { getRolById, listRols } from "@/lib/type/rol";
 import { TUsersState, _usersContext } from '../user'
 
 export const Route = createFileRoute('/_layout/user/new')({
@@ -38,7 +38,7 @@ export function NewUser({}: TNewUserProps) {
   const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
 
   const onSuccess: (data: TUser) => unknown = (newUser) => {
     setUsers( [ ...users?.slice(0, -1), { ...(users?.at(-1) ?? {} as TUsersState), ...newUser } ]  )
@@ -82,7 +82,7 @@ export function NewUser({}: TNewUserProps) {
     const timer = setTimeout(action(items), 6 * 1000)
     setUsers( [...users, { 
       nombre: firstName + " " + lastName,
-      rol: getRolId( { rolId: Number?.parseInt(items?.rol) } )?.name,
+      rol: getRolById( { rolId: Number?.parseInt(items?.rol) } )?.name,
       id: (users?.at(-1)?.id ?? 0) + 1,
       menu: false,
       active: false,
@@ -155,12 +155,12 @@ export function NewUser({}: TNewUserProps) {
           <Select 
               required
               name={'rol' as TFormName} 
-              defaultValue={""+getRolId({ rolId: 1 })?.id}>
+              defaultValue={""+getRolById({ rolId: 1 })?.id}>
             <SelectTrigger className="w-full ring-ring ring-1">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { getRols()?.map( ( { name, id } ) =>
+              { listRols()?.map( ( { name, id } ) =>
                 <SelectItem key={id} value={""+id}>{name}</SelectItem>
               ) }
             </SelectContent>

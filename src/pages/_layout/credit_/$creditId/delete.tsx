@@ -31,7 +31,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
   const [ credit ] = useContext(_selectedCredit) ?? [ _credit ]
   const [checked, setChecked] = useState(false)
   const { open, setOpen } = useStatus()
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
   const navigate = useNavigate()
   const { mutate: deleteCredit } = useMutation( {
     mutationKey: ["delete-credit"],

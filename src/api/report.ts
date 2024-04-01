@@ -1,3 +1,5 @@
+import { useToken } from "@/lib/context/login"
+
 export type TREPORT_PARAMS_DATE_TYPE = 'fecha' | 'texto' | 'numero' | 'like'
 
 // GET 
@@ -33,16 +35,29 @@ export const typeDataByName = ( name: 'fecha' | 'texto' | 'numero' | 'like') => 
 
 // FUNCTION DEFINITIONS 
 export const getAllReport: TGetAllReport = async () => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const res = await fetch(import.meta.env.VITE_API + "/reportes/list", {
-    method: "GET"
+    method: "GET",
+    headers
+
   })
   return res.json()
 }
 
 export const postReportById: TPostReportsById = async ({ reportId, report }) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const res = await fetch(import.meta.env.VITE_API + "/reportes/obtener_reporte_by_codigo/" + reportId, {
     method: "POST",
-    body: JSON.stringify(report)
+    body: JSON.stringify(report),
+    headers
   })
   return res.json()
 }

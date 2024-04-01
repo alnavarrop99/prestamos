@@ -1,6 +1,5 @@
-import { gets, getId } from "@/api/base"
-import clients from "@/__mock__/CLIENTS.json"
-import { getUsersRes, type TUser } from "./users"
+import { getUsersRes, type TUser } from "@/api/users"
+import { useToken } from "@/lib/context/login"
 
 interface TClientBase  {
   nombres: string
@@ -28,8 +27,6 @@ export interface TClientList extends TClientBase {
   owner_id?: number 
 }
 
-type TGetClientId = ( params: { clientId: number } ) => TClient 
-type TGetClients = () => TClient[]
 type TGetClientIdRes = ({params}: { params: { clientId: string } }) => Promise<TClient>
 type TGetClientsListRes = () => Promise<TClientList[]>
 type TGetClientsRes = () => Promise<TClient[]>
@@ -37,24 +34,38 @@ type TPostClientIdRes = ( params: TClientPostBody ) => Promise<TClientList>
 type TDeleteClientIdRes = ( params: { clientId: number } ) => Promise<TClientList> 
 type TPatchClientIdRes = ( { params, clientId }: { params: TClientPostBody, clientId: number } ) => Promise<TClientList> 
 
-export const getClientId: TGetClientId = ( {clientId} ) => getId( clients, { id: clientId } )
-export const getClients: TGetClients = () => gets( clients )
-
 export const getClientIdRes: TGetClientIdRes = async ({params: {clientId} }) =>{
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const res = await fetch(import.meta.env.VITE_API + "/clientes/by_id/" + clientId, {
-    method: "GET"
+    method: "GET",
+    headers
   })
   return await res.json()
 } 
 
 export const getClientsListRes: TGetClientsListRes =  async () => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const res = await fetch(import.meta.env.VITE_API + "/clientes/list", {
-    method: "GET"
+    method: "GET",
+    headers
   })
   return await res.json()
 }
 
 export const getClientsRes: TGetClientsRes =  async () => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const users = await getUsersRes()
   const clients = await getClientsListRes()
   return clients?.map( ( { owner_id, ...items } ) => {
@@ -64,24 +75,42 @@ export const getClientsRes: TGetClientsRes =  async () => {
 }
 
 export const postClientsRes: TPostClientIdRes =  async ( params ) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization", "Bearer " + token)
+
   const res = await fetch(import.meta.env.VITE_API + "/clientes/create", {
     method: "POST",
-    body: JSON.stringify(params)
+    body: JSON.stringify(params),
+    headers
   })
   return res.json()
 }
 
 export const deleteClientsIdRes: TDeleteClientIdRes =  async ( { clientId } ) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const res = await fetch(import.meta.env.VITE_API + "/clientes/delete/" + clientId, {
     method: "DELETE",
+    headers,
   })
   return res.json()
 }
 
 export const pathClientsIdRes: TPatchClientIdRes =  async ( { clientId, params } ) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const res = await fetch(import.meta.env.VITE_API + "/clientes/" + clientId, {
     method: "PATCH",
-    body: JSON.stringify(params)
+    body: JSON.stringify(params),
+    headers
   })
   return res.json()
 }

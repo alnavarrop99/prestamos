@@ -35,7 +35,7 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
   const [checked, setChecked] = useState(false)
   const credit = Route.useLoaderData() ?? _credit
   const { open, setOpen } = useStatus()
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
   const navigate = useNavigate()
   const { mutate: createPayment } = useMutation({
     mutationKey: ["create-pay"],

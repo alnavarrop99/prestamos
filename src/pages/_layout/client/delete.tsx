@@ -32,7 +32,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
   const [checked, setChecked] = useState(false)
   const selectedclients = useContext(_selectedClients) ?? _clients
   const { open, setOpen } = useStatus()
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
   const navigate = useNavigate()
   const [ clients, setClients, resetRowSelection ] = useContext(_clientContext) ?? [[], (({})=>{}), (()=>{})]
   const { mutate: deleteClient } = useMutation({

@@ -14,7 +14,7 @@ import { getUserIdRes, pathUsersRes } from '@/api/users'
 import {useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { getRolId, getRolName, getRols } from '@/api/rol'
+import { getRolById, getRolByName, listRols } from '@/lib/type/rol'
 import { TUsersState, _usersContext } from '@/pages/_layout/user'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
@@ -49,7 +49,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
   const userDB = { ..._userDB, password: "" }
   const [ user, setUser ] = useState(userDB)
   const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
   const {mutate: updateUser} = useMutation( {
@@ -123,7 +123,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
     navigate({to: "../../"})
     setUsers( users?.map( ({ id, ...items }, i, list) => {
       if( user.id === id ){
-        return ({ ...items, id, nombre: firstName + " " + lastName, rol: getRolId({ rolId: Number.parseInt(rol) })?.name })
+        return ({ ...items, id, nombre: firstName + " " + lastName, rol: getRolById({ rolId: Number.parseInt(rol) })?.name })
       } 
       return list[i]
     } ) )
@@ -193,12 +193,12 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
         </Label>
         <Label>
           <span>{text.form.rol.label} </span>
-          <Select required name={'rol' as TFormName} defaultValue={ ""+getRolName({ rolName: rol })?.id }>
+          <Select required name={'rol' as TFormName} defaultValue={ ""+getRolByName({ rolName: rol })?.id }>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { getRols()?.map( ({ id, name }) => 
+              { listRols()?.map( ({ id, name }) => 
                 <SelectItem key={id} value={""+id}>{name}</SelectItem>
               ) }
             </SelectContent>

@@ -1,3 +1,5 @@
+import { useToken } from "@/lib/context/login"
+
 // BASE
 interface TPAYMENT_BASE {
   id: number
@@ -51,38 +53,68 @@ type TPatchPaymentById = ( params: { params: { paymentId: number, updatePayment:
 
 // FUNCTION DEFINITIONS
 export const getPaymentById: TGetPaymentById = async ({ params: { paymentId } }) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const payment = await fetch(import.meta.env.VITE_API + "/pagos/by_id/" + paymentId, {
     method: "GET",
+    headers
   })
   return payment.json()
 }
 
 export const getPayments: TGetPayments = async () => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const payment = await fetch("/pagos/list", {
     method: "GET",
+    headers,
   })
   return payment.json()
 }
 
 export const postPaymentId: TPostPaymentById = async (newPayment) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const payment = await fetch(import.meta.env.VITE_API + "/pagos/create", {
     method: "POST",
-    body: JSON.stringify(newPayment)
+    body: JSON.stringify(newPayment),
+    headers
   })
   return payment.json()
 }
 
 export const potchPaymentById: TPatchPaymentById = async ({ params: { paymentId, updatePayment } }) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const payment = await fetch(import.meta.env.VITE_API + "/pagos/" + paymentId, {
     method: "PATCH",
-    body: JSON.stringify(updatePayment)
+    body: JSON.stringify(updatePayment),
+    headers
   })
   return payment.json()
 }
 
 export const deletePaymentById: TDeletePaymentById = async ({ params: { paymentId } }) => {
+  const { token } = useToken.getState()
+  if( !token ) throw new Error("not auth")
+  const headers = new Headers()
+  headers.append("Authorization","Bearer " +  token)
+
   const payment = await fetch(import.meta.env.VITE_API + "/pagos/delete/" + paymentId, {
     method: "DELETE",
+    headers
   })
   return payment.json()
 }

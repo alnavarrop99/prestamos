@@ -32,3 +32,4 @@ export const payments = new Map<number, TPAYMENT_DB & { credit_id: number }>( _c
 }))
 export const users = new Map<number, TUSER_DB>( _users?.map( ( { id }, i, list ) => [ id, (list?.[i]) ] ) )
 export const reports = new Map<number, TREPORT_DB>( _reports?.map( ( { id }, i, list ) => [ id, (list?.[i]) ] ) )
+export const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcyNDM4MTMxMn0.p3uaAzSYneGPMwcBbpqIutNGnwMyiyDSBae5TW3X4Es"

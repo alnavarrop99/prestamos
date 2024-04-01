@@ -1,6 +1,7 @@
 import {
   createFileRoute,
   Outlet,
+  redirect,
   useChildMatches,
 } from '@tanstack/react-router'
 import styles from '@/styles/global.module.css'
@@ -11,6 +12,7 @@ import {
   BadgeDollarSign,
   Calendar as CalendarIcon,
   icons,
+  LogOut,
   MenuSquare,
   Moon,
   Network,
@@ -49,6 +51,7 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
+import { useToken } from '@/lib/context/login'
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
@@ -56,6 +59,14 @@ export const Route = createFileRoute('/_layout')({
     clients: await getClientsRes(),
     user: await getCurrentUserRes(),
   }),
+  beforeLoad: async (  ) => {
+    const { token } = useToken.getState()
+    if( !token ){
+      throw redirect({
+        to: "/login",
+      })
+    }
+  }
 })
 
 /* eslint-disable-next-line */
@@ -99,6 +110,7 @@ export function Layout({
   const [user] = useState(userDB)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
+  const { deleteToken } = useToken()
 
   useEffect(() => {
     const onNotwork = () => {
@@ -173,6 +185,10 @@ export function Layout({
     React.ComponentRef<typeof Button>
   > = () => {
     window.history.back()
+  }
+
+  const onLogut: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    deleteToken() 
   }
 
   return (
@@ -350,7 +366,6 @@ export function Layout({
                 value={value}
               />
             </Label>
-            <div>
               <HoverCard>
                 <HoverCardTrigger>
                   <Badge className="cursor-pointer text-sm" variant="outline">
@@ -376,6 +391,15 @@ export function Layout({
                   </ul>
                 </HoverCardContent>
               </HoverCard>
+            <Link to={"/"}>
+              <Button
+                variant={"ghost"} 
+                className='p-2 [&>svg]:p-1 [&>svg]:transition [&>svg]:delay-150 [&>svg]:duration-300 group'
+                onClick={onLogut}
+              >
+                <LogOut className='group-hover:stroke-destructive' />
+              </Button>
+            </Link>
               {!offline && (
                 <Network
                   className={clsx('ms-auto animate-bounce', {
@@ -386,7 +410,6 @@ export function Layout({
               )}
             </div>
           </div>
-        </div>
       </header>
       <main className="space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
         <div>

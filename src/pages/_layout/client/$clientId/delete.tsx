@@ -33,7 +33,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
   const client = Route.useLoaderData() ?? _client
   const { nombres: firstName, apellidos: lastName } = client
   const { setOpen, open } = useStatus()
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
   const { mutate: deleteClient } = useMutation({
     mutationKey: ["delete-client-by-id"],
     mutationFn: deleteClientsIdRes

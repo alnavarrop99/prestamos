@@ -18,8 +18,8 @@ import clsx from 'clsx'
 import { useStatus } from '@/lib/context/layout'
 import { Navigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
-import { getMoraTypeById, getMoraTypeByName } from '@/api/moraType'
-import { getFrecuency } from '@/api/frecuency'
+import { getMoraTypeById, getMoraTypeByName } from '@/lib/type/moraType'
+import { getFrecuency } from '@/lib/type/frecuency'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,

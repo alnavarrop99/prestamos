@@ -29,7 +29,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
   const [checked, setChecked] = useState(false)
   const selectUsers = useContext(_selectUsers) ?? _users
   const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
 

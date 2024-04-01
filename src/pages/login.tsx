@@ -1,12 +1,15 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@radix-ui/react-label'
-import { createFileRoute } from '@tanstack/react-router'
+import { Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useReducer, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/use-toast'
 import { Eye, EyeOff } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
+import { useMutation } from '@tanstack/react-query'
+import { type TUSER_LOGIN, type TUSER_LOGIN_BODY, loginUser } from '@/api/users'
+import { useToken } from '@/lib/context/login'
 
 export const Route = createFileRoute('/login')({
   component: Login,
@@ -21,46 +24,58 @@ interface TStatus {
 /* eslint-disable-next-line */
 interface TLoginProps { }
 
-/* eslint-disable-next-line */
-type LoginForm = 'password' | 'username' | 'remember'
-
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
+}
+
+const initUser: TStatus = {
+  password: false,
+  error: false,
 }
 
 /* eslint-disable-next-line */
 export function Login({}: TLoginProps) {
   const ref = useRef<HTMLFormElement>(null)
-  const [{ error, password }, setStatus] = useReducer(reducer, {
-    password: false,
-    error: false,
+  const [{ error, password }, setStatus] = useReducer(reducer, initUser)
+  const { token, setToken } = useToken()
+  const navigate = useNavigate()
+
+  const onSuccess: (data: TUSER_LOGIN) => unknown = ( user ) => {
+    setToken(user.access_token)
+  }
+
+  const { mutate: login } = useMutation({
+    mutationKey: ["login-user"],
+    mutationFn: loginUser,
+    onSuccess
   })
+
   const onSubmit: React.FormEventHandler = (ev) => {
-    ev.preventDefault()
     if (!ref.current) return
 
-    const { username, password, remember } = Object.fromEntries(
+    const { username, password } = Object.fromEntries(
       new FormData(ref.current).entries()
-    ) as Record<LoginForm, string>
-    const status: keyof typeof text.notification = !error ? 'success' : 'error'
+    ) as Record<keyof (TUSER_LOGIN_BODY & {remember: string}), string>
 
     if (!!username && !!password) {
+      login({ username, password })
       toast({
-        title: text.notification?.[status].title,
-        description: text.notification?.[status]?.description({ username }),
+        title: text.notification?.success.title,
+        description: text.notification?.success.description({ username }),
         variant: !error ? 'default' : 'destructive',
       })
     }
 
-    if (remember) {
-      alert('guardar en storage')
-    }
+    ev.preventDefault()
   }
+
   const onClick: React.MouseEventHandler<HTMLButtonElement> = () => {
     setStatus({ password: !password })
   }
 
   return (
+    <>
+    { token && <Navigate to={"/"} />}
     <section className="grid min-h-screen place-content-center place-items-center">
       <Card className="inline-block shadow-lg">
         <CardHeader>
@@ -79,7 +94,7 @@ export function Login({}: TLoginProps) {
             <Label>
               <span>{text.username.label}</span>
               <Input
-                name="username"
+                name={"username" as keyof TUSER_LOGIN_BODY}
                 type="text"
                 placeholder={text.username.placeholder}
               />
@@ -90,7 +105,7 @@ export function Login({}: TLoginProps) {
               <div className="flex items-center gap-x-2">
                 <Input
                   type={!password ? 'password' : 'text'}
-                  name="password"
+                  name={"password" as keyof TUSER_LOGIN_BODY}
                   placeholder={text.password.placeholder}
                 />
                 <Button
@@ -104,7 +119,7 @@ export function Login({}: TLoginProps) {
               </div>
             </Label>
             <Label className="flex items-center gap-2 px-4">
-              <Checkbox name="remember" /> {text.remember}
+              <Checkbox name={"remember"} /> {text.remember}
             </Label>
           </form>
         </CardContent>
@@ -120,6 +135,7 @@ export function Login({}: TLoginProps) {
         </CardFooter>
       </Card>
     </section>
+    </>
   )
 }
 Login.dispalyname = 'Login'

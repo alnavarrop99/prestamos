@@ -1,14 +1,20 @@
 import { HttpResponse, http } from 'msw'
 import { type TClientPostBody, type TClientList } from '@/api/clients'
-import { TClIENT_DB, clients } from './data'
+import { TClIENT_DB, clients, token } from './data'
 
-const allClients = http.all(import.meta.env.VITE_API + '/clientes/list', async () => {
+const allClients = http.all(import.meta.env.VITE_API + '/clientes/list', async ({request}) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   return HttpResponse.json<TClientList[]>(
     Array.from(clients?.values())?.map(({ owner: { id: ownerId }, ...items }) => ({ owner_id: ownerId, ...items }))
   )
 })
 
 const createClient = http.post( import.meta.env.VITE_API + '/clientes/create', async ({ request }) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const newClient = (await request.json()) as TClientPostBody
   if( !newClient ) {
     throw new Error("Fail post request")
@@ -23,6 +29,9 @@ const createClient = http.post( import.meta.env.VITE_API + '/clientes/create', a
 } )
 
 const updateClientById = http.patch( import.meta.env.VITE_API + '/clientes/:cliente_id', async ({params, request }) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const currentClient = (await request.json()) as TClientPostBody
   const { cliente_id: cliente_id } = params as { cliente_id?: string }
   if( !currentClient || !cliente_id ) {
@@ -37,7 +46,10 @@ const updateClientById = http.patch( import.meta.env.VITE_API + '/clientes/:clie
   })
 } )
 
-const getClientById = http.get( import.meta.env.VITE_API + '/clientes/by_id/:cliente_id', async ({params}) => {
+const getClientById = http.get( import.meta.env.VITE_API + '/clientes/by_id/:cliente_id', async ({params, request}) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const { cliente_id } = params as { cliente_id: string }
   if( !cliente_id || !clients?.has( Number.parseInt(cliente_id) ) ) {
     throw new Error("Fail get request")
@@ -48,7 +60,10 @@ const getClientById = http.get( import.meta.env.VITE_API + '/clientes/by_id/:cli
   return HttpResponse.json<TClientList>({ ...items, owner_id: ownerId }) 
 } )
 
-const deleteClientById = http.delete( import.meta.env.VITE_API + '/clientes/delete/:cliente_id', async ( { params } ) => {
+const deleteClientById = http.delete( import.meta.env.VITE_API + '/clientes/delete/:cliente_id', async ( { params, request } ) => {
+  const auth = request.headers.get("Authorization")
+  if( !auth || !auth.includes(token) ) throw new Error("not auth")
+
   const { cliente_id } = params as { cliente_id: string }
   if( !cliente_id || !clients?.has( Number.parseInt(cliente_id) ) ) {
     throw new Error("Fail delete request")

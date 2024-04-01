@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { getUserIdRes, type TUser } from '@/api/users'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { TUsersState, _usersContext } from '../../user'
+import { TUsersState, _usersContext } from '@/pages/_layout/user'
 
 export const Route = createFileRoute('/_layout/user/$userId/delete')({
   component: DeleteUserById,
@@ -31,7 +31,7 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
   const [checked, setChecked] = useState(false)
   const selectedUser = Route.useLoaderData() ?? _user
   const { nombre } = selectedUser
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
   const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]

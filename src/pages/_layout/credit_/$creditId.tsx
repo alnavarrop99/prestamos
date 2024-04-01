@@ -24,7 +24,7 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { CircleDollarSign as Pay } from 'lucide-react'
 import { format } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
-import { getFrecuencyById } from '@/api/frecuency'
+import { getFrecuencyById } from '@/lib/type/frecuency'
 import { createContext } from 'react'
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
@@ -267,24 +267,24 @@ const text = {
     amount: 'Monto total',
     interest: 'Tasa de interes',
     pay: 'Pagos realizados',
-    cuote: 'Monta Cuota',
-    installmants: 'Monta Mora',
+    cuote: 'Monta cuota',
+    installmants: 'Monta mora',
     frecuency: 'Frecuencia del credito',
     status: 'Estado',
     date: 'Fecha de aprobacion',
     comment: 'Comentario',
-    cuotes: 'Numero de Cuotas',
+    cuotes: 'Numero de cuotas',
     aditionalsDays: 'Dias adicionales',
   },
   cuotes: {
     title: 'Historial de pagos:',
     payDate: 'Fecha de pago',
     installmantsDate: 'Fecha de aplicacion de mora',
-    payValue: 'Monto del Pago',
-    payCuote: 'Monto Cuota',
+    payValue: 'Monto del pago',
+    payCuote: 'Monto cuota',
     payInstallmants: 'Monto de la mora',
     payStatus: 'Pagada',
-    total: 'Monto Total',
+    total: 'Monto total',
   },
   pay: {
     title: 'Historial de pagos:',

@@ -21,7 +21,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useStatus } from '@/lib/context/layout'
 import { type TClient } from '@/api/clients'
-import { getIdById } from '@/api/id'
+import { getIdById } from '@/lib/type/id'
 
 export type TClientTable = Omit<TClient, 'nombres' | 'apellidos'> &
   Record<'fullName', string>

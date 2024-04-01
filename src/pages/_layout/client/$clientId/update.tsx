@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { getIDs, getIdById } from '@/api/id'
+import { getIDs, getIdById } from '@/lib/type/id'
 import { _clientContext } from '../../client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
@@ -36,7 +36,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
   const  clientDB = Route.useLoaderData() ?? _client
   const [ client, setClient ] = useState(clientDB) 
   const { open, setOpen } = useStatus()
-  const { setNotification } = useNotifications()
+  const { pushNotification: setNotification } = useNotifications()
   const navigate = useNavigate()
   const { mutate: updateClient } = useMutation({
     mutationKey: ["update-client-by-id"],
