@@ -1,6 +1,6 @@
 import { HttpResponse, http } from 'msw'
 import { TRoles, getRolById } from "@/lib/type/rol"
-import { TUSER_LOGIN, TUSER_LOGIN_BODY, TUser, TUserPostBody } from '@/api/users'
+import { TUSER_LOGIN, TUSER_LOGIN_BODY, TUSER_GET, TUSER_POST_BODY } from '@/api/users'
 import { type TUSER_DB, users, token } from './data'
 
 const loginUser = http.post(import.meta.env.VITE_API + '/users/login', async ({ request }) => {
@@ -23,11 +23,11 @@ const listUsers = http.all(import.meta.env.VITE_API + '/users/list', async ( { r
   const auth = request.headers.get("Authorization")
   if( !auth || !auth.includes(token) ) throw new Error("not auth")
 
-  return HttpResponse.json<TUser[]>(
+  return HttpResponse.json<TUSER_GET[]>(
     Array.from(users?.values())?.map(({ rol: _rol, clientes: _clientes, ...items }) => {
       const rol = getRolById({ rolId: _rol?.id })?.nombre ?? 'Usuario'
       const clientes = _clientes?.map(({ id }) => id)
-      return { ...items, rol, clientes } as TUser
+      return { ...items, rol, clientes } as TUSER_GET
     })
   )
 })
@@ -36,14 +36,14 @@ const createUser = http.post( import.meta.env.VITE_API + '/users/create', async 
   const auth = request.headers.get("Authorization")
   if( !auth || !auth.includes(token) ) throw new Error("not auth")
 
-  const newUser = (await request.json()) as TUserPostBody
+  const newUser = (await request.json()) as TUSER_POST_BODY
   if( !newUser ) {
     throw new Error("Fail Body request")
   }
   const { rol_id, ...items } = newUser
   users?.set( users?.size + 1 , { ...items, rol: { id: rol_id }, id: (users.get(users?.size)?.id ?? 0) + 1, clientes: [] } )
 
-  return HttpResponse.json<TUser>( { 
+  return HttpResponse.json<TUSER_GET>( { 
     id: (users?.get(users.size)?.id ?? 0),
     rol: getRolById({ rolId: rol_id })?.nombre as TRoles ?? "Usuario",
     nombre: newUser?.nombre,
@@ -54,7 +54,7 @@ const updateUserById = http.patch( import.meta.env.VITE_API + '/users/:usuario_i
   const auth = request.headers.get("Authorization")
   if( !auth || !auth.includes(token) ) throw new Error("not auth")
 
-  const currentUser = (await request.json()) as TUserPostBody
+  const currentUser = (await request.json()) as TUSER_POST_BODY
   const { usuario_id } = params as { usuario_id?: string }
   if( !currentUser || !usuario_id ) {
     throw new Error("Fail update request")
@@ -64,7 +64,7 @@ const updateUserById = http.patch( import.meta.env.VITE_API + '/users/:usuario_i
 
   users?.set( userId, { ...(users?.get(userId) ?? {} as TUSER_DB), nombre, rol: { id: rol_id }  } )
 
-  return HttpResponse.json<TUser>( { 
+  return HttpResponse.json<TUSER_GET>( { 
     id: users.get( userId )?.id ?? 0,
     rol: getRolById({ rolId: rol_id })?.nombre as TRoles ?? "Usuario",
     nombre: users.get( userId )?.nombre ?? "",
@@ -81,7 +81,7 @@ const userById = http.get( import.meta.env.VITE_API + '/users/by_id/:id_usuario'
   }
   const userId = Number.parseInt(id_usuario)
   const { id, nombre, rol: { id: rolId } } = users?.get( userId ) ?? {} as TUSER_DB
-  return HttpResponse.json<TUser>({ id, rol: getRolById({ rolId })?.nombre, nombre }) 
+  return HttpResponse.json<TUSER_GET>({ id, rol: getRolById({ rolId })?.nombre, nombre }) 
 } )
 
 const currentUser = http.get( import.meta.env.VITE_API + '/users/get_current', async ({ request }) => {
@@ -93,7 +93,7 @@ const currentUser = http.get( import.meta.env.VITE_API + '/users/get_current', a
     throw new Error("Fail get request")
   }
   const { id, nombre, rol: { id: rolId } } = user
-  return HttpResponse.json<TUser>({ id, rol: getRolById({ rolId })?.nombre, nombre }) 
+  return HttpResponse.json<TUSER_GET>({ id, rol: getRolById({ rolId })?.nombre, nombre }) 
 } )
 
 export default [listUsers, createUser, updateUserById, userById, currentUser, loginUser]

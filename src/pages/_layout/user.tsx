@@ -1,6 +1,6 @@
-import { getUsersRes } from '@/api/users'
-import { type TRoles } from "@/api/rol";
-import { type TUser } from "@/api/users";
+import { TUSER_GET_ALL, getUsersList } from '@/api/users'
+import { type TRoles } from "@/lib/type/rol";
+import { type TUSER_GET } from "@/api/users";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Link,
@@ -36,17 +36,17 @@ import { Separator } from '@/components/ui/separator'
 
 export const Route = createFileRoute('/_layout/user')({
   component: Users,
-  loader: getUsersRes,
+  loader: getUsersList,
 })
 
 /* eslint-disable-next-line */
 interface TUsersProps {
   open?: boolean
-  users?: TUser[]
+  users?: TUSER_GET_ALL
 }
 
 /* eslint-disable-next-line */
-export interface TUsersState extends TUser {
+export interface TUsersState extends TUSER_GET {
   selected: boolean
   menu: boolean
   active?: boolean
@@ -59,7 +59,7 @@ export const _usersContext = createContext<[TUsersState[], React.Dispatch<React.
 export function Users({
   children,
   open: _open,
-  users: _users = [] as TUser[],
+  users: _users = [] as TUSER_GET_ALL,
 }: React.PropsWithChildren<TUsersProps>) {
   const usersDB = (Route.useLoaderData() ?? _users)?.map<TUsersState>(
     (items) => ({ ...items, selected: false, menu: false })

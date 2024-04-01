@@ -1,40 +1,43 @@
 import { useToken } from "@/lib/context/login";
-import { TRoles } from "@/lib/type/rol";
 
-export interface TUser {
+// GET
+export type TUSER_GET = {
   id: number
   nombre: string
-  rol: TRoles
+  rol: string
   clientes?: number[]
 }
 
-export interface TUSER_LOGIN {
+export type TUSER_GET_ALL = TUSER_GET[]
+
+// POST
+export type TUSER_LOGIN = {
   access_token: string
 }
 
-export interface TUSER_LOGIN_BODY {
+export type TUSER_LOGIN_BODY = {
  username: string
  password: string
 }
 
-export interface TUserPostBody {
+export type TUSER_POST_BODY = {
   nombre: string
   password: string 
   rol_id: number
 }
 
-export interface TUserPatchBody {
-  nombre?: string
-  password?: string 
-  rol_id?: number
-}
+export type TUSER_POST = TUSER_GET
+
+// PATCH
+export type TUSER_PATCH_BODY = TUSER_POST_BODY
+export type TUSER_PATCH = TUSER_GET 
 
 type TGetUserLogin = (params: TUSER_LOGIN_BODY ) => Promise<TUSER_LOGIN>
-type TGetUserIdRes = ( params: { params: { userId: string } }) => Promise<TUser>
-type TGetUsersRes = () => Promise<TUser[]>
-type TGetCurrentUserRes = () => Promise<TUser>
-type TPostUserIdRes = (params: TUserPostBody) => Promise<TUser>
-type TPathUserIdRes = (params: { userId: number, params: TUserPatchBody } ) => Promise<TUser>
+type TGetUserById = ( params: { params: { userId: string } }) => Promise<TUSER_GET>
+type TGetUsersList = () => Promise<TUSER_GET_ALL>
+type TGetCurrentUser = () => Promise<TUSER_GET>
+type TPostUser = (params: TUSER_POST_BODY) => Promise<TUSER_GET>
+type TPathUserById = (params: { userId: number , params: TUSER_PATCH_BODY } ) => Promise<TUSER_GET>
 
 export const loginUser: TGetUserLogin = async ( params ) => {
   const data = await fetch(import.meta.env.VITE_API + '/users/login', {
@@ -44,7 +47,7 @@ export const loginUser: TGetUserLogin = async ( params ) => {
   return data.json()
 }
 
-export const getUserIdRes: TGetUserIdRes = async ( { params: { userId } } ) => {
+export const getUserById: TGetUserById = async ( { params: { userId } } ) => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -57,7 +60,7 @@ export const getUserIdRes: TGetUserIdRes = async ( { params: { userId } } ) => {
   return data.json()
 }
 
-export const getUsersRes: TGetUsersRes = async () => {
+export const getUsersList: TGetUsersList = async () => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -70,7 +73,7 @@ export const getUsersRes: TGetUsersRes = async () => {
   return data.json()
 }
 
-export const postUsersRes: TPostUserIdRes = async ( params ) => {
+export const postUser: TPostUser = async ( params ) => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -84,7 +87,7 @@ export const postUsersRes: TPostUserIdRes = async ( params ) => {
   return data.json()
 }
 
-export const pathUsersRes: TPathUserIdRes = async ( { userId, params } ) => {
+export const pathUserById: TPathUserById = async ( { userId , params } ) => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -98,7 +101,7 @@ export const pathUsersRes: TPathUserIdRes = async ( { userId, params } ) => {
   return data.json()
 }
 
-export const getCurrentUserRes: TGetCurrentUserRes = async () => {
+export const getCurrentUser: TGetCurrentUser = async () => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()

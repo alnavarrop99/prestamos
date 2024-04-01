@@ -13,7 +13,7 @@ import { useContext, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { TUser, postUsersRes } from '@/api/users'
+import { TUSER_GET, postUser } from '@/api/users'
 import { getRolById, listRols } from "@/lib/type/rol";
 import { TUsersState, _usersContext } from '../user'
 
@@ -40,13 +40,13 @@ export function NewUser({}: TNewUserProps) {
   const form = useRef<HTMLFormElement>(null)
   const { pushNotification: setNotification } = useNotifications()
 
-  const onSuccess: (data: TUser) => unknown = (newUser) => {
+  const onSuccess: (data: TUSER_GET) => unknown = (newUser) => {
     setUsers( [ ...users?.slice(0, -1), { ...(users?.at(-1) ?? {} as TUsersState), ...newUser } ]  )
   }
 
   const { mutate: createUser } = useMutation( {
     mutationKey: ["create-user"],
-    mutationFn: postUsersRes,
+    mutationFn: postUser,
     onSuccess,
   })
 
@@ -82,7 +82,7 @@ export function NewUser({}: TNewUserProps) {
     const timer = setTimeout(action(items), 6 * 1000)
     setUsers( [...users, { 
       nombre: firstName + " " + lastName,
-      rol: getRolById( { rolId: Number?.parseInt(items?.rol) } )?.name,
+      rol: getRolById( { rolId: Number?.parseInt(items?.rol) } )?.nombre,
       id: (users?.at(-1)?.id ?? 0) + 1,
       menu: false,
       active: false,
@@ -160,8 +160,8 @@ export function NewUser({}: TNewUserProps) {
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { listRols()?.map( ( { name, id } ) =>
-                <SelectItem key={id} value={""+id}>{name}</SelectItem>
+              { listRols()?.map( ( { nombre, id } ) =>
+                <SelectItem key={id} value={""+id}>{nombre}</SelectItem>
               ) }
             </SelectContent>
           </Select>

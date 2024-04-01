@@ -10,16 +10,16 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { ComponentRef, useContext, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { getUserIdRes, pathUsersRes } from '@/api/users'
+import { getUserById, pathUserById } from '@/api/users'
 import {useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { getRolById, getRolByName, listRols } from '@/lib/type/rol'
+import { TRoles, getRolById, getRolByName, listRols } from '@/lib/type/rol'
 import { TUsersState, _usersContext } from '@/pages/_layout/user'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
   component: UpdateUserById,
-  loader: getUserIdRes
+  loader: getUserById
 })
 
 /* eslint-disable-next-line */
@@ -54,7 +54,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
   const navigate = useNavigate()
   const {mutate: updateUser} = useMutation( {
     mutationKey: ["update-user"],
-    mutationFn: pathUsersRes,
+    mutationFn: pathUserById,
   })
 
   const onClick: ( {prop}:{ prop: keyof TPassowordVisibilityState } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
@@ -108,7 +108,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
           userId: id, 
           params: { 
             rol_id: Number.parseInt(rol), 
-            password: newPassword !== "" ? newPassword : undefined, 
+            password: newPassword, 
             nombre: firstName + " " + lastName
           } })
         setNotification({
@@ -123,7 +123,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
     navigate({to: "../../"})
     setUsers( users?.map( ({ id, ...items }, i, list) => {
       if( user.id === id ){
-        return ({ ...items, id, nombre: firstName + " " + lastName, rol: getRolById({ rolId: Number.parseInt(rol) })?.name })
+        return ({ ...items, id, nombre: firstName + " " + lastName, rol: getRolById({ rolId: Number.parseInt(rol) })?.nombre })
       } 
       return list[i]
     } ) )
@@ -193,13 +193,13 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
         </Label>
         <Label>
           <span>{text.form.rol.label} </span>
-          <Select required name={'rol' as TFormName} defaultValue={ ""+getRolByName({ rolName: rol })?.id }>
+          <Select required name={'rol' as TFormName} defaultValue={ ""+getRolByName({ rolName: rol as TRoles })?.id }>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { listRols()?.map( ({ id, name }) => 
-                <SelectItem key={id} value={""+id}>{name}</SelectItem>
+              { listRols()?.map( ({ id, nombre }) => 
+                <SelectItem key={id} value={""+id}>{nombre}</SelectItem>
               ) }
             </SelectContent>
           </Select>

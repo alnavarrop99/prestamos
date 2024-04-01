@@ -11,14 +11,14 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { getUserIdRes, type TUser } from '@/api/users'
+import { getUserById, type TUSER_GET } from '@/api/users'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { TUsersState, _usersContext } from '@/pages/_layout/user'
 
 export const Route = createFileRoute('/_layout/user/$userId/delete')({
   component: DeleteUserById,
-  loader: getUserIdRes,
+  loader: getUserById,
 })
 
 /* eslint-disable-next-line */
@@ -47,7 +47,7 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
       username: nombre,
     })
 
-    const action = (selectedUser: TUser) => () => {
+    const action = (selectedUser: TUSER_GET) => () => {
         import.meta.env.DEV && console.table(selectedUser);
         setNotification({
           date: new Date(),

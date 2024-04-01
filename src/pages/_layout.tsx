@@ -43,7 +43,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { getCurrentUserRes, type TUser } from '@/api/users'
+import { getCurrentUser, type TUSER_GET } from '@/api/users'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -57,7 +57,7 @@ export const Route = createFileRoute('/_layout')({
   component: Layout,
   loader: async () => ({
     clients: await getClientsRes(),
-    user: await getCurrentUserRes(),
+    user: await getCurrentUser(),
   }),
   beforeLoad: async (  ) => {
     const { token } = useToken.getState()
@@ -80,7 +80,7 @@ interface TStatus {
 /* eslint-disable-next-line */
 interface TNavigationProps {
   clients?: TClient[]
-  user?: TUser
+  user?: TUSER_GET
   theme?: Theme
   open?: boolean
 }
@@ -95,7 +95,7 @@ export function Layout({
   theme: _theme,
   clients: _clients = [] as TClient[],
   open: _open = false,
-  user: _user = {} as TUser,
+  user: _user = {} as TUSER_GET,
 }: React.PropsWithChildren<TNavigationProps>) {
   const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,

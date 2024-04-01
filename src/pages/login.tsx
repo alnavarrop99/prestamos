@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@radix-ui/react-label'
-import { Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useReducer, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/use-toast'
@@ -38,7 +38,6 @@ export function Login({}: TLoginProps) {
   const ref = useRef<HTMLFormElement>(null)
   const [{ error, password }, setStatus] = useReducer(reducer, initUser)
   const { token, setToken } = useToken()
-  const navigate = useNavigate()
 
   const onSuccess: (data: TUSER_LOGIN) => unknown = ( user ) => {
     setToken(user.access_token)

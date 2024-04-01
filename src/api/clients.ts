@@ -1,4 +1,4 @@
-import { getUsersRes, type TUser } from "@/api/users"
+import { getUsersList, type TUSER_GET } from "@/api/users"
 import { useToken } from "@/lib/context/login"
 
 interface TClientBase  {
@@ -19,7 +19,7 @@ export type TClientPostBody = TClientBase
 
 export interface TClient extends TClientBase {
   id: number
-  owner?: TUser 
+  owner?: TUSER_GET 
 }
 
 export interface TClientList extends TClientBase {
@@ -66,7 +66,7 @@ export const getClientsRes: TGetClientsRes =  async () => {
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
 
-  const users = await getUsersRes()
+  const users = await getUsersList()
   const clients = await getClientsListRes()
   return clients?.map( ( { owner_id, ...items } ) => {
     const owner = users?.find( ({ id }) => owner_id === id )
