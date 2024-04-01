@@ -11,7 +11,7 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { TClient, deleteClientsIdRes, getClientIdRes } from '@/api/clients'
+import { TCLIENT_GET, deleteClientsById, getClientById } from '@/api/clients'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
@@ -19,16 +19,16 @@ import { _clientContext } from '../../client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteClientById,
-  loader: getClientIdRes,
+  loader: getClientById,
 })
 
 /* eslint-disable-next-line */
 interface TDeleteByClient {
-  client?: TClient
+  client?: TCLIENT_GET
 }
 
 /* eslint-disable-next-line */
-export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByClient) {
+export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDeleteByClient) {
   const [checked, setChecked] = useState(false)
   const client = Route.useLoaderData() ?? _client
   const { nombres: firstName, apellidos: lastName } = client
@@ -36,7 +36,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
   const { pushNotification: setNotification } = useNotifications()
   const { mutate: deleteClient } = useMutation({
     mutationKey: ["delete-client-by-id"],
-    mutationFn: deleteClientsIdRes
+    mutationFn: deleteClientsById
   })
   const navigate = useNavigate()
   const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
@@ -52,7 +52,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
       username: firstName + ' ' + lastName,
     })
 
-    const action = ({ ...props }: TClient) =>
+    const action = ({ ...props }: TCLIENT_GET) =>
       () => {
         deleteClient({ clientId: props?.id })
         setNotification( {

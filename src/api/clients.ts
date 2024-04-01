@@ -1,7 +1,13 @@
-import { getUsersList, type TUSER_GET } from "@/api/users"
 import { useToken } from "@/lib/context/login"
 
-interface TClientBase  {
+type TOWNER = {
+  nombre: string
+  rol_id?: number
+  id?: number
+}
+
+// GET
+export type TCLIENT_GET_BASE =  {
   nombres: string
   apellidos: string
   tipo_de_identificacion: number
@@ -10,31 +16,77 @@ interface TClientBase  {
   telefono: string
   email: string
   direccion: string
+  comentarios: string
   estado: number
   referencia_id?: number
+  id?: number
+  owner_id?: number
+}
+
+export type TCLIENT_GET = {
+  nombres: string
+  apellidos: string
+  tipo_de_identificacion: number
+  numero_de_identificacion: string
+  celular: string
+  telefono: string
+  email: string
+  direccion: string
   comentarios: string
-}
-
-export type TClientPostBody = TClientBase
-
-export interface TClient extends TClientBase {
+  estado: number
+  referencia_id: number
   id: number
-  owner?: TUSER_GET 
+  owner: TOWNER
 }
 
-export interface TClientList extends TClientBase {
-  id: number
-  owner_id?: number 
+export type TCLIENT_GET_ALL = TCLIENT_GET_BASE[]
+
+// POST
+export type TCLIENT_POST = {
 }
 
-type TGetClientIdRes = ({params}: { params: { clientId: string } }) => Promise<TClient>
-type TGetClientsListRes = () => Promise<TClientList[]>
-type TGetClientsRes = () => Promise<TClient[]>
-type TPostClientIdRes = ( params: TClientPostBody ) => Promise<TClientList> 
-type TDeleteClientIdRes = ( params: { clientId: number } ) => Promise<TClientList> 
-type TPatchClientIdRes = ( { params, clientId }: { params: TClientPostBody, clientId: number } ) => Promise<TClientList> 
+export type TCLIENT_POST_BODY = {
+  nombres: string
+  apellidos: string
+  tipo_de_identificacion: number
+  numero_de_identificacion: string
+  celular: string
+  telefono: string
+  email: string
+  direccion: string
+  comentarios: string
+  estado: number
+  referencia_id?: number
+}
 
-export const getClientIdRes: TGetClientIdRes = async ({params: {clientId} }) =>{
+// PATCH
+export type TCLIENT_PATCH = TCLIENT_GET_BASE
+
+export type TCLIENT_PATCH_BODY = {
+  nombres?: string
+  apellidos?: string
+  tipo_de_identificacion_id?: number
+  numero_de_identificacion?: string
+  celular?: string
+  telefono?: string
+  email?: string
+  direccion?: string
+  comentarios?: string
+  estado?: number
+  referencia_id?: number
+}
+
+// DELETE
+export type TCLIENT_DELETE = TCLIENT_GET_BASE
+
+
+type TGetClientById = (params: { params: { clientId: string } }) => Promise<TCLIENT_GET>
+type TGetClientsList = () => Promise<TCLIENT_GET_ALL>
+type TPostClient = ( params: TCLIENT_POST_BODY ) => Promise<TCLIENT_POST> 
+type TDeleteClientById = ( params: { clientId: number } ) => Promise<TCLIENT_DELETE> 
+type TPatchClientById = ( params: { clientId: number, params?: TCLIENT_PATCH_BODY } ) => Promise<TCLIENT_PATCH> 
+
+export const getClientById: TGetClientById = async ({params: {clientId} }) =>{
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -47,7 +99,7 @@ export const getClientIdRes: TGetClientIdRes = async ({params: {clientId} }) =>{
   return await res.json()
 } 
 
-export const getClientsListRes: TGetClientsListRes =  async () => {
+export const getClientsList: TGetClientsList =  async () => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -60,21 +112,7 @@ export const getClientsListRes: TGetClientsListRes =  async () => {
   return await res.json()
 }
 
-export const getClientsRes: TGetClientsRes =  async () => {
-  const { token } = useToken.getState()
-  if( !token ) throw new Error("not auth")
-  const headers = new Headers()
-  headers.append("Authorization","Bearer " +  token)
-
-  const users = await getUsersList()
-  const clients = await getClientsListRes()
-  return clients?.map( ( { owner_id, ...items } ) => {
-    const owner = users?.find( ({ id }) => owner_id === id )
-    return ({ owner, ...items })
-  } )
-}
-
-export const postClientsRes: TPostClientIdRes =  async ( params ) => {
+export const postClient: TPostClient =  async ( params ) => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -88,7 +126,7 @@ export const postClientsRes: TPostClientIdRes =  async ( params ) => {
   return res.json()
 }
 
-export const deleteClientsIdRes: TDeleteClientIdRes =  async ( { clientId } ) => {
+export const deleteClientsById: TDeleteClientById =  async ( { clientId } ) => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -101,7 +139,7 @@ export const deleteClientsIdRes: TDeleteClientIdRes =  async ( { clientId } ) =>
   return res.json()
 }
 
-export const pathClientsIdRes: TPatchClientIdRes =  async ( { clientId, params } ) => {
+export const pathClientById: TPatchClientById =  async ( { clientId, params } ) => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()

@@ -3,7 +3,7 @@ import $ from '@/lib/render'
 import { Layout } from '@/pages/_layout'
 import { Fragment } from 'react'
 import { Toaster } from '@/components/ui/toaster'
-import { getCreditById, getCredits, type TCredit } from '@/api/credit'
+import { getCreditById, getCreditsList, type TCredit } from '@/api/credit'
 import { Credits } from '@/pages/_layout/credit'
 import { CreditById } from '@/pages/_layout/credit_/$creditId'
 import { DeleteCreditById } from '@/pages/_layout/credit_/$creditId/delete'
@@ -83,7 +83,7 @@ export const _Credits: StoryObj<React.ComponentProps<typeof _CreditsBase>> = {
   name: '/credit',
   render: _CreditsBase,
   args: {
-    credits: getCredits(),
+    credits: getCreditsList(),
   },
 }
 
@@ -93,7 +93,7 @@ export const _NewCredit: StoryObj<React.ComponentProps<typeof NewCredit>> = {
   args: {
     clients: getClients(),
   },
-  decorators: [_CreditLayout(getCredits())],
+  decorators: [_CreditLayout(getCreditsList())],
 }
 
 export const _PaySelectedCredit: StoryObj<
@@ -104,7 +104,7 @@ export const _PaySelectedCredit: StoryObj<
   args: {
     credit: getCreditById({ creditId: 4 }),
   },
-  decorators: [_CreditLayout(getCredits())],
+  decorators: [_CreditLayout(getCreditsList())],
 }
 
 export const _PrintSelectedCredit: StoryObj<
@@ -115,7 +115,7 @@ export const _PrintSelectedCredit: StoryObj<
   args: {
     credit: getCreditById({ creditId: 4 }),
   },
-  decorators: [_CreditLayout(getCredits())],
+  decorators: [_CreditLayout(getCreditsList())],
 }
 
 export const _CreditById: StoryObj<React.ComponentProps<typeof CreditById>> = {

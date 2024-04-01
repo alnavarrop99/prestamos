@@ -32,12 +32,16 @@ export type TUSER_POST = TUSER_GET
 export type TUSER_PATCH_BODY = TUSER_POST_BODY
 export type TUSER_PATCH = TUSER_GET 
 
+// DELETE
+export type TUSER_DELETE = TUSER_GET 
+
 type TGetUserLogin = (params: TUSER_LOGIN_BODY ) => Promise<TUSER_LOGIN>
 type TGetUserById = ( params: { params: { userId: string } }) => Promise<TUSER_GET>
 type TGetUsersList = () => Promise<TUSER_GET_ALL>
 type TGetCurrentUser = () => Promise<TUSER_GET>
-type TPostUser = (params: TUSER_POST_BODY) => Promise<TUSER_GET>
-type TPathUserById = (params: { userId: number , params: TUSER_PATCH_BODY } ) => Promise<TUSER_GET>
+type TPostUser = (params: TUSER_POST_BODY) => Promise<TUSER_POST>
+type TPathUserById = (params: { userId: number , params: TUSER_PATCH_BODY } ) => Promise<TUSER_PATCH>
+// type TDeleteUserById = (params: { userId: number } ) => Promise<TUSER_DELETE>
 
 export const loginUser: TGetUserLogin = async ( params ) => {
   const data = await fetch(import.meta.env.VITE_API + '/users/login', {
@@ -113,3 +117,17 @@ export const getCurrentUser: TGetCurrentUser = async () => {
   })
   return data.json()
 }
+
+// TODO: Not Backend definition
+// export const deleteUserById: TDeleteUserById = async () => {
+//   const { token } = useToken.getState()
+//   if( !token ) throw new Error("not auth")
+//   const headers = new Headers()
+//   headers.append("Authorization","Bearer " +  token)
+//
+//   const data = await fetch(import.meta.env.VITE_API + '/users/get_current', {
+//     method: "GET",
+//     headers
+//   })
+//   return data.json()
+// }

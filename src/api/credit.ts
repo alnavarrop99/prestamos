@@ -1,39 +1,7 @@
-import type { TPAYMENT_GET_ALL } from '@/api/payment'
+import type { TPAYMENT_GET, TPAYMENT_GET_BASE } from '@/api/payment'
 import { useToken } from '@/lib/context/login'
 
-// BASE
-export interface TCREDIT_BASE {
-  id: number
-  comentario: string
-  cobrador_id: number
-  fecha_de_aprobacion: Date
-  numero_de_cuotas: number
-  tasa_de_interes: number
-  monto: number
-  estado: number
-  frecuencia_del_credito_id: number
-  dias_adicionales: number
-  tipo_de_mora_id: number
-  valor_de_mora?: number
-  owner_id: number
-}
-
-export interface TCREDIT_BASE_BODY {
-  comentario?: string
-  cobrador_id?: number
-  fecha_de_aprobacion?: Date
-  numero_de_cuotas?: number
-  tasa_de_interes?: number
-  monto?: number
-  estado?: number
-  frecuencia_del_credito_id?: number
-  dias_adicionales?: number
-  tipo_de_mora_id?: number
-  valor_de_mora?: number
-  owner_id?: number
-}
-
-export interface TCUOTES {
+export type TCUOTE = {
   id: number
   numero_de_cuota: number
   fecha_de_pago: Date
@@ -45,82 +13,124 @@ export interface TCUOTES {
   credito_id: number,
 }
 
-export interface TMORA {
-  id: number
-  tipo_enumerador_id: number
+export type TMORA = {
+  id?: number
+  tipo_enumerador_id?: number
   nombre: string
 }
 
-export interface TFRECUENCY {
-  id: number
-  tipo_enumerador_id: number
+export type TFRECUENCY = {
+  id?: number
+  tipo_enumerador_id?: number
   nombre: string
 }
 
-// GET BY ID
-export interface TCREDIT_GET extends TCREDIT_BASE {
-  nombre_del_cliente: string
-  fecha_de_cuota: Date
-  valor_de_cuota: number
-  numero_de_cuota: number
-  garante_id?: number
-  frecuencia_del_credito: TFRECUENCY
-  tipo_de_mora: TMORA
-  pagos?: TPAYMENT_GET_ALL
-  cuotas?: TCUOTES[]
-}
+type TPAYMNET = TPAYMENT_GET_BASE
 
-// GET ALL
-export type TCREDIT_GET_ALL = TCREDIT_GET[]
-
-// GET CUOTES
-export type TCREDIT_GET_CUOTES_FOR_PAY = TCREDIT_BASE
-
-// GET FILTERS
-export interface TCREDIT_GET_FILTER {
-  id: number
-  cliente_id: number
-  nombre_del_cliente: string
-  fecha_de_cuota: Date
-  valor_de_cuota: number
-  valor_de_mora?: number
-  numero_de_cuota: number
+// GET
+export type TCREDIT_GET_BASE = {
+  comentario: string
+  cobrador_id: number
+  fecha_de_aprobacion: string
   numero_de_cuotas: number
+  tasa_de_interes: number
   monto: number
+  estado: number
+  frecuencia_del_credito_id?: number
+  dias_adicionales: number
+  tipo_de_mora_id?: number
+  valor_de_mora: number
+  id?: number,
+  owner_id?: number,
+  garante_id?: number
+}
+
+export type TCREDIT_GET = {
+  comentario: string
+  cobrador_id: number
+  fecha_de_aprobacion: string
+  numero_de_cuotas: number
+  tasa_de_interes: number
+  monto: number
+  estado: number
+  frecuencia_del_credito_id: number
+  dias_adicionales: number
+  tipo_de_mora_id: number
+  valor_de_mora: number
+  id: number,
+  owner_id: number,
+  garante_id?: number
+  tipo_de_mora: TMORA
+  frecuencia_del_credito: TFRECUENCY
+  pagos: TPAYMNET[]
+  cuotas: TCUOTE[]
+}
+
+export type TCREDIT_GET_ALL = TCREDIT_GET_BASE[]
+
+export type TCREDIT_GET_FILTER_ALL = {
+  nombre_del_cliente: string
+  fecha_de_cuota: string
+  valor_de_cuota: number
+  numero_de_cuota: number
+  valor_de_la_mora: number
   frecuencia: TFRECUENCY
 }
 
-export interface TCREDIT_GET_FILTER_BODY {
+export type TCREDIT_GET_FILTER_BODY = {
   fecha_de_pago?: Date 
   saldo_por_pagar?: boolean
   saldo_en_mora?: boolean 
   cliente?: string 
 }
 
-export type TCREDIT_GET_FILTER_ALL = TCREDIT_GET_FILTER[]
-
 // POST
-export type TCREDIT_POST_BODY = Omit<TCREDIT_BASE, "id">
+export type TCREDIT_POST = TCREDIT_GET_BASE
 
-export interface TCREDIT_POST extends TCREDIT_BASE {
-  garante_id:  number
-  owner_id:  number 
+export type TCREDIT_POST_BODY = {
+  comentario: string
+  cobrador_id: number
+  fecha_de_aprobacion: string
+  numero_de_cuotas: number
+  tasa_de_interes: number
+  monto: number
+  estado: number
+  frecuencia_del_credito_id: number
+  dias_adicionales: number
+  tipo_de_mora_id: number
+  valor_de_mora: number
+  owner_id: number
+  garante_id: number
 }
 
 // PATCH
-export type TCREDIT_PATCH_BODY = TCREDIT_BASE_BODY
-export type TCREDIT_PATCH = TCREDIT_GET
+export type TCREDIT_PATCH = TCREDIT_GET_BASE
+
+export type TCREDIT_PATCH_BODY = {
+  comentario?: string
+  cobrador_id?: number
+  fecha_de_aprobacion?: string
+  numero_de_cuotas?: number
+  tasa_de_interes?: number
+  monto?: number
+  estado?: number
+  dias_adicionales?: number
+  tipo_de_mora_id?: number
+  valor_de_mora?: number
+  frecuencia_del_credito_id?: number
+  garante_id?: number
+}
 
 // DELETE
-export type TCREDIT_DELETE = TCREDIT_BASE
+export type TCREDIT_DELETE = TCREDIT_GET_BASE
 
 // FUNCTION TYPES
 type TGetCreditById = (params: { params: { creditId: string } }) => Promise<TCREDIT_GET>
-type TGetCredits = () => Promise<TCREDIT_GET_ALL>
-type TGetCreditsFilter = ( params?: TCREDIT_GET_FILTER_BODY) => () => Promise<TCREDIT_GET_FILTER_ALL>
+type TGetCreditsList = () => Promise<TCREDIT_GET_ALL>
+type TGetCreditsFilter = ( params: TCREDIT_GET_FILTER_BODY) => () => Promise<TCREDIT_GET_FILTER_ALL>
 type TPostCredit = (params: TCREDIT_POST_BODY) => Promise<TCREDIT_POST>
 type TDeleteCreditById = (params: { creditId: number }) => Promise<TCREDIT_DELETE>
-type TPatchCreditById = (params: { creditId: number, updateCredit: TCREDIT_PATCH_BODY }) => Promise<TCREDIT_PATCH>
+type TPatchCreditById = (params: { creditId: number, updateCredit?: TCREDIT_PATCH_BODY }) => Promise<TCREDIT_PATCH>
 
 // FUNCTION DEFINITIONS
 export const getCreditById: TGetCreditById = async ({ params: { creditId} }) => {
@@ -136,7 +146,7 @@ export const getCreditById: TGetCreditById = async ({ params: { creditId} }) => 
   return creditById.json()
 }
 
-export const getCredits: TGetCredits =  async () => {
+export const getCreditsList: TGetCreditsList =  async () => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()

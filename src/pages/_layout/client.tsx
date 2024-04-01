@@ -42,7 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getClientsRes } from '@/api/clients'
+import { getClientsList } from '@/api/clients'
 import clsx from 'clsx'
 import { columns, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
@@ -51,7 +51,7 @@ import { useClientByUsers } from '@/lib/context/client'
 export const Route = createFileRoute('/_layout/client')({
   component: Clients,
   loader: async () => {
-    const clients = await getClientsRes()
+    const clients = await getClientsList()
     return clients?.map<TClientTable>(({ nombres, apellidos, ...props }) => ({
       fullName: nombres + ' ' + apellidos,
       ...props,

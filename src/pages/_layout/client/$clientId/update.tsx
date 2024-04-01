@@ -11,7 +11,7 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { getClientIdRes, pathClientsIdRes, TClientList, type TClient } from '@/api/clients'
+import { getClientById, pathClientById, TCLIENT_GET_ALL, type TCLIENT_GET } from '@/api/clients'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
@@ -21,16 +21,16 @@ import { _clientContext } from '../../client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
-  loader: getClientIdRes
+  loader: getClientById
 })
 
 /* eslint-disable-next-line */
 interface TUpdateClientByIdProps {
-  client?: TClientList
+  client?: TCLIENT_GET_ALL
 }
 
 /* eslint-disable-next-line */
-export function UpdateClientById({ client: _client = {} as TClientList }: TUpdateClientByIdProps) {
+export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TUpdateClientByIdProps) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const  clientDB = Route.useLoaderData() ?? _client
@@ -40,7 +40,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
   const navigate = useNavigate()
   const { mutate: updateClient } = useMutation({
     mutationKey: ["update-client-by-id"],
-    mutationFn: pathClientsIdRes
+    mutationFn: pathClientById
   })
   const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
 
@@ -53,7 +53,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof TClient | "referencia", string>
+    ) as Record<keyof TCLIENT_GET | "referencia", string>
 
     const { nombres: firstName, apellidos: lastName } = items
     const description = text.notification.decription({
@@ -61,7 +61,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
     })
 
     const action =
-      ({ ...items }: Record<keyof Omit<TClient, "id">, string>) =>
+      ({ ...items }: Record<keyof Omit<TCLIENT_GET, "id">, string>) =>
       () => {
         const { id } = client
         updateClient({ clientId: id, params: {
@@ -157,7 +157,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
           <Input
             required
             disabled={!checked}
-            name={'nombres' as keyof TClient}
+            name={'nombres' as keyof TCLIENT_GET}
             type="text"
             defaultValue={client?.nombres}
             placeholder={checked ? text.form.firstName.placeholder : undefined}
@@ -168,7 +168,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
           <Input
             required
             disabled={!checked}
-            name={'apellidos' as keyof TClient}
+            name={'apellidos' as keyof TCLIENT_GET}
             type="text"
             defaultValue={client?.apellidos}
             placeholder={checked ? text.form.lastName.placeholder : undefined}
@@ -179,7 +179,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
           <Input
             required
             disabled={!checked}
-            name={'numero_de_identificacion' as keyof TClient}
+            name={'numero_de_identificacion' as keyof TCLIENT_GET}
             type="text"
             defaultValue={client?.numero_de_identificacion+""}
             placeholder={checked ? text.form.id.placeholder : undefined}
@@ -191,7 +191,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
             defaultValue={""+getIdById({ id: client?.tipo_de_identificacion })?.id}
             disabled={!checked}
             required
-            name={'tipo_de_identificacion' as keyof TClient}
+            name={'tipo_de_identificacion' as keyof TCLIENT_GET}
           >
             <SelectTrigger className={clsx("w-full")}>
               <SelectValue placeholder={text.form.typeId.placeholder} />
@@ -208,7 +208,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
           <Input
             required
             disabled={!checked}
-            name={'celular' as keyof TClient}
+            name={'celular' as keyof TCLIENT_GET}
             type="tel"
             defaultValue={client?.celular}
             placeholder={checked ? text.form.phone.placeholder : undefined}
@@ -219,7 +219,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
           <Input
             required
             disabled={!checked}
-            name={'telefono' as keyof TClient}
+            name={'telefono' as keyof TCLIENT_GET}
             type="tel"
             defaultValue={client?.telefono}
             placeholder={checked ? text.form.telephone.placeholder : undefined}
@@ -230,7 +230,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
           <Input
             required
             disabled={!checked}
-            name={'direccion' as keyof TClient}
+            name={'direccion' as keyof TCLIENT_GET}
             type="text"
             defaultValue={client?.direccion}
             placeholder={checked ? text.form.direction.placeholder : undefined}
@@ -241,7 +241,7 @@ export function UpdateClientById({ client: _client = {} as TClientList }: TUpdat
           <Input
             required
             disabled={!checked}
-            name={'email' as keyof TClient}
+            name={'email' as keyof TCLIENT_GET}
             type="email"
             defaultValue={client?.email}
             placeholder={checked ? text.form.ref.placeholder : undefined}

@@ -35,7 +35,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useStatus } from '@/lib/context/layout'
-import { getClientsRes, type TClient } from '@/api/clients'
+import { getClientsList, type TCLIENT_GET_ALL } from '@/api/clients'
 import { Theme, useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -56,7 +56,7 @@ import { useToken } from '@/lib/context/login'
 export const Route = createFileRoute('/_layout')({
   component: Layout,
   loader: async () => ({
-    clients: await getClientsRes(),
+    clients: await getClientsList(),
     user: await getCurrentUser(),
   }),
   beforeLoad: async (  ) => {
@@ -79,7 +79,7 @@ interface TStatus {
 
 /* eslint-disable-next-line */
 interface TNavigationProps {
-  clients?: TClient[]
+  clients?: TCLIENT_GET_ALL[]
   user?: TUSER_GET
   theme?: Theme
   open?: boolean
@@ -93,7 +93,7 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 export function Layout({
   children,
   theme: _theme,
-  clients: _clients = [] as TClient[],
+  clients: _clients = [] as TCLIENT_GET_ALL[],
   open: _open = false,
   user: _user = {} as TUSER_GET,
 }: React.PropsWithChildren<TNavigationProps>) {

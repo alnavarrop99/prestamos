@@ -16,7 +16,7 @@ import { useContext, useRef } from 'react'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
-import { postClientsRes, TClientList, type TClient } from "@/api/clients";
+import { postClient, TCLIENT_GET_ALL, type TCLIENT_GET } from "@/api/clients";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
@@ -33,13 +33,13 @@ export function NewClient() {
   const form = useRef<HTMLFormElement>(null)
   const { pushNotification: setNotification } = useNotifications()
 
-  const onSuccess: (data: TClientList) => unknown = (newClient) => {
+  const onSuccess: (data: TCLIENT_GET_ALL) => unknown = (newClient) => {
     setClients({ clients: [ ...clients.slice(0, -1), { ...(clients?.at(-1) ?? {} as TClientTable), ...newClient } ] })
   }
 
   const {mutate: createClient} = useMutation( {
     mutationKey: ["create-client"],
-    mutationFn: postClientsRes,
+    mutationFn: postClient,
     onSuccess
   } )
   const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
@@ -49,7 +49,7 @@ export function NewClient() {
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof TClient | "referencia", string>
+    ) as Record<keyof TCLIENT_GET | "referencia", string>
 
     const { nombres: firstName, apellidos: lastName } = items
     const description = text.notification.decription({
@@ -57,7 +57,7 @@ export function NewClient() {
     })
 
     const action =
-      ({ ...props }: Record<keyof TClient | "referencia", string>) =>
+      ({ ...props }: Record<keyof TCLIENT_GET | "referencia", string>) =>
       () => {
         createClient({
           ...props,
@@ -138,7 +138,7 @@ export function NewClient() {
           <span>{text.form.firstName.label}</span>{' '}
           <Input
             required
-            name={'nombres' as keyof TClient}
+            name={'nombres' as keyof TCLIENT_GET}
             type="text"
             placeholder={text.form.firstName.placeholder}
           />
@@ -147,7 +147,7 @@ export function NewClient() {
           <span>{text.form.lastName.label} </span>
           <Input
             required
-            name={'apellidos' as keyof TClient}
+            name={'apellidos' as keyof TCLIENT_GET}
             type="text"
             placeholder={text.form.lastName.placeholder}
           />
@@ -156,14 +156,14 @@ export function NewClient() {
           <span>{text.form.id.label} </span>
           <Input
             required
-            name={'numero_de_identificacion' as keyof TClient}
+            name={'numero_de_identificacion' as keyof TCLIENT_GET}
             type="text"
             placeholder={text.form.id.placeholder}
           />
         </Label>
         <Label>
           <span>{text.form.typeId.label} </span>
-          <Select required name={'tipo_de_identificacion' as keyof TClient} defaultValue={""+getIdById({ id: 1 })?.id}>
+          <Select required name={'tipo_de_identificacion' as keyof TCLIENT_GET} defaultValue={""+getIdById({ id: 1 })?.id}>
             <SelectTrigger className="w-full ring-ring ring-1">
               <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
@@ -178,7 +178,7 @@ export function NewClient() {
           <span>{text.form.phone.label} </span>
           <Input
             required
-            name={'celular' as keyof TClient}
+            name={'celular' as keyof TCLIENT_GET}
             type="tel"
             placeholder={text.form.phone.placeholder}
           />
@@ -187,7 +187,7 @@ export function NewClient() {
           <span>{text.form.telephone.label} </span>
           <Input
             required
-            name={'telefono' as keyof TClient}
+            name={'telefono' as keyof TCLIENT_GET}
             type="tel"
             placeholder={text.form.telephone.placeholder}
           />
@@ -196,7 +196,7 @@ export function NewClient() {
           <span>{text.form.direction.label}</span>
           <Input
             required
-            name={'direccion' as keyof TClient}
+            name={'direccion' as keyof TCLIENT_GET}
             type="text"
             placeholder={text.form.direction.placeholder}
           />
@@ -205,7 +205,7 @@ export function NewClient() {
           <span>{text.form.email.label}</span>
           <Input
             required
-            name={'email' as keyof TClient}
+            name={'email' as keyof TCLIENT_GET}
             type="email"
             placeholder={text.form.email.placeholder}
           />

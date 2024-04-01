@@ -12,7 +12,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { deleteClientsIdRes } from "@/api/clients"
+import { deleteClientsById } from "@/api/clients"
 import { _clientContext, _selectedClients } from "@/pages/_layout/client";
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
@@ -37,7 +37,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
   const [ clients, setClients, resetRowSelection ] = useContext(_clientContext) ?? [[], (({})=>{}), (()=>{})]
   const { mutate: deleteClient } = useMutation({
     mutationKey: ["delete-client"],
-    mutationFn: deleteClientsIdRes
+    mutationFn: deleteClientsById
   })
 
   const onCheckedChange: (checked: boolean) => void = () => {

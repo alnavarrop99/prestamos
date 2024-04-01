@@ -11,7 +11,7 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { getClientsRes, type TClient } from "@/api/clients";
+import { getClientsList, type TCLIENT_GET } from "@/api/clients";
 import styles from "@/styles/global.module.css"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
@@ -29,7 +29,7 @@ type TSearch = {
 
 export const Route = createFileRoute('/_layout/credit/new')({
   component: NewCredit,
-  loader: getClientsRes,
+  loader: getClientsList,
   validateSearch: ( search: TSearch ) => {
     if(!search) return ({} as TSearch)
     return search
@@ -38,7 +38,7 @@ export const Route = createFileRoute('/_layout/credit/new')({
 
 /* eslint-disable-next-line */
 interface TNewCreditProps {
-  clients?: TClient[]
+  clients?: TCLIENT_GET[]
 }
 
 /* eslint-disable-next-line */
@@ -56,7 +56,7 @@ const initialCuotes: TCuotesState = {
 }
 
 /* eslint-disable-next-line */
-export function NewCredit( { clients: _clients = [] as TClient[] }: TNewCreditProps ) {
+export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
   // const clientsDB = Route.useLoaderData() ?? _clients
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)

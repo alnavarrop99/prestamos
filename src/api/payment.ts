@@ -1,55 +1,64 @@
 import { useToken } from "@/lib/context/login"
-
-// BASE
-interface TPAYMENT_BASE {
-  id: number
-  comentario: string
-  fecha_de_pago: Date
-  valor_del_pago: number
-}
-
-interface TPAYMENT_BODY_BASE {
-  comentario?: string
-  fecha_de_pago?: Date
-  valor_del_pago?: number
-}
+import { TCREDIT_GET_BASE } from "./credit"
 
 // GET
-export interface TPAYMENT_GET extends TPAYMENT_BASE {
-  registrado_por_usuario_id: number
-  credito_id: number
+export type TPAYMENT_GET = {
+  comentario: string,
+  fecha_de_pago: string,
+  valor_del_pago: number,
+  id: number,
+  registrado_por_usuario_id: number,
+  credito: TCREDIT_GET_BASE,
 }
 
-// GET ALL
-export type TPAYMENT_GET_ALL = TPAYMENT_GET[] 
+export type TPAYMENT_GET_BASE = {
+  comentario: string,
+  fecha_de_pago: string,
+  valor_del_pago: number,
+  id?: number,
+  credito_id?: number,
+  registrado_por_usuario_id: number,
+}
+
+export type TPAYMENT_GET_ALL = TPAYMENT_GET_BASE[] 
 
 // POST
-export interface TPAYMENT_POST_BODY extends Omit<TPAYMENT_BASE, "id"> {
-  credito_id: number
+export type TPAYMENT_POST_BODY = {
+  comentario: string,
+  fecha_de_pago: string,
+  valor_del_pago: number,
+  credito_id: number,
 }
 
-export interface TPAYMENT_POST extends TPAYMENT_BASE {
-  credito_id: number
+export type TPAYMENT_POST = {
+  id?: number
+  pago_id?: number
   nombre_del_cliente: string
   cedula: string
-  telefone: string
-  pendiente: boolean
+  telefono: string
+  fecha: string
+  pendiente: number
+  comentario: string
 }
 
 // PATCH
-export type TPAYMENT_PATCH = TPAYMENT_GET 
+export type TPAYMENT_PATCH = TPAYMENT_GET_BASE
 
-export type TPAYMENT_PATCH_BODY = TPAYMENT_BODY_BASE
+export type TPAYMENT_PATCH_BODY = {
+  comentario?: string
+  fecha_de_pago?: string
+  valor_del_pago?: number
+}
 
 // DELETE
-export type TPAYMENT_DELETE = TPAYMENT_GET
+export type TPAYMENT_DELETE = TPAYMENT_GET_BASE
 
 // FUNCTION TYPES
 type TGetPaymentById = (params: { params: { paymentId: string } }) => Promise<TPAYMENT_GET>
-type TGetPayments = () => Promise<TPAYMENT_GET_ALL>
-type TDeletePaymentById = ( params: { params: { paymentId: number } }) => Promise<TPAYMENT_DELETE>
+type TGetPaymentsList = () => Promise<TPAYMENT_GET_ALL>
+type TDeletePaymentById = ( params: { paymentId: number }) => Promise<TPAYMENT_DELETE>
 type TPostPaymentById = ( params: TPAYMENT_POST_BODY ) => Promise<TPAYMENT_POST>
-type TPatchPaymentById = ( params: { params: { paymentId: number, updatePayment: TPAYMENT_PATCH_BODY } }) => Promise<TPAYMENT_PATCH>
+type TPatchPaymentById = ( params: { paymentId: number, updatePayment?: TPAYMENT_PATCH_BODY })  => Promise<TPAYMENT_PATCH>
 
 // FUNCTION DEFINITIONS
 export const getPaymentById: TGetPaymentById = async ({ params: { paymentId } }) => {
@@ -65,7 +74,7 @@ export const getPaymentById: TGetPaymentById = async ({ params: { paymentId } })
   return payment.json()
 }
 
-export const getPayments: TGetPayments = async () => {
+export const getPaymentsList: TGetPaymentsList = async () => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -92,7 +101,7 @@ export const postPaymentId: TPostPaymentById = async (newPayment) => {
   return payment.json()
 }
 
-export const potchPaymentById: TPatchPaymentById = async ({ params: { paymentId, updatePayment } }) => {
+export const potchPaymentById: TPatchPaymentById = async ( { paymentId, updatePayment }) => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -106,7 +115,7 @@ export const potchPaymentById: TPatchPaymentById = async ({ params: { paymentId,
   return payment.json()
 }
 
-export const deletePaymentById: TDeletePaymentById = async ({ params: { paymentId } }) => {
+export const deletePaymentById: TDeletePaymentById = async ( { paymentId }) => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()

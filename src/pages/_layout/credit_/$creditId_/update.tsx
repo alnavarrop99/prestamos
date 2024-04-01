@@ -4,7 +4,7 @@ import { Dialog } from '@radix-ui/react-dialog'
 import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
 import {createContext, useMemo, useRef, useState } from 'react'
 import { Switch } from '@/components/ui/switch'
-import { getCreditById, type TCREDIT_GET, type TCUOTES } from '@/api/credit'
+import { getCreditById, type TCREDIT_GET, type TCUOTE } from '@/api/credit'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@radix-ui/react-label'
 import { Input } from '@/components/ui/input'
@@ -342,7 +342,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                     <Label>
                       <span>{text.form.pay.payDate.label}</span>
                       <DatePicker
-                        name={"fecha_de_pago" as keyof TCUOTES}
+                        name={"fecha_de_pago" as keyof TCUOTE}
                         date={new Date(cuote?.fecha_de_pago)}
                         label={text.form.pay.payDate.placeholder} 
                       />
@@ -356,7 +356,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                         type='number'
                         min={0}
                         step={50}
-                        name={"valor_pagado" as keyof TCUOTES} 
+                        name={"valor_pagado" as keyof TCUOTE} 
                         defaultValue={cuote?.valor_pagado} 
                         placeholder={text.form.pay.payValue.placeholder} 
                         />
@@ -366,14 +366,14 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                         <span>{text.form.pay.installmantsDate.label}</span>
                       </div>
                       <DatePicker
-                        name={"fecha_de_aplicacion_de_mora" as keyof TCUOTES}
+                        name={"fecha_de_aplicacion_de_mora" as keyof TCUOTE}
                         date={new Date(cuote?.fecha_de_pago)}
                         label={text.form.pay.installmantsDate.placeholder} 
                       />
                     </Label>
                     <Label> <span>{text.form.pay.comment.label}</span>
                       <Textarea
-                        name={"comentario" as keyof TCUOTES}
+                        name={"comentario" as keyof TCUOTE}
                         rows={3}
                         placeholder={text.form.pay.comment.placeholder}>
                         { creditDB.comentario }
