@@ -33,7 +33,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
   const creditDB = Route.useLoaderData()
   const [ creditChange ] = useContext(_creditChangeContext) ?? [ _credit ]
   const { open, setOpen } = useStatus()
-  const { pushNotification: setNotification } = useNotifications()
+  const { pushNotification } = useNotifications()
 
   const { mutate: updateCredit } = useMutation({
     mutationKey: ["update-credit"],
@@ -44,17 +44,18 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler< HTMLFormElement > = (ev) => {
+  const onSubmit: React.FormEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
     const description = text.notification.decription({
       username: ""+creditDB?.owner_id,
     })
 
     const action = (credit: TCREDIT_GET) => () => {
+      console.table(credit)
       updateCredit({
         creditId: credit.id,
         updateCredit: credit
       })
-      setNotification({
+      pushNotification({
           date: new Date(),
           action: "PATH",
           description,

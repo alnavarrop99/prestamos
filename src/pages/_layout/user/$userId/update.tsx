@@ -49,9 +49,8 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
   const userDB = { ..._userDB, password: "" }
   const [ user, setUser ] = useState(userDB)
   const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ]
-  const { pushNotification: setNotification } = useNotifications()
+  const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
-  const navigate = useNavigate()
   const {mutate: updateUser} = useMutation( {
     mutationKey: ["update-user"],
     mutationFn: pathUserById,
@@ -111,7 +110,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
             password: newPassword, 
             nombre: firstName + " " + lastName
           } })
-        setNotification({
+        pushNotification({
           date: new Date(),
           action: "PATH",
           description,

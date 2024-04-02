@@ -1,4 +1,4 @@
-import { Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
@@ -33,7 +33,6 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
   const { nombre } = selectedUser
   const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
-  const navigate = useNavigate()
   const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ]
 
   const onCheckedChange: (checked: boolean) => void = () => {

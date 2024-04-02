@@ -20,6 +20,7 @@ import { Navigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { getMoraTypeById, getMoraTypeByName } from '@/lib/type/moraType'
 import { getFrecuency } from '@/lib/type/frecuency'
+import { TPAYMENT_GET_BASE } from '@/api/payment'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,
@@ -84,19 +85,21 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
     setCreditChange( { ...creditChange, [ name as TFormData ]: value } )
   }
 
-  const onChangeCuoteById: ( cuoteId?: number ) => React.ChangeEventHandler<HTMLFormElement> = (cuoteId) => (ev) => {
+  const onChangeCuoteById: ( index: number ) => React.ChangeEventHandler<HTMLFormElement> = (index) => (ev) => {
     const { value, name }: {name?: string, value?: string} = ev.target
     const { cuotas, pagos } = creditDB
     if(!creditDB || !value || !name || !pagos) return;
 
-    const cuotes = cuotas?.map( ( item ) => {
-      if( item?.id === cuoteId ) {
-        return { ...item, [name]: value }
-      }
-      return item
+    const cuotes = cuotas?.map( ( item, i ) => {
+      if( i !== index ) return item;
+      return { ...item, [name]: value };
     })
-    const payments = pagos?.map( ( items, i ) => {
-      return ({...items, valor_del_pago: cuotes?.[i]?.valor_pagado ?? items?.valor_del_pago, fecha_de_pago: cuotes?.[i]?.fecha_de_pago ?? items?.fecha_de_pago })
+    const payments = pagos?.map<TPAYMENT_GET_BASE>( ( payment, i ) => {
+      return ({
+        ...payment,
+        fecha_de_pago: cuotes?.[i]?.fecha_de_pago?.toString(),
+        valor_del_pago: cuotes?.[i]?.valor_pagado,
+      })
     })
 
     setCreditChange({ ...creditChange, pagos: payments, cuotas: cuotes })
@@ -254,7 +257,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                 <SelectValue placeholder={text.form.details.frecuency.placeholder} />
               </SelectTrigger>
               <SelectContent className='[&_*]:cursor-pointer'>
-              { getFrecuency().map( ( { id, nombre } ) => <SelectItem key={id} value={""+id}>{nombre}</SelectItem> ) }
+              { getFrecuency()?.map( ( { id, nombre } ) => <SelectItem key={id} value={""+id}>{nombre}</SelectItem> ) }
               </SelectContent>
             </Select>
         </Label>
@@ -325,7 +328,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               {creditDB?.cuotas.slice(0, creditDB?.pagos?.length+1)?.map(( cuote, i ) =>
                 <AccordionItem
                   key={cuote?.id}
-                  value={cuote?.id?.toString() ?? ""}
+                  value={"" + cuote?.id}
                 >
                   <AccordionTrigger
                     className={clsx("gap-2 !no-underline [&>span]:italic before:not-italic before:font-bold before:content-['_+_'] [&[data-state='open']]:before:content-['_-_'] "

@@ -65,7 +65,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
   // const clientsDB = Route.useLoaderData() ?? _clients
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
-  const { pushNotification: setNotification } = useNotifications()
+  const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const { clientId } = Route.useSearch()
   const { mutate: createCredit } = useMutation({
@@ -117,7 +117,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           garante_id: +items?.garante_id,
           fecha_de_aprobacion: items?.fecha_de_aprobacion,
         })
-        setNotification({
+        pushNotification({
           date: new Date(),
           action: "POST",
           description,
