@@ -52,13 +52,12 @@ import {
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { SpinLoader } from '@/components/ui/loader'
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
-  loader: async () => ({
-    clients: await getClientsList(),
-    user: await getCurrentUser(),
-  }),
+  loader: getCurrentUser,
   beforeLoad: async (  ) => {
     const { token } = useToken.getState()
     if( !token ){
@@ -97,20 +96,26 @@ export function Layout({
   open: _open = false,
   user: _user = {} as TUSER_GET,
 }: React.PropsWithChildren<TNavigationProps>) {
+  const { data: clientsDB, isSuccess } = useQuery({
+    queryKey: [getClientsList.name],
+    queryFn: getClientsList,
+  })
   const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
     open: _open
   })
   const { setValue, setSearch, search, value } = useStatus()
-  const { clients: clientsDB, user: userDB } = Route.useLoaderData() ?? {
-    clients: _clients,
-    user: _user,
-  }
+  const  userDB = Route.useLoaderData() ?? { clients: _clients, user: _user, }
   const [clients, setClients] = useState(clientsDB)
   const [user] = useState(userDB)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
   const { deleteToken } = useToken()
+  const fetchActions = useQueryClient()
+
+  useEffect(() => {
+    setClients(clientsDB) 
+  }, [isSuccess])
 
   useEffect(() => {
     const onNotwork = () => {
@@ -283,6 +288,7 @@ export function Layout({
                 </Button>
               )}
             </Link>
+            { (!!fetchActions.isFetching() || !!fetchActions.isMutating()) && <SpinLoader />}
           </div>
           <div>
             <Label className="flex cursor-pointer items-center gap-2">
@@ -290,7 +296,7 @@ export function Layout({
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
-              <Popover
+              { clients?.length && <Popover
                 open={search}
                 onOpenChange={onSearchChange}
               >
@@ -323,17 +329,17 @@ export function Layout({
                     <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
                       {clients?.map(
                         ({
-                          apellidos: lastName,
-                          nombres: firstName,
-                          id,
-                          numero_de_identificacion: SSN,
-                        }) => (
-                          <li key={id} className="group cursor-pointer" onClick={onSelect({ clientId: id })}>
+                          apellidos,
+                          nombres,
+                          id: clientId,
+                          numero_de_identificacion,
+                        }) => clientId &&
+                          <li key={clientId} className="group cursor-pointer" onClick={onSelect({ clientId })}>
                             <Link to={'/client'}>
                               <Avatar>
                                 <AvatarFallback>
-                                  {firstName.at(0) ??
-                                    'N' + lastName.at(0) ??
+                                  {nombres?.at(0) ??
+                                    'N' + apellidos?.at(0) ??
                                     'A'}
                                 </AvatarFallback>
                               </Avatar>
@@ -341,22 +347,21 @@ export function Layout({
                                 <p
                                   className={clsx("font-bold group-hover:after:content-['#']")}
                                 >
-                                  {firstName + ' ' + lastName}
+                                  {nombres + ' ' + apellidos}
                                 </p>
                                 <p className="italic">
-                                  {SSN.slice(0, 4) +
+                                  {numero_de_identificacion.slice(0, 4) +
                                     '...' +
-                                    SSN.slice(-4, SSN.length)}
+                                    numero_de_identificacion.slice(-4, numero_de_identificacion.length)}
                                 </p>
                               </div>
                             </Link>
                           </li>
-                        )
                       )}
                     </ul>
                   </div>
                 </PopoverContent>
-              </Popover>
+              </Popover>}
               <Input
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
