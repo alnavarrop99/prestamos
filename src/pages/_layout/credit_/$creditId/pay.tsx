@@ -39,7 +39,6 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
   const credit = Route.useLoaderData() ?? _credit
   const { open, setOpen } = useStatus()
   const { pushNotification: setNotification } = useNotifications()
-  const navigate = useNavigate()
   const { mutate: createPayment } = useMutation({
     mutationKey: ["create-pay"],
     mutationFn: postPaymentId,
@@ -49,7 +48,7 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler< HTMLFormElement > = (ev) => {
     if (!form.current) return
 
     const items = Object.fromEntries(

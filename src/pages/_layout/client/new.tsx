@@ -49,7 +49,7 @@ export function NewClient() {
   } )
   const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current) return
 
     const items = Object.fromEntries(

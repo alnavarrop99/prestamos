@@ -98,7 +98,7 @@ export function Clients({
     return clients?.filter(
       ({ id: userId }) => userId && search?.clients?.includes(userId)
     )
-  }, [...clients?.map(({ id }) => id)])
+  }, [clients])
 
   const table = useReactTable({
     data,

@@ -50,7 +50,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current) return;
 
     const items = Object.fromEntries(
@@ -134,7 +134,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
 
   return (
     <>
-    { !open && <Navigate to={"../"} /> }
+    { !open && <Navigate to={"../../"} /> }
     <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">

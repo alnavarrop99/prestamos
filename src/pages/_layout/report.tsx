@@ -37,20 +37,20 @@ export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportPro
     mutationFn: postReportById
   })
 
-  const onSubmit: ( params: { reportId: number }  ) => React.FormEventHandler = ( { reportId } ) => (ev) =>  {
-    if (!form?.[reportId]) return;
+  const onSubmit: (  index: number  ) => React.FormEventHandler = ( index ) => (ev) =>  {
+    if (!form?.[index]) return;
 
     const items = Object.fromEntries(
-      new FormData(form?.[reportId]?.current ?? undefined).entries()
+      new FormData(form?.[index]?.current ?? undefined).entries()
     ) as Record<keyof TPAYMENT_POST_BODY, string>
 
     console.table(items)
     reportById({
-      reportId: reports?.[reportId]?.id,
+      reportId: reports?.[index]?.id,
       report: items,
     })
 
-    form?.[reportId]?.current?.reset()
+    form?.[index]?.current?.reset()
     ev.preventDefault()
   }
 
@@ -59,7 +59,7 @@ export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportPro
       <h1 className="text-3xl font-bold">{text.title}</h1>
       <Separator />
       <Accordion className="my-2 space-y-2" type="multiple">
-        {reports.map(({ nombre, parametros, id, comentario }, i) => (
+        {reports.map(({ nombre, parametros, id, comentario }, index) => (
           <AccordionItem
             key={id}
             className={clsx('rounded-m px-4 py-2 shadow-lg hover:shadow-xl')}
@@ -73,8 +73,8 @@ export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportPro
             </AccordionTrigger>
             <AccordionContent className="space-y-2">
               <form
-                ref={form?.[i]}
-                onSubmit={onSubmit({ reportId: i })}
+                ref={form?.[index]}
+                onSubmit={onSubmit(index)}
                 className="grid grid-cols-2 gap-4 px-6 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
                 id={'report' + id}
               >

@@ -35,7 +35,7 @@ export function Notifications({ notifications: _notifications = [] as TNotificat
       <Separator />
       <div className='space-y-6 py-2'>
       { !notifications?.length && <p> {text.notfound} </p> }
-      { !!notifications?.length && notifications?.reverse()?.map( ({ id: notificationId, description, action, date }) => 
+      { !!notifications?.length && notifications?.reverse()?.map( ({ id: notificationId, description, action, date }, index) => 
         notificationId && <Card key={notificationId} className={clsx('shadow-lg space-y-2 ring-2', {
             "ring-green-500": action === "POST",
             "ring-blue-500": action === "PATH",
@@ -43,7 +43,7 @@ export function Notifications({ notifications: _notifications = [] as TNotificat
           })}>
             <CardHeader>
               
-              <span onClick={onDelete({ notificationId })} className='p-1 ms-auto rounded-full [&>svg]:stroke-destructive hover:bg-destructive [&>svg]:hover:stroke-secondary cursor-pointer transition delay-150 duration-300 [&>svg]:transition [&>svg]:dalay-150 [&>svg]:duration-300'>
+              <span onClick={onDelete(index)} className='p-1 ms-auto rounded-full [&>svg]:stroke-destructive hover:bg-destructive [&>svg]:hover:stroke-secondary cursor-pointer transition delay-150 duration-300 [&>svg]:transition [&>svg]:dalay-150 [&>svg]:duration-300'>
                 <Close className='p-1' />
               </span>
               <CardTitle className='flex items-center gap-4'> <ActionIcon action={action} />  {getAction(action)} </CardTitle>

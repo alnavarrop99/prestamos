@@ -56,7 +56,7 @@ export function NewUser({}: TNewUserProps) {
     setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler< HTMLFormElement > = (ev) => {
     if (!form.current) return
 
     const items = Object.fromEntries(

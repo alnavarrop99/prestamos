@@ -86,7 +86,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
     setCuote( { ...{ interest, coute, amount }, [prop]: Number.parseInt(value) } ) 
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current) return
 
     const items = Object.fromEntries(

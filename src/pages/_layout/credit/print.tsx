@@ -41,7 +41,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TP
     setOpt(value as TOptState)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current || !opt) return
 
     console.table(credit)

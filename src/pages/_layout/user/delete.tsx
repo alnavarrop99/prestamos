@@ -31,13 +31,12 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
   const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
   const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
-  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
     const description = text.notification.decription({
       length: selectUsers?.length,
     })

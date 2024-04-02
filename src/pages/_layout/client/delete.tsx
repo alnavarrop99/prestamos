@@ -43,7 +43,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
     const description = text.notification.decription({ length: selectedclients?.length })
 
     const action = (clients?: TClientTable[]) => () => {

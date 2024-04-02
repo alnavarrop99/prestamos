@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -42,7 +42,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = () => {
+  const onSubmit: React.FormEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
     const description = text.notification.decription({
       // TODO
       username: ""+credit?.owner_id,

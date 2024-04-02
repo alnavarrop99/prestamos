@@ -44,7 +44,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler< HTMLFormElement > = (ev) => {
     const description = text.notification.decription({
       username: ""+creditDB?.owner_id,
     })

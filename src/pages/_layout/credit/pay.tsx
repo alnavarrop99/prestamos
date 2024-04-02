@@ -48,7 +48,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current) return
 
     const items = Object.fromEntries(
@@ -104,7 +104,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
 
   return (
     <>
-    <Navigate to={"../"} />
+    { !open && <Navigate to={"../"} />}
     <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
