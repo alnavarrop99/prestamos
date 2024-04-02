@@ -18,6 +18,7 @@ import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { getIDs, getIdById } from '@/lib/type/id'
 import { _clientContext } from '@/pages/_layout/client'
+import { TClientTable } from '../../-column'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
@@ -44,7 +45,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
     mutationKey: ["update-client-by-id"],
     mutationFn: pathClientById
   })
-  const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
+  const [ clients, setClients ] = useContext(_clientContext) ?? [[] as TClientTable[], (({})=>{})]
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -89,9 +90,11 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
     setClients( { clients: clients?.map( ({ id: clientId }, i, list) => {
-      if(clientId !== client?.id) return list?.[i]
+      if(clientId !== client?.id) return list?.[i];
+  
       return ({ 
           ...list?.[i],
+          fullName: items?.nombres + " " + items?.apellidos,
           email: items?.email,
           referencia_id: +items?.referencia_id,
           celular: items?.celular,
@@ -197,7 +200,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
             defaultValue={""+getIdById({ id: client?.tipo_de_identificacion })?.id}
             disabled={!checked}
             required
-            name={'tipo_de_identificacion' as TFormName}
+            name={'tipo_de_identificacion_id' as TFormName}
           >
             <SelectTrigger className={clsx("w-full")}>
               <SelectValue placeholder={text.form.typeId.placeholder} />
@@ -258,7 +261,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
           <Input
             required
             disabled={!checked}
-            name={'referencia'}
+            name={'referencia_id' as TFormName}
             type="text"
             defaultValue={client?.referencia_id}
             placeholder={checked ? text.form.ref.placeholder : undefined}
