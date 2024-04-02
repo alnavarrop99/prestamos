@@ -1,4 +1,4 @@
-import { TUSER_GET_ALL, getUsersList } from '@/api/users'
+import { type TUSER_GET_ALL, getUsersList } from '@/api/users'
 import { type TRoles } from "@/lib/type/rol";
 import { type TUSER_GET } from "@/api/users";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -69,41 +69,26 @@ export function Users({
   const { value } = useStatus()
   const { open = _open, setOpen } = useStatus()
 
-  const onCheckChanged =
-    ({
-      id: index,
-      prop,
-    }: {
-      id: number
-      prop: keyof Omit<(typeof users)[0], 'id' | 'rol' | 'clientes' | 'nombre'>
-    }) =>
-    (checked: boolean) => {
-      const list = users?.map(({ ...user }) => {
-        const { id, ...items } = user
-        if (id === index && prop === 'selected') {
-          return { id, ...items, selected: checked }
-        } else if (id === index && prop === 'active') {
-          return { id, ...items, active: checked }
-        } else if (id === index && prop === 'menu') {
-          return { id, ...items, menu: checked }
+  const onCheckChanged = (index: number, prop: keyof Omit<(typeof users)[0], 'id' | 'rol' | 'clientes' | 'nombre'> ) => (checked: boolean) => {
+      const list = users?.map((user, i) => {
+        if (i === index && prop === 'selected') {
+          return { ...user, selected: checked }
+        } else if (i === index && prop === 'active') {
+          return { ...user, active: checked }
+        } else if (i === index && prop === 'menu') {
+          return { ...user, menu: checked }
         }
         return user
       })
       setUsers(list)
     }
 
-  const onClick: ({
-    id,
-  }: {
-    id: number
-  }) => React.MouseEventHandler<React.ComponentRef<typeof Card>> =
-    ({ id }) =>
-    () => {
-      const user = users?.find(({ id: userId }) => id === userId)
-      if (!user) return
+  const onClick: ( index: number) => React.MouseEventHandler<React.ComponentRef<typeof Card>> = (index) => () => {
+      const user = users?.[index]
+      if (!user || !user.id) return
 
       const { selected } = user
-      onCheckChanged({ id, prop: 'selected' })(!selected)
+      onCheckChanged(index,'selected')(!selected)
     }
 
   const onClickStop: React.MouseEventHandler = (ev) => {
@@ -117,21 +102,15 @@ export function Users({
     setOpen({ open })
   }
 
-  const onOpenChangeById: ({
-    id,
-  }: {
-    id: number
-  }) => React.MouseEventHandler<React.ComponentRef<typeof DropdownMenuItem>> =
-    ({ id }) =>
-    (ev) => {
-      ev.stopPropagation()
-
-      const user = users?.find(({ id: userId }) => id === userId)
-      if (!user) return
+  const onOpenChangeById: ( index: number ) => React.MouseEventHandler<React.ComponentRef<typeof DropdownMenuItem>> = ( index ) => (ev) => {
+      const user = users?.[index]
+      if (!user || !user?.id ) return;
       const { menu } = user
 
       onOpenChange(!open)
-      onCheckChanged({ id, prop: 'menu' })(!menu)
+      onCheckChanged(index, 'menu')(!menu)
+
+      ev.stopPropagation()
     }
 
   useEffect(() => {
@@ -186,19 +165,19 @@ export function Users({
         <div className="flex flex-wrap gap-4 [&>*]:flex-auto">
           {!!users?.length ?
             users?.map(
-              ({ id, rol, nombre, clientes, selected, active, menu }) => (
+              ({ id, rol, nombre, clientes, selected, active, menu }, index) => (
                 <Card
                   key={id}
                   className={clsx(
                     'group max-w-sm cursor-pointer py-4 shadow-lg transition delay-150 duration-500 hover:scale-105'
                   )}
-                  onClick={onClick({ id })}
+                  onClick={onClick(index)}
                 >
                   <div className="flex items-center justify-end gap-2 px-4">
                     <Dialog open={open} onOpenChange={onOpenChange}>
                       <DropdownMenu
                         open={menu}
-                        onOpenChange={onCheckChanged({ id, prop: 'menu' })}
+                        onOpenChange={onCheckChanged( index,'menu')}
                       >
                         <DropdownMenuTrigger asChild onClick={onClickStop}>
                           <Button
@@ -233,7 +212,7 @@ export function Users({
                           </DropdownMenuItem>
                           <DialogTrigger asChild>
                             <DropdownMenuItem
-                              onClick={onOpenChangeById({ id })}
+                              onClick={onOpenChangeById(index)}
                             >
                               <Link
                                 className="flex h-full w-full items-center justify-between gap-2"
@@ -246,7 +225,7 @@ export function Users({
                           </DialogTrigger>
                           <DialogTrigger asChild>
                             <DropdownMenuItem
-                              onClick={onOpenChangeById({ id })}
+                              onClick={onOpenChangeById(index)}
                             >
                               <Link
                                 className="flex h-full w-full items-center justify-between gap-2"
@@ -261,9 +240,9 @@ export function Users({
                       </DropdownMenu>
                     </Dialog>
                     <Checkbox
-                      name={'selected' as keyof (typeof users)[0]}
+                      name={'selected' as keyof typeof users[0]}
                       checked={selected}
-                      onCheckedChange={onCheckChanged({ id, prop: 'selected' })}
+                      onCheckedChange={onCheckChanged(index, 'selected')}
                     />
                   </div>
                   <CardHeader>
@@ -287,16 +266,16 @@ export function Users({
                         'bg-green-500': rol === ('Usuario' as TRoles),
                       })}
                     >
-                      {' '}
-                      {rol}{' '}
+                      
+                      {rol}
                     </Badge>
                     {active && (
                       <Switch
                         checked={active}
-                        onCheckedChange={onCheckChanged({ id, prop: 'active' })}
+                        onCheckedChange={onCheckChanged(index, 'active')}
                         onClick={onClickStop}
                       >
-                        {' '}
+                        
                       </Switch>
                     )}
                   </CardContent>

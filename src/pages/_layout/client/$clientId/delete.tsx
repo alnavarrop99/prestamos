@@ -4,18 +4,18 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { TCLIENT_GET, deleteClientsById, getClientById } from '@/api/clients'
+import { type TCLIENT_GET, deleteClientsById, getClientById } from '@/api/clients'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { _clientContext } from '../../client'
+import { _clientContext } from '@/pages/_layout/client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteClientById,
@@ -33,12 +33,11 @@ export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDelet
   const client = Route.useLoaderData() ?? _client
   const { nombres: firstName, apellidos: lastName } = client
   const { setOpen, open } = useStatus()
-  const { pushNotification: setNotification } = useNotifications()
+  const { pushNotification } = useNotifications()
   const { mutate: deleteClient } = useMutation({
-    mutationKey: ["delete-client-by-id"],
+    mutationKey: ["delete-client-id" + client.id],
     mutationFn: deleteClientsById
   })
-  const navigate = useNavigate()
   const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -55,7 +54,7 @@ export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDelet
     const action = ({ ...props }: TCLIENT_GET) =>
       () => {
         deleteClient({ clientId: props?.id })
-        setNotification( {
+        pushNotification( {
           date: new Date(),
           action: "DELETE",
           description,
@@ -64,7 +63,6 @@ export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDelet
 
     const timer = setTimeout(action(client), 6 * 1000)
     setOpen({ open: !open, })
-    navigate({to: "../../"})
     setClients( { clients: clients?.filter( ( { id } ) => client?.id !== id ) } )
 
     const onClick = () => {
@@ -72,26 +70,25 @@ export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDelet
       setClients({ clients} )
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from delete client">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from delete client">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     ev.preventDefault()
   }
 
-
   return (
+  <>
+    { !open && <Navigate to={"../"} /> }
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -152,6 +149,7 @@ export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDelet
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

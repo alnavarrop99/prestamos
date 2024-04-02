@@ -99,7 +99,6 @@ export function Login({}: TLoginProps) {
               />
             </Label>
             <Label>
-              {' '}
               <span>{text.password.label}</span>
               <div className="flex items-center gap-x-2">
                 <Input

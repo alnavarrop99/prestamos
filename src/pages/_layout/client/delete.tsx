@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -32,8 +32,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
   const [checked, setChecked] = useState(false)
   const selectedclients = useContext(_selectedClients) ?? _clients
   const { open, setOpen } = useStatus()
-  const { pushNotification: setNotification } = useNotifications()
-  const navigate = useNavigate()
+  const { pushNotification } = useNotifications()
   const [ clients, setClients, resetRowSelection ] = useContext(_clientContext) ?? [[], (({})=>{}), (()=>{})]
   const { mutate: deleteClient } = useMutation({
     mutationKey: ["delete-client"],
@@ -49,10 +48,12 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
 
     const action = (clients?: TClientTable[]) => () => {
       if(!clients?.length) return;
-      for ( const { id } of clients ){
-        deleteClient({ clientId: id })
+      for ( const { id: clientId } of clients ){
+        if(clientId){
+          deleteClient({ clientId })
+        }
       }
-      setNotification({
+      pushNotification({
           date: new Date(),
           action: "DELETE",
           description,
@@ -61,7 +62,6 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
 
     const timer = setTimeout(action(selectedclients), 6 * 1000)
     setOpen({open: !open})
-    navigate({ to: "../" })
     setClients( { clients: clients?.filter( ( { id } ) => !selectedclients?.map(({ id }) => id )?.includes(id) ) } )
     resetRowSelection()
 
@@ -70,25 +70,25 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
       setClients({ clients })
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description: description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from delete client">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description: description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from delete client">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
     
     ev.preventDefault()
   }
 
   return (
+    <>
+    {!open && <Navigate to={"../"} />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -149,6 +149,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

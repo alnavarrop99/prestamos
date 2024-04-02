@@ -4,14 +4,14 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { TUsersState, _selectUsers, _usersContext } from "@/pages/_layout/user"
+import { type TUsersState, _selectUsers, _usersContext } from "@/pages/_layout/user"
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 
@@ -29,7 +29,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
   const [checked, setChecked] = useState(false)
   const selectUsers = useContext(_selectUsers) ?? _users
   const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
-  const { pushNotification: setNotification } = useNotifications()
+  const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
 
@@ -43,7 +43,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
     })
     const action = (selectedUsers?: TUsersState[]) => () => {
       import.meta.env.DEV && console.table(selectedUsers);
-      setNotification({
+      pushNotification({
         date: new Date(),
         action: "DELETE",
         description,
@@ -53,7 +53,6 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
     const timer = setTimeout(action(selectUsers), 6 * 1000)
 
     setOpen({ open: !open })
-    navigate({to: "../"})
     setUsers( users?.filter( ({ id }) => !selectUsers?.map(({ id }) => id)?.includes(id) ) ?? [] )
 
     const onClick = () => {
@@ -61,25 +60,25 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
       setUsers( users?.map( (user) => ({ ...user, selected: false }) ) )
     }
 
-    if ( true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from delete client">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from delete client">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     ev.preventDefault()
   }
 
   return (
+    <>
+    {!open && <Navigate to={"../"} />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -140,6 +139,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

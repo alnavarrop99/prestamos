@@ -16,7 +16,7 @@ import styles from "@/styles/global.module.css"
 import { type TCREDIT_GET, getCreditById } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
-import { useNavigate } from '@tanstack/react-router'
+import { Navigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
   component: PrintCreditById,
@@ -38,7 +38,6 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
   const [ opt, setOpt ] = useState<TOptState | undefined>(undefined)
   const credit = Route.useLoaderData() ?? _credit
   const { open, setOpen } = useStatus()
-  const navigate = useNavigate()
 
   const onValueChange = ( value: string ) => {
     setOpt(value as TOptState)
@@ -49,13 +48,14 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
 
     console.table(credit)
     setOpen({ open: !open })
-    navigate({to: "../"})
 
     form.current.reset()
     ev.preventDefault()
   }
 
   return (
+    <>
+    { !open && <Navigate to={"../"} /> }
     <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -111,6 +111,7 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

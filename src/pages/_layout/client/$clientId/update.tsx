@@ -5,19 +5,19 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useContext, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { getClientById, pathClientById, TCLIENT_GET_ALL, type TCLIENT_GET } from '@/api/clients'
+import { getClientById, pathClientById, type TCLIENT_GET, type TCLIENT_PATCH_BODY } from '@/api/clients'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { getIDs, getIdById } from '@/lib/type/id'
-import { _clientContext } from '../../client'
+import { _clientContext } from '@/pages/_layout/client'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
@@ -26,18 +26,20 @@ export const Route = createFileRoute('/_layout/client/$clientId/update')({
 
 /* eslint-disable-next-line */
 interface TUpdateClientByIdProps {
-  client?: TCLIENT_GET_ALL
+  client?: TCLIENT_GET
 }
 
 /* eslint-disable-next-line */
-export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TUpdateClientByIdProps) {
+type TFormName = keyof ( TCLIENT_PATCH_BODY & Record<"referencia", string> )
+
+/* eslint-disable-next-line */
+export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdateClientByIdProps) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const  clientDB = Route.useLoaderData() ?? _client
   const [ client, setClient ] = useState(clientDB) 
   const { open, setOpen } = useStatus()
-  const { pushNotification: setNotification } = useNotifications()
-  const navigate = useNavigate()
+  const { pushNotification } = useNotifications()
   const { mutate: updateClient } = useMutation({
     mutationKey: ["update-client-by-id"],
     mutationFn: pathClientById
@@ -53,7 +55,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof TCLIENT_GET | "referencia", string>
+    ) as Record<TFormName, string>
 
     const { nombres: firstName, apellidos: lastName } = items
     const description = text.notification.decription({
@@ -61,17 +63,23 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
     })
 
     const action =
-      ({ ...items }: Record<keyof Omit<TCLIENT_GET, "id">, string>) =>
+      ({ ...items }: Record<TFormName, string>) =>
       () => {
         const { id } = client
         updateClient({ clientId: id, params: {
-          ...items,
-          tipo_de_identificacion: Number.parseInt( items?.tipo_de_identificacion ),
           estado: 1,
-          // TODO: referencia_id but referencia is a string
-          referencia_id: 0,
+          email: items?.email,
+          referencia_id: +items?.referencia_id,
+          celular: items?.celular,
+          nombres: items?.nombres,
+          telefono: items?.telefono,
+          apellidos: items?.apellidos,
+          direccion: items?.direccion,
+          comentarios: items?.comentarios,
+          numero_de_identificacion: items?.numero_de_identificacion,
+          tipo_de_identificacion_id: +items?.tipo_de_identificacion_id
         } })
-        setNotification({
+        pushNotification({
           date: new Date(),
           action: "PATH",
           description,
@@ -80,44 +88,40 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
 
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
-    navigate({to: "../../"})
-    setClients( { clients: clients?.map( ({ id }, i, list) => {
-      if(id === client?.id){
-        return ({ 
+    setClients( { clients: clients?.map( ({ id: clientId }, i, list) => {
+      if(clientId !== client?.id) return list?.[i]
+      return ({ 
           ...list?.[i],
-          numero_de_identificacion: items.numero_de_identificacion,
           email: items?.email,
-          estado: 1,
+          referencia_id: +items?.referencia_id,
           celular: items?.celular,
-          fullName: firstName + " " + lastName,
+          nombres: items?.nombres,
           telefono: items?.telefono,
-          direccion:items?.direccion,
+          apellidos: items?.apellidos,
+          direccion: items?.direccion,
           comentarios: items?.comentarios,
-          tipo_de_identificacion: Number.parseInt(items?.referencia),
+          numero_de_identificacion: items?.numero_de_identificacion,
+          tipo_de_identificacion_id: +items?.tipo_de_identificacion_id
         })
-      }
-      return list?.[i]
     } ) } )
 
     const onClick = () => {
       clearTimeout(timer)
-    setClients( { clients } )
+      setClients( { clients } )
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from new user">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>{' '}
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from new user">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     ev.preventDefault()
   }
@@ -129,6 +133,8 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
   }
 
   return (
+    <>
+    { !open && <Navigate to={"../"} /> }
     <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">
@@ -153,11 +159,11 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
         )}
       >
         <Label>
-          <span>{text.form.firstName.label}</span>{' '}
+          <span>{text.form.firstName.label}</span>
           <Input
             required
             disabled={!checked}
-            name={'nombres' as keyof TCLIENT_GET}
+            name={'nombres' as TFormName}
             type="text"
             defaultValue={client?.nombres}
             placeholder={checked ? text.form.firstName.placeholder : undefined}
@@ -168,7 +174,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
           <Input
             required
             disabled={!checked}
-            name={'apellidos' as keyof TCLIENT_GET}
+            name={'apellidos' as TFormName}
             type="text"
             defaultValue={client?.apellidos}
             placeholder={checked ? text.form.lastName.placeholder : undefined}
@@ -179,7 +185,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
           <Input
             required
             disabled={!checked}
-            name={'numero_de_identificacion' as keyof TCLIENT_GET}
+            name={'numero_de_identificacion' as TFormName}
             type="text"
             defaultValue={client?.numero_de_identificacion+""}
             placeholder={checked ? text.form.id.placeholder : undefined}
@@ -191,7 +197,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
             defaultValue={""+getIdById({ id: client?.tipo_de_identificacion })?.id}
             disabled={!checked}
             required
-            name={'tipo_de_identificacion' as keyof TCLIENT_GET}
+            name={'tipo_de_identificacion' as TFormName}
           >
             <SelectTrigger className={clsx("w-full")}>
               <SelectValue placeholder={text.form.typeId.placeholder} />
@@ -208,7 +214,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
           <Input
             required
             disabled={!checked}
-            name={'celular' as keyof TCLIENT_GET}
+            name={'celular' as TFormName}
             type="tel"
             defaultValue={client?.celular}
             placeholder={checked ? text.form.phone.placeholder : undefined}
@@ -219,7 +225,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
           <Input
             required
             disabled={!checked}
-            name={'telefono' as keyof TCLIENT_GET}
+            name={'telefono' as TFormName}
             type="tel"
             defaultValue={client?.telefono}
             placeholder={checked ? text.form.telephone.placeholder : undefined}
@@ -230,7 +236,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
           <Input
             required
             disabled={!checked}
-            name={'direccion' as keyof TCLIENT_GET}
+            name={'direccion' as TFormName}
             type="text"
             defaultValue={client?.direccion}
             placeholder={checked ? text.form.direction.placeholder : undefined}
@@ -241,7 +247,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
           <Input
             required
             disabled={!checked}
-            name={'email' as keyof TCLIENT_GET}
+            name={'email' as TFormName}
             type="email"
             defaultValue={client?.email}
             placeholder={checked ? text.form.ref.placeholder : undefined}
@@ -294,6 +300,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET_ALL }: TU
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

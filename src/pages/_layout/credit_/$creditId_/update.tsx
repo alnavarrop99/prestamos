@@ -4,7 +4,7 @@ import { Dialog } from '@radix-ui/react-dialog'
 import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
 import {createContext, useMemo, useRef, useState } from 'react'
 import { Switch } from '@/components/ui/switch'
-import { getCreditById, type TCREDIT_GET, type TCUOTE } from '@/api/credit'
+import { getCreditById, type TCREDIT_PATCH_BODY, type TCREDIT_GET, type TCUOTE } from '@/api/credit'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@radix-ui/react-label'
 import { Input } from '@/components/ui/input'
@@ -41,6 +41,8 @@ interface TCuotesState {
 const initialCuotes: TCuotesState = {
   type: "porcentage" 
 }
+
+type TFormData = keyof TCREDIT_PATCH_BODY
 
 export const _creditChangeContext = createContext<[TCREDIT_GET] | undefined>(undefined)
 
@@ -79,10 +81,10 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
     const { value, name }: {name?: string, value?: string} = ev.target
     if( !name || !value ) return;
 
-    setCreditChange( { ...creditChange, [ name as keyof TCREDIT_GET ]: value } )
+    setCreditChange( { ...creditChange, [ name as TFormData ]: value } )
   }
 
-  const onChangeCuoteById: ( params :{ cuoteId?: number } ) => React.ChangeEventHandler<HTMLFormElement> = ({ cuoteId }) => (ev) => {
+  const onChangeCuoteById: ( cuoteId?: number ) => React.ChangeEventHandler<HTMLFormElement> = (cuoteId) => (ev) => {
     const { value, name }: {name?: string, value?: string} = ev.target
     const { cuotas, pagos } = creditDB
     if(!creditDB || !value || !name || !pagos) return;
@@ -115,7 +117,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
     ev.preventDefault()
   }
 
-  const onCuoteSubmit: ( params:{ cuoteId: number } ) => React.FormEventHandler<HTMLFormElement> = ( { cuoteId } ) => (ev) => {
+  const onCuoteSubmit: ( cuoteId: number ) => React.FormEventHandler<HTMLFormElement> = ( cuoteId ) => (ev) => {
     const activeForms = form?.map( ( { current }, id ) => ({ id, current  }) )?.filter( ({ current }) => current )
 
     if( cuoteId === Math.max( ...activeForms.map( ({ id }) => id ) ) && activeForms?.every( ( { current } ) => current?.checkValidity() ) ) {
@@ -166,11 +168,11 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                 <span>{text.form.details.clients.label}</span>
                 <Input
                   required
-                  name={'nombre_del_cliente' as keyof TCREDIT_GET}
+                  name={'owner_id' as TFormData}
                   type="text"
                   placeholder={text.form.details.clients.placeholder}
                   list='credit-clients'
-                  defaultValue={creditDB?.nombre_del_cliente}
+                  defaultValue={creditDB?.owner_id}
                 />
                 <datalist id='credit-clients' >
                   {/*clients?.map( ( { nombres, apellidos, id } ) => <option key={id} value={[nombres, apellidos].join(" ")} />  )*/}
@@ -180,7 +182,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                <span>{text.form.details.date.label}</span>
                <DatePicker 
                   required
-                  name={'fecha_de_aprobacion' as keyof TCREDIT_GET}
+                  name={'fecha_de_aprobacion' as TFormData}
                   date={new Date(creditDB.fecha_de_aprobacion)} 
                   label={text.form.details.date.placeholder} />
              </Label>
@@ -188,7 +190,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                 <span>{text.form.details.ref.label}</span>
                 <Input
                   required
-                  name={'garante_id' as keyof TCREDIT_GET}
+                  name={'garante_id' as TFormData}
                   type="text"
                   defaultValue={creditDB?.garante_id}
                   placeholder={text.form.details.ref.placeholder}
@@ -203,7 +205,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               required
               min={0}
               step={50}
-              name={'monto' as keyof TCREDIT_GET}
+              name={'monto' as TFormData}
               type="number"
               defaultValue={creditDB.monto}
               placeholder={text.form.details.amount.placeholder}
@@ -219,7 +221,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               min={0}
               max={100}
               step={1}
-              name={'tasa_de_interes' as keyof TCREDIT_GET}
+              name={'tasa_de_interes' as TFormData}
               defaultValue={Math.round(creditDB.tasa_de_interes * 100)}
               type="number"
               placeholder={text.form.details.interest.placeholder}
@@ -235,7 +237,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               min={0}
               max={25}
               step={1}
-              name={'numero_de_cuotas' as keyof TCREDIT_GET}
+              name={'numero_de_cuotas' as TFormData}
               defaultValue={creditDB.numero_de_cuotas}
               type="number"
               placeholder={text.form.details.cuotes.label}
@@ -245,7 +247,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
             <span>{text.form.details.frecuency.label}</span>
             <Select
               required
-              name={'frecuencia_del_credito_id' as keyof TCREDIT_GET}
+              name={'frecuencia_del_credito_id' as TFormData}
               defaultValue={""+creditDB?.frecuencia_del_credito_id}
             >
               <SelectTrigger className="w-full">
@@ -260,7 +262,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
             <span>{text.form.details.users.label}</span>
             <Input
               required
-              name={'cobrador_id' as keyof TCREDIT_GET}
+              name={'cobrador_id' as TFormData}
               value={creditDB?.cobrador_id}
               type="text"
               placeholder={text.form.details.users.placeholder}
@@ -273,7 +275,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
           <Label htmlFor='credit-installments' className='row-start-4'>
             <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
               <span>{ text.form.details.installmants.label }</span>
-              <RadioGroup name={'tipo_de_mora_id' as keyof TCREDIT_GET} defaultValue={ ""+getMoraTypeById({ moraTypeId: creditDB?.tipo_de_mora_id })?.id } onChange={onChangeType} >
+              <RadioGroup name={'tipo_de_mora_id' as TFormData} defaultValue={ ""+getMoraTypeById({ moraTypeId: creditDB?.tipo_de_mora_id })?.id } onChange={onChangeType} >
                 <Label><RadioGroupItem value={''+getMoraTypeByName({ moraTypeName: "valor" })?.id} /> <Badge>$</Badge> </Label>
                 <Label><RadioGroupItem value={''+getMoraTypeByName({ moraTypeName: "porcentaje" })?.id} /> <Badge>%</Badge> </Label>
               </RadioGroup>
@@ -284,7 +286,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               min={0}
               max={installmants?.type === "porcentage" ? 100 : undefined}
               step={installmants?.type === "porcentage" ? 1 : 50}
-              name={'tipo_de_mora_id' as keyof TCREDIT_GET}
+              name={'tipo_de_mora_id' as TFormData}
               type="number"
               defaultValue={creditDB?.valor_de_mora}
               placeholder={text.form.details.installmants.label}
@@ -295,14 +297,14 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               min={0}
               max={25}
               type='number'
-              name={'dias_adicionales' as keyof TCREDIT_GET} 
+              name={'dias_adicionales' as TFormData} 
               defaultValue={creditDB.dias_adicionales} 
               placeholder={text.form.details.aditionalsDays.placeholder} 
             />
           </Label>
          <Label ><span>{text.form.details.comment.label}</span>
             <Textarea 
-              name={'comentario' as keyof TCREDIT_GET} 
+              name={'comentario' as TFormData} 
               rows={5} 
               placeholder={text.form.details.comment.placeholder} 
             >
@@ -335,8 +337,8 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                     <form
                       className='px-4 grid grid-cols-2 gap-4 items-end [&>label_span]:font-bold [&>label]:space-y-2 [&>label:last-child]:col-span-full [&>label>div]:flex [&>label>div]:gap-2 [&>label>div]:items-center [&>label>div]:justify-between'
                       id={ 'edit-pay-' + cuote?.id }
-                      onChange={onChangeCuoteById({ cuoteId: cuote?.id })}
-                      onSubmit={onCuoteSubmit({ cuoteId: cuote?.id })}
+                      onChange={onChangeCuoteById( cuote?.id )}
+                      onSubmit={onCuoteSubmit(cuote?.id )}
                       ref={form?.[i]}
                     >
                     <Label>

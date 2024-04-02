@@ -1,4 +1,4 @@
-import type { TPAYMENT_GET, TPAYMENT_GET_BASE } from '@/api/payment'
+import type { TPAYMENT_GET_BASE } from '@/api/payment'
 import { useToken } from '@/lib/context/login'
 
 export type TCUOTE = {
@@ -68,7 +68,10 @@ export type TCREDIT_GET = {
 
 export type TCREDIT_GET_ALL = TCREDIT_GET_BASE[]
 
-export type TCREDIT_GET_FILTER_ALL = {
+export type TCREDIT_GET_FILTER = {
+  // TODO: id and clientId is missing in the backend
+  id: number
+  clientId: number
   nombre_del_cliente: string
   fecha_de_cuota: string
   valor_de_cuota: number
@@ -76,6 +79,8 @@ export type TCREDIT_GET_FILTER_ALL = {
   valor_de_la_mora: number
   frecuencia: TFRECUENCY
 }
+
+export type TCREDIT_GET_FILTER_ALL = TCREDIT_GET_FILTER[]
 
 export type TCREDIT_GET_FILTER_BODY = {
   fecha_de_pago?: Date 
@@ -127,7 +132,7 @@ export type TCREDIT_DELETE = TCREDIT_GET_BASE
 // FUNCTION TYPES
 type TGetCreditById = (params: { params: { creditId: string } }) => Promise<TCREDIT_GET>
 type TGetCreditsList = () => Promise<TCREDIT_GET_ALL>
-type TGetCreditsFilter = ( params: TCREDIT_GET_FILTER_BODY) => () => Promise<TCREDIT_GET_FILTER_ALL>
+type TGetCreditsFilter = ( params?: TCREDIT_GET_FILTER_BODY) => () => Promise<TCREDIT_GET_FILTER_ALL>
 type TPostCredit = (params: TCREDIT_POST_BODY) => Promise<TCREDIT_POST>
 type TDeleteCreditById = (params: { creditId: number }) => Promise<TCREDIT_DELETE>
 type TPatchCreditById = (params: { creditId: number, updateCredit?: TCREDIT_PATCH_BODY }) => Promise<TCREDIT_PATCH>

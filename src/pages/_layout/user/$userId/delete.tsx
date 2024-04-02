@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { getUserById, type TUSER_GET } from '@/api/users'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { TUsersState, _usersContext } from '@/pages/_layout/user'
+import { type TUsersState, _usersContext } from '@/pages/_layout/user'
 
 export const Route = createFileRoute('/_layout/user/$userId/delete')({
   component: DeleteUserById,
@@ -31,10 +31,10 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
   const [checked, setChecked] = useState(false)
   const selectedUser = Route.useLoaderData() ?? _user
   const { nombre } = selectedUser
-  const { pushNotification: setNotification } = useNotifications()
+  const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
-  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
+  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ]
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -49,7 +49,7 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
 
     const action = (selectedUser: TUSER_GET) => () => {
         import.meta.env.DEV && console.table(selectedUser);
-        setNotification({
+        pushNotification({
           date: new Date(),
           action: "DELETE",
           description,
@@ -58,7 +58,6 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
   
     const timer = setTimeout(action(selectedUser), 6 * 1000)
     setOpen({ open: !open })
-    navigate({to: "../../"})
     setUsers( users?.filter( ({ id }) => (id !== selectedUser?.id ) ) ?? [] )
 
     const onClick = () => {
@@ -66,26 +65,25 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
       setUsers( users )
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from delete client">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from delete client">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     ev.preventDefault()
   }
 
-
   return (
+    <>
+    { !open && <Navigate to={"../../"} />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -146,6 +144,7 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

@@ -218,7 +218,7 @@ export function Layout({
               className={clsx({ 'hover:animate-pulse': open })}
             />
             <span className={clsx('font-bold uppercase', { hidden: open })}>
-              {text.title}{' '}
+              {text.title}
             </span>
             <BadgeCent className={clsx({ hidden: open })} />
           </h2>
@@ -323,7 +323,7 @@ export function Layout({
                   <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
                     <h3 className="text-xl [&>span]:underline">
                       <span>{text.search.title}</span>
-                      <Badge variant="default"> {clients?.length} </Badge>{' '}
+                      <Badge variant="default"> {clients?.length} </Badge>
                     </h3>
                     <Separator />
                     <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
@@ -390,7 +390,7 @@ export function Layout({
                       <span className="font-bold">{user.nombre}</span>
                     </li>
                     <li>
-                      {' '}
+                      
                       <Badge> {user?.rol} </Badge>
                     </li>
                   </ul>
@@ -444,8 +444,8 @@ export function Layout({
                       <BreadcrumbItem>
                         <Link to={route}>
                           <span className={'font-bold hover:underline'}>
-                            {' '}
-                            {name}{' '}
+                            
+                            {name}
                           </span>
                         </Link>
                       </BreadcrumbItem>
@@ -463,10 +463,10 @@ export function Layout({
         <Separator className="my-4" />
         <div className="flex justify-between">
           <h3>
-            <span>{text.footer.description}</span>{' '}
+            <span>{text.footer.description}</span>
           </h3>
           <h3>
-            <span className="italic">{text.footer.copyright}</span>{' '}
+            <span className="italic">{text.footer.copyright}</span>
             <Badge> &copy; {new Date().getFullYear()} </Badge>
           </h3>
         </div>

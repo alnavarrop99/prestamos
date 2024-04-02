@@ -54,7 +54,7 @@ export const Route = createFileRoute('/_layout/client')({
     const clients = await getClientsList()
     return clients?.map<TClientTable>(({ nombres, apellidos, ...props }) => ({
       fullName: nombres + ' ' + apellidos,
-      ...props,
+      ...props
     }))
   },
   validateSearch: (search: { clients?: number[] }) => {
@@ -94,11 +94,11 @@ export function Clients({
     setClient
   }))
   const data = useMemo(() => {
-    if (!search?.clients?.length) return clients
+    if (!search?.clients?.length) return clients;
     return clients?.filter(
-      ({ id: userId }) => search?.clients?.includes(userId)
+      ({ id: userId }) => userId && search?.clients?.includes(userId)
     )
-  }, [clients])
+  }, [...clients?.map(({ id }) => id)])
 
   const table = useReactTable({
     data,
@@ -137,11 +137,7 @@ export function Clients({
 
   return (
     <_clientContext.Provider value={[ clients, setClient, table.resetRowSelection ]}>
-    <_selectedClients.Provider
-      value={table
-        .getFilteredSelectedRowModel()
-        ?.rows?.map(({ original }) => original)}
-    >
+    <_selectedClients.Provider value={table .getFilteredSelectedRowModel() ?.rows?.map(({ original }) => original)} >
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>

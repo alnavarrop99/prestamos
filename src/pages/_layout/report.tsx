@@ -16,7 +16,7 @@ import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRef } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { TPAYMENT_POST_BODY } from '@/api/payment'
+import { type TPAYMENT_POST_BODY } from '@/api/payment'
 
 export const Route = createFileRoute('/_layout/report')({
   component: Report,

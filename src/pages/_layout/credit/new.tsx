@@ -5,7 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import React, { ComponentRef, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -16,12 +16,13 @@ import styles from "@/styles/global.module.css"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
-import { type  TCREDIT_GET, postCredit } from '@/api/credit'
+import { postCredit, type TCREDIT_POST_BODY } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { getMoraTypeByName } from '@/lib/type/moraType'
 import { getFrecuency, getFrecuencyByName } from '@/lib/type/frecuency'
 import { useMutation } from '@tanstack/react-query'
+import { Navigate } from '@tanstack/react-router'
 
 type TSearch = {
   clientId: number
@@ -56,6 +57,9 @@ const initialCuotes: TCuotesState = {
 }
 
 /* eslint-disable-next-line */
+type TFormName = keyof TCREDIT_POST_BODY
+
+/* eslint-disable-next-line */
 export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
   // const clientsDB = Route.useLoaderData() ?? _clients
@@ -63,7 +67,6 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { pushNotification: setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
-  const navigate = useNavigate()
   const { clientId } = Route.useSearch()
   const { mutate: createCredit } = useMutation({
     mutationKey: ["create-crdit"],
@@ -79,7 +82,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
 
   const onChangeValue: ( prop: "coute" | "interest" | "amount" ) => React.ChangeEventHandler< ComponentRef< typeof Input > > = (prop) => (ev) => {
     const { value } = ev.target
-    if(Number.parseInt(value) === 0 && prop === "coute") return;
+    if(+value === 0 && prop === "coute") return;
     setCuote( { ...{ interest, coute, amount }, [prop]: Number.parseInt(value) } ) 
   }
 
@@ -88,29 +91,31 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof TCREDIT_GET, string>
+    ) as Record<TFormName, string>
 
-    const { nombre_del_cliente } = items
+    // TODO 
+    const { owner_id } = items
     const description = text.notification.decription({
-      username: nombre_del_cliente,
+      username: "" + owner_id,
     })
 
     const action =
-      ({ ...props }: Record<keyof TCREDIT_GET, string>) =>
+      ({ ...items }: Record<TFormName, string>) =>
       () => {
         createCredit({
-          monto: +props?.monto,
+          monto: +items?.monto,
           estado: 1,
-          comentario: props?.comentario,
-          cobrador_id: +props?.cobrador_id,
-          valor_de_mora: +props?.valor_de_mora,
-          tasa_de_interes: +props?.tasa_de_interes,
-          tipo_de_mora_id: +props?.tipo_de_mora_id,
-          dias_adicionales: +props?.dias_adicionales,
-          numero_de_cuotas: +props?.numero_de_cuotas,
-          fecha_de_aprobacion: new Date( +props.fecha_de_aprobacion ),
-          frecuencia_del_credito_id: +props?.frecuencia_del_credito_id,
-          owner_id: +props?.owner_id, 
+          comentario: items?.comentario,
+          cobrador_id: +items?.cobrador_id,
+          valor_de_mora: +items?.valor_de_mora,
+          tasa_de_interes: +items?.tasa_de_interes,
+          tipo_de_mora_id: +items?.tipo_de_mora_id,
+          dias_adicionales: +items?.dias_adicionales,
+          numero_de_cuotas: +items?.numero_de_cuotas,
+          frecuencia_del_credito_id: +items?.frecuencia_del_credito_id,
+          owner_id: +items?.owner_id,
+          garante_id: +items?.garante_id,
+          fecha_de_aprobacion: items?.fecha_de_aprobacion,
         })
         setNotification({
           date: new Date(),
@@ -121,32 +126,31 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
 
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
-    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if ( true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from new user">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from new user">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     form.current.reset()
     ev.preventDefault()
   }
 
   return (
+    <>
+    { !open && <Navigate to={"../"} /> }
     <DialogContent className="max-w-4xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -167,7 +171,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <span>{text.form.cliente.label} </span>
           <Input
             required
-            name={'nombre_del_cliente' as keyof TCREDIT_GET}
+            name={'owner_id' as TFormName}
             type="text"
             placeholder={text.form.cliente.placeholder}
             list='credit-clients'
@@ -180,7 +184,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
         <Label>
           <span>{text.form.date.label} </span>
           <DatePicker
-            name={"fecha_de_aprobacion" as keyof TCREDIT_GET}
+            name={"fecha_de_aprobacion" as TFormName}
             label={text.form.date.placeholder}
             className='border border-primary' 
           />
@@ -189,7 +193,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <span>{text.form.ref.label} </span>
           <Input
             required
-            name={'garante_id' as keyof TCREDIT_GET}
+            name={'garante_id' as TFormName}
             type="text"
             placeholder={text.form.ref.placeholder}
             // defaultValue={ getClientId({ clientId })?.referencia }
@@ -206,7 +210,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
             step={50}
             value={amount}
             onChange={onChangeValue("amount")}
-            name={'monto' as keyof TCREDIT_GET}
+            name={'monto' as TFormName}
             type="number"
             placeholder={text.form.amount.placeholder}
           />
@@ -222,7 +226,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
             min={0}
             max={100}
             step={1}
-            name={'tasa_de_interes' as keyof TCREDIT_GET}
+            name={'tasa_de_interes' as TFormName}
             value={interest}
             onChange={onChangeValue("interest")}
             type="number"
@@ -240,7 +244,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
             min={0}
             max={25}
             step={1}
-            name={'numero_de_cuotas' as keyof TCREDIT_GET}
+            name={'numero_de_cuotas' as TFormName}
             value={coute}
             onChange={onChangeValue("coute")}
             type="number"
@@ -251,7 +255,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <span>{text.form.frecuency.label} </span>
           <Select 
             required
-            name={'frecuencia_del_credito_id' as keyof TCREDIT_GET}
+            name={'frecuencia_del_credito_id' as TFormName}
             defaultValue={""+getFrecuencyByName({ frecuencyName: "Mensual" })?.id}
           >
             <SelectTrigger className="w-full ring-1 ring-ring">
@@ -266,7 +270,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <span>{text.form.user.label} </span>
           <Input
             required
-            name={'owner_id' as keyof TCREDIT_GET}
+            name={'cobrador_id' as TFormName}
             type="text"
             placeholder={text.form.user.placeholder}
             list='credit-user'
@@ -279,7 +283,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
         <Label htmlFor='credit-installments' className='row-start-4'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
           <span className='after:content-["_*_"] after:text-red-500'>{text.form.installments.label} </span>
-          <RadioGroup name={'tipo_de_mora_id' as keyof TCREDIT_GET} defaultValue={ getMoraTypeByName({ moraTypeName: "porcentaje" })?.nombre } onChange={onChangeType}  >
+          <RadioGroup name={'tipo_de_mora_id' as TFormName} defaultValue={ getMoraTypeByName({ moraTypeName: "porcentaje" })?.nombre } onChange={onChangeType}  >
             <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "valor" })?.nombre } /> <Badge>$</Badge> </Label>
             <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "porcentaje" })?.nombre } /> <Badge>%</Badge> </Label>
           </RadioGroup>
@@ -290,7 +294,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
             min={0}
             max={installmants?.type === "porcentage" ? 100 : undefined}
             step={installmants?.type === "porcentage" ? 1 : 50}
-            name={'valor_de_mora' as keyof TCREDIT_GET }
+            name={'valor_de_mora' as TFormName }
             type="number"
             value={installmants.value}
             placeholder={text.form.installments.placeholder?.[installmants.type]}
@@ -301,7 +305,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <Input
             min={0}
             max={10}
-            name={'dias_adicionales' as keyof TCREDIT_GET}
+            name={'dias_adicionales' as TFormName}
             type="number"
             placeholder={text.form.aditionalDays.placeholder}
           />
@@ -310,7 +314,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <span>{text.form.comment.label}</span>
           <Textarea
             rows={5}
-            name={'comentario' as keyof TCREDIT_GET}
+            name={'comentario' as TFormName}
             placeholder={text.form.comment.placeholder}
           />
         </Label>
@@ -339,6 +343,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

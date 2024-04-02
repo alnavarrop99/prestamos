@@ -11,29 +11,34 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useContext, useRef } from 'react'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
-import { postClient, TCLIENT_GET_ALL, type TCLIENT_GET } from "@/api/clients";
+import { postClient, type TCLIENT_POST_BODY } from "@/api/clients";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { getIDs, getIdById } from '@/lib/type/id'
 import { _clientContext } from '@/pages/_layout/client'
-import { TClientTable } from '@/pages/_layout/-column'
+import { type TClientTable } from '@/pages/_layout/-column'
+import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout/client/new')({
   component: NewClient,
 })
 
 /* eslint-disable-next-line */
+type TFormName = keyof (TCLIENT_POST_BODY & Record<"referencia", string>)
+
+/* eslint-disable-next-line */
 export function NewClient() {
   const form = useRef<HTMLFormElement>(null)
-  const { pushNotification: setNotification } = useNotifications()
+  const { pushNotification } = useNotifications()
+  const { open } = useStatus()
 
-  const onSuccess: (data: TCLIENT_GET_ALL) => unknown = (newClient) => {
+  const onSuccess: (data: TCLIENT_POST_BODY) => unknown = (newClient) => {
     setClients({ clients: [ ...clients.slice(0, -1), { ...(clients?.at(-1) ?? {} as TClientTable), ...newClient } ] })
   }
 
@@ -49,7 +54,7 @@ export function NewClient() {
 
     const items = Object.fromEntries(
       new FormData(form.current).entries()
-    ) as Record<keyof TCLIENT_GET | "referencia", string>
+    ) as Record<TFormName , string>
 
     const { nombres: firstName, apellidos: lastName } = items
     const description = text.notification.decription({
@@ -57,7 +62,7 @@ export function NewClient() {
     })
 
     const action =
-      ({ ...props }: Record<keyof TCLIENT_GET | "referencia", string>) =>
+      ({ ...props }: Record<TFormName, string>) =>
       () => {
         createClient({
           ...props,
@@ -66,7 +71,7 @@ export function NewClient() {
           // TODO: referencia_id because referencia is the name
           referencia_id: 0,
         })
-        setNotification({
+        pushNotification({
           date: new Date(),
           action: "POST",
           description,
@@ -84,10 +89,10 @@ export function NewClient() {
       telefono: items?.telefono,
       direccion:items?.direccion,
       comentarios: items?.comentarios,
-      tipo_de_identificacion: Number.parseInt(items?.referencia),
+      tipo_de_identificacion: +items?.tipo_de_identificacion,
       // TODO: 
-      referencia_id: 0,
-      owner: undefined,
+      referencia_id: +items?.referencia_id,
+      owner_id: undefined
     }] } )
           
 
@@ -96,28 +101,27 @@ export function NewClient() {
       setClients({ clients })
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from new user">
-            {' '}
-            <Button variant="default" onClick={onClick}>
-              {' '}
-              {text.notification.undo}{' '}
-            </Button>{' '}
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from new user">
+          
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     form.current.reset()
     ev.preventDefault()
   }
 
   return (
+    <>
+    { !open && <Navigate to={"../"} /> }
     <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -135,10 +139,10 @@ export function NewClient() {
         )}
       >
         <Label>
-          <span>{text.form.firstName.label}</span>{' '}
+          <span>{text.form.firstName.label}</span>
           <Input
             required
-            name={'nombres' as keyof TCLIENT_GET}
+            name={'nombres' as TFormName}
             type="text"
             placeholder={text.form.firstName.placeholder}
           />
@@ -147,7 +151,7 @@ export function NewClient() {
           <span>{text.form.lastName.label} </span>
           <Input
             required
-            name={'apellidos' as keyof TCLIENT_GET}
+            name={'apellidos' as TFormName}
             type="text"
             placeholder={text.form.lastName.placeholder}
           />
@@ -156,14 +160,14 @@ export function NewClient() {
           <span>{text.form.id.label} </span>
           <Input
             required
-            name={'numero_de_identificacion' as keyof TCLIENT_GET}
+            name={'numero_de_identificacion' as TFormName}
             type="text"
             placeholder={text.form.id.placeholder}
           />
         </Label>
         <Label>
           <span>{text.form.typeId.label} </span>
-          <Select required name={'tipo_de_identificacion' as keyof TCLIENT_GET} defaultValue={""+getIdById({ id: 1 })?.id}>
+          <Select required name={'tipo_de_identificacion' as TFormName} defaultValue={""+getIdById({ id: 1 })?.id}>
             <SelectTrigger className="w-full ring-ring ring-1">
               <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
@@ -178,7 +182,7 @@ export function NewClient() {
           <span>{text.form.phone.label} </span>
           <Input
             required
-            name={'celular' as keyof TCLIENT_GET}
+            name={'celular' as TFormName}
             type="tel"
             placeholder={text.form.phone.placeholder}
           />
@@ -187,7 +191,7 @@ export function NewClient() {
           <span>{text.form.telephone.label} </span>
           <Input
             required
-            name={'telefono' as keyof TCLIENT_GET}
+            name={'telefono' as TFormName}
             type="tel"
             placeholder={text.form.telephone.placeholder}
           />
@@ -196,7 +200,7 @@ export function NewClient() {
           <span>{text.form.direction.label}</span>
           <Input
             required
-            name={'direccion' as keyof TCLIENT_GET}
+            name={'direccion' as TFormName}
             type="text"
             placeholder={text.form.direction.placeholder}
           />
@@ -205,7 +209,7 @@ export function NewClient() {
           <span>{text.form.email.label}</span>
           <Input
             required
-            name={'email' as keyof TCLIENT_GET}
+            name={'email' as TFormName}
             type="email"
             placeholder={text.form.email.placeholder}
           />
@@ -214,7 +218,7 @@ export function NewClient() {
           <span>{text.form.ref.label}</span>
           <Input
             required
-            name={'referencia'}
+            name={'referencia' as TFormName}
             type="text"
             placeholder={text.form.ref.placeholder}
           />
@@ -222,8 +226,8 @@ export function NewClient() {
       </form>
       <DialogFooter className="justify-end">
         <Button variant="default" form="new-client" type="submit">
-          {' '}
-          {text.button.update}{' '}
+          
+          {text.button.update}
         </Button>
         <DialogClose asChild>
           <Button
@@ -231,12 +235,13 @@ export function NewClient() {
             variant="secondary"
             className="font-bold hover:ring hover:ring-primary"
           >
-            {' '}
-            {text.button.close}{' '}
+            
+            {text.button.close}
           </Button>
         </DialogClose>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

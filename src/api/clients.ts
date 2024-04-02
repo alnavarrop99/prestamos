@@ -42,8 +42,7 @@ export type TCLIENT_GET = {
 export type TCLIENT_GET_ALL = TCLIENT_GET_BASE[]
 
 // POST
-export type TCLIENT_POST = {
-}
+export type TCLIENT_POST = TCLIENT_GET_BASE
 
 export type TCLIENT_POST_BODY = {
   nombres: string
@@ -123,6 +122,7 @@ export const postClient: TPostClient =  async ( params ) => {
     body: JSON.stringify(params),
     headers
   })
+
   return res.json()
 }
 

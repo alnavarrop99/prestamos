@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { ComponentRef, useContext, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
@@ -14,8 +14,8 @@ import { getUserById, pathUserById } from '@/api/users'
 import {useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { TRoles, getRolById, getRolByName, listRols } from '@/lib/type/rol'
-import { TUsersState, _usersContext } from '@/pages/_layout/user'
+import { type TRoles, getRolById, getRolByName, listRols } from '@/lib/type/rol'
+import { type TUsersState, _usersContext } from '@/pages/_layout/user'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
   component: UpdateUserById,
@@ -48,7 +48,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
   const _userDB = (Route.useLoaderData() ?? _user)
   const userDB = { ..._userDB, password: "" }
   const [ user, setUser ] = useState(userDB)
-  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
+  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ]
   const { pushNotification: setNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
@@ -57,7 +57,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
     mutationFn: pathUserById,
   })
 
-  const onClick: ( {prop}:{ prop: keyof TPassowordVisibilityState } ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( { prop } ) => () => {
+  const onClick: ( prop: keyof TPassowordVisibilityState ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( prop ) => () => {
     setVisibility( { ...visibility, [ prop ]: !visibility?.[prop]  } )
   }
 
@@ -77,7 +77,6 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
   }
 
   const onChangeName: ( filed: "firstName" | "lastName" ) => React.ChangeEventHandler< React.ComponentRef< typeof Input > > = (field) => (ev) => {
-    ev.stopPropagation()
     const { value } = ev.target
     const { nombre } = user
     if( field === "firstName" ){
@@ -86,6 +85,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
     else if ( field === "lastName"  ){
       setUser( { ...user, nombre: nombre.split(" ")?.[0] + value } )
     }
+    ev.stopPropagation()
   }
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
@@ -120,7 +120,6 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
 
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
-    navigate({to: "../../"})
     setUsers( users?.map( ({ id, ...items }, i, list) => {
       if( user.id === id ){
         return ({ ...items, id, nombre: firstName + " " + lastName, rol: getRolById({ rolId: Number.parseInt(rol) })?.nombre })
@@ -153,6 +152,8 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
   const { rol, nombre, id } = userDB
 
   return (
+    <>
+    {!open && <Navigate to={"../../"} />}
     <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -170,7 +171,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
         )}
       >
         <Label className='!col-span-1' >
-          <span>{text.form.firstName.label}</span>{' '}
+          <span>{text.form.firstName.label}</span>
           <Input
             required
             name={'firstName' as TFormName}
@@ -212,7 +213,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
             <Button
               type="button"
               className="w-fit p-1.5"
-              onClick={onClick({ prop: "password" })}
+              onClick={onClick("password")}
               variant={!visibility.password ? 'outline' : 'default'}
             >
               {!visibility.password ? <Eye /> : <EyeOff />}
@@ -235,7 +236,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
             <Button
               type="button"
               className="w-fit p-1.5"
-              onClick={onClick({ prop: "confirmation" })}
+              onClick={onClick( "confirmation" )}
               variant={!visibility.confirmation ? 'outline' : 'default'}
             >
               {!visibility.confirmation ? <Eye /> : <EyeOff />}
@@ -271,6 +272,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
         </DialogClose>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

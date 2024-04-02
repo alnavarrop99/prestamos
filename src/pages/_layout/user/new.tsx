@@ -6,16 +6,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
-import { createFileRoute } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
 import styles from '@/styles/global.module.css'
 import { useContext, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { TUSER_GET, postUser } from '@/api/users'
+import { type TUSER_POST, postUser } from '@/api/users'
 import { getRolById, listRols } from "@/lib/type/rol";
-import { TUsersState, _usersContext } from '../user'
+import { type TUsersState, _usersContext } from '../user'
+import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout/user/new')({
   component: NewUser,
@@ -38,9 +39,10 @@ export function NewUser({}: TNewUserProps) {
   const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
-  const { pushNotification: setNotification } = useNotifications()
+  const { pushNotification } = useNotifications()
+  const { open } = useStatus()
 
-  const onSuccess: (data: TUSER_GET) => unknown = (newUser) => {
+  const onSuccess: (data: TUSER_POST) => unknown = (newUser) => {
     setUsers( [ ...users?.slice(0, -1), { ...(users?.at(-1) ?? {} as TUsersState), ...newUser } ]  )
   }
 
@@ -50,7 +52,7 @@ export function NewUser({}: TNewUserProps) {
     onSuccess,
   })
 
-  const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
+  const onClick: ( prop:{ prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
   }
 
@@ -71,19 +73,18 @@ export function NewUser({}: TNewUserProps) {
       () => {
         const { firstName, lastName, password, rol } = items
         createUser({ nombre: firstName + " " + lastName, password: password, rol_id: Number(rol) })
-        setNotification({
+        pushNotification({
           date: new Date(),
           action: "POST",
           description,
         })
       }
 
-
     const timer = setTimeout(action(items), 6 * 1000)
     setUsers( [...users, { 
       nombre: firstName + " " + lastName,
       rol: getRolById( { rolId: Number?.parseInt(items?.rol) } )?.nombre,
-      id: (users?.at(-1)?.id ?? 0) + 1,
+      id: users?.at(-1)?.id ?? 0 + 1,
       menu: false,
       active: false,
       selected: false,
@@ -116,6 +117,8 @@ export function NewUser({}: TNewUserProps) {
   const { password, confirmation } = passItems
 
   return (
+    <>
+    {!open && <Navigate to={"../"} />}
     <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -133,7 +136,7 @@ export function NewUser({}: TNewUserProps) {
         )}
       >
         <Label className='!col-span-1' >
-          <span>{text.form.firstName.label}</span>{' '}
+          <span>{text.form.firstName.label}</span>
           <Input
             required
             name={'firstName' as TFormName}
@@ -226,6 +229,7 @@ export function NewUser({}: TNewUserProps) {
         </DialogClose>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

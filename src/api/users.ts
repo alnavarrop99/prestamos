@@ -40,7 +40,7 @@ type TGetUserById = ( params: { params: { userId: string } }) => Promise<TUSER_G
 type TGetUsersList = () => Promise<TUSER_GET_ALL>
 type TGetCurrentUser = () => Promise<TUSER_GET>
 type TPostUser = (params: TUSER_POST_BODY) => Promise<TUSER_POST>
-type TPathUserById = (params: { userId: number , params: TUSER_PATCH_BODY } ) => Promise<TUSER_PATCH>
+type TPathUserById = (params: { userId: number , params?: TUSER_PATCH_BODY } ) => Promise<TUSER_PATCH>
 // type TDeleteUserById = (params: { userId: number } ) => Promise<TUSER_DELETE>
 
 export const loginUser: TGetUserLogin = async ( params ) => {

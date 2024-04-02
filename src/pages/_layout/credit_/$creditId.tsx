@@ -57,6 +57,8 @@ export function CreditById({
     setOpen({ open })
   }
 
+  const valor_de_cuota = creditDB?.cuotas?.at(-1)?.valor_de_cuota
+
   return (
     <_selectedCredit.Provider value={[ creditDB ]}>
       {!children && <Navigate to={Route.to} />}
@@ -101,8 +103,7 @@ export function CreditById({
         <h2 className="text-2xl font-bold"> {text.details.title} </h2>
         <div className="flex flex-col gap-2 px-2 [&>div]:flex [&>div]:gap-2">
           <div>
-            
-            <b>{text.details.status}:</b>
+            <b>{text.details.status + ":"}</b>
             <Switch
               className={'cursor-not-allowed'}
               checked={!!creditDB?.estado}
@@ -111,51 +112,46 @@ export function CreditById({
             </Switch>
           </div>
           <div>
-            
-            <b>{text.details.name}:</b> { creditDB?.nombre_del_cliente + "." }
+            <b>{text.details.name + ":"}</b> { creditDB?.owner_id + "." }
           </div>
           <div>
-            
-            <b>{text.details.amount}:</b> {'$' + Math.round(creditDB?.monto) + '.'}
+            <b>{text.details.amount + ":"}</b> {'$' + Math.round(creditDB?.monto) + '.'}
+          </div>
+          { valor_de_cuota && <div>
+            <b>{text.details.cuote + ":"}</b>
+            {'$' + Math.round(valor_de_cuota) + '.'}
+          </div>}
+          <div>
+            <b>{text.details.interest + ":"}</b> {Math.round(creditDB?.tasa_de_interes * 100) + '%'}
           </div>
           <div>
-            
-            <b>{text.details.cuote}:</b>
-            {'$' + Math.round(creditDB?.valor_de_cuota) + '.'}
-          </div>
-          <div>
-            
-            <b>{text.details.interest}:</b> {Math.round(creditDB?.tasa_de_interes * 100) + '%'}
-          </div>
-          <div>
-            
-            <b>{text.details.pay}:</b>
+            <b>{text.details.pay + ":"}</b>
             {creditDB.pagos?.length + '/' + creditDB.numero_de_cuotas + '.'}
           </div>
           <div>
-            
-            <b>{text.details.frecuency}:</b>
+            <b>{text.details.frecuency + ":"}</b>
             {getFrecuencyById({ frecuencyId: creditDB?.frecuencia_del_credito_id })?.nombre  + '.'}
           </div>
           <div>
             
-            <b>{text.details.date}:</b>
+            <b>{text.details.date + ":"}</b>
             {creditDB?.fecha_de_aprobacion
               ? format(creditDB?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'
               : null}
           </div>
           <div>
             
-            <b>{text.details.comment}:</b> {creditDB?.comentario}
+            <b>{text.details.comment + ":"}</b>
+            {creditDB?.comentario}
           </div>
           { creditDB?.valor_de_mora && <div>
             
-            <b>{text.details.installmants}:</b>
+            <b>{text.details.installmants + ":"}</b>
             {'$' + Math.round(creditDB?.valor_de_mora) + '.'}
           </div>}
           <div>
             
-            <b>{text.details.aditionalsDays}:</b>
+            <b>{text.details.aditionalsDays + ":"}</b>
             {creditDB?.dias_adicionales + '.'}
           </div>
         </div>
@@ -180,38 +176,31 @@ export function CreditById({
               {creditDB?.pagos.map((payment, i) => (
                 <TableRow key={payment?.id}>
                   <TableCell>
-                    
                     <b>{creditDB?.cuotas?.[i]?.numero_de_cuota}</b>
                   </TableCell>
                   <TableCell>
-                    
                     {payment?.fecha_de_pago
                       ? format(payment?.fecha_de_pago, 'MM-dd-yyyy')
                       : null}
                   </TableCell>
                   <TableCell>
-                    
                     <b>$</b>
                     {Math.round(payment?.valor_del_pago)}
                   </TableCell>
                   <TableCell>
-                    
                     <b>$</b>
                     {Math.round(creditDB?.cuotas?.[i]?.valor_de_cuota ?? 0)}
                   </TableCell>
                   <TableCell>
-                    
                     {creditDB?.cuotas?.[i]?.fecha_de_aplicacion_de_mora
                       ? format(creditDB?.cuotas?.[i]?.fecha_de_aplicacion_de_mora ?? "", 'MM-dd-yyyy')
                       : null}
                   </TableCell>
                   <TableCell>
-                    
                     <b>$</b>
                     {creditDB?.cuotas?.[i]?.valor_de_mora ? Math.round(creditDB?.cuotas?.[i]?.valor_de_mora ?? 0) : "-"}
                   </TableCell>
                   <TableCell>
-                    
                     <Switch
                       checked={creditDB?.cuotas?.[i]?.pagada}
                       className={'cursor-not-allowed'}

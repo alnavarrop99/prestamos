@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -16,6 +16,7 @@ import { type TCREDIT_GET, deleteCreditById } from "@/api/credit";
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { _selectedCredit } from '@/pages/_layout/credit_/$creditId'
+import { Navigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
   component: DeleteCreditById,
@@ -31,8 +32,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
   const [ credit ] = useContext(_selectedCredit) ?? [ _credit ]
   const [checked, setChecked] = useState(false)
   const { open, setOpen } = useStatus()
-  const { pushNotification: setNotification } = useNotifications()
-  const navigate = useNavigate()
+  const { pushNotification } = useNotifications()
   const { mutate: deleteCredit } = useMutation( {
     mutationKey: ["delete-credit"],
     mutationFn: deleteCreditById
@@ -42,15 +42,16 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler = () => {
     const description = text.notification.decription({
-      username: credit?.nombre_del_cliente,
+      // TODO
+      username: ""+credit?.owner_id,
     })
 
     const action = (credit: TCREDIT_GET) => () => {
       console.table(credit)
       deleteCredit({ creditId: credit?.id })
-      setNotification({
+      pushNotification({
         date: new Date(),
         action: "DELETE",
         description,
@@ -59,31 +60,30 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
 
     const timer = setTimeout(action(credit), 6 * 1000)
     setOpen({open: !open})
-    navigate({to: "../../"})
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from delete client">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from delete client">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     ev.preventDefault()
   }
 
   return (
+    <>
+    { !open && <Navigate to={"../../"} />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -94,7 +94,8 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
               {text.alert.description({ 
-                username: credit?.nombre_del_cliente 
+                // TODO
+                username: "" + credit?.owner_id 
               })}
             </AlertDescription>
           </Alert>
@@ -148,6 +149,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

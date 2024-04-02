@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -14,7 +14,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
 import { patchCreditsById, type TCREDIT_GET, getCreditById } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
-import { useNavigate } from '@tanstack/react-router'
 import { _creditChangeContext } from './update'
 import { useMutation } from '@tanstack/react-query'
 
@@ -35,7 +34,6 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
   const [ creditChange ] = useContext(_creditChangeContext) ?? [ _credit ]
   const { open, setOpen } = useStatus()
   const { pushNotification: setNotification } = useNotifications()
-  const navigate = useNavigate()
 
   const { mutate: updateCredit } = useMutation({
     mutationKey: ["update-credit"],
@@ -48,7 +46,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
 
   const onSubmit: React.FormEventHandler = (ev) => {
     const description = text.notification.decription({
-      username: creditDB?.nombre_del_cliente,
+      username: ""+creditDB?.owner_id,
     })
 
     const action = (credit: TCREDIT_GET) => () => {
@@ -65,31 +63,30 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
 
     const timer = setTimeout(action(creditChange), 6 * 1000)
     setOpen({open: !open})
-    navigate({to: "../"})
     
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from delete client">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from delete client">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     ev.preventDefault()
   }
 
   return (
+    <>
+    {!open && <Navigate to={"../"} /> }
     <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -100,7 +97,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
               {text.alert.description({ 
-                username: creditDB?.nombre_del_cliente 
+                username: ""+creditDB?.owner_id 
               })}
             </AlertDescription>
           </Alert>
@@ -153,6 +150,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 
