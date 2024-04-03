@@ -1,6 +1,6 @@
 import { useToken } from "@/lib/context/login"
 
-export type TREPORT_PARAMS_DATE_TYPE = 'fecha' | 'texto' | 'numero' | 'like'
+export type TREPORT_PARAMS_DATE_TYPE = 'str' | 'number' | 'date' | 'like'
 
 // GET 
 export type TREPORT_GET = {
@@ -13,6 +13,7 @@ export type TREPORT_GET = {
     codigo: string
     nombre: string
     tipo_dato: TREPORT_PARAMS_DATE_TYPE
+    obligatorio: boolean
   }[]
 }
 
@@ -28,10 +29,10 @@ export type TREPORT_POST_BODY = {}
 
 // FUNCTION TYPES 
 type TGetAllReport = () => Promise<TREPORT_GET_ALL>
-type TPostReportsById = ( params :{ reportId: number, report: TREPORT_POST_BODY } ) => Promise<TREPORT_POST[]>
+type TPostReportsById = ( params :{ code: string, report: TREPORT_POST_BODY } ) => Promise<TREPORT_POST[]>
 
 // FUNCTION UTILS
-export const typeDataByName = ( name: 'fecha' | 'texto' | 'numero' | 'like') => ({ fecha: undefined, texto: 'text', numero: 'number', like: 'text' })[name]
+export const typeDataByName = ( name: TREPORT_PARAMS_DATE_TYPE ) => ({ date: undefined, str: 'text', number: 'number', like: 'text' })[name]
 
 // FUNCTION DEFINITIONS 
 export const getAllReport: TGetAllReport = async () => {
@@ -39,6 +40,8 @@ export const getAllReport: TGetAllReport = async () => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const res = await fetch(import.meta.env.VITE_API + "/reportes/list", {
     method: "GET",
@@ -48,13 +51,15 @@ export const getAllReport: TGetAllReport = async () => {
   return res.json()
 }
 
-export const postReportById: TPostReportsById = async ({ reportId, report }) => {
+export const postReportById: TPostReportsById = async ({ code, report }) => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
-  const res = await fetch(import.meta.env.VITE_API + "/reportes/obtener_reporte_by_codigo/" + reportId, {
+  const res = await fetch(import.meta.env.VITE_API + "/reportes/obtener_reporte_by_codigo/" + code, {
     method: "POST",
     body: JSON.stringify(report),
     headers

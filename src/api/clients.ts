@@ -64,7 +64,7 @@ export type TCLIENT_PATCH = TCLIENT_GET_BASE
 export type TCLIENT_PATCH_BODY = {
   nombres?: string
   apellidos?: string
-  tipo_de_identificacion_id?: number
+  tipo_de_identificacion?: number
   numero_de_identificacion?: string
   celular?: string
   telefono?: string
@@ -90,6 +90,8 @@ export const getClientById: TGetClientById = async ({params: {clientId} }) =>{
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const res = await fetch(import.meta.env.VITE_API + "/clientes/by_id/" + clientId, {
     method: "GET",
@@ -103,6 +105,8 @@ export const getClientsList: TGetClientsList =  async () => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const res = await fetch(import.meta.env.VITE_API + "/clientes/list", {
     method: "GET",
@@ -116,6 +120,8 @@ export const postClient: TPostClient =  async ( params ) => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization", "Bearer " + token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const res = await fetch(import.meta.env.VITE_API + "/clientes/create", {
     method: "POST",
@@ -131,6 +137,8 @@ export const deleteClientsById: TDeleteClientById =  async ( { clientId } ) => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const res = await fetch(import.meta.env.VITE_API + "/clientes/delete/" + clientId, {
     method: "DELETE",
@@ -144,6 +152,8 @@ export const pathClientById: TPatchClientById =  async ( { clientId, params } ) 
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const res = await fetch(import.meta.env.VITE_API + "/clientes/" + clientId, {
     method: "PATCH",

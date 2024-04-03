@@ -65,25 +65,6 @@ export const columns: ColumnDef<TClientTable>[] = [
     ),
   },
   {
-    accessorKey: 'email' as keyof TClientTable,
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          {text.columns.email}
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      )
-    },
-    cell: ({ row }) => (
-      <p className="min-w-32">
-        {row.getValue('email' as keyof TClientTable) + '.'}
-      </p>
-    ),
-  },
-  {
     accessorKey: 'direccion' as keyof TClientTable,
     header: ({ column }) => {
       return (
@@ -132,7 +113,7 @@ export const columns: ColumnDef<TClientTable>[] = [
     cell: ({ row }) => (
       <div className="w-32">
         <p className="font-bold capitalize">
-          {getIdById({ id: row.original.tipo_de_identificacion })?.name}
+          {getIdById({ id: row.original.tipo_de_identificacion })?.nombre}
         </p>
         <p>{row.getValue('numero_de_identificacion' as keyof TClientTable)}</p>
       </div>

@@ -1,17 +1,18 @@
-import frecuency from "@/mocks/__mock__/FRECUENCY.json"
-import { getId, gets } from "./base"
+import { enumeradores as frecuencys } from "@/mocks/__mock__/FRECUENCY.json"
+import { gets, getId } from "./base"
 
-export type TFrecuencyType = "Semanal" | "Quincenal" | "Mensual" | "Anual"
-export type TFrecuency = {
+export type TFRECUENCY_TYPE = "Semanal" | "Quincenal" | "Mensual" | "Diario"
+export type TFRECUENCY = {
   id: number
-  nombre: TFrecuencyType,
+  tipo_enumerador_id: number
+  nombre: TFRECUENCY_TYPE
 }
 
-type TGetFrecuencyId = (params: { frecuencyId: number }) => TFrecuency
-type TGetFrecuencyName = (params: { frecuencyName: TFrecuencyType }) => TFrecuency
-type TGetFrecuencys = () => TFrecuency[]
+type TGetFrecuencyId = (params: { frecuencyId: number }) => TFRECUENCY
+type TGetFrecuencyName = (params: { frecuencyName: TFRECUENCY_TYPE }) => TFRECUENCY
+type TListFrecuencys = () => TFRECUENCY[]
 
-export const getFrecuencyById: TGetFrecuencyId = ({ frecuencyId }) => getId( frecuency, { id: frecuencyId } )
-export const getFrecuencyByName: TGetFrecuencyName = ({ frecuencyName, }) => (frecuency?.find( ({ nombre }) => (nombre === frecuencyName)) ?? frecuency?.[0]) as TFrecuency
-export const getFrecuency: TGetFrecuencys = () => gets( frecuency )
+export const getFrecuencyById: TGetFrecuencyId = ({ frecuencyId }) => getId( frecuencys, { id: frecuencyId } )
+export const getFrecuencyByName: TGetFrecuencyName = ({ frecuencyName, }) => (frecuencys?.find( ({ nombre }) => (nombre === frecuencyName)) ?? frecuencys?.[0]) as TFRECUENCY
+export const listFrecuencys: TListFrecuencys = () => gets( frecuencys )
 

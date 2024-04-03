@@ -143,6 +143,8 @@ export const getCreditById: TGetCreditById = async ({ params: { creditId} }) => 
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/by_id/" + creditId,{
     method: "GET",
@@ -156,6 +158,8 @@ export const getCreditsList: TGetCreditsList =  async () => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/list",{
     method: "GET",
@@ -169,6 +173,8 @@ export const getCreditsFilter: TGetCreditsFilter = ( filter = {} ) => async () =
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/filtrar_prestamos",{
     method: "POST",
@@ -183,6 +189,8 @@ export const postCredit: TPostCredit =  async ( newCredit ) => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/create",{
     method: "POST",
@@ -197,6 +205,8 @@ export const deleteCreditById: TDeleteCreditById =  async ({ creditId }) => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/delete/" + creditId,{
     method: "DELETE",
@@ -210,6 +220,8 @@ export const patchCreditsById: TPatchCreditById =  async ({ creditId, updateCred
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const creditById = await fetch(import.meta.env.VITE_API + "/creditos/" + creditId,{
     method: "PATCH",

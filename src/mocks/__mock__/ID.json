@@ -1,3 +1,31 @@
-[ { "id": 1, "name": "Cedula" },
- { "id": 2, "name": "Pasaporte" }, 
- { "id": 3, "name": "Carnet de conducir" } ]
+{
+  "id": 2,
+  "nombre": "Tipo de identificación",
+  "enumeradores": [
+    {
+      "id": 4,
+      "tipo_enumerador_id": 2,
+      "nombre": "Cédula"
+    },
+    {
+      "id": 5,
+      "tipo_enumerador_id": 2,
+      "nombre": "Cédula Extranjera"
+    },
+    {
+      "id": 6,
+      "tipo_enumerador_id": 2,
+      "nombre": "Pasaporte"
+    },
+    {
+      "id": 7,
+      "tipo_enumerador_id": 2,
+      "nombre": "Nit"
+    },
+    {
+      "id": 8,
+      "tipo_enumerador_id": 2,
+      "nombre": "Tarjeta de identidad"
+    }
+  ]
+}

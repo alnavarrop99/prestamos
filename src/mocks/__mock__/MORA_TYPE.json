@@ -1,4 +1,20 @@
-[
-  { "id": 1, "nombre": "valor" },
-  { "id": 2, "nombre": "porcentaje" }
-]
+{
+  "id": 6,
+  "nombre": "Tipo de mora",
+  "enumeradores": [
+    {
+      "id": 22,
+      "tipo_enumerador_id": 6,
+      "created_at": "2024-03-21T07:42:48.884004",
+      "last_edited": "2024-03-21T07:42:50.391961",
+      "nombre": "Valor fijo"
+    },
+    {
+      "id": 23,
+      "tipo_enumerador_id": 6,
+      "created_at": "2024-03-21T07:42:48.884004",
+      "last_edited": "2024-03-21T07:42:50.392086",
+      "nombre": "Porciento"
+    }
+  ]
+}

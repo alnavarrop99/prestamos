@@ -6,15 +6,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
-import { Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
-import { ComponentRef, useContext, useRef, useState } from 'react'
+import { ComponentRef, useContext, useMemo, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { getUserById, pathUserById } from '@/api/users'
-import {useStatus } from '@/lib/context/layout'
+import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { type TRoles, getRolById, getRolByName, listRols } from '@/lib/type/rol'
+import { type TROLES, getRolById, getRolByName, listRols } from '@/lib/type/rol'
 import { type TUsersState, _usersContext } from '@/pages/_layout/user'
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
@@ -55,6 +55,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
     mutationKey: ["update-user"],
     mutationFn: pathUserById,
   })
+  const active = useMemo( () => Object.values(userDB)?.every( ( value, i ) => ( value === Object.values(user)?.[i] ) ), [ JSON.stringify(user) ] )
 
   const onClick: ( prop: keyof TPassowordVisibilityState ) => React.MouseEventHandler< ComponentRef< typeof Button > > = ( prop ) => () => {
     setVisibility( { ...visibility, [ prop ]: !visibility?.[prop]  } )
@@ -90,25 +91,24 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current) return;
 
-    const items = Object.fromEntries(
-      new FormData(form.current).entries()
-    ) as Record<TFormName, string>
+    const items =  Object.fromEntries( Array.from( new FormData(form.current)?.entries() )?.map( ([ key, value ], i, list) => {
+      if( value === "" ) return [ key, undefined ]
+      return list?.[i]
+    })) as Record<TFormName, string>
 
-    const { firstName, lastName, rol } = items
     const description = text.notification.decription({
-      username: firstName + ' ' + lastName,
+      username: userDB?.nombre
     })
 
     const action =
       ({ ...items }: Record<TFormName, string>) =>
       () => {
-        const { firstName, lastName, rol, newPassword } = items
         updateUser({ 
-          userId: id, 
+          userId: userDB?.id, 
           params: { 
-            rol_id: Number.parseInt(rol), 
-            password: newPassword, 
-            nombre: firstName + " " + lastName
+            rol_id: +items.rol, 
+            password: items?.newPassword, 
+            nombre: items?.firstName + " " + items?.lastName
           } })
         pushNotification({
           date: new Date(),
@@ -119,11 +119,13 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
 
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
-    setUsers( users?.map( ({ id, ...items }, i, list) => {
-      if( user.id === id ){
-        return ({ ...items, id, nombre: firstName + " " + lastName, rol: getRolById({ rolId: Number.parseInt(rol) })?.nombre })
-      } 
-      return list[i]
+    setUsers( users?.map( ({ id: userId }, i, list) => {
+      if( user.id !== userId ) return list[i];
+      return ({
+        ...list?.[i],
+        nombre: items?.firstName + " " + items?.lastName,
+        rol: getRolById({ rolId: +items?.rol })?.nombre 
+      })
     } ) )
 
     const onClick = () => {
@@ -147,8 +149,6 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
     form.current.reset()
     ev.preventDefault()
   }
-
-  const { rol, nombre, id } = userDB
 
   return (
     <>
@@ -176,7 +176,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
             name={'firstName' as TFormName}
             type="text"
             placeholder={text.form.firstName.placeholder}
-            defaultValue={nombre.split(" ")?.at(0)}
+            defaultValue={userDB?.nombre.split(" ")?.at(0)}
             onChange={onChangeName("firstName")}
           />
         </Label>
@@ -187,13 +187,13 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
             name={'lastName' as TFormName}
             type="text"
             placeholder={text.form.lastName.placeholder}
-            defaultValue={nombre.split(" ")?.at(1)}
+            defaultValue={userDB?.nombre.split(" ")?.at(1)}
             onChange={onChangeName("lastName")}
           />
         </Label>
         <Label>
           <span>{text.form.rol.label} </span>
-          <Select required name={'rol' as TFormName} defaultValue={ ""+getRolByName({ rolName: rol as TRoles })?.id }>
+          <Select required name={'rol' as TFormName} defaultValue={ ""+getRolByName({ rolName: userDB?.rol as TROLES })?.id }>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
@@ -254,7 +254,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
       </form>
       <DialogFooter className="justify-end">
         <Button 
-          disabled={ Object.values(userDB)?.every( ( value, i ) => ( value === Object.values(user)?.[i] ) ) }
+          disabled={ active }
           variant="default" 
           form="update-user" 
           type="submit">

@@ -30,7 +30,7 @@ interface TDeleteClientProps {
 /* eslint-disable-next-line */
 export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[] }: TDeleteClientProps) {
   const [checked, setChecked] = useState(false)
-  const selectedclients = useContext(_selectedClients) ?? _clients
+  const selectedClients = useContext(_selectedClients) ?? _clients
   const { open, setOpen } = useStatus()
   const { pushNotification } = useNotifications()
   const [ clients, setClients, resetRowSelection ] = useContext(_clientContext) ?? [[], (({})=>{}), (()=>{})]
@@ -44,7 +44,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
   }
 
   const onSubmit: React.FormEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
-    const description = text.notification.decription({ length: selectedclients?.length })
+    const description = text.notification.decription({ length: selectedClients?.length })
 
     const action = (clients?: TClientTable[]) => () => {
       if(!clients?.length) return;
@@ -60,9 +60,9 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
         })
     }
 
-    const timer = setTimeout(action(selectedclients), 6 * 1000)
+    const timer = setTimeout(action(selectedClients), 6 * 1000)
     setOpen({open: !open})
-    setClients( { clients: clients?.filter( ( { id } ) => !selectedclients?.map(({ id }) => id )?.includes(id) ) } )
+    setClients( { clients: clients?.filter( ( { id: clientId } ) => !selectedClients?.map(({ id }) => id )?.includes(clientId) ) } )
     resetRowSelection()
 
     const onClick = () => {
@@ -98,7 +98,7 @@ export function DeleteSelectedClients({ clients: _clients = [] as TClientTable[]
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ length: selectedclients?.length })}
+              {text.alert.description({ length: selectedClients?.length })}
             </AlertDescription>
           </Alert>
         </DialogDescription>

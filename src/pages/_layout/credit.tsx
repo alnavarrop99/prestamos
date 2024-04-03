@@ -151,9 +151,9 @@ export function Credits({
                             <b> {text.details.mora+ ":"} </b>:
                             <b>$</b>{Math.round(valor_de_la_mora) + "."}
                           </li>}
-                          {frecuencia?.tipo_enumerador_id && <li>
+                          {frecuencia?.id && <li>
                             <b> {text.details.frecuency+ ":"} </b>
-                            {getFrecuencyById( { frecuencyId: frecuencia?.tipo_enumerador_id } )?.nombre + "." }
+                            {getFrecuencyById( { frecuencyId: frecuencia?.id } )?.nombre + "." }
                           </li>}
                         </ul>
                       </CardContent>

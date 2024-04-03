@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
-import { useContext, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
@@ -16,9 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { getIDs, getIdById } from '@/lib/type/id'
+import { listIds, getIdById } from '@/lib/type/id'
 import { _clientContext } from '@/pages/_layout/client'
-import { TClientTable } from '../../-column'
+import { TClientTable } from '@/pages/_layout/-column'
+import { Textarea } from '@/components/ui/textarea'
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
@@ -31,7 +32,7 @@ interface TUpdateClientByIdProps {
 }
 
 /* eslint-disable-next-line */
-type TFormName = keyof ( TCLIENT_PATCH_BODY & Record<"referencia", string> )
+type TFormName = keyof ( Omit<TCLIENT_PATCH_BODY, "referencia_id"> & Record<"referencia", string> )
 
 /* eslint-disable-next-line */
 export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdateClientByIdProps) {
@@ -47,6 +48,12 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
   })
   const [ clients, setClients ] = useContext(_clientContext) ?? [[] as TClientTable[], (({})=>{})]
 
+  const active = useMemo(() => Object.values(clientDB).flat().every( ( value, i ) => value === Object.values(client).flat()?.[i] ), [JSON.stringify(client)])
+
+  useEffect( () => {
+    console.log(client);
+  }, [JSON.stringify(client)] )
+
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
@@ -55,12 +62,13 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
     if (!form.current) return;
 
     const items = Object.fromEntries(
-      new FormData(form.current).entries()
-    ) as Record<TFormName, string>
+      Array.from( new FormData(form.current).entries())?.map( ([ key, value ]) => {
+      if( value === "" || (value === Object?.entries(clientDB)?.find( ([keyO]) => keyO === key )?.[1] ) ) return [ key, undefined ];
+      return [ key, value ];
+    })) as Record<TFormName, string>
 
-    const { nombres: firstName, apellidos: lastName } = items
     const description = text.notification.decription({
-      username: firstName + ' ' + lastName,
+      username: clientDB?.nombres + " " + clientDB?.apellidos,
     })
 
     const action =
@@ -68,9 +76,6 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
       () => {
         const { id } = client
         updateClient({ clientId: id, params: {
-          estado: 1,
-          email: items?.email,
-          referencia_id: +items?.referencia_id,
           celular: items?.celular,
           nombres: items?.nombres,
           telefono: items?.telefono,
@@ -78,7 +83,8 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
           direccion: items?.direccion,
           comentarios: items?.comentarios,
           numero_de_identificacion: items?.numero_de_identificacion,
-          tipo_de_identificacion_id: +items?.tipo_de_identificacion_id
+          tipo_de_identificacion: +items?.tipo_de_identificacion,
+          referencia_id: +items?.referencia,
         } })
         pushNotification({
           date: new Date(),
@@ -91,20 +97,18 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
     setOpen({ open: !open })
     setClients( { clients: clients?.map( ({ id: clientId }, i, list) => {
       if(clientId !== client?.id) return list?.[i];
-  
       return ({ 
-          ...list?.[i],
-          fullName: items?.nombres + " " + items?.apellidos,
-          email: items?.email,
-          referencia_id: +items?.referencia_id,
-          celular: items?.celular,
-          nombres: items?.nombres,
-          telefono: items?.telefono,
-          apellidos: items?.apellidos,
-          direccion: items?.direccion,
-          comentarios: items?.comentarios,
-          numero_de_identificacion: items?.numero_de_identificacion,
-          tipo_de_identificacion_id: +items?.tipo_de_identificacion_id
+        ...list?.[i],
+        fullName: (items?.nombres ?? clientDB?.nombres) + " " + (items?.apellidos ?? clientDB?.apellidos),
+        celular: items?.celular ?? clientDB?.celular,
+        nombres: items?.nombres ?? clientDB?.nombres,
+        telefono: items?.telefono ?? clientDB?.telefono,
+        apellidos: items?.apellidos ?? clientDB?.apellidos,
+        direccion: items?.direccion ?? clientDB?.direccion,
+        numero_de_identificacion: items?.numero_de_identificacion ?? clientDB?.numero_de_identificacion,
+        tipo_de_identificacion_id: getIdById( { id: +items?.tipo_de_identificacion } )?.id  ?? clientDB?.tipo_de_identificacion,
+        comentarios: items?.comentarios ?? clientDB?.comentarios,
+        referencia_id: items?.referencia ? +items?.referencia : undefined
         })
     } ) } )
 
@@ -132,7 +136,13 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
   const onChange: React.ChangeEventHandler<HTMLFormElement> = (ev) => {
     const { name, value } = ev.target
     if(!name || !value) return;
-    setClient( { ...client, [name]: value } )
+
+    if( name === "referencia" as TFormName ) {
+      setClient( { ...client, referencia_id: +value } ) 
+      return;
+    }
+
+    setClient( { ...client, [name]: value } );
   }
 
   return (
@@ -155,7 +165,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
         onChange={onChange}
         id="update-client"
         className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
+          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2 [&>label:last-child]:col-span-full',
           {
             "[&>label>span]:font-bold": checked,
           }
@@ -200,14 +210,14 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
             defaultValue={""+getIdById({ id: client?.tipo_de_identificacion })?.id}
             disabled={!checked}
             required
-            name={'tipo_de_identificacion_id' as TFormName}
+            name={'tipo_de_identificacion' as TFormName}
           >
             <SelectTrigger className={clsx("w-full")}>
               <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              {getIDs()?.map( ({ id, name }) => 
-                <SelectItem key={id} value={""+id}>{name}</SelectItem>
+              {listIds()?.map( ({ id, nombre }, index) => 
+                <SelectItem key={index} value={""+id}>{nombre}</SelectItem>
               )}
             </SelectContent>
           </Select>
@@ -246,27 +256,25 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
           />
         </Label>
         <Label>
-          <span>{text.form.email.label} </span>
-          <Input
-            required
-            disabled={!checked}
-            name={'email' as TFormName}
-            type="email"
-            defaultValue={client?.email}
-            placeholder={checked ? text.form.ref.placeholder : undefined}
-          />
-        </Label>
-        <Label>
           <span>{text.form.ref.label}</span>
           <Input
-            required
             disabled={!checked}
-            name={'referencia_id' as TFormName}
+            name={'referencia' as TFormName}
             type="text"
             defaultValue={client?.referencia_id}
             placeholder={checked ? text.form.ref.placeholder : undefined}
           />
         </Label>
+        <Label>
+          <span>{text.form.comment.label}</span>
+          <Textarea
+            rows={5}
+            name={'comentarios' as TFormName}
+            placeholder={text.form.comment.placeholder}
+            defaultValue={client?.comentarios}
+            disabled={!checked}
+          />
+      </Label>
       </form>
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
@@ -287,7 +295,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
             variant="default"
             form="update-client"
             type="submit"
-            disabled={!checked || Object.values(clientDB).flat().every( ( value, i ) => value === Object.values(client).flat()?.[i] ) }
+            disabled={!checked || active }
           >
             {text.button.update}
           </Button>
@@ -348,13 +356,13 @@ const text = {
       label: 'Direccion:',
       placeholder: 'Escriba la direccion',
     },
-    email: {
-      label: 'Email:',
-      placeholder: 'Escriba el email',
-    },
     id: {
       label: 'ID:',
       placeholder: 'Escriba el ID',
+    },
+    comment: {
+      label: 'Comentarios:',
+      placeholder: 'Escriba el comentario',
     },
     typeId: {
       label: 'Tipo de identificacion:',

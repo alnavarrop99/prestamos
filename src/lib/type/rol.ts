@@ -1,17 +1,18 @@
-import rols from "@/mocks/__mock__/ROLES.json"
+import { enumeradores as roles } from "@/mocks/__mock__/ROLES.json"
 import { getId, gets } from "./base"
 
-export type TRoles = "Administrador" | "Usuario" | "Cobrador"
-export type TRol = {
+export type TROLES = "Administrador" | "Usuario" | "Cobrador"
+export type TROL = {
   id: number
-  nombre: TRoles,
+  tipo_enumerador_id: number
+  nombre: TROLES
 }
 
-type TGetRolId = (params: { rolId: number }) => TRol
-type TGetRolName = (params: { rolName: TRoles }) => TRol
-type TGetRols = () => TRol[]
+type TGetRolId = (params: { rolId: number }) => TROL
+type TGetRolName = (params: { rolName: TROLES }) => TROL
+type TListRols = () => TROL[]
 
-export const getRolById: TGetRolId = ({ rolId, }) => getId( rols, { id: rolId } )
-export const getRolByName: TGetRolName = ({ rolName, }) => (rols?.find( ({ nombre }) => nombre === rolName) ?? rols?.[0]) as TRol
-export const listRols: TGetRols = () => gets( rols )
+export const getRolById: TGetRolId = ({ rolId, }) => getId( roles, { id: rolId } )
+export const getRolByName: TGetRolName = ({ rolName, }) => (roles?.find( ({ nombre }) => nombre === rolName) ?? roles?.[0]) as TROL
+export const listRols: TListRols = () => gets( roles )
 

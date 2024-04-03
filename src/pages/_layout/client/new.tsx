@@ -20,17 +20,19 @@ import { postClient, type TCLIENT_POST_BODY } from "@/api/clients";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { getIDs, getIdById } from '@/lib/type/id'
+import { listIds, getIdByName } from '@/lib/type/id'
 import { _clientContext } from '@/pages/_layout/client'
 import { type TClientTable } from '@/pages/_layout/-column'
 import { useStatus } from '@/lib/context/layout'
+import { getStatusByName } from '@/lib/type/status'
+import { Textarea } from '@/components/ui/textarea'
 
 export const Route = createFileRoute('/_layout/client/new')({
   component: NewClient,
 })
 
 /* eslint-disable-next-line */
-type TFormName = keyof (TCLIENT_POST_BODY & Record<"referencia", string>)
+type TFormName = keyof (Omit<TCLIENT_POST_BODY, "referencia_id"> & Record<"referencia", string>)
 
 /* eslint-disable-next-line */
 export function NewClient() {
@@ -53,23 +55,31 @@ export function NewClient() {
     if (!form.current) return
 
     const items = Object.fromEntries(
-      new FormData(form.current).entries()
-    ) as Record<TFormName , string>
+      Array.from(new FormData(form.current).entries())?.map( ([ key, value ]) => {
+      if( value === "" ) return [ key, undefined ]
+      return [ key, value ]
+    })) as Record<TFormName , string>
 
-    const { nombres: firstName, apellidos: lastName } = items
     const description = text.notification.decription({
-      username: firstName + ' ' + lastName,
+      username: items?.nombres + items?.apellidos,
     })
 
     const action =
-      ({ ...props }: Record<TFormName, string>) =>
+      ({ ...items }: Record<TFormName, string>) =>
       () => {
         createClient({
-          ...props,
-          tipo_de_identificacion: Number.parseInt(props?.tipo_de_identificacion),
-          estado: 1,
-          // TODO: referencia_id because referencia is the name
-          referencia_id: 0,
+          nombres: items?.nombres,
+          apellidos: items?.apellidos,
+          direccion: items?.direccion,
+          telefono: items?.telefono,
+          celular: items?.celular,
+          numero_de_identificacion: items?.numero_de_identificacion,
+          tipo_de_identificacion: +items?.tipo_de_identificacion,
+          estado: getStatusByName({ statusName: "Activo" })?.id,
+          referencia_id: +items?.referencia,
+          comentarios: items?.comentarios ?? "",
+          // TODO: this field be "" that not's necessary
+          email: items?.email ?? "",
         })
         pushNotification({
           date: new Date(),
@@ -80,19 +90,20 @@ export function NewClient() {
 
     const timer = setTimeout(action(items), 6 * 1000)
     setClients({ clients: [ ...clients, {
-      numero_de_identificacion: items.numero_de_identificacion,
-      id: (clients?.at(-1)?.id ?? 0) + 1,
-      email: items?.email,
-      estado: 1,
-      celular: items?.celular,
-      fullName: firstName + " " + lastName,
+      fullName: items?.nombres + " " + items?.apellidos,
+      direccion: items?.direccion,
       telefono: items?.telefono,
-      direccion:items?.direccion,
-      comentarios: items?.comentarios,
+      celular: items?.celular,
+      numero_de_identificacion: items?.numero_de_identificacion,
       tipo_de_identificacion: +items?.tipo_de_identificacion,
+      estado: getStatusByName({ statusName: "Activo" })?.id,
+      referencia_id: items?.referencia ? +items?.referencia : undefined,
+      id: clients?.at(-1)?.id ?? 0 + 1,
+      comentarios: items?.comentarios ?? "",
+      // TODO: this field be "" that not's necessary
+      email: items?.email ?? "",
       // TODO: 
-      referencia_id: +items?.referencia_id,
-      owner_id: undefined
+      owner_id: 0,
     }] } )
           
 
@@ -167,13 +178,13 @@ export function NewClient() {
         </Label>
         <Label>
           <span>{text.form.typeId.label} </span>
-          <Select required name={'tipo_de_identificacion' as TFormName} defaultValue={""+getIdById({ id: 1 })?.id}>
+          <Select required name={'tipo_de_identificacion' as TFormName} defaultValue={""+getIdByName({ idName: "Cédula" })?.id}>
             <SelectTrigger className="w-full ring-ring ring-1">
               <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
             <SelectContent>
-              { getIDs()?.map( ({ id, name }) => 
-                <SelectItem key={id} value={""+id}>{name}</SelectItem>
+              { listIds()?.map( ({ id, nombre }, index) => 
+                <SelectItem key={index} value={""+id}>{nombre}</SelectItem>
               ) }
             </SelectContent>
           </Select>
@@ -206,27 +217,24 @@ export function NewClient() {
           />
         </Label>
         <Label>
-          <span>{text.form.email.label}</span>
-          <Input
-            required
-            name={'email' as TFormName}
-            type="email"
-            placeholder={text.form.email.placeholder}
-          />
-        </Label>
-        <Label>
           <span>{text.form.ref.label}</span>
           <Input
-            required
             name={'referencia' as TFormName}
             type="text"
             placeholder={text.form.ref.placeholder}
           />
         </Label>
+        <Label>
+        <span>{text.form.comment.label}</span>
+        <Textarea
+          rows={5}
+          name={'comentarios' as TFormName}
+          placeholder={text.form.comment.placeholder}
+        />
+      </Label>
       </form>
       <DialogFooter className="justify-end">
         <Button variant="default" form="new-client" type="submit">
-          
           {text.button.update}
         </Button>
         <DialogClose asChild>
@@ -287,6 +295,10 @@ const text = {
       label: 'Email:',
       placeholder: 'Escriba el email',
     },
+    comment: {
+      label: 'Comentarios:',
+      placeholder: 'Escriba el comentario',
+    },
     id: {
       label: 'ID:',
       placeholder: 'Escriba el ID',
@@ -310,5 +322,3 @@ const text = {
     }
   },
 }
-
-

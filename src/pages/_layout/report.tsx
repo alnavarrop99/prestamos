@@ -1,4 +1,4 @@
-import { getAllReport, type TREPORT_GET_ALL, typeDataByName, postReportById } from '@/api/report'
+import { getAllReport, type TREPORT_GET_ALL, typeDataByName, postReportById, TREPORT_POST_BODY, TREPORT_PARAMS_DATE_TYPE } from '@/api/report'
 import {
   Accordion,
   AccordionContent,
@@ -16,7 +16,7 @@ import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRef } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { type TPAYMENT_POST_BODY } from '@/api/payment'
+
 
 export const Route = createFileRoute('/_layout/report')({
   component: Report,
@@ -41,12 +41,13 @@ export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportPro
     if (!form?.[index]) return;
 
     const items = Object.fromEntries(
-      new FormData(form?.[index]?.current ?? undefined).entries()
-    ) as Record<keyof TPAYMENT_POST_BODY, string>
+      Array.from( new FormData(form?.[index]?.current ?? undefined).entries() )?.map( ([ key, value ], i, list) => {
+      if( value === "" ) return [ key, undefined ]
+      return list?.[i]
+    }) ) as Record<keyof TREPORT_POST_BODY, string>
 
-    console.table(items)
     reportById({
-      reportId: reports?.[index]?.id,
+      code: reports?.[index]?.codigo,
       report: items,
     })
 
@@ -59,7 +60,7 @@ export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportPro
       <h1 className="text-3xl font-bold">{text.title}</h1>
       <Separator />
       <Accordion className="my-2 space-y-2" type="multiple">
-        {reports.map(({ nombre, parametros, id, comentario }, index) => (
+        {reports.map(({ nombre, parametros, id, comentario}, index) => (
           <AccordionItem
             key={id}
             className={clsx('rounded-m px-4 py-2 shadow-lg hover:shadow-xl')}
@@ -78,10 +79,10 @@ export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportPro
                 className="grid grid-cols-2 gap-4 px-6 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
                 id={'report' + id}
               >
-                {parametros.map(({ nombre, id, tipo_dato }) => (
+                {parametros.map(({ nombre, id, tipo_dato, obligatorio }) => (
                   <Label key={id}>
                     <span>{nombre}:</span>
-                    <FormElement name={nombre} type={tipo_dato} />
+                    <FormElement required={obligatorio} name={nombre} type={tipo_dato} />
                   </Label>
                 ))}
                 <Label>
@@ -112,17 +113,20 @@ export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportPro
 function FormElement({
   type,
   name,
+  required
 }: {
-  type: 'fecha' | 'texto' | 'numero' | 'like'
+  type: TREPORT_PARAMS_DATE_TYPE
   name?: string
+  required?: boolean
 }) {
-  if (type === 'fecha')
-    return <DatePicker label="Seleccione una fecha" name={name} />
+  if (type === 'date')
+    return <DatePicker required={required} label="Seleccione una fecha" name={name} />
   return (
     <Input
       type={typeDataByName(type)}
       placeholder="Escriba el parametro"
       name={name}
+      required={required}
     />
   )
 }

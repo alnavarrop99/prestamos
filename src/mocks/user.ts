@@ -1,5 +1,5 @@
 import { HttpResponse, http } from 'msw'
-import { TRoles, getRolById } from "@/lib/type/rol"
+import { TROLES, getRolById } from "@/lib/type/rol"
 import { TUSER_LOGIN, TUSER_LOGIN_BODY, TUSER_GET, TUSER_POST_BODY } from '@/api/users'
 import { type TUSER_DB, users, token } from './data'
 
@@ -45,7 +45,7 @@ const createUser = http.post( import.meta.env.VITE_API + '/users/create', async 
 
   return HttpResponse.json<TUSER_GET>( { 
     id: (users?.get(users.size)?.id ?? 0),
-    rol: getRolById({ rolId: rol_id })?.nombre as TRoles ?? "Usuario",
+    rol: getRolById({ rolId: rol_id })?.nombre as TROLES ?? "Usuario",
     nombre: newUser?.nombre,
   }, { status: 201 } )
 } )
@@ -66,7 +66,7 @@ const updateUserById = http.patch( import.meta.env.VITE_API + '/users/:usuario_i
 
   return HttpResponse.json<TUSER_GET>( { 
     id: users.get( userId )?.id ?? 0,
-    rol: getRolById({ rolId: rol_id })?.nombre as TRoles ?? "Usuario",
+    rol: getRolById({ rolId: rol_id })?.nombre as TROLES ?? "Usuario",
     nombre: users.get( userId )?.nombre ?? "",
   })
 })

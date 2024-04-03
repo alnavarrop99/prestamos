@@ -52,8 +52,9 @@ import {
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { QueryObserver, useIsFetching, useIsMutating, useQuery, useQueryClient } from '@tanstack/react-query'
 import { SpinLoader } from '@/components/ui/loader'
+import { queryClient } from '@/pages/__root'
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
@@ -111,11 +112,13 @@ export function Layout({
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
   const { deleteToken } = useToken()
-  const fetchActions = useQueryClient()
+  const isFetching = useIsFetching()
+  const isMutating = useIsMutating()
 
   useEffect(() => {
     setClients(clientsDB) 
   }, [isSuccess])
+
 
   useEffect(() => {
     const onNotwork = () => {
@@ -288,7 +291,7 @@ export function Layout({
                 </Button>
               )}
             </Link>
-            { (!!fetchActions.isFetching() || !!fetchActions.isMutating()) && <SpinLoader />}
+            { (!!isFetching || !!isMutating) && <SpinLoader />}
           </div>
           <div>
             <Label className="flex cursor-pointer items-center gap-2">
@@ -296,7 +299,7 @@ export function Layout({
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
-              { clients?.length && <Popover
+              { !!clients?.length && <Popover
                 open={search}
                 onOpenChange={onSearchChange}
               >

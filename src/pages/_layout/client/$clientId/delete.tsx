@@ -16,6 +16,7 @@ import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { _clientContext } from '@/pages/_layout/client'
+import { type TClientTable } from '@/pages/_layout/-column'
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteClientById,
@@ -30,30 +31,29 @@ interface TDeleteByClient {
 /* eslint-disable-next-line */
 export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDeleteByClient) {
   const [checked, setChecked] = useState(false)
-  const client = Route.useLoaderData() ?? _client
-  const { nombres: firstName, apellidos: lastName } = client
+  const clientDB = Route.useLoaderData() ?? _client
   const { setOpen, open } = useStatus()
   const { pushNotification } = useNotifications()
   const { mutate: deleteClient } = useMutation({
-    mutationKey: ["delete-client-id" + client.id],
+    mutationKey: ["delete-client-id" + clientDB.id],
     mutationFn: deleteClientsById
   })
-  const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
+  const [ clients, setClients ] = useContext(_clientContext) ?? [[] as TClientTable[], (({})=>{})]
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler<React.ComponentRef< typeof Button >> = (ev) => {
-    if(!client) return;
+    if(!clientDB) return;
 
     const description = text.notification.decription({
-      username: firstName + ' ' + lastName,
+      username: clientDB?.nombres + ' ' + clientDB?.apellidos,
     })
 
-    const action = ({ ...props }: TCLIENT_GET) =>
+    const action = (items: TCLIENT_GET) =>
       () => {
-        deleteClient({ clientId: props?.id })
+        deleteClient({ clientId: items?.id })
         pushNotification( {
           date: new Date(),
           action: "DELETE",
@@ -61,9 +61,9 @@ export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDelet
         })
       }
 
-    const timer = setTimeout(action(client), 6 * 1000)
+    const timer = setTimeout(action(clientDB), 6 * 1000)
     setOpen({ open: !open, })
-    setClients( { clients: clients?.filter( ( { id } ) => client?.id !== id ) } )
+    setClients( { clients: clients?.filter( ( { id: clientId } ) => clientDB?.id !== clientId ) } )
 
     const onClick = () => {
       clearTimeout(timer)
@@ -98,7 +98,7 @@ export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDelet
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ username: firstName + ' ' + lastName })}
+              {text.alert.description({ username: clientDB?.nombres + ' ' + clientDB?.apellidos })}
             </AlertDescription>
           </Alert>
         </DialogDescription>

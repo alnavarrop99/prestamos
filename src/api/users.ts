@@ -26,10 +26,15 @@ export type TUSER_POST_BODY = {
   rol_id: number
 }
 
+
 export type TUSER_POST = TUSER_GET
 
 // PATCH
-export type TUSER_PATCH_BODY = TUSER_POST_BODY
+export type TUSER_PATCH_BODY = {
+  nombre?: string
+  password?: string 
+  rol_id?: number
+}
 export type TUSER_PATCH = TUSER_GET 
 
 // DELETE
@@ -44,9 +49,14 @@ type TPathUserById = (params: { userId: number , params?: TUSER_PATCH_BODY } ) =
 // type TDeleteUserById = (params: { userId: number } ) => Promise<TUSER_DELETE>
 
 export const loginUser: TGetUserLogin = async ( params ) => {
+  const formData = new FormData()
+  for( const [ name, value ] of Object.entries(params) ){
+    formData?.set(name, value)
+  }
+
   const data = await fetch(import.meta.env.VITE_API + '/users/login', {
     method: "POST",
-    body: JSON.stringify(params)
+    body: formData
   })
   return data.json()
 }
@@ -56,6 +66,8 @@ export const getUserById: TGetUserById = async ( { params: { userId } } ) => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const data = await fetch(import.meta.env.VITE_API + '/users/by_id/' + userId, {
     method: "GET",
@@ -69,6 +81,8 @@ export const getUsersList: TGetUsersList = async () => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const data = await fetch(import.meta.env.VITE_API + '/users/list', {
     method: "GET",
@@ -82,6 +96,8 @@ export const postUser: TPostUser = async ( params ) => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const data = await fetch(import.meta.env.VITE_API + '/users/create', { 
     method: "POST",
@@ -96,6 +112,8 @@ export const pathUserById: TPathUserById = async ( { userId , params } ) => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const data = await fetch(import.meta.env.VITE_API + '/users/' + userId, { 
     method: "PATCH",
@@ -110,6 +128,8 @@ export const getCurrentUser: TGetCurrentUser = async () => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const data = await fetch(import.meta.env.VITE_API + '/users/get_current', {
     method: "GET",

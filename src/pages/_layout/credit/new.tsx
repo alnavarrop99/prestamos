@@ -20,7 +20,7 @@ import { postCredit, type TCREDIT_POST_BODY } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { getMoraTypeByName } from '@/lib/type/moraType'
-import { getFrecuency, getFrecuencyByName } from '@/lib/type/frecuency'
+import { getFrecuencyByName, listFrecuencys } from '@/lib/type/frecuency'
 import { useMutation } from '@tanstack/react-query'
 import { Navigate } from '@tanstack/react-router'
 
@@ -262,7 +262,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
               <SelectValue placeholder={text.form.frecuency.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { getFrecuency().map( ( { id, nombre } ) => <SelectItem key={id} value={""+id}>{nombre}</SelectItem> ) }
+              { listFrecuencys()?.map( ( { id, nombre }, index ) => <SelectItem key={index} value={""+id}>{nombre}</SelectItem> ) }
             </SelectContent>
           </Select>
         </Label>
@@ -283,9 +283,9 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
         <Label htmlFor='credit-installments' className='row-start-4'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
           <span className='after:content-["_*_"] after:text-red-500'>{text.form.installments.label} </span>
-          <RadioGroup name={'tipo_de_mora_id' as TFormName} defaultValue={ getMoraTypeByName({ moraTypeName: "porcentaje" })?.nombre } onChange={onChangeType}  >
-            <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "valor" })?.nombre } /> <Badge>$</Badge> </Label>
-            <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "porcentaje" })?.nombre } /> <Badge>%</Badge> </Label>
+          <RadioGroup name={'tipo_de_mora_id' as TFormName} defaultValue={ getMoraTypeByName({ moraTypeName: "Porciento" })?.nombre } onChange={onChangeType}  >
+            <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "Valor fijo" })?.nombre } /> <Badge>$</Badge> </Label>
+            <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "Porciento" })?.nombre } /> <Badge>%</Badge> </Label>
           </RadioGroup>
           </div>
           <Input

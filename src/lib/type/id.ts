@@ -1,17 +1,18 @@
-import ids from "@/mocks/__mock__/ID.json"
+import { enumeradores as ids } from "@/mocks/__mock__/ID.json"
 import { getId, gets } from "./base"
 
-export type TTypeId = "Pasaporte" | "Cedula" | "Carnet de conducir"
-export type TId = {
+export type TID_TYPE = "Pasaporte" | "Cédula" | "Carnet de conducir" | "Cédula Extranjera" | "Nit" | "Tarjeta de identidad"
+export type TID = {
   id: number
-  name: TTypeId,
+  nombre: TID_TYPE
+  tipo_enumerador_id: number
 }
 
-type TGeIdById = (params: { id: number }) => TId
-type TGetIdByName = (params: { idName: TTypeId }) => TId
-type TGetIById = () => TId[]
+type TGetIdById = (params: { id: number }) => TID
+type TGetIdByName = (params: { idName: TID_TYPE }) => TID
+type TListIds = () => TID[]
 
-export const getIdById: TGeIdById = ({ id }) => getId( ids, { id: id } )
-export const getIdByName: TGetIdByName = ({ idName }) => (ids?.find( ({ name }) => name === idName) ?? ids?.[0]) as TId
-export const getIDs: TGetIById = () => gets( ids )
+export const getIdById: TGetIdById = ({ id }) => getId( ids, { id } )
+export const getIdByName: TGetIdByName = ({ idName }) => (ids?.find( ({ nombre }) => nombre === idName) ?? ids?.[0]) as TID
+export const listIds: TListIds = () => gets( ids )
 

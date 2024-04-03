@@ -14,8 +14,8 @@ import { Eye, EyeOff } from 'lucide-react'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { type TUSER_POST, postUser } from '@/api/users'
-import { getRolById, listRols } from "@/lib/type/rol";
-import { type TUsersState, _usersContext } from '../user'
+import { getRolById, getRolByName, listRols } from "@/lib/type/rol";
+import { type TUsersState, _usersContext } from '@/pages/_layout/user'
 import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout/user/new')({
@@ -60,19 +60,23 @@ export function NewUser({}: TNewUserProps) {
     if (!form.current) return
 
     const items = Object.fromEntries(
-      new FormData(form.current).entries()
-    ) as Record<TFormName, string>
+      Array.from( new FormData(form.current).entries() )?.map( ([ key, value ]) => {
+      if( value === "" ) return [ key, undefined ]
+      return [ key, value ]
+    })) as Record<TFormName, string>
 
-    const { firstName, lastName, password, confirmation } = items
     const description = text.notification.decription({
-      username: firstName + ' ' + lastName,
+      username: items?.firstName + ' ' + items?.lastName,
     })
 
     const action =
       ({ ...items }: Record<TFormName, string>) =>
       () => {
-        const { firstName, lastName, password, rol } = items
-        createUser({ nombre: firstName + " " + lastName, password: password, rol_id: Number(rol) })
+        createUser({
+          nombre: items?.firstName + " " + items?.lastName,
+          password: items?.password,
+          rol_id: +items?.rol
+        })
         pushNotification({
           date: new Date(),
           action: "POST",
@@ -82,8 +86,8 @@ export function NewUser({}: TNewUserProps) {
 
     const timer = setTimeout(action(items), 6 * 1000)
     setUsers( [...users, { 
-      nombre: firstName + " " + lastName,
-      rol: getRolById( { rolId: Number?.parseInt(items?.rol) } )?.nombre,
+      nombre: items?.firstName + " " +items?.lastName,
+      rol: getRolById( { rolId: +items?.rol } )?.nombre,
       id: users?.at(-1)?.id ?? 0 + 1,
       menu: false,
       active: false,
@@ -158,13 +162,13 @@ export function NewUser({}: TNewUserProps) {
           <Select 
               required
               name={'rol' as TFormName} 
-              defaultValue={""+getRolById({ rolId: 1 })?.id}>
+              defaultValue={""+getRolByName({ rolName: "Administrador" })?.id}>
             <SelectTrigger className="w-full ring-ring ring-1">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { listRols()?.map( ( { nombre, id } ) =>
-                <SelectItem key={id} value={""+id}>{nombre}</SelectItem>
+              { listRols()?.map( ( { nombre, id }, index ) =>
+                <SelectItem key={index} value={""+id}>{nombre}</SelectItem>
               ) }
             </SelectContent>
           </Select>

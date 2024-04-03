@@ -19,7 +19,6 @@ import { useStatus } from '@/lib/context/layout'
 import { Navigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { getMoraTypeById, getMoraTypeByName } from '@/lib/type/moraType'
-import { getFrecuency } from '@/lib/type/frecuency'
 import { TPAYMENT_GET_BASE } from '@/api/payment'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
@@ -257,7 +256,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                 <SelectValue placeholder={text.form.details.frecuency.placeholder} />
               </SelectTrigger>
               <SelectContent className='[&_*]:cursor-pointer'>
-              { getFrecuency()?.map( ( { id, nombre } ) => <SelectItem key={id} value={""+id}>{nombre}</SelectItem> ) }
+              { listFrecuencys()?.map( ( { id, nombre } ) => <SelectItem key={id} value={""+id}>{nombre}</SelectItem> ) }
               </SelectContent>
             </Select>
         </Label>
@@ -278,9 +277,9 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
           <Label htmlFor='credit-installments' className='row-start-4'>
             <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
               <span>{ text.form.details.installmants.label }</span>
-              <RadioGroup name={'tipo_de_mora_id' as TFormData} defaultValue={ ""+getMoraTypeById({ moraTypeId: creditDB?.tipo_de_mora_id })?.id } onChange={onChangeType} >
-                <Label><RadioGroupItem value={''+getMoraTypeByName({ moraTypeName: "valor" })?.id} /> <Badge>$</Badge> </Label>
-                <Label><RadioGroupItem value={''+getMoraTypeByName({ moraTypeName: "porcentaje" })?.id} /> <Badge>%</Badge> </Label>
+              <RadioGroup name={'tipo_de_mora_id' as TFormData} defaultValue={ ""+getMoraTypeById({ moraTypeId: creditDB?.tipo_de_mora_id })?.nombre } onChange={onChangeType} >
+                <Label><RadioGroupItem value={getMoraTypeByName({ moraTypeName: "Valor fijo" })?.nombre} /> <Badge>$</Badge> </Label>
+                <Label><RadioGroupItem value={getMoraTypeByName({ moraTypeName: "Porciento" })?.nombre} /> <Badge>%</Badge> </Label>
               </RadioGroup>
             </div>
             <Input

@@ -1,5 +1,5 @@
 import { type TUSER_GET_ALL, getUsersList } from '@/api/users'
-import { type TRoles } from "@/lib/type/rol";
+import { type TROLES } from "@/lib/type/rol";
 import { type TUSER_GET } from "@/api/users";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -69,7 +69,7 @@ export function Users({
   const { value } = useStatus()
   const { open = _open, setOpen } = useStatus()
 
-  const onCheckChanged = (index: number, prop: keyof Omit<(typeof users)[0], 'id' | 'rol' | 'clientes' | 'nombre'> ) => (checked: boolean) => {
+  const onCheckChanged = (index: number, prop: keyof Omit<TUsersState, 'id' | 'rol' | 'clientes' | 'nombre'> ) => (checked: boolean) => {
       const list = users?.map((user, i) => {
         if (i === index && prop === 'selected') {
           return { ...user, selected: checked }
@@ -261,12 +261,11 @@ export function Users({
                   <CardContent className="flex justify-between [&>*]:flex [&>*]:cursor-pointer [&>*]:items-center [&>*]:gap-2">
                     <Badge
                       className={clsx('hover:bg-[auto]', {
-                        'bg-red-500': rol === ('Administrador' as TRoles),
-                        'bg-blue-500': rol === ('Cliente' as TRoles),
-                        'bg-green-500': rol === ('Usuario' as TRoles),
+                        'bg-red-500': rol === ('Administrador' as TROLES),
+                        'bg-blue-500': rol === ('Cobrador' as TROLES),
+                        'bg-green-500': rol === ('Usuario' as TROLES),
                       })}
                     >
-                      
                       {rol}
                     </Badge>
                     {active && (

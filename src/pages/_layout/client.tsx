@@ -98,7 +98,7 @@ export function Clients({
     return clients?.filter(
       ({ id: userId }) => userId && search?.clients?.includes(userId)
     )
-  }, [clients])
+  }, [JSON.stringify(clients)])
 
   const table = useReactTable({
     data,
@@ -209,12 +209,6 @@ export function Clients({
                 </SelectItem>
                 <SelectItem value={'referencia'} className="cursor-pointer">
                   {text.select.items.ref}
-                </SelectItem>
-                <SelectItem
-                  value={'email' as keyof TClientTable}
-                  className="cursor-pointer"
-                >
-                  {text.select.items.email}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -351,7 +345,6 @@ type TMenuItems =
   | 'fullName'
   | 'apellidos'
   | 'referencia'
-  | 'email'
 const getMenuItem = (name: TMenuItems) => {
   const data = {
     numero_de_identificacion: 'id' as keyof TClientTable,
@@ -361,7 +354,6 @@ const getMenuItem = (name: TMenuItems) => {
     fullName: 'firstName' as keyof TClientTable,
     apellidos: 'lastName' as keyof TClientTable,
     referencia: 'ref' as keyof TClientTable,
-    email: 'email' as keyof TClientTable,
   }
   return data?.[name] ?? 'fullName'
 }
@@ -382,7 +374,6 @@ const text = {
     telephone: 'Telefono',
     ref: 'Referencia',
     direction: 'Direccion',
-    email: 'Correo',
   },
   buttons: {
     next: 'Siguiente',

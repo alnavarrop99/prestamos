@@ -66,6 +66,8 @@ export const getPaymentById: TGetPaymentById = async ({ params: { paymentId } })
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const payment = await fetch(import.meta.env.VITE_API + "/pagos/by_id/" + paymentId, {
     method: "GET",
@@ -79,6 +81,8 @@ export const getPaymentsList: TGetPaymentsList = async () => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const payment = await fetch("/pagos/list", {
     method: "GET",
@@ -92,6 +96,8 @@ export const postPaymentId: TPostPaymentById = async (newPayment) => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const payment = await fetch(import.meta.env.VITE_API + "/pagos/create", {
     method: "POST",
@@ -106,6 +112,8 @@ export const potchPaymentById: TPatchPaymentById = async ( { paymentId, updatePa
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const payment = await fetch(import.meta.env.VITE_API + "/pagos/" + paymentId, {
     method: "PATCH",
@@ -120,6 +128,8 @@ export const deletePaymentById: TDeletePaymentById = async ( { paymentId }) => {
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
   headers.append("Authorization","Bearer " +  token)
+  headers.append("accept", "application/json")
+  headers.append("Content-Type", "application/json")
 
   const payment = await fetch(import.meta.env.VITE_API + "/pagos/delete/" + paymentId, {
     method: "DELETE",
