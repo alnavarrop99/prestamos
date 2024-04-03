@@ -13,6 +13,6 @@ type TGetPaymentTypeByName = (params: { paymentTypeName: TPAYMENT_TYPE }) => TPA
 type TListPaymentTypes = () => TPAYMENT_METHOD[]
 
 export const getPaymentTypeById: TGetPaymentTypeById = ({ paymentTypeId }) => getId( paymentTypes, { id: paymentTypeId } )
-export const getPaymentTypeByName: TGetPaymentTypeByName = ({ paymentTypeName }) => (paymentTypes?.find( ({ nombre }) => nombre === paymentTypeName) ?? paymentTypes?.[0]) as TPAYMENT_METHOD
+export const getPaymentTypeByName: TGetPaymentTypeByName = ({ paymentTypeName }) => (paymentTypes?.find( ({ nombre }) => nombre === paymentTypeName)) as TPAYMENT_METHOD
 export const listPaymentTypes: TListPaymentTypes = () => gets( paymentTypes )
 

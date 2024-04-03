@@ -13,5 +13,5 @@ type TGetMoraTypeByName = (params: { moraTypeName: TMORA_TYPE }) => TFRECUENCY
 type TListMoraTypes = () => TFRECUENCY[]
 
 export const getMoraTypeById: TGetMoraTypeById = ({ moraTypeId }) => getId( moraTypes, { id: moraTypeId } )
-export const getMoraTypeByName: TGetMoraTypeByName = ({ moraTypeName, }) => (moraTypes?.find( ({ nombre }) => (nombre === moraTypeName)) ?? moraTypes?.[0]) as TFRECUENCY
+export const getMoraTypeByName: TGetMoraTypeByName = ({ moraTypeName, }) => (moraTypes?.find( ({ nombre }) => (nombre === moraTypeName))) as TFRECUENCY
 export const listMoraTypes: TListMoraTypes = () => gets( moraTypes )

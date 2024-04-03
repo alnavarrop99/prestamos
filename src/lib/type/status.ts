@@ -13,6 +13,6 @@ type TGetStatusByName = (params: { statusName: TSTATUS_TYPE }) => TSTATUS
 type TListStatusyId = () => TSTATUS[]
 
 export const getStatusById: TGeStatusById = ({ statusId }) => getId( satus, { id: statusId } )
-export const getStatusByName: TGetStatusByName = ({ statusName }) => (satus?.find( ({ nombre }) => nombre === statusName) ?? satus?.[0]) as TSTATUS
+export const getStatusByName: TGetStatusByName = ({ statusName }) => (satus?.find( ({ nombre }) => nombre === statusName)) as TSTATUS
 export const listStatus: TListStatusyId = () => gets( satus )
 

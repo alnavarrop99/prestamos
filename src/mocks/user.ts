@@ -49,7 +49,7 @@ const updateUserById = http.patch( import.meta.env.VITE_API + '/users/:usuario_i
   if(!user) throw new Error("User not found")
   users?.set( userId, { ...user, nombre, rol: getRolById({ rolId: rol_id })?.nombre } )
 
-  return HttpResponse.json<TUSER_GET>( user )
+  return HttpResponse.json<TUSER_GET>( users?.get(userId) )
 })
 
 const userById = http.get( import.meta.env.VITE_API + '/users/by_id/:id_usuario', async ({params, request}) => {

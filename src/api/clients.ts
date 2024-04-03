@@ -34,9 +34,9 @@ export type TCLIENT_GET = {
   direccion: string
   comentarios: string
   estado: number
-  referencia_id: number
   id: number
   owner: TOWNER
+  referencia_id?: number
 }
 
 export type TCLIENT_GET_ALL = TCLIENT_GET_BASE[]

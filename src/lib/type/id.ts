@@ -13,6 +13,6 @@ type TGetIdByName = (params: { idName: TID_TYPE }) => TID
 type TListIds = () => TID[]
 
 export const getIdById: TGetIdById = ({ id }) => getId( ids, { id } )
-export const getIdByName: TGetIdByName = ({ idName }) => (ids?.find( ({ nombre }) => nombre === idName) ?? ids?.[0]) as TID
+export const getIdByName: TGetIdByName = ({ idName }) => (ids?.find( ({ nombre }) => nombre === idName)) as TID
 export const listIds: TListIds = () => gets( ids )
 

@@ -13,6 +13,6 @@ type TGetFrecuencyName = (params: { frecuencyName: TFRECUENCY_TYPE }) => TFRECUE
 type TListFrecuencys = () => TFRECUENCY[]
 
 export const getFrecuencyById: TGetFrecuencyId = ({ frecuencyId }) => getId( frecuencys, { id: frecuencyId } )
-export const getFrecuencyByName: TGetFrecuencyName = ({ frecuencyName, }) => (frecuencys?.find( ({ nombre }) => (nombre === frecuencyName)) ?? frecuencys?.[0]) as TFRECUENCY
+export const getFrecuencyByName: TGetFrecuencyName = ({ frecuencyName, }) => (frecuencys?.find( ({ nombre }) => (nombre === frecuencyName))) as TFRECUENCY
 export const listFrecuencys: TListFrecuencys = () => gets( frecuencys )
 
