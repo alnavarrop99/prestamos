@@ -2,9 +2,11 @@ import _payments from '@/mocks/__mock__/PAYMENTS.json'
 import _credits from "@/mocks/__mock__/CREDITS.json";
 import _clients from '@/mocks/__mock__/CLIENTS.json'
 import _cuotes from "@/mocks/__mock__/CUOTES.json"
-import _users from '@/mocks/__mock__/USERS.json'
 import _mora from '@/mocks/__mock__/MORA.json'
 import _reports from '@/mocks/__mock__/REPORT.json'
+import { listRols } from '@/lib/type/rol';
+import { faker } from "@faker-js/faker/locale/en"
+import type { TUSER_GET } from '@/api/users';
 
 export type TClIENT_DB = typeof _clients[0]
 export type TCREDIT_DB = typeof _credits[0]
@@ -17,7 +19,6 @@ export type TCUOTE_DB = {
 }
 export type TMORA_DB = typeof _mora[0]
 export type TPAYMENT_DB = typeof _payments[0]
-export type TUSER_DB = typeof _users[0]
 export type TREPORT_DB = typeof _reports[0]
 
 export const clients = new Map<number, TClIENT_DB>( _clients?.map( ( { id }, i, list ) => ([ id, (list?.[i] ?? {} as TClIENT_DB) ]) ) )
@@ -30,6 +31,14 @@ export const payments = new Map<number, TPAYMENT_DB & { credit_id: number }>( _c
   const payment = _payments?.find( ({ id }) => id === pago_id ) ?? {} as TPAYMENT_DB
   return [payment?.id ?? 0, { ...payment, credit_id: id }]
 }))
-export const users = new Map<number, TUSER_DB>( _users?.map( ( { id }, i, list ) => [ id, (list?.[i]) ] ) )
+export const users = new Map<number, TUSER_GET>( Array.from({ length: 10 })?.map<[number, TUSER_GET]>( (_, index) => {
+  const id = index + 1
+  return ([id, {
+    id,
+    rol: faker.helpers.arrayElement( listRols()?.map( ({ nombre }) => (nombre) ) ),
+    nombre: faker.person.fullName(),
+    clientes: []
+  }])
+} ) )
 export const reports = new Map<number, TREPORT_DB>( _reports?.map( ( { id }, i, list ) => [ id, (list?.[i]) ] ) )
 export const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcyNDM4MTMxMn0.p3uaAzSYneGPMwcBbpqIutNGnwMyiyDSBae5TW3X4Es"

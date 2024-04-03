@@ -13,6 +13,6 @@ type TGetRolName = (params: { rolName: TROLES }) => TROL
 type TListRols = () => TROL[]
 
 export const getRolById: TGetRolId = ({ rolId, }) => getId( roles, { id: rolId } )
-export const getRolByName: TGetRolName = ({ rolName, }) => (roles?.find( ({ nombre }) => nombre === rolName) ?? roles?.[0]) as TROL
+export const getRolByName: TGetRolName = ({ rolName, }) => (roles?.find( ({ nombre }) => nombre === rolName)) as TROL
 export const listRols: TListRols = () => gets( roles )
 

@@ -16,10 +16,10 @@ export const route = createRouter({
   routeTree,
 })
 
-// enableMocking().then(() => {
+enableMocking().then(() => {
   ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
       <RouterProvider router={route} />
     </React.StrictMode>
   )
-// })
+})
