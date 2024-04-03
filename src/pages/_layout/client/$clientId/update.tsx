@@ -165,9 +165,10 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
         onChange={onChange}
         id="update-client"
         className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2 [&>label:last-child]:col-span-full',
+          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2 [&>label:last-child]:col-span-full [&_*:disabled]:opacity-100 [&_*:disabled]:cursor-text',
           {
             "[&>label>span]:font-bold": checked,
+            "[&_*:disabled]:font-bold": !checked
           }
         )}
       >
@@ -274,7 +275,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
             defaultValue={client?.comentarios}
             disabled={!checked}
           />
-      </Label>
+        </Label>
       </form>
       <DialogFooter className="!justify-between">
         <div className="flex items-center gap-2 font-bold italic">
