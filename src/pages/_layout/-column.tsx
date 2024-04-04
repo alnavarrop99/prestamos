@@ -23,8 +23,8 @@ import { useStatus } from '@/lib/context/layout'
 import { type TCLIENT_GET_BASE } from '@/api/clients'
 import { getIdById } from '@/lib/type/id'
 
-export type TClientTable = Omit<TCLIENT_GET_BASE, 'nombres' | 'apellidos'> &
-  Record<'fullName', string>
+export type TClientTable = Omit<TCLIENT_GET_BASE, 'nombres' | 'apellidos' | 'referencia_id'> &
+  Record<'fullName' | 'referencia', string>
 export const columns: ColumnDef<TClientTable>[] = [
   {
     id: 'select',
@@ -120,7 +120,7 @@ export const columns: ColumnDef<TClientTable>[] = [
     ),
   },
   {
-    accessorKey: 'referencia_id' as keyof TClientTable,
+    accessorKey: 'referencia' as keyof TClientTable,
     header: ({ column }) => {
       return (
         <Button
@@ -134,7 +134,7 @@ export const columns: ColumnDef<TClientTable>[] = [
     },
     cell: ({ row }) => (
       <p className="w-32">
-        {row.getValue('referencia_id' as keyof TClientTable)}
+        {row.getValue('referencia' as keyof TClientTable)}
       </p>
     ),
   },

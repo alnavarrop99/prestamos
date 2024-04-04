@@ -55,7 +55,7 @@ export type TCLIENT_POST_BODY = {
   direccion: string
   comentarios: string
   estado: number
-  referencia_id?: number
+  referencia_id: number | null
 }
 
 // PATCH
@@ -72,7 +72,7 @@ export type TCLIENT_PATCH_BODY = {
   direccion?: string
   comentarios?: string
   estado?: number
-  referencia_id?: number
+  referencia_id?: number | null
 }
 
 // DELETE

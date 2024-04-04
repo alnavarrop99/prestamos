@@ -47,12 +47,8 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
     mutationFn: pathClientById
   })
   const [ clients, setClients ] = useContext(_clientContext) ?? [[] as TClientTable[], (({})=>{})]
-
-  const active = useMemo(() => Object.values(clientDB).flat().every( ( value, i ) => value === Object.values(client).flat()?.[i] ), [JSON.stringify(client)])
-
-  useEffect( () => {
-    console.log(client);
-  }, [JSON.stringify(client)] )
+  const active = useMemo(() => Object.values({ ...clientDB, referencia_id: clientDB?.referencia_id ?? "" }).flat().every( ( value, i ) => value === Object.values({ ...client, referencia_id: client.referencia_id ?? "" }).flat()?.[i] ), [JSON.stringify(client)])
+  const ref = useMemo( () => clients?.find( ({ id: refId }) => ( refId === client.referencia_id ) ), [JSON.stringify(client)])
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -72,10 +68,10 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
     })
 
     const action =
-      ({ ...items }: Record<TFormName, string>) =>
+      (items: Record<TFormName, string>) =>
       () => {
-        const { id } = client
-        updateClient({ clientId: id, params: {
+        const refId = ref?.id
+        updateClient({ clientId: client?.id, params: {
           celular: items?.celular,
           nombres: items?.nombres,
           telefono: items?.telefono,
@@ -84,8 +80,8 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
           comentarios: items?.comentarios,
           numero_de_identificacion: items?.numero_de_identificacion,
           tipo_de_identificacion: +items?.tipo_de_identificacion,
-          referencia_id: +items?.referencia,
-        } })
+          referencia_id: refId ? refId : null,
+        }})
         pushNotification({
           date: new Date(),
           action: "PATH",
@@ -108,9 +104,9 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
         numero_de_identificacion: items?.numero_de_identificacion ?? clientDB?.numero_de_identificacion,
         tipo_de_identificacion_id: getIdById( { id: +items?.tipo_de_identificacion } )?.id  ?? clientDB?.tipo_de_identificacion,
         comentarios: items?.comentarios ?? clientDB?.comentarios,
-        referencia_id: items?.referencia ? +items?.referencia : undefined
-        })
-    } ) } )
+        referencia: items?.referencia ?? "",
+      })
+    })})
 
     const onClick = () => {
       clearTimeout(timer)
@@ -138,7 +134,8 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
     if(!name || !value) return;
 
     if( name === "referencia" as TFormName ) {
-      setClient( { ...client, referencia_id: +value } ) 
+      const refId = clients?.find( ({ fullName }) => ( value === fullName ) )?.id
+      setClient( { ...client, referencia_id: refId } ) 
       return;
     }
 
@@ -168,7 +165,6 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
           'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2 [&>label:last-child]:col-span-full [&_*:disabled]:opacity-100 [&_*:disabled]:cursor-text',
           {
             "[&>label>span]:font-bold": checked,
-            "[&_*:disabled]:font-bold": !checked
           }
         )}
       >
@@ -261,10 +257,14 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
           <Input
             disabled={!checked}
             name={'referencia' as TFormName}
+            list='client-referent'
             type="text"
-            defaultValue={client?.referencia_id}
+            defaultValue={ref?.fullName}
             placeholder={checked ? text.form.ref.placeholder : undefined}
           />
+          <datalist id='client-referent' >
+            { clients?.map( ( { fullName }, index ) => <option key={index} value={fullName} />) }
+          </datalist>
         </Label>
         <Label>
           <span>{text.form.comment.label}</span>

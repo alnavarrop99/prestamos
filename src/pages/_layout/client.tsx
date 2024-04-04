@@ -52,10 +52,21 @@ export const Route = createFileRoute('/_layout/client')({
   component: Clients,
   loader: async () => {
     const clients = await getClientsList()
-    return clients?.map<TClientTable>(({ nombres, apellidos, ...props }) => ({
-      fullName: nombres + ' ' + apellidos,
-      ...props
-    }))
+    return clients?.map<TClientTable>(({ nombres, apellidos, referencia_id, ...props }, _, list) => {
+      const ref = list?.find( ({ id: referenciaId }) => ( referenciaId === referencia_id ) )
+      if( !ref || !referencia_id ){
+        return ({
+          ...props,
+          fullName: nombres + ' ' + apellidos,
+          referencia: ""
+        })
+      }
+      return ({
+        ...props,
+        fullName: nombres + ' ' + apellidos,
+        referencia: ref.nombres + " " + ref.apellidos,
+      })
+    })
   },
   validateSearch: (search: { clients?: number[] }) => {
     if (!search?.clients?.length) return { clients: [] }
@@ -207,7 +218,7 @@ export function Clients({
                 >
                   {text.select.items.telephone}
                 </SelectItem>
-                <SelectItem value={'referencia'} className="cursor-pointer">
+                <SelectItem value={'referencia' as keyof TClientTable} className="cursor-pointer">
                   {text.select.items.ref}
                 </SelectItem>
               </SelectContent>

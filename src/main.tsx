@@ -5,7 +5,7 @@ import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 
 async function enableMocking() {
-  if (!import.meta.env.MSW) return;
+  if (!import.meta.env.VITE_MSW) return;
   const { worker } = await import('@/mocks/config')
   return worker.start()
 }

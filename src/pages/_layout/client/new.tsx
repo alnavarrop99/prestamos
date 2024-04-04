@@ -43,13 +43,12 @@ export function NewClient() {
   const onSuccess: (data: TCLIENT_POST_BODY) => unknown = (newClient) => {
     setClients({ clients: [ ...clients.slice(0, -1), { ...(clients?.at(-1) ?? {} as TClientTable), ...newClient } ] })
   }
-
   const {mutate: createClient} = useMutation( {
     mutationKey: ["create-client"],
     mutationFn: postClient,
     onSuccess
   } )
-  const [ clients, setClients ] = useContext(_clientContext) ?? [[], (({})=>{})]
+  const [ clients, setClients ] = useContext(_clientContext) ?? [[] as TClientTable[], (({})=>{})]
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current) return
@@ -67,6 +66,7 @@ export function NewClient() {
     const action =
       ({ ...items }: Record<TFormName, string>) =>
       () => {
+        const refId = clients?.find( ({ fullName }) => ( items?.referencia === fullName ) )?.id
         createClient({
           nombres: items?.nombres,
           apellidos: items?.apellidos,
@@ -76,7 +76,7 @@ export function NewClient() {
           numero_de_identificacion: items?.numero_de_identificacion,
           tipo_de_identificacion: +items?.tipo_de_identificacion,
           estado: getStatusByName({ statusName: "Activo" })?.id,
-          referencia_id: +items?.referencia,
+          referencia_id: refId,
           comentarios: items?.comentarios ?? "",
           // TODO: this field be "" that not's necessary
           email: items?.email ?? "",
@@ -97,7 +97,7 @@ export function NewClient() {
       numero_de_identificacion: items?.numero_de_identificacion,
       tipo_de_identificacion: +items?.tipo_de_identificacion,
       estado: getStatusByName({ statusName: "Activo" })?.id,
-      referencia_id: items?.referencia ? +items?.referencia : undefined,
+      referencia: items?.referencia ?? "",
       id: clients?.at(-1)?.id ?? 0 + 1,
       comentarios: items?.comentarios ?? "",
       // TODO: this field be "" that not's necessary
@@ -219,10 +219,14 @@ export function NewClient() {
         <Label>
           <span>{text.form.ref.label}</span>
           <Input
+            list='client-referent'
             name={'referencia' as TFormName}
             type="text"
             placeholder={text.form.ref.placeholder}
           />
+          <datalist id='client-referent' >
+            { clients?.map( ( { fullName }, index ) => <option key={index} value={fullName} />) }
+          </datalist>
         </Label>
         <Label>
         <span>{text.form.comment.label}</span>
