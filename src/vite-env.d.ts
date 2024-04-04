@@ -5,7 +5,7 @@ interface ImportMetaEnv {
   readonly VITE_API: string
   readonly VITE_AUTH0_DOMAIN: string
   readonly VITE_AUTH0_CLIENT_ID: string
-  readonly VITE_MSW: boolean
+  readonly VITE_MSW: number
 }
 interface ImportMeta {
   readonly env: ImportMetaEnv
