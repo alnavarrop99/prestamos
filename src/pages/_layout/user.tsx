@@ -132,7 +132,7 @@ export function Users({
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
-            <Badge className="px-3 text-xl">{users?.length}</Badge>
+            {!!users?.length && <Badge className="px-3 text-xl">{users?.length}</Badge>}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild className="ms-auto">
               <Link to={'./new'}>
@@ -162,8 +162,9 @@ export function Users({
           </Dialog>
         </div>
         <Separator />
+        { !users?.length && <p>{text.notFound}</p>}
         <div className="flex flex-wrap gap-4 [&>*]:flex-auto">
-          {!!users?.length ?
+          {!!users?.length &&
             users?.map(
               ({ id, rol, nombre, clientes, selected, active, menu }, index) => (
                 <Card
@@ -280,7 +281,7 @@ export function Users({
                   </CardContent>
                 </Card>
               )
-            ) : <span>{text.notFound}</span>}
+            )}
         </div>
       </div>
     </_selectUsers.Provider>

@@ -1,5 +1,6 @@
 import type { TPAYMENT_GET_BASE } from '@/api/payment'
 import { useToken } from '@/lib/context/login'
+import { format } from 'date-fns'
 
 export type TCUOTE = {
   id: number
@@ -83,10 +84,10 @@ export type TCREDIT_GET_FILTER = {
 export type TCREDIT_GET_FILTER_ALL = TCREDIT_GET_FILTER[]
 
 export type TCREDIT_GET_FILTER_BODY = {
-  fecha_de_pago?: Date 
-  saldo_por_pagar?: boolean
-  saldo_en_mora?: boolean 
-  cliente?: string 
+  fecha_de_pago: string 
+  saldo_por_pagar: boolean | null
+  saldo_en_mora: boolean  | null
+  cliente: string  | null
 }
 
 // POST
@@ -168,7 +169,7 @@ export const getCreditsList: TGetCreditsList =  async () => {
   return creditById.json()
 }
 
-export const getCreditsFilter: TGetCreditsFilter = ( filter = {} ) => async () => {
+export const getCreditsFilter: TGetCreditsFilter = ( filter = { cliente: null, fecha_de_pago: format( new Date(2020,1,1), "yyyy-MM-dd" ), saldo_en_mora: null, saldo_por_pagar: null } ) => async () => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()

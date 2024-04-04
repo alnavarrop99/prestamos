@@ -152,9 +152,9 @@ export function Clients({
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
-          <Badge className="px-3 text-xl">
+          { !!data?.length && <Badge className="px-3 text-xl">
             {table.getFilteredRowModel().rows.length}
-          </Badge>
+          </Badge>}
         </div>
         <Separator />
         <div>

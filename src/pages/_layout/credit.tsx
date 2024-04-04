@@ -75,9 +75,9 @@ export function Credits({
               {text.title}
             </h1>
           </Label>
-          <Badge className="px-3 text-xl">
+          {!!creditsDB?.length && <Badge className="px-3 text-xl">
             {creditsDB?.length}
-          </Badge>
+          </Badge>}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
               <Link to={'./new'}>
@@ -88,7 +88,8 @@ export function Credits({
           </Dialog>
         </div>
         <Separator />
-        <div
+        { !creditsDB?.length && <p>{text.notfound}</p> }
+        { !!creditsDB?.length && <div
           className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5', {
             '[&>*]:basis-1/4': !!creditsDB?.length && creditsDB?.length > 15})}
         >
@@ -196,7 +197,7 @@ export function Credits({
                 )
               }
             )}
-        </div>
+        </div>}
       </div>
     </_creditSelected.Provider>
   )
@@ -206,6 +207,7 @@ Credits.dispalyname = 'CreditsList'
 
 const text = {
   title: 'Prestamos:',
+  notfound: 'No existen prestamos activos.',
   alert: {
     info: {
       title: 'Fecha limite',
