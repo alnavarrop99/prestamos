@@ -76,7 +76,7 @@ export function NewClient() {
           numero_de_identificacion: items?.numero_de_identificacion,
           tipo_de_identificacion: +items?.tipo_de_identificacion,
           estado: getStatusByName({ statusName: "Activo" })?.id,
-          referencia_id: refId,
+          referencia_id: refId ?? null,
           comentarios: items?.comentarios ?? "",
           // TODO: this field be "" that not's necessary
           email: items?.email ?? "",
