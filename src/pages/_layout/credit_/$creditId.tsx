@@ -151,6 +151,12 @@ export function CreditById({
             <b>{text.details.pay + ":"}</b> <span>{'$' + ( (moraStatus ? ( (cuoteValue ?? 0) + moreValue ) : ( (cuoteValue ?? 0) + interestValue ))).toFixed(2) + '.'}</span>
           </li>
           <li>
+            <b>{text.details.user + ":"}</b> <span>{creditDB.cobrador_id}</span>
+          </li>
+          <li>
+            <b>{text.details.ref + ":"}</b> <span>{creditDB.garante_id}</span>
+          </li>
+          <li>
             <b>{text.details.comment + ":"}</b> <p>{creditDB?.comentario}</p>
           </li>
         </ul>
@@ -247,6 +253,8 @@ const text = {
   details: {
     title: 'Detalles del prestamo:',
     name: 'Nombre del cliente',
+    user: 'Cobrador',
+    ref: 'Referencia',
     amount: 'Monto total',
     interest: 'Tasa de interes',
     cuoteNumber: 'Numero de cuotas',

@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import React, { ComponentRef, useRef, useState } from 'react'
+import React, { ComponentRef, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -24,7 +24,8 @@ import { getFrecuencyByName, listFrecuencys } from '@/lib/type/frecuency'
 import { useMutation } from '@tanstack/react-query'
 import { Navigate } from '@tanstack/react-router'
 import { getStatusByName } from '@/lib/type/status'
-import { format, formatISO } from 'date-fns'
+import { formatISO } from 'date-fns'
+import { getUsersList } from '@/api/users'
 
 type TSearch = {
   clientId: number
@@ -32,11 +33,14 @@ type TSearch = {
 
 export const Route = createFileRoute('/_layout/credit/new')({
   component: NewCredit,
-  loader: getClientsList,
   validateSearch: ( search: TSearch ) => {
     if(!search) return ({} as TSearch)
     return search
-  }
+  },
+  loader: async () => ({
+    clients: await getClientsList(),
+    users: await getUsersList()
+  }),
 })
 
 /* eslint-disable-next-line */
@@ -47,36 +51,42 @@ interface TNewCreditProps {
 /* eslint-disable-next-line */
 interface TCuotesState {
   value?: number
-  type: "value" | "porcentage"
+  type: TMORA_TYPE
 }
 
 /* eslint-disable-next-line */
-type TCuoteStateType = "value" | "porcentage"
 
 
 const initialCuotes: TCuotesState = {
-  type: "porcentage" 
+  type: "Porciento" 
 }
 
 /* eslint-disable-next-line */
-type TFormName = keyof TCREDIT_POST_BODY
+type TFormName = keyof (Omit<TCREDIT_POST_BODY, "cobrador_id" | "owner_id" | "garante_id" | "tipo_de_mora_id"> & Record<"user" | "client" | "ref" | "tipo_de_mora", string>)
 
 /* eslint-disable-next-line */
 export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
-  // const clientsDB = Route.useLoaderData() ?? _clients
+  const { users: usersDB, clients: clientsDB } = Route.useLoaderData() ?? _clients
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const { clientId } = Route.useSearch()
+  const { client, user, ref } = useMemo( () => {
+    const client = clientsDB?.find( ({ id }) => ( id === clientId ) )
+    const ref = clientsDB?.find( ({ id: refId }) => ( refId === client?.referencia_id ) )
+    const user = usersDB?.find( ({ id: userId }) => ( userId === client?.owner_id )  )
+    return ( { client , ref, user } )
+  }, [clientId] )
+
   const { mutate: createCredit } = useMutation({
     mutationKey: ["create-crdit"],
     mutationFn: postCredit,
   })
 
   const onChangeType: React.ChangeEventHandler< HTMLInputElement >  = ( ev ) => {
-    const { checked, value } = ev.target as { checked: boolean, value: TCuoteStateType }
+    const { checked, value } = ev.target as { checked: boolean, value: TMORA_TYPE }
     if(checked && value){
       setInstallmants( { ...installmants, type: value } )
     }
@@ -89,7 +99,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
   }
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
-    if (!form.current) return
+    if (!form.current) return;
 
     const items = Object.fromEntries(
       [...new FormData(form.current).entries()]?.map( ([ key, value ]) => {
@@ -98,28 +108,32 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
     })
     ) as Record<TFormName, string>
 
-    // TODO 
-    const { owner_id } = items
     const description = text.notification.decription({
-      username: "" + owner_id,
+      username: items?.client,
     })
-
+     
     const action =
       (items : Record<TFormName, string>) =>
       () => {
+        const userId = usersDB?.find( ({ nombre }) => ( nombre == items?.user ) )?.id
+        const clientId = clientsDB?.find( ({ nombres, apellidos }) => ( [nombres, apellidos].join(" ") === items?.client ) )?.id
+        const refId = clientsDB?.find( ({ nombres, apellidos }) => ( [nombres, apellidos].join(" ") === items?.client ) )?.id
+
+        if( !userId || !clientId ) return;
+
         createCredit({
           monto: +items?.monto,
           estado: getStatusByName({ statusName: "Activo" })?.id,
           comentario: items?.comentario ?? "",
-          cobrador_id: +items?.cobrador_id,
+          cobrador_id: userId,
           valor_de_mora: +items?.valor_de_mora,
           tasa_de_interes: +items?.tasa_de_interes,
-          tipo_de_mora_id: getMoraTypeByName( { moraTypeName: items?.tipo_de_mora_id as TMORA_TYPE })?.id,
-          dias_adicionales: +items?.dias_adicionales ?? 0,
+          tipo_de_mora_id: getMoraTypeByName( { moraTypeName: items?.tipo_de_mora as TMORA_TYPE })?.id,
+          dias_adicionales: +(items?.dias_adicionales ?? 0),
           numero_de_cuotas: +items?.numero_de_cuotas,
           frecuencia_del_credito_id: +items?.frecuencia_del_credito_id,
-          owner_id: +items?.owner_id,
-          garante_id: +items?.garante_id ?? null,
+          owner_id: clientId,
+          garante_id: refId ?? null,
           fecha_de_aprobacion: formatISO( new Date( items?.fecha_de_aprobacion ) ),
         })
         pushNotification({
@@ -176,14 +190,14 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <span>{text.form.cliente.label} </span>
           <Input
             required
-            name={'owner_id' as TFormName}
+            name={'client' as TFormName}
             type="text"
             placeholder={text.form.cliente.placeholder}
             list='credit-clients'
-            // defaultValue={getClientId({ clientId }).nombres + " " + getClientId({ clientId }).apellidos}
+            defaultValue={ client ? client?.nombres + " " + client?.apellidos : undefined }
           />
           <datalist id='credit-clients' >
-            {/*clients?.map( ( { nombres, apellidos, id } ) => <option key={id} value={[nombres, apellidos].join(" ")} />  )*/}
+            {clientsDB?.map( ( { nombres, apellidos }, index ) => <option key={index} value={nombres + " " + apellidos} />  )}
           </datalist>
         </Label>
         <Label>
@@ -197,10 +211,11 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
         <Label>
           <span>{text.form.ref.label} </span>
           <Input
-            name={'garante_id' as TFormName}
+            name={'ref' as TFormName}
+            list='credit-clients'
             type="text"
             placeholder={text.form.ref.placeholder}
-            // defaultValue={ getClientId({ clientId })?.referencia }
+            defaultValue={ ref ? ref?.nombres + ref?.apellidos : undefined }
           />
         </Label>
         <Label className='row-start-2'>
@@ -274,20 +289,20 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <span>{text.form.user.label} </span>
           <Input
             required
-            name={'cobrador_id' as TFormName}
+            name={'user' as TFormName}
             type="text"
             placeholder={text.form.user.placeholder}
             list='credit-user'
-            defaultValue={clientId}
+            defaultValue={ user ? user?.nombre : undefined }
           />
-          <datalist id='credit-user' >
-            {/*users?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )*/}
+          <datalist id='credit-user'>
+            {usersDB?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )}
           </datalist>
         </Label>
         <Label htmlFor='credit-installments' className='row-start-4'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
           <span className='after:content-["_*_"] after:text-red-500'>{text.form.installments.label} </span>
-          <RadioGroup name={'tipo_de_mora_id' as TFormName} defaultValue={ getMoraTypeByName({ moraTypeName: "Porciento" })?.nombre } onChange={onChangeType}  >
+          <RadioGroup name={'tipo_de_mora' as TFormName} defaultValue={ getMoraTypeByName({ moraTypeName: "Porciento" })?.nombre } onChange={onChangeType}  >
             <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "Valor fijo" })?.nombre } /> <Badge>$</Badge> </Label>
             <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "Porciento" })?.nombre } /> <Badge>%</Badge> </Label>
           </RadioGroup>
@@ -296,8 +311,8 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
             id='credit-installments'
             required
             min={0}
-            max={installmants?.type === "porcentage" ? 100 : undefined}
-            step={installmants?.type === "porcentage" ? 1 : 50}
+            max={installmants?.type === "Porciento" ? 100 : undefined}
+            step={installmants?.type === "Porciento" ? 1 : 50}
             name={'valor_de_mora' as TFormName }
             type="number"
             value={installmants.value}
@@ -428,8 +443,8 @@ const text = {
     installments: {
       label: 'Mora:',
       placeholder:{
-        value: "Monto adicional en cada cuota",
-        porcentage: "Porcentaje adicional en cada cuota",
+        ["Valor fijo" as TMORA_TYPE]: "Monto adicional en cada cuota",
+        ["Porciento" as TMORA_TYPE]: "Porcentaje adicional en cada cuota",
       },
     },
     cuote: {
