@@ -195,7 +195,7 @@ export function CreditById({
                     {valor_de_cuota?.toFixed(2)}</p>
                   </TableCell>
                   <TableCell>
-                    <p>{ valor_de_mora > 0 ? format(fecha_de_aplicacion_de_mora ?? "", 'MM-dd-yyyy') : "-"}</p>
+                    <p>{ valor_de_mora > 0 ? format(fecha_de_aplicacion_de_mora ?? "", 'dd-MM-yyyy') : "-"}</p>
                   </TableCell>
                   <TableCell>
                     <p>{valor_de_mora > 0 ? <><b>$</b> {valor_de_mora?.toFixed(2) }</> : "-"}</p>

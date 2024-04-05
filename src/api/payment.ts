@@ -55,7 +55,7 @@ export type TPAYMENT_DELETE = TPAYMENT_GET_BASE
 
 // FUNCTION TYPES
 type TGetPaymentById = (params: { params: { paymentId: string } }) => Promise<TPAYMENT_GET>
-type TGetPaymentsList = () => Promise<TPAYMENT_GET_ALL>
+type TListPayments = () => Promise<TPAYMENT_GET_ALL>
 type TDeletePaymentById = ( params: { paymentId: number }) => Promise<TPAYMENT_DELETE>
 type TPostPaymentById = ( params: TPAYMENT_POST_BODY ) => Promise<TPAYMENT_POST>
 type TPatchPaymentById = ( params: { paymentId: number, updatePayment?: TPAYMENT_PATCH_BODY })  => Promise<TPAYMENT_PATCH>
@@ -76,7 +76,7 @@ export const getPaymentById: TGetPaymentById = async ({ params: { paymentId } })
   return payment.json()
 }
 
-export const getPaymentsList: TGetPaymentsList = async () => {
+export const listPayments: TListPayments = async () => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
@@ -107,7 +107,7 @@ export const postPaymentId: TPostPaymentById = async (newPayment) => {
   return payment.json()
 }
 
-export const potchPaymentById: TPatchPaymentById = async ( { paymentId, updatePayment }) => {
+export const patchPaymentById: TPatchPaymentById = async ( { paymentId, updatePayment }) => {
   const { token } = useToken.getState()
   if( !token ) throw new Error("not auth")
   const headers = new Headers()
