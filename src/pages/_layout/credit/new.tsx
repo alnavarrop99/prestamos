@@ -19,10 +19,12 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { postCredit, type TCREDIT_POST_BODY } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { getMoraTypeByName } from '@/lib/type/moraType'
+import { type TMORA_TYPE, getMoraTypeByName } from '@/lib/type/moraType'
 import { getFrecuencyByName, listFrecuencys } from '@/lib/type/frecuency'
 import { useMutation } from '@tanstack/react-query'
 import { Navigate } from '@tanstack/react-router'
+import { getStatusByName } from '@/lib/type/status'
+import { format, formatISO } from 'date-fns'
 
 type TSearch = {
   clientId: number
@@ -90,7 +92,10 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
     if (!form.current) return
 
     const items = Object.fromEntries(
-      new FormData(form.current).entries()
+      [...new FormData(form.current).entries()]?.map( ([ key, value ]) => {
+      if( value === "" ) return [ key, undefined ]
+      return [ key, value ]
+    })
     ) as Record<TFormName, string>
 
     // TODO 
@@ -100,22 +105,22 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
     })
 
     const action =
-      ({ ...items }: Record<TFormName, string>) =>
+      (items : Record<TFormName, string>) =>
       () => {
         createCredit({
           monto: +items?.monto,
-          estado: 1,
-          comentario: items?.comentario,
+          estado: getStatusByName({ statusName: "Activo" })?.id,
+          comentario: items?.comentario ?? "",
           cobrador_id: +items?.cobrador_id,
           valor_de_mora: +items?.valor_de_mora,
           tasa_de_interes: +items?.tasa_de_interes,
-          tipo_de_mora_id: +items?.tipo_de_mora_id,
-          dias_adicionales: +items?.dias_adicionales,
+          tipo_de_mora_id: getMoraTypeByName( { moraTypeName: items?.tipo_de_mora_id as TMORA_TYPE })?.id,
+          dias_adicionales: +items?.dias_adicionales ?? 0,
           numero_de_cuotas: +items?.numero_de_cuotas,
           frecuencia_del_credito_id: +items?.frecuencia_del_credito_id,
           owner_id: +items?.owner_id,
-          garante_id: +items?.garante_id,
-          fecha_de_aprobacion: items?.fecha_de_aprobacion,
+          garante_id: +items?.garante_id ?? null,
+          fecha_de_aprobacion: formatISO( new Date( items?.fecha_de_aprobacion ) ),
         })
         pushNotification({
           date: new Date(),
@@ -192,7 +197,6 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
         <Label>
           <span>{text.form.ref.label} </span>
           <Input
-            required
             name={'garante_id' as TFormName}
             type="text"
             placeholder={text.form.ref.placeholder}

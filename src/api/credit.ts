@@ -5,13 +5,13 @@ import { format } from 'date-fns'
 export type TCUOTE = {
   id: number
   numero_de_cuota: number
-  fecha_de_pago: Date
-  fecha_de_aplicacion_de_mora?: Date
+  fecha_de_pago: string
+  fecha_de_aplicacion_de_mora: string
   valor_pagado: number
   valor_de_cuota: number,
-  valor_de_mora?: number,
+  valor_de_mora: number,
   pagada: boolean,
-  credito_id: number,
+  credito_id?: number,
 }
 
 export type TMORA = {
@@ -43,7 +43,7 @@ export type TCREDIT_GET_BASE = {
   valor_de_mora: number
   id?: number,
   owner_id?: number,
-  garante_id?: number
+  garante_id?: number | null
 }
 
 export type TCREDIT_GET = {
@@ -60,7 +60,7 @@ export type TCREDIT_GET = {
   valor_de_mora: number
   id: number,
   owner_id: number,
-  garante_id?: number
+  garante_id?: number | null
   tipo_de_mora: TMORA
   frecuencia_del_credito: TFRECUENCY
   pagos: TPAYMNET[]
@@ -106,7 +106,7 @@ export type TCREDIT_POST_BODY = {
   tipo_de_mora_id: number
   valor_de_mora: number
   owner_id: number
-  garante_id: number
+  garante_id: number | null
 }
 
 // PATCH
@@ -124,7 +124,7 @@ export type TCREDIT_PATCH_BODY = {
   tipo_de_mora_id?: number
   valor_de_mora?: number
   frecuencia_del_credito_id?: number
-  garante_id?: number
+  garante_id?: number | null
 }
 
 // DELETE

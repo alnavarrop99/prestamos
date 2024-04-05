@@ -1,21 +1,12 @@
 import { HttpResponse, http } from 'msw'
 import type { TPAYMENT_GET, TPAYMENT_POST, TPAYMENT_GET_ALL, TPAYMENT_POST_BODY, TPAYMENT_PATCH_BODY, TPAYMENT_PATCH, TPAYMENT_DELETE } from '@/api/payment'
-import { TPAYMENT_DB, clients, credits, payments, token } from './data'
+import { clients, credits, payments, token } from '@/mocks/data'
 
 const allPayments = http.all(import.meta.env.VITE_API + '/pagos/list', async ({request}) => {
   const auth = request.headers.get("Authorization")
   if( !auth || !auth.includes(token) ) throw new Error("not auth")
 
-  return HttpResponse.json<TPAYMENT_GET_ALL>(
-    Array.from(payments?.values())?.map<TPAYMENT_GET>(({ fecha_de_pago, comentario, valor_del_pago, id, credit_id }) => ({
-      id,
-      valor_del_pago,
-      comentario,
-      credito_id: credit_id,
-      fecha_de_pago: new Date(fecha_de_pago),
-      registrado_por_usuario_id: 0
-    }))
-  )
+  return HttpResponse.json<TPAYMENT_GET_ALL>(Array.from(payments?.values()))
 })
 
 const createPayment = http.post( import.meta.env.VITE_API + '/pagos/create', async ({ request }) => {
@@ -24,24 +15,25 @@ const createPayment = http.post( import.meta.env.VITE_API + '/pagos/create', asy
 
   const newPayment = (await request.json()) as TPAYMENT_POST_BODY
   const credit = credits?.get( newPayment?.credito_id )
-  if( !newPayment || !credit ) {
-    throw new Error("Fail post request")
-  }
+  if( !newPayment || !credit ) throw new Error("Fail post request")
 
-  const { fecha_de_pago, comentario, credito_id, valor_del_pago } = newPayment
-  payments?.set( payments?.size + 1, {id: (payments?.get(payments?.size)?.id ?? 0) + 1, fecha_de_pago: fecha_de_pago.toString(), valor_del_pago, comentario, credit_id: credito_id } )
+  payments?.set( payments?.size + 1, { ...newPayment,  id: (payments?.get(payments?.size)?.id ?? 0) + 1, registrado_por_usuario_id: credit.cobrador_id } )
 
-  const client = clients.get( credit?.cliente_id )
+  const payment = payments?.get( payments?.size )
+  if(!payment || !payment?.credito_id) throw new Error("not add new payment")
+
+  const client = clients.get( payment?.credito_id )
+  if(!client) throw new Error("client for a payment not found")
+
   return HttpResponse.json<TPAYMENT_POST>( {
-    id: (payments?.get(payments?.size)?.id ?? 0),
-    credito_id,
-    valor_del_pago,
-    comentario,
-    fecha_de_pago,
-    cedula: client?.numero_de_identificacion ?? "",
-    telefone: client?.telefono ?? "",
-    pendiente: false,
-    nombre_del_cliente: client?.nombres + " " + client?.apellidos
+    id: payment?.id,
+    comentario: payment?.comentario,
+    cedula: client?.numero_de_identificacion,
+    pendiente: Math.abs( payment?.valor_del_pago - credit?.cuotas?.[0]?.valor_de_cuota ),
+    nombre_del_cliente: client?.nombres + " " + client?.apellidos,
+    telefono: client?.telefono,
+    pago_id: payment?.id,
+    fecha: payment?.fecha_de_pago
   }, { status: 201 } )
 } )
 
@@ -51,31 +43,15 @@ const updatePaymentById = http.patch( import.meta.env.VITE_API + '/pagos/:pago_i
 
   const upadetePayment = (await request.json()) as TPAYMENT_PATCH_BODY
   const { pago_id } = params as { pago_id?: string }
-  if( !upadetePayment || !pago_id ) {
-    throw new Error("Fail update request")
-  }
+  if( !upadetePayment || !pago_id ) throw new Error("Fail update request")
 
-  const paymentId = Number.parseInt(pago_id)
+  const paymentId = +pago_id
   const payment = payments.get( paymentId )
-  if( !paymentId || !payments?.has( paymentId ) || !payment ){
-    throw new Error("params be a error")
-  }
+  if( !paymentId || !payments?.has( paymentId ) || !payment ) throw new Error("params be a error")
 
-  payments?.set( paymentId, { ...(payments?.get(paymentId) ?? {} as (TPAYMENT_DB & { credit_id: number })),
-    fecha_de_pago: upadetePayment.fecha_de_pago?.toString() ?? "",
-    valor_del_pago: upadetePayment.valor_del_pago ?? 0,
-    comentario: upadetePayment.comentario ?? "",
-  })
+  payments?.set( paymentId, { ...payment, ...upadetePayment })
 
-  const { credit_id, comentario, valor_del_pago, fecha_de_pago } = payment
-  return HttpResponse.json<TPAYMENT_PATCH>({
-    id: Number.parseInt(pago_id),
-    registrado_por_usuario_id: 0,
-    valor_del_pago,
-    comentario,
-    fecha_de_pago: new Date(fecha_de_pago),
-    credito_id: credit_id
-  })
+  return HttpResponse.json<TPAYMENT_PATCH>(payment)
 } )
 
 const getPaymentById = http.get( import.meta.env.VITE_API + '/pagos/by_id/:pago_id', async ({params, request}) => {
@@ -83,24 +59,22 @@ const getPaymentById = http.get( import.meta.env.VITE_API + '/pagos/by_id/:pago_
   if( !auth || !auth.includes(token) ) throw new Error("not auth")
 
   const { pago_id } = params as { pago_id?: string }
-  if( !pago_id ) {
-    throw new Error("Fail update request")
-  }
+  if( !pago_id ) throw new Error("Fail update request")
 
-  const paymentId = Number.parseInt(pago_id)
+  const paymentId = +pago_id
   const payment = payments.get( paymentId )
-  if( !paymentId || !payments?.has( paymentId ) || !payment ){
-    throw new Error("params error")
-  }
+  if( !paymentId || !payments?.has( paymentId ) || !payment || !payment?.credito_id ) throw new Error("params error")
 
-  const { credit_id, comentario, valor_del_pago, fecha_de_pago } = payment
+  const credit = credits?.get( payment?.credito_id )
+  if( !credit ) throw new Error("not credit found")
+
   return HttpResponse.json<TPAYMENT_GET>({
-    id: Number.parseInt(pago_id),
-    registrado_por_usuario_id: 0,
-    valor_del_pago,
-    comentario,
-    fecha_de_pago: new Date(fecha_de_pago),
-    credito_id: credit_id
+    id: payment?.id ?? paymentId,
+    fecha_de_pago: payment?.fecha_de_pago,
+    registrado_por_usuario_id: payment?.registrado_por_usuario_id,
+    valor_del_pago: payment?.valor_del_pago,
+    comentario: payment?.comentario,
+    credito: credit
   })
 } )
 
@@ -109,27 +83,15 @@ const deletePaymentById = http.delete( import.meta.env.VITE_API + '/pagos/delete
   if( !auth || !auth.includes(token) ) throw new Error("not auth")
 
   const { pago_id } = params as { pago_id?: string }
-  if( !pago_id ) {
-    throw new Error("Fail update request")
-  }
+  if( !pago_id ) throw new Error("Fail update request")
 
-  const paymentId = Number.parseInt(pago_id)
+  const paymentId = +pago_id
   const payment = payments.get( paymentId )
-  if( !paymentId || !payments?.has( paymentId ) || !payment ){
-    throw new Error("params be error")
-  }
+  if( !paymentId || !payments?.has( paymentId ) || !payment ) throw new Error("params be error")
 
   payments?.delete( paymentId )
 
-  const { credit_id, comentario, valor_del_pago, fecha_de_pago } = payment
-  return HttpResponse.json<TPAYMENT_DELETE>({
-    id: Number.parseInt(pago_id),
-    registrado_por_usuario_id: 0,
-    valor_del_pago,
-    comentario,
-    fecha_de_pago: new Date(fecha_de_pago),
-    credito_id: credit_id
-  })
+  return HttpResponse.json<TPAYMENT_DELETE>(payment)
 })
 
 export default [

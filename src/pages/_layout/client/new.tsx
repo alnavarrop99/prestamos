@@ -16,7 +16,7 @@ import { useContext, useRef } from 'react'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
-import { postClient, type TCLIENT_POST_BODY } from "@/api/clients";
+import { postClient, TCLIENT_POST, type TCLIENT_POST_BODY } from "@/api/clients";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
@@ -40,7 +40,7 @@ export function NewClient() {
   const { pushNotification } = useNotifications()
   const { open } = useStatus()
 
-  const onSuccess: (data: TCLIENT_POST_BODY) => unknown = (newClient) => {
+  const onSuccess: (data: TCLIENT_POST) => unknown = (newClient) => {
     setClients({ clients: [ ...clients.slice(0, -1), { ...(clients?.at(-1) ?? {} as TClientTable), ...newClient } ] })
   }
   const {mutate: createClient} = useMutation( {

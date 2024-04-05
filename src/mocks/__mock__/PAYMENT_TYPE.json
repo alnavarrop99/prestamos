@@ -5,50 +5,36 @@
     {
       "id": 15,
       "tipo_enumerador_id": 5,
-      "created_at": "2024-03-21T07:42:48.884004",
-      "last_edited": "2024-03-21T07:42:50.382850",
       "nombre": "Efectivo"
     },
     {
       "id": 16,
       "tipo_enumerador_id": 5,
-      "created_at": "2024-03-21T07:42:48.884004",
-      "last_edited": "2024-03-21T07:42:50.382958",
       "nombre": "Transferencia"
     },
     {
       "id": 17,
       "tipo_enumerador_id": 5,
-      "created_at": "2024-03-21T07:42:48.884004",
-      "last_edited": "2024-03-21T07:42:50.383048",
       "nombre": "Cheque"
     },
     {
       "id": 18,
       "tipo_enumerador_id": 5,
-      "created_at": "2024-03-21T07:42:48.884004",
-      "last_edited": "2024-03-21T07:42:50.383137",
       "nombre": "Item"
     },
     {
       "id": 19,
       "tipo_enumerador_id": 5,
-      "created_at": "2024-03-21T07:42:48.884004",
-      "last_edited": "2024-03-21T07:42:50.383233",
       "nombre": "Tarjeta de débito"
     },
     {
       "id": 20,
       "tipo_enumerador_id": 5,
-      "created_at": "2024-03-21T07:42:48.884004",
-      "last_edited": "2024-03-21T07:42:50.391397",
       "nombre": "Tarjeta de crédito"
     },
     {
       "id": 21,
       "tipo_enumerador_id": 5,
-      "created_at": "2024-03-21T07:42:48.884004",
-      "last_edited": "2024-03-21T07:42:50.391514",
       "nombre": "Otros"
     }
   ]

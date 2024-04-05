@@ -19,15 +19,35 @@ import {
   CircleDollarSign as Pay,
 } from 'lucide-react'
 import { createContext, useState } from 'react'
-import { getCreditsFilter, type TCREDIT_GET_FILTER, type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
+import { getCreditById, getCreditsList, type TCREDIT_GET_FILTER, type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 import { useStatus } from '@/lib/context/layout'
-import { format } from 'date-fns'
+import { format, isValid } from 'date-fns'
 import styles from "@/styles/global.module.css";
 import { getFrecuencyById } from '@/lib/type/frecuency'
+import { getClientById } from '@/api/clients'
+import { create } from 'zustand'
 
 export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
-  loader: getCreditsFilter(),
+  loader: async () => {
+    // TODO: this is a temporal function to getFilter
+    const list = await getCreditsList()
+    const data: TCREDIT_GET_FILTER_ALL = await Promise.all( list?.map<Promise<TCREDIT_GET_FILTER>>( async ({ id: creditId, owner_id, frecuencia_del_credito_id }) => {
+      const { nombres, apellidos } = await getClientById({ params: { clientId: "" + owner_id } })
+      const { cuotas } = await getCreditById({ params: { creditId: "" + creditId } })
+      return ({
+        clientId: owner_id,
+        id: creditId,
+        frecuencia: getFrecuencyById({ frecuencyId: frecuencia_del_credito_id ?? 1 }),
+        fecha_de_cuota: cuotas?.at(-1)?.fecha_de_pago ,
+        valor_de_cuota: cuotas?.at(-1)?.valor_de_cuota,
+        numero_de_cuota: cuotas?.at(-1)?.numero_de_cuota,
+        valor_de_la_mora: cuotas?.at(-1)?.valor_de_mora,
+        nombre_del_cliente: nombres + " " + apellidos,
+      }) as TCREDIT_GET_FILTER
+    }))
+    return data
+  },
 })
 
 /* eslint-disable-next-line */
@@ -37,6 +57,9 @@ interface TCreditsProps {
 }
 
 export const _creditSelected = createContext<TCREDIT_GET_FILTER | undefined>(undefined)
+export const useCreditFilter = create<{ creditFilter?: TCREDIT_GET_FILTER, setCreditFilter: ( creditFilter: TCREDIT_GET_FILTER ) => void }>()( (set) => ({
+  setCreditFilter: ( creditFilter ) => set( () => ({creditFilter}) )
+}) )
 
 /* eslint-disable-next-line */
 export function Credits({
@@ -48,11 +71,17 @@ export function Credits({
   const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
+  const { setCreditFilter } = useCreditFilter()
 
   const onClick: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Button>> = (index) => () => {
     if(!creditsDB || !creditsDB?.[index]) return;
     setOpen({ open: !open })
     setSelectedCredit(creditsDB?.[index])
+  }
+
+  const onLink: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Link>> = (index) => () => {
+    if(!creditsDB || !creditsDB?.[index]) return;
+    setCreditFilter(creditsDB?.[index])
   }
 
   const onOpenChange = (open: boolean) => {
@@ -100,8 +129,8 @@ export function Credits({
             numero_de_cuota,
             valor_de_cuota,
             nombre_del_cliente,
-            fecha_de_cuota,
             valor_de_la_mora,
+            fecha_de_cuota
           }, index) => {
                 const status: 'warn' | 'info' | undefined = valor_de_la_mora > 0 ? 'warn' : undefined
                 return (
@@ -110,6 +139,7 @@ export function Credits({
                     className="group"
                     to="./$creditId"
                     params={{ creditId }}
+                    onClick={onLink(index)}
                   >
                     <Card className={clsx("h-full shadow-lg transition delay-150 duration-500 group-hover:scale-105 group-hover:shadow-xl grid justify-streetch items-end", styles?.["grid__credit--card"])}>
                       <CardHeader>
@@ -159,7 +189,7 @@ export function Credits({
                         </ul>
                       </CardContent>
                       <CardFooter className="flex items-center gap-2">
-                        <Badge> {format(fecha_de_cuota?.toString(), "dd-MM-yyyy")} </Badge>
+                        { isValid(fecha_de_cuota) && <Badge> {format(fecha_de_cuota , "dd-MM-yyyy")} </Badge>}
                         <Dialog open={open} onOpenChange={onOpenChange}>
                           <DialogTrigger asChild className="ms-auto" >
                             <Link
@@ -225,8 +255,8 @@ const text = {
   },
   details: {
     pay: 'Numero de cuotas',
-    cuote: 'Valor Cuota',
-    mora: 'Valor Mora',
+    cuote: 'Monto por cuota',
+    mora: 'Monto por mora',
     frecuency: 'Frecuencia',
     history: 'Historial de pagos',
   },

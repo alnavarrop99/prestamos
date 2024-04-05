@@ -1,7 +1,7 @@
 import { HttpResponse, http } from 'msw'
 import { getRolById } from "@/lib/type/rol"
-import { TUSER_LOGIN, TUSER_LOGIN_BODY, TUSER_GET, TUSER_POST_BODY } from '@/api/users'
-import { users, token } from './data'
+import type { TUSER_LOGIN, TUSER_LOGIN_BODY, TUSER_GET, TUSER_POST_BODY } from '@/api/users'
+import { users, token } from '@/mocks/data'
 
 const loginUser = http.post(import.meta.env.VITE_API + '/users/login', async ({ request }) => {
   const { username, password } =  Object.fromEntries( (await request.formData())?.entries() ) as TUSER_LOGIN_BODY

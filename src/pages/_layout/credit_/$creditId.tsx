@@ -5,7 +5,7 @@ import {
   createFileRoute,
   useNavigate,
 } from '@tanstack/react-router'
-import { type TCREDIT_GET, getCreditById } from '@/api/credit'
+import { type TCREDIT_GET, getCreditById, TCREDIT_GET_FILTER } from '@/api/credit'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -26,6 +26,8 @@ import { format } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { createContext } from 'react'
+import { TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
+import { _creditSelected, useCreditFilter } from '@/pages/_layout/credit'
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
   component: CreditById,
@@ -46,9 +48,10 @@ export function CreditById({
   open: _open,
   credit: _credit = {} as TCREDIT_GET,
 }: React.PropsWithChildren<TCreditByIdProps>) {
-  const creditDB = Route.useLoaderData() ?? _credit
+  const  creditDB = Route.useLoaderData() ?? _credit
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
+  const { creditFilter } = useCreditFilter() 
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
@@ -57,7 +60,13 @@ export function CreditById({
     setOpen({ open })
   }
 
-  const valor_de_cuota = creditDB?.cuotas?.at(-1)?.valor_de_cuota
+  const mora = creditDB?.cuotas?.at(-1)?.valor_de_mora
+  const moraType = getMoraTypeById({ moraTypeId: creditDB?.tipo_de_mora_id })?.nombre
+  const moraStatus = !!mora && mora > 0
+
+  const cuoteValue = creditDB?.cuotas?.at(-1)?.valor_de_cuota
+  const interestValue = (creditDB?.tasa_de_interes/100) * (cuoteValue ?? 1)
+  const moreValue = moraType === "Porciento" ? ((creditDB?.valor_de_mora + creditDB?.tasa_de_interes)/100 * (cuoteValue ?? 1)) : creditDB?.valor_de_mora
 
   return (
     <_selectedCredit.Provider value={[ creditDB ]}>
@@ -79,7 +88,6 @@ export function CreditById({
                   variant="default"
                   className={clsx('bg-green-500 hover:bg-green-700')}
                 >
-                  
                   <Pay />
                 </Button>
               </Link>
@@ -87,7 +95,6 @@ export function CreditById({
             <Link to={'./update'}>
               <Button variant="default"> {text.button.update} </Button>
             </Link>
-
             <DialogTrigger asChild>
               <Link to={'./delete'}>
                 <Button variant="default" className="hover:bg-destructive">
@@ -101,60 +108,52 @@ export function CreditById({
         </div>
         <Separator />
         <h2 className="text-2xl font-bold"> {text.details.title} </h2>
-        <div className="flex flex-col gap-2 px-2 [&>div]:flex [&>div]:gap-2">
-          <div>
+        <ul className="flex flex-col gap-2 px-2 [&>li]:space-x-2">
+          <li>
             <b>{text.details.status + ":"}</b>
             <Switch
               className={'cursor-not-allowed'}
               checked={!!creditDB?.estado}
             >
-              {creditDB?.estado}
             </Switch>
-          </div>
-          <div>
-            <b>{text.details.name + ":"}</b> { creditDB?.owner_id + "." }
-          </div>
-          <div>
-            <b>{text.details.amount + ":"}</b> {'$' + Math.round(creditDB?.monto) + '.'}
-          </div>
-          { valor_de_cuota && <div>
-            <b>{text.details.cuote + ":"}</b>
-            {'$' + Math.round(valor_de_cuota) + '.'}
-          </div>}
-          <div>
-            <b>{text.details.interest + ":"}</b> {Math.round(creditDB?.tasa_de_interes * 100) + '%'}
-          </div>
-          <div>
-            <b>{text.details.pay + ":"}</b>
-            {creditDB.pagos?.length + '/' + creditDB.numero_de_cuotas + '.'}
-          </div>
-          <div>
-            <b>{text.details.frecuency + ":"}</b>
-            {getFrecuencyById({ frecuencyId: creditDB?.frecuencia_del_credito_id })?.nombre  + '.'}
-          </div>
-          <div>
-            
-            <b>{text.details.date + ":"}</b>
-            {creditDB?.fecha_de_aprobacion
-              ? format(creditDB?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'
-              : null}
-          </div>
-          <div>
-            
-            <b>{text.details.comment + ":"}</b>
-            {creditDB?.comentario}
-          </div>
-          { creditDB?.valor_de_mora && <div>
-            
-            <b>{text.details.installmants + ":"}</b>
-            {'$' + Math.round(creditDB?.valor_de_mora) + '.'}
-          </div>}
-          <div>
-            
-            <b>{text.details.aditionalsDays + ":"}</b>
-            {creditDB?.dias_adicionales + '.'}
-          </div>
-        </div>
+          </li>
+          <li>
+            <b>{text.details.name + ":"}</b> <span>{ creditFilter?.nombre_del_cliente + "." }</span>
+          </li>
+          <li>
+            <b>{text.details.date + ":"}</b> <span>{ format(creditDB?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'}</span>
+          </li>
+          <li>
+            <b>{text.details.aditionalsDays + ":"}</b> <span>{creditDB?.dias_adicionales + '.'}</span>
+          </li>
+          <li>
+            <b>{text.details.amount + ":"}</b> <span>{'$' + creditDB?.monto + '.'}</span>
+          </li>
+          <li> 
+            <b>{text.details.cuote + ":"}</b> <span>{'$' + cuoteValue + '.'}</span>
+          </li>
+          <li>
+            <b>{text.details.cuoteNumber + ":"}</b> <span>{creditDB.pagos?.length + '/' + creditDB.numero_de_cuotas + '.'}</span>
+          </li>
+          <li>
+            <b>{text.details.frecuency + ":"}</b> <span>{getFrecuencyById({ frecuencyId: creditDB?.frecuencia_del_credito_id })?.nombre  + '.'}</span>
+          </li>
+          <li className={clsx({ "[&>b]:text-green-700": !moraStatus, "[&>b]:line-through": moraStatus })}>
+            <b>{text.details.interest + ":"}</b> <span>{creditDB?.tasa_de_interes + '% de $' + cuoteValue + "."}</span>
+          </li>
+          <li className={clsx({ "[&>b]:text-destructive": moraStatus, "[&>b]:line-through": !moraStatus })}>
+            <b>{text.details.installmants(moraType) + ":"}</b> 
+            { moraType === "Valor fijo" ?
+              <span >{'$' + moreValue + '.'}</span> :
+              <span>{creditDB?.valor_de_mora + "% de $" + ((cuoteValue ?? 0)) + '.'}</span> }
+          </li>
+          <li> 
+            <b>{text.details.pay + ":"}</b> <span>{'$' + ( (moraStatus ? ( (cuoteValue ?? 0) + moreValue ) : ( (cuoteValue ?? 0) + interestValue ))).toFixed(2) + '.'}</span>
+          </li>
+          <li>
+            <b>{text.details.comment + ":"}</b> <p>{creditDB?.comentario}</p>
+          </li>
+        </ul>
         <Separator />
         {!!creditDB?.cuotas?.length && !!creditDB?.pagos?.length && (
           <h2 className="text-2xl font-bold"> {text.cuotes.title} </h2>
@@ -173,36 +172,31 @@ export function CreditById({
               </TableRow>
             </TableHeader>
             <TableBody>
-              {creditDB?.pagos.map((payment, i) => (
-                <TableRow key={payment?.id}>
+              {creditDB?.cuotas.map(({id, fecha_de_pago, valor_pagado, valor_de_cuota, valor_de_mora, pagada, numero_de_cuota, fecha_de_aplicacion_de_mora}) => (
+                <TableRow key={id}>
                   <TableCell>
-                    <b>{creditDB?.cuotas?.[i]?.numero_de_cuota}</b>
+                    <p><b>{numero_de_cuota}</b></p>
                   </TableCell>
                   <TableCell>
-                    {payment?.fecha_de_pago
-                      ? format(payment?.fecha_de_pago, 'MM-dd-yyyy')
-                      : null}
+                    <p>{format(fecha_de_pago, 'MM-dd-yyyy')}</p>
                   </TableCell>
                   <TableCell>
-                    <b>$</b>
-                    {Math.round(payment?.valor_del_pago)}
+                    <p><b>$</b>
+                    {valor_pagado?.toFixed(2)}</p>
                   </TableCell>
                   <TableCell>
-                    <b>$</b>
-                    {Math.round(creditDB?.cuotas?.[i]?.valor_de_cuota ?? 0)}
+                    <p><b>$</b>
+                    {valor_de_cuota?.toFixed(2)}</p>
                   </TableCell>
                   <TableCell>
-                    {creditDB?.cuotas?.[i]?.fecha_de_aplicacion_de_mora
-                      ? format(creditDB?.cuotas?.[i]?.fecha_de_aplicacion_de_mora ?? "", 'MM-dd-yyyy')
-                      : null}
+                    <p>{ valor_de_mora > 0 ? format(fecha_de_aplicacion_de_mora ?? "", 'MM-dd-yyyy') : "-"}</p>
                   </TableCell>
                   <TableCell>
-                    <b>$</b>
-                    {creditDB?.cuotas?.[i]?.valor_de_mora ? Math.round(creditDB?.cuotas?.[i]?.valor_de_mora ?? 0) : "-"}
+                    <p>{valor_de_mora > 0 ? <><b>$</b> {valor_de_mora?.toFixed(2) }</> : "-"}</p>
                   </TableCell>
                   <TableCell>
                     <Switch
-                      checked={creditDB?.cuotas?.[i]?.pagada}
+                      checked={pagada}
                       className={'cursor-not-allowed'}
                     ></Switch>
                   </TableCell>
@@ -212,7 +206,7 @@ export function CreditById({
             <TableFooter>
               <TableRow>
                 <TableCell colSpan={5} className="font-bold">
-                  {text.cuotes.total}:
+                  <p>{text.cuotes.total + ":"}</p>
                 </TableCell>
                 <TableCell colSpan={2} className="text-right">
                   <GetPay credit={creditDB} />
@@ -232,15 +226,15 @@ function GetPay({ credit }: { credit: TCREDIT_GET }) {
   if (!credit.cuotas || !credit.pagos) return;
 
   return (
-    <>
+    <p>
       <b>$</b>
-      {Math.round(credit.cuotas
-        .map((pay) => pay?.valor_pagado)
-        .reduce((prev, acc) => (acc += prev)))}
+      {credit.pagos
+        .map(({ valor_del_pago }) => valor_del_pago)
+        .reduce((prev, acc) => (acc += prev))?.toFixed(2)}
       <b>&#8193;/&#8193;</b>
       <b>$</b>
-      {Math.round(credit?.monto)}
-    </>
+      {credit?.monto}
+    </p>
   )
 }
 
@@ -255,9 +249,10 @@ const text = {
     name: 'Nombre del cliente',
     amount: 'Monto total',
     interest: 'Tasa de interes',
-    pay: 'Pagos realizados',
-    cuote: 'Monta cuota',
-    installmants: 'Monta mora',
+    cuoteNumber: 'Numero de cuotas',
+    cuote: 'Monto por cuota',
+    pay: 'Monto a pagar',
+    installmants: ( type: TMORA_TYPE ) => type === "Valor fijo" ? 'Monta por mora' : "Tasa por mora",
     frecuency: 'Frecuencia del credito',
     status: 'Estado',
     date: 'Fecha de aprobacion',

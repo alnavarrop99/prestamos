@@ -18,7 +18,7 @@ export type TCLIENT_GET_BASE =  {
   direccion: string
   comentarios: string
   estado: number
-  referencia_id?: number
+  referencia_id?: number | null
   id?: number
   owner_id?: number
 }
@@ -36,7 +36,7 @@ export type TCLIENT_GET = {
   estado: number
   id: number
   owner: TOWNER
-  referencia_id?: number
+  referencia_id?: number | null
 }
 
 export type TCLIENT_GET_ALL = TCLIENT_GET_BASE[]
@@ -129,7 +129,7 @@ export const postClient: TPostClient =  async ( params ) => {
     headers
   })
 
-  return res.json()
+  return await res.json()
 }
 
 export const deleteClientsById: TDeleteClientById =  async ( { clientId } ) => {

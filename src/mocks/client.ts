@@ -1,7 +1,7 @@
 import { HttpResponse, http } from 'msw'
-import { type TCLIENT_POST_BODY, type TCLIENT_GET_ALL, TCLIENT_GET, TCLIENT_POST, TCLIENT_PATCH_BODY, TCLIENT_PATCH, TCLIENT_DELETE } from '@/api/clients'
-import { clients, token, users } from './data'
-import { TROLES, getRolById, getRolByName } from '@/lib/type/rol'
+import type {  TCLIENT_POST_BODY,  TCLIENT_GET_ALL, TCLIENT_GET, TCLIENT_POST, TCLIENT_PATCH_BODY, TCLIENT_PATCH, TCLIENT_DELETE } from '@/api/clients'
+import { clients, token, users } from '@/mocks/data'
+import { TROLES, getRolByName } from '@/lib/type/rol'
 
 const allClients = http.all(import.meta.env.VITE_API + '/clientes/list', async ({request}) => {
   const auth = request.headers.get("Authorization")

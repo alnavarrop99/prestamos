@@ -4,27 +4,23 @@ import _clients from '@/mocks/__mock__/CLIENTS.json'
 import _cuotes from "@/mocks/__mock__/CUOTES.json"
 import _mora from '@/mocks/__mock__/MORA.json'
 import _reports from '@/mocks/__mock__/REPORT.json'
-import { listRols } from '@/lib/type/rol';
-import { faker } from "@faker-js/faker/locale/en"
 import type { TUSER_GET } from '@/api/users';
 import type { TCLIENT_GET_BASE } from '@/api/clients';
+import type { TCREDIT_GET, TCUOTE } from '@/api/credit';
+import type { TREPORT_GET } from '@/api/report';
 import { listStatus } from '@/lib/type/status';
 import { listIds } from '@/lib/type/id';
+import { listMoraTypes } from '@/lib/type/moraType';
+import { listFrecuencys } from '@/lib/type/frecuency';
+import { listRols } from '@/lib/type/rol';
+import { formatISO } from 'date-fns';
+import { faker } from "@faker-js/faker/locale/en"
+import { TPAYMENT_GET_BASE } from '@/api/payment';
 
 const CLIENTS_LENGTH = 100
 const USERS_LENGTH = 10
-
-export type TCREDIT_DB = typeof _credits[0]
-export type TCUOTE_DB = {
-  mora: boolean;
-  id: number;
-  fecha_de_pago: string;
-  fecha_de_aplicacion_de_mora: string;
-  pago_id: number
-}
-export type TMORA_DB = typeof _mora[0]
-export type TPAYMENT_DB = typeof _payments[0]
-export type TREPORT_DB = typeof _reports[0]
+const CREDITS_LENGTH = 200
+const REPORTS_LENGTH = 5
 
 export const users = new Map<number, TUSER_GET>( Array.from({ length: USERS_LENGTH })?.map<[number, TUSER_GET]>( (_, index) => {
   const id = index + 1
@@ -34,7 +30,7 @@ export const users = new Map<number, TUSER_GET>( Array.from({ length: USERS_LENG
     nombre: faker.person.fullName(),
     clientes: []
   }])
-} ) )
+}))
 
 export const clients = new Map<number, TCLIENT_GET_BASE>( Array.from({ length: CLIENTS_LENGTH })?.map<[number, TCLIENT_GET_BASE]>( (_, index) => {
   const id = index + 1
@@ -58,17 +54,100 @@ export const clients = new Map<number, TCLIENT_GET_BASE>( Array.from({ length: C
   }])
 }))
 
-export const credits = new Map<number, TCREDIT_DB>( _credits?.map<[number,TCREDIT_DB]>( ( { id }, i, list ) => [ id, list?.[i] ] ))
-export const cuotes = new Map<number, TCUOTE_DB>( _cuotes?.map( ({ id }, i, list) => [ id, { ...list?.[i], mora: !!list?.[i]?.mora }  ]))
-export const moras = new Map<number, TMORA_DB>( _mora?.map( ({ id }, i, list) => [ id, list?.[i] ]))
-export const payments = new Map<number, TPAYMENT_DB & { credit_id: number }>( _credits?.map<[number,TPAYMENT_DB & { credit_id: number }]>( ( { id, cuotas: { id: cuoteId } } ) => {
-  const cuote = _cuotes?.find( ({ id }) => (id === cuoteId) ) ?? {} as TCUOTE_DB
-  const { pago_id } = cuote
-  const payment = _payments?.find( ({ id }) => id === pago_id ) ?? {} as TPAYMENT_DB
-  return [payment?.id ?? 0, { ...payment, credit_id: id }]
+export const credits = new Map<number, TCREDIT_GET>(  Array.from({ length: CREDITS_LENGTH })?.map<[number, TCREDIT_GET]>( (_, index) => {
+  const id = index + 1
+  const mora = faker.helpers.arrayElement( listMoraTypes() )
+  const moraPorcent = faker.number.float({ min: 1, max: 100, multipleOf: 0.25,  })
+  const moraValue = faker.number.float({ min: 50, max: 200, multipleOf: 5.25,  }) 
+  const frecuency = faker.helpers.arrayElement( listFrecuencys() )
+  const ammount = faker.number.float({ min: 500, max: 5000, multipleOf: 5.25,  })
+  const aprobeDate = faker.date.between({ from: new Date("2020-01-01"), to: new Date() })
+  const aditionalDays = faker.number.int(10)
+  const interest = faker.number.float({ min: 0, max: 30, multipleOf: 0.25,  })
+  const user = faker.helpers.arrayElement( [...users.values()] )
+  const cuotesLength = faker.number.int(12)
+  const paymentsLength = faker.number.int( Math.abs( cuotesLength - faker.number.int(12) ) )
+  const cuotes = new Map<number, TCUOTE>( Array.from({ length: cuotesLength })?.map<[ number, TCUOTE ]>( (_, index) => {
+    const _id = (id + index) + 1
+    const payDate = faker.date.soon({ refDate: aprobeDate, days: index + 1  + index + 1 * faker.number.int(index + 1) })
+    const moraDate = new Date(payDate)
+    moraDate.setDate( payDate.getDate() + aditionalDays )
+    const cuoteAmmount = Math.ceil( ammount / cuotesLength )
+    const payMora = faker.helpers.maybe( () => mora.nombre === "Valor fijo" ? moraValue : cuoteAmmount + cuoteAmmount * moraPorcent/100, { probability: 0.4 } )  
+    const pay = cuoteAmmount + cuoteAmmount * interest/100 + (index < paymentsLength && !!payMora ? payMora : 0)
+    return ([index + 1, {
+      id: index + 1,
+      numero_de_cuota: _id,
+      credito_id: id,
+      fecha_de_pago: formatISO(payDate),
+      valor_de_cuota: cuoteAmmount,
+      valor_pagado: pay,
+      fecha_de_aplicacion_de_mora: formatISO(moraDate),
+      valor_de_mora: !!payMora && index < paymentsLength ? payMora : 0,
+      pagada: index <= paymentsLength  ? true : false,
+  }])}))
+  const payments = new Map<number, TPAYMENT_GET_BASE>( [...cuotes?.values()]?.map<[number, TPAYMENT_GET_BASE]>( ({ id: paymentId, fecha_de_pago, valor_pagado, pagada }) =>{
+    const _id = (id + paymentId) + 1
+    if( !pagada ) return ([paymentId, {
+      id: _id,
+      fecha_de_pago,
+      comentario: "",
+      credito_id: id,
+      valor_del_pago: valor_pagado,
+      registrado_por_usuario_id: user?.id
+    }]);
+    return ([paymentId, {
+      id: _id,
+      fecha_de_pago,
+      comentario: faker.lorem.text(),
+      credito_id: id,
+      valor_del_pago: valor_pagado,
+      registrado_por_usuario_id: user?.id
+    }])
+  })
+  )
+
+  return ([id, {
+    fecha_de_aprobacion: formatISO(aprobeDate),
+    id,
+    owner_id: faker.helpers.arrayElement( [...clients?.values()] )?.id ?? 1,
+    monto: ammount,
+    estado: faker.helpers?.arrayElement( listStatus() )?.id,
+    comentario: faker.lorem.text(),
+    cobrador_id: faker.helpers.arrayElement( [...users?.values()] )?.id,
+    garante_id: faker.helpers.maybe( () => faker.helpers.arrayElement( [...clients?.values()] )?.id , { probability: 0.6 } ) ?? null,
+    tipo_de_mora_id: mora?.id,
+    valor_de_mora: mora.nombre === "Valor fijo" ? moraValue  : moraPorcent ,
+    tasa_de_interes: interest,
+    dias_adicionales: aditionalDays,
+    numero_de_cuotas: cuotesLength,
+    frecuencia_del_credito_id: frecuency?.id,
+    cuotas: [...cuotes?.values()],
+    tipo_de_mora: mora,
+    frecuencia_del_credito: frecuency,
+    pagos: [...payments?.values()],
+  }])
 }))
 
 
+export const reports = new Map<number, TREPORT_GET>( Array.from({ length: REPORTS_LENGTH })?.map<[number, TREPORT_GET]>( (_, index) => {
+  const id = index + 1
+  return ([id, {
+    id,
+    codigo: faker.hacker.abbreviation(),
+    nombre: faker.hacker.adjective(),
+    comentario: faker.lorem.text(),
+    parametros: Array.from( { length: faker.number.int(4) } )?.map( (_, index) => ({
+      nombre: faker.hacker.verb(),
+      codigo: faker.hacker.abbreviation(),
+      id: index + 1,
+      tipo_dato: faker.helpers.arrayElement([ "number", "str", "date", "like" ]),
+      obligatorio: faker.datatype.boolean(0.7),
+    }))
+  }])
+}))
 
-export const reports = new Map<number, TREPORT_DB>( _reports?.map( ( { id }, i, list ) => [ id, (list?.[i]) ] ) )
+const paymentList = [...credits?.values()]?.map<TPAYMENT_GET_BASE[]>( ({ pagos }) => (pagos) ).flat() as TPAYMENT_GET_BASE[]
+export const payments = new Map<number, TPAYMENT_GET_BASE>( paymentList?.map<[number, TPAYMENT_GET_BASE]>( ({ id }, i, list) => ([id ?? i + 1, list?.[i]]) ) )
+
 export const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJhZG1pbiIsImV4cCI6MTcyNDM4MTMxMn0.p3uaAzSYneGPMwcBbpqIutNGnwMyiyDSBae5TW3X4Es"

@@ -1,6 +1,6 @@
 import { HttpResponse, http } from 'msw'
 import type { TREPORT_GET, TREPORT_GET_ALL, TREPORT_PARAMS_DATE_TYPE, TREPORT_POST } from '@/api/report'
-import { reports, token } from './data'
+import { reports, token } from '@/mocks/data'
 
 const allReports = http.all(import.meta.env.VITE_API + '/reportes/list', async ({request}) => {
   const auth = request.headers.get("Authorization")
