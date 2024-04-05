@@ -218,7 +218,8 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               <Label>
                 <span>{text.form.details.clients.label}</span>
                 <Input
-                  required
+                  className='!opacity-100'
+                  disabled
                   name={'client' as TFormName}
                   type="text"
                   placeholder={text.form.details.clients.placeholder}
