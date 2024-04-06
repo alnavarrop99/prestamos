@@ -454,15 +454,10 @@ export function Layout({
       </main>
       <footer className="py-4">
         <Separator className="my-4" />
-        <div className="flex justify-between">
-          <h3>
-            <span>{text.footer.description}</span>
-          </h3>
-          <h3>
+          <h3 className='ms-auto w-fit space-x-2'>
             <span className="italic">{text.footer.copyright}</span>
             <Badge> &copy; {new Date().getFullYear()} </Badge>
           </h3>
-        </div>
       </footer>
     </div>
   )
