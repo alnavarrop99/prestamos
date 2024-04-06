@@ -1,0 +1,26 @@
+{
+  "id": 4,
+  "nombre": "Tipo de crédito",
+  "enumeradores": [
+    {
+      "id": 11,
+      "tipo_enumerador_id": 4,
+      "nombre": "Diario"
+    },
+    {
+      "id": 12,
+      "tipo_enumerador_id": 4,
+      "nombre": "Semanal"
+    },
+    {
+      "id": 13,
+      "tipo_enumerador_id": 4,
+      "nombre": "Quincenal"
+    },
+    {
+      "id": 14,
+      "tipo_enumerador_id": 4,
+      "nombre": "Mensual"
+    }
+  ]
+}

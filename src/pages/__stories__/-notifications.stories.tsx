@@ -1,0 +1,53 @@
+import type { Meta, StoryFn, StoryObj } from '@storybook/react'
+import $ from '@/lib/render'
+import { Layout } from '@/pages/_layout'
+import notifications from '@/__mock__/NOTIFICATION.json'
+import { Notifications, ActionIcon } from '@/pages/_layout/notification'
+import { TNotification } from '@/lib/context/notification'
+import { Theme } from '@/components/theme-provider'
+import { getClients } from '@/api/clients'
+import { getUserId } from '@/api/users'
+
+function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
+  return (
+    <Layout theme={context.globals.theme} clients={getClients()} user={getUserId({ userId: 4 })}>
+      <Story />
+    </Layout>
+  )
+}
+
+function _Router(Story: StoryFn) {
+  return $.customRenderStorie(() => <Story />)
+}
+
+const meta: Meta<React.ComponentProps<typeof Notifications>> = {
+  title: '@pages/notifications',
+  component: Notifications,
+}
+export default meta
+
+export const _Notifications: StoryObj<
+  React.ComponentProps<typeof Notifications>
+> = {
+  name: '/notifications',
+  args: {
+    notifications: notifications as TNotification[],
+  },
+  decorators: [_Layout, _Router],
+}
+
+export const _ActionIcon: StoryObj<React.ComponentProps<typeof ActionIcon>> = {
+  name: 'aiction-icon',
+  render: ActionIcon,
+  args: {
+    action: 'POST',
+  },
+  argTypes: {
+    action: {
+      type: {
+        name: 'enum',
+        value: ['POST', 'PATH', 'DELETE'],
+      },
+    },
+  },
+}

@@ -1,0 +1,14 @@
+# Ignore artifacts:
+build
+coverage
+.husky
+**/.gitkeep
+src/assets/*.svg
+
+
+# Ignore all HTML files:
+**/*.html
+
+pnpm-lock.yaml
+.gitignore
+.prettierignore

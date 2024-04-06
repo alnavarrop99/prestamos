@@ -1,0 +1,144 @@
+[
+  {
+    "id": 1,
+    "codigo": "001",
+    "nombre": "Listado de prestamos",
+    "comentario": "Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.",
+    "parametros": [
+      {
+        "id": 1,
+        "codigo": "001",
+        "nombre": "Desde",
+        "tipo_dato": "fecha"
+      },
+      {
+        "id": 2,
+        "codigo": "002",
+        "nombre": "Hasta",
+        "tipo_dato": "fecha"
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "codigo": "002",
+    "nombre": "Listado de prestamos por cliente",
+    "comentario": "Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.",
+    "parametros": [
+      {
+        "id": 1,
+        "codigo": "001",
+        "nombre": "Cliente",
+        "tipo_dato": "like"
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "codigo": "003",
+    "nombre": "Listado de prestamos en mora",
+    "comentario": "Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.",
+    "parametros": [
+      {
+        "id": 1,
+        "codigo": "001",
+        "nombre": "Desde",
+        "tipo_dato": "fecha"
+      },
+      {
+        "id": 2,
+        "codigo": "002",
+        "nombre": "Hasta",
+        "tipo_dato": "fecha"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "codigo": "004",
+    "nombre": "Listado de prestamos por cantidad",
+    "comentario": "Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.",
+    "parametros": [
+      {
+        "id": 1,
+        "codigo": "001",
+        "nombre": "Mayor",
+        "tipo_dato": "numero"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "codigo": "005",
+    "nombre": "Listado de prestamos activos",
+    "comentario": "Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.",
+    "parametros": [
+      {
+        "id": 1,
+        "codigo": "001",
+        "nombre": "Desde",
+        "tipo_dato": "fecha"
+      },
+      {
+        "id": 2,
+        "codigo": "002",
+        "nombre": "Hasta",
+        "tipo_dato": "fecha"
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "codigo": "006",
+    "nombre": "Listado de clientes",
+    "comentario": "Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.",
+    "parametros": [
+      {
+        "id": 1,
+        "codigo": "001",
+        "nombre": "Desde",
+        "tipo_dato": "fecha"
+      },
+      {
+        "id": 2,
+        "codigo": "002",
+        "nombre": "Hasta",
+        "tipo_dato": "fecha"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "codigo": "007",
+    "nombre": "Listado de clientes en mora",
+    "comentario": "Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.",
+    "parametros": [
+      {
+        "id": 1,
+        "codigo": "001",
+        "nombre": "Desde",
+        "tipo_dato": "fecha"
+      },
+      {
+        "id": 2,
+        "codigo": "002",
+        "nombre": "Hasta",
+        "tipo_dato": "fecha"
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "codigo": "008",
+    "nombre": "Listado de usuarios",
+    "comentario": "Lorem ipsum dolor sit amet, qui minim labore adipisicing minim sint cillum sint consectetur cupidatat.",
+    "parametros": [
+      {
+        "id": 1,
+        "codigo": "001",
+        "nombre": "Rol",
+        "tipo_dato": "texto"
+      }
+    ]
+  }
+]

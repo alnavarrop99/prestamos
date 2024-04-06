@@ -1,0 +1,41 @@
+{
+  "id": 5,
+  "nombre": "Método de pago",
+  "enumeradores": [
+    {
+      "id": 15,
+      "tipo_enumerador_id": 5,
+      "nombre": "Efectivo"
+    },
+    {
+      "id": 16,
+      "tipo_enumerador_id": 5,
+      "nombre": "Transferencia"
+    },
+    {
+      "id": 17,
+      "tipo_enumerador_id": 5,
+      "nombre": "Cheque"
+    },
+    {
+      "id": 18,
+      "tipo_enumerador_id": 5,
+      "nombre": "Item"
+    },
+    {
+      "id": 19,
+      "tipo_enumerador_id": 5,
+      "nombre": "Tarjeta de débito"
+    },
+    {
+      "id": 20,
+      "tipo_enumerador_id": 5,
+      "nombre": "Tarjeta de crédito"
+    },
+    {
+      "id": 21,
+      "tipo_enumerador_id": 5,
+      "nombre": "Otros"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "id": 6,
+  "nombre": "Tipo de mora",
+  "enumeradores": [
+    {
+      "id": 22,
+      "tipo_enumerador_id": 6,
+      "nombre": "Valor fijo"
+    },
+    {
+      "id": 23,
+      "tipo_enumerador_id": 6,
+      "nombre": "Porciento"
+    }
+  ]
+}
