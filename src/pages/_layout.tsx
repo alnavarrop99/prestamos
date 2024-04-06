@@ -54,6 +54,7 @@ import { useToken } from '@/lib/context/login'
 import { useIsFetching, useIsMutating, useQuery } from '@tanstack/react-query'
 import { SpinLoader } from '@/components/ui/loader'
 import brand from "@/assets/menu-brand.avif"
+import brandOff from "@/assets/menu-off-brand.avif"
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
@@ -216,7 +217,7 @@ export function Layout({
         )}
       >
         <Link to={"/"}>
-          <img alt='brand' src={brand} className='my-4' />
+          <img alt='brand' src={ !open ? brand : brandOff} className='my-4 min-h-32' />
         </Link>
         <Separator className="my-4" />
         <div className="p-4 px-6 text-xl">
