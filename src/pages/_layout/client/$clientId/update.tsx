@@ -144,7 +144,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
 
   return (
     <>
-    { !open && <Navigate to={"../../"} /> }
+    { !open && <Navigate to={"../../"} replace /> }
     <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">

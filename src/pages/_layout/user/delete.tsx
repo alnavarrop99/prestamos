@@ -77,7 +77,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
 
   return (
     <>
-    {!open && <Navigate to={"../"} />}
+    {!open && <Navigate to={"../"} replace />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>

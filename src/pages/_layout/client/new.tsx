@@ -132,7 +132,7 @@ export function NewClient() {
 
   return (
     <>
-    { !open && <Navigate to={"../"} /> }
+    { !open && <Navigate to={"../"} replace /> }
     <DialogContent className="max-w-2xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
