@@ -19,6 +19,7 @@ import { _creditSelected } from "@/pages/_layout/credit";
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { useMutation } from '@tanstack/react-query'
+import { formatISO } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit/pay')({
   component: PaySelectedCredit,
@@ -30,7 +31,7 @@ interface TPaySelectedCreditProps {
 }
 
 /* eslint-disable-next-line */
-type TFormName = keyof TPAYMENT_POST_BODY
+type TFormName = keyof Omit<TPAYMENT_POST_BODY, "credito_id">
 
 /* eslint-disable-next-line */
 export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPaySelectedCreditProps ) {
@@ -52,8 +53,10 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
     if (!form.current) return
 
     const items = Object.fromEntries(
-      new FormData(form.current).entries()
-    ) as Record<TFormName, string>
+      [...new FormData(form.current).entries()]?.map( ([ key, value ]) => {
+      if( value === "" ) return [ key, undefined ]
+      return [ key, value ]
+    })) as Record<TFormName, string>
 
     const description = text.notification.decription({
       username: credit.nombre_del_cliente,
@@ -63,13 +66,11 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
     const action =
       ({ ...items }: Record<TFormName, string>) =>
       () => {
-      console.table(items)
-      console.table(credit)
       createPayment({
           valor_del_pago: +items?.valor_del_pago,
-          comentario: items?.comentario,
+          comentario: items?.comentario ?? "",
           credito_id: credit?.id,
-          fecha_de_pago: items?.fecha_de_pago
+          fecha_de_pago: formatISO(items?.fecha_de_pago ?? new Date())
       })
       pushNotification({
           date: new Date(),
@@ -126,10 +127,10 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
           <Input
             required
             min={0}
-            step={50}
             name={'valor_del_pago' as TFormName}
             type="number"
             placeholder={text.form.amount.placeholder}
+              defaultValue={ credit?.valor_de_cuota }
           />
         </Label>
         <Label className='!col-span-1'>

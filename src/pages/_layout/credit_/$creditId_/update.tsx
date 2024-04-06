@@ -21,9 +21,9 @@ import { format } from 'date-fns'
 import { TMORA_TYPE, getMoraTypeById, getMoraTypeByName } from '@/lib/type/moraType'
 import { TPAYMENT_GET, TPAYMENT_GET_BASE } from '@/api/payment'
 import { listFrecuencys } from '@/lib/type/frecuency'
-import { getClientsList } from '@/api/clients'
+import { TCLIENT_GET_BASE, getClientsList } from '@/api/clients'
 import { getUsersList } from '@/api/users'
-import { X as Close } from 'lucide-react'
+import { X as Close, Cross } from 'lucide-react'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,
@@ -50,7 +50,8 @@ interface TCuotesState {
 type TFormName = keyof (Omit<TCREDIT_PATCH_BODY, "cobrador_id" | "owner_id" | "garante_id" | "tipo_de_mora_id"> & Record<"user" | "client" | "ref" | "tipo_de_mora", string>)
 
 export const _creditChangeContext = createContext<[TCREDIT_GET] | undefined>(undefined)
-export const _paymentDeleteContext = createContext<[number[], ( list: number[] ) => void ] | undefined >(undefined)
+export const _paymentDeleteContext = createContext<[ { [k: number]: number | undefined }, (( params: { [k: number]: number | undefined } ) => void) ] | undefined  >(undefined)
+export const _clientContext = createContext<[ TCLIENT_GET_BASE ] | undefined >(undefined)
 
 /* eslint-disable-next-line */
 export function UpdateCreditById( { children, open: _open, credit: _credit = {} as TCREDIT_GET }: React.PropsWithChildren<TUpdateCreditProps> ) {
@@ -59,12 +60,12 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
   const [ installmants, setInstallmants ] = useState< TCuotesState>( { type: getMoraTypeById({ moraTypeId: credit?.tipo_de_mora_id })?.nombre } )
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
-  const [ form, setForm ] = useState( (credit?.pagos ?? []).map( () => ({ form: useRef<HTMLFormElement>(null), visilble: true } )) )
-  const [ paymentDelete, setPaymentDelete ] = useState<number[]>([])
+  const form =  (credit?.pagos ?? []).map( () => (useRef<HTMLFormElement>(null)))
+  const [ paymentDelete, setPaymentDelete ] = useState<{ [k: number]: number | undefined } | undefined>(undefined)
 
   const active = useMemo(() =>
-    Object.values(credit).flat().every( ( value, i ) => value === Object.values(creditChange).flat()?.[i]
-  ), [ creditChange ])
+    Object.values(credit).flat().every( ( value, i ) => value === Object.values(creditChange).flat()?.[i] 
+  ) || !Object.values( paymentDelete ?? {} )?.length, [ creditChange, paymentDelete ])
 
   const { client, user, ref } = useMemo( () => {
     const client = clients?.find( ({ id }) => ( id === credit?.owner_id ) )
@@ -139,14 +140,14 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
   }
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
-    const formList = form?.filter( ({ form: item })  => item.current )
+    const formList = form?.filter( ( item )  => item.current )
 
-    if( form.every( ({ form: item }) => !item.current ) ) {
+    if( form.every( (item) => !item.current ) ) {
       setOpen({ open: !open })
       navigate({ to: "./confirm" })
     }
 
-    for (const { form: { current: form } } of formList.reverse()) {
+    for (const  { current: form } of formList.reverse()) {
       form?.requestSubmit()
     }
 
@@ -154,7 +155,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
   }
 
   const onCuoteSubmit: ( index: number ) => React.FormEventHandler<HTMLFormElement> = ( index ) => (ev) => {
-    const activeForms = form?.map( ( { form: { current } }, id ) => ({ id, current  }) )?.filter( ({ current }) => current )
+    const activeForms = form?.map( (  { current },id ) => ({ id, current  }) )?.filter( ({ current }) => current )
 
     if( index === Math.max( ...activeForms.map( ({ id }) => id ) ) && activeForms?.every( ( { current } ) => current?.checkValidity() ) ) {
       setOpen({ open: !open })
@@ -167,19 +168,21 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
   const onDeletePaymentById: ( index: number ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = (index) => (ev) => {
     ev.stopPropagation()
 
+    if( !!paymentDelete?.[index] ){
+      setPaymentDelete( {  ...paymentDelete , [ index ]: undefined } )
+      return;
+    }
+
     const payId = creditChange?.pagos?.[index]?.id
     if(!payId) return;
 
-    setPaymentDelete( [ ...paymentDelete, payId ] )
-    setForm(form?.map( (_, i, list) => {
-      if( i !== index ) return list?.[i]
-      return ({ ...list?.[i] , visilble: false })
-    } ))
+    setPaymentDelete( { ...paymentDelete , [ index ]: payId} )
   }
 
   return (
     <_creditChangeContext.Provider value={[creditChange]}>
-    <_paymentDeleteContext.Provider value={[paymentDelete, setPaymentDelete]}>
+    <_paymentDeleteContext.Provider value={[paymentDelete ?? {}, setPaymentDelete]}>
+    <_clientContext.Provider value={[ client ?? {} as TCLIENT_GET_BASE ]}>
       <Navigate to={Route.to} />
       <div className='space-y-4'>
         <div className='flex gap-2'>
@@ -378,17 +381,23 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                 <AccordionItem
                   key={index}
                   value={"" + index}
-                  className={clsx('group/item', { "hidden": !form?.[index]?.visilble })}
+                  className='group/item'
                 >
                   <AccordionTrigger
                     className={clsx("gap-4 !no-underline [&>span]:italic before:not-italic before:font-bold before:content-['_+_'] [&[data-state='open']]:before:content-['_-_'] "
                   )} >
-                    <div className='flex w-full gap-4'>
-                      <span>{format(payment?.fecha_de_pago, "dd-MM-yyyy")}</span>
-                      <Button onClick={onDeletePaymentById( index )} variant={"outline"} className='invisible opacity-0 group-hover/item:visible group-hover/item:opacity-100 transition delay-150 duration-300 p-1 w-6 h-6 rounded-full [&>svg]:stroke-destructive hover:bg-destructive group/button'>
-                        <Close className='group-hover/button:stroke-white' />
+                      <span className={clsx('decoration-destructive decoration-4', { "line-through": paymentDelete?.[index] })}>{format(payment?.fecha_de_pago, "dd-MM-yyyy")}</span>
+                      <Button onClick={onDeletePaymentById( index )} variant={"outline"}
+                          className={clsx('ms-auto invisible opacity-0 group-hover/item:visible group-hover/item:opacity-100 transition delay-150 duration-300 p-1 w-6 h-6 rounded-full group/button',
+                            {
+                              "hover:bg-destructive": !paymentDelete?.[index],
+                              "hover:bg-green-500": paymentDelete?.[index] 
+                            } )}>
+                          <Cross className={clsx('group-hover/button:stroke-white transition delay-150 duration-500', {
+                            "stroke-destructive stroke-destructive rotate-45": !paymentDelete?.[index],
+                            "stroke-green-500": paymentDelete?.[index]
+                      })} /> 
                       </Button>
-                    </div>
                   </AccordionTrigger>
                   <AccordionContent asChild >
                     <form
@@ -396,11 +405,12 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                       id={ 'edit-pay-' + index }
                       onChange={onChangePaymentById( index )}
                       onSubmit={onCuoteSubmit( index )}
-                      ref={form?.[index]?.form}
+                      ref={form?.[index]}
                     >
                     <Label>
                       <span>{text.form.pay.payDate.label}</span>
                       <DatePicker
+                        disabled={!!paymentDelete?.[index]}
                         name={"fecha_de_pago" as keyof TPAYMENT_GET}
                         date={new Date(payment?.fecha_de_pago)}
                         label={text.form.pay.payDate.placeholder} 
@@ -413,6 +423,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                         <Badge>$</Badge>
                       </div>
                       <Input 
+                        disabled={!!paymentDelete?.[index]}
                         type='number'
                         min={0}
                         step={50}
@@ -423,6 +434,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                     </Label>
                     <Label> <span>{text.form.pay.comment.label}</span>
                       <Textarea
+                        disabled={!!paymentDelete?.[index]}
                         name={"fecha_de_pago" as keyof TPAYMENT_GET}
                         rows={3}
                         placeholder={text.form.pay.comment.placeholder}
@@ -438,6 +450,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
           </CardContent>
         </Card>}
       </div>
+    </_clientContext.Provider>
     </_paymentDeleteContext.Provider>
     </_creditChangeContext.Provider>
   )

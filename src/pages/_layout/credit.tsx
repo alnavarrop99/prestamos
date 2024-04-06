@@ -25,7 +25,6 @@ import { format, isValid } from 'date-fns'
 import styles from "@/styles/global.module.css";
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { getClientById } from '@/api/clients'
-import { create } from 'zustand'
 
 export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
@@ -57,9 +56,6 @@ interface TCreditsProps {
 }
 
 export const _creditSelected = createContext<TCREDIT_GET_FILTER | undefined>(undefined)
-export const useCreditFilter = create<{ creditFilter?: TCREDIT_GET_FILTER, setCreditFilter: ( creditFilter: TCREDIT_GET_FILTER ) => void }>()( (set) => ({
-  setCreditFilter: ( creditFilter ) => set( () => ({creditFilter}) )
-}) )
 
 /* eslint-disable-next-line */
 export function Credits({
@@ -71,7 +67,6 @@ export function Credits({
   const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
-  const { setCreditFilter } = useCreditFilter()
 
   const onClick: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Button>> = (index) => () => {
     if(!creditsDB || !creditsDB?.[index]) return;
@@ -81,7 +76,6 @@ export function Credits({
 
   const onLink: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Link>> = (index) => () => {
     if(!creditsDB || !creditsDB?.[index]) return;
-    setCreditFilter(creditsDB?.[index])
   }
 
   const onOpenChange = (open: boolean) => {
