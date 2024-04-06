@@ -111,6 +111,10 @@ export function Clients({
     )
   }, [JSON.stringify(clients)])
 
+  useEffect( () => {
+    document.title = import.meta.env.VITE_NAME + " | " + text.browser
+  }, [] )
+
   const table = useReactTable({
     data,
     columns,
@@ -371,6 +375,7 @@ const getMenuItem = (name: TMenuItems) => {
 
 const text = {
   title: 'Clientes:',
+  browser: 'Clientes',
   search: {
     404: 'No se encontraron resultados',
     selected: ({ selected, total }: { selected: number; total: number }) =>

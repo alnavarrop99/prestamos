@@ -14,7 +14,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { useMutation } from '@tanstack/react-query'
 
 
@@ -36,6 +36,10 @@ export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportPro
     mutationKey: ["post-reports-by-id"],
     mutationFn: postReportById
   })
+
+  useEffect( () => {
+    document.title = import.meta.env.VITE_NAME + " | " + text.browser
+  }, [] )
 
   const onSubmit: (  index: number  ) => React.FormEventHandler = ( index ) => (ev) =>  {
     if (!form?.[index]) return;
@@ -134,7 +138,8 @@ function FormElement({
 Report.dispalyname = 'Report'
 
 const text = {
-  title: 'Reportajes:',
+  title: 'Reportes:',
+  browser: 'Reportes',
   comment: {
     label: 'Comentario:',
     placeholder: 'Escriba un comentario',

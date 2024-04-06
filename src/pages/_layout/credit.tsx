@@ -18,7 +18,7 @@ import {
   Printer,
   CircleDollarSign as Pay,
 } from 'lucide-react'
-import { createContext, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import { getCreditById, getCreditsList, type TCREDIT_GET_FILTER, type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 import { useStatus } from '@/lib/context/layout'
 import { format, isValid } from 'date-fns'
@@ -67,6 +67,10 @@ export function Credits({
   const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
+
+  useEffect( () => {
+    document.title = import.meta.env.VITE_NAME + " | " + text.browser
+  }, [] )
 
   const onClick: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Button>> = (index) => () => {
     if(!creditsDB || !creditsDB?.[index]) return;
@@ -231,6 +235,7 @@ Credits.dispalyname = 'CreditsList'
 
 const text = {
   title: 'Prestamos:',
+  browser: 'Prestamos',
   notfound: 'No existen prestamos activos.',
   alert: {
     info: {

@@ -6,6 +6,7 @@ import { X as Close, Cross, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_layout/notification')({
   component: Notifications,
@@ -19,6 +20,10 @@ interface TNotificationProps {
 /* eslint-disable-next-line */
 export function Notifications({ notifications: _notifications = [] as TNotification[] }: TNotificationProps) {
   const { notifications, deleteNotificationById } = useNotifications( ({ notifications, ...items }) => ({ notifications: notifications ?? _notifications, ...items }) )
+
+  useEffect( () => {
+    document.title = import.meta.env.VITE_NAME + " | " + text.browser
+  }, [] )
 
   const onDelete: (index: number) => React.MouseEventHandler< HTMLSpanElement > = ( index ) => (  ) => {
     const notification = notifications?.[index]
@@ -78,5 +83,6 @@ Notifications.dispalyname = 'Notification'
 
 const text = {
   title: 'Notificaciones:',
+  browser: 'Notificaciones',
   notfound: 'No existen notificaciones.',
 }

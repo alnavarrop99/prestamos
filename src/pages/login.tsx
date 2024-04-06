@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, 
 import { Input } from '@/components/ui/input'
 import { Label } from '@radix-ui/react-label'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
-import { useReducer, useRef } from 'react'
+import { useEffect, useReducer, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/use-toast'
 import { Eye, EyeOff } from 'lucide-react'
@@ -38,6 +38,10 @@ export function Login({}: TLoginProps) {
   const ref = useRef<HTMLFormElement>(null)
   const [{ error, password }, setStatus] = useReducer(reducer, initUser)
   const { token, setToken } = useToken()
+
+  useEffect( () => {
+    document.title = import.meta.env.VITE_NAME + " | " + text.browser
+  }, [] )
 
   const onSuccess: (data: TUSER_LOGIN) => unknown = ( user ) => {
     setToken(user.access_token)
@@ -141,6 +145,7 @@ Login.dispalyname = 'Login'
 
 const text = {
   title: 'Inicio de sesion:',
+  browser: 'Bienvenido',
   description: [
     'Bienvenido a su aplicacion de creditos.',
     'Por favor introdusca sus credenciales para acceder a su cuenta.',

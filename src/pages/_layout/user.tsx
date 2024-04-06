@@ -69,6 +69,10 @@ export function Users({
   const { value } = useStatus()
   const { open = _open, setOpen } = useStatus()
 
+  useEffect( () => {
+    document.title = import.meta.env.VITE_NAME + " | " + text.browser
+  }, [] )
+
   const onCheckChanged = (index: number, prop: keyof Omit<TUsersState, 'id' | 'rol' | 'clientes' | 'nombre'> ) => (checked: boolean) => {
       const list = users?.map((user, i) => {
         if (i === index && prop === 'selected') {
@@ -293,6 +297,7 @@ Users.dispalyname = 'UsersList'
 
 const text = {
   title: 'Usuarios:',
+  browser: 'Usuarios',
   notFound: 'No se encontraron usuarios',
   button: {
     create: 'Nuevo',
