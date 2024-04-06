@@ -9,7 +9,7 @@ export const Route = createFileRoute('/_layout/')({
 interface THomeProps {}
 
 /* eslint-disable-next-line */
-export function Home() {
+export function Home({}: THomeProps) {
   return <Navigate to="/credit" />
 }
 

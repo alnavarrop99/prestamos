@@ -1,7 +1,8 @@
 import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export interface TNotification {
-  id?: number
+  id: number
   action: 'POST' | 'PATH' | 'DELETE'
   description: string
   date: Date
@@ -9,13 +10,20 @@ export interface TNotification {
 
 interface TNotificationContext {
   notifications?: TNotification[]
-  setNotification: (params: TNotification) => void
+  pushNotification: (params: Omit<TNotification, "id">) => void
+  setNotifications: (params: TNotification[]) => void
+  deleteNotificationById: (params: number) => void
+  updateNotificationById: ( notificationId :{ notificationId: number } , params: TNotification) => void
 }
 
-export const useNotifications = create<TNotificationContext>()((set) => ({
-  setNotification: ({ ...notification }) =>
-    set(({ notifications }) => {
-      if (!notifications) return { notifications: [notification] }
-      return { notifications: [...notifications, { id: (notification?.id ?? 0) + 1,  ...notification }] }
-    }),
-}))
+export const useNotifications = create<TNotificationContext>()( persist( (set) => ({
+  pushNotification: (notification) => set(({ notifications }) => ({ notifications: [ ...(notifications ?? []), { id: notifications?.at(-1)?.id ?? 0 + 1 , ...notification } ] })),
+  setNotifications: ( notifications ) => set( ( ) => ({ notifications }) ),
+  deleteNotificationById: ( notificationById ) => set( ( { notifications } ) => ({ notifications: notifications?.filter( ({ id }) => ( id !== notificationById ) ) })  ),
+  updateNotificationById: ({ notificationId }, notification ) => set( ( { notifications } ) => ({ notifications: notifications?.map( ({ id }, i, list) => { 
+    if( notificationId !== id ){
+      return list?.[i]
+    }
+    return notification
+  } ) })  )
+}) , { name: "notification" } ))

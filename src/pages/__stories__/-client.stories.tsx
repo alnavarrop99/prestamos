@@ -9,7 +9,7 @@ import { Layout } from '@/pages/_layout'
 import React, { Fragment } from 'react'
 import { Toaster } from '@/components/ui/toaster'
 import clients from '@/__mock__/CLIENTS.json'
-import { getClientId, getClients, type TClient } from '@/api/clients'
+import { getClientId, getClients, type TCLIENT_GET } from '@/api/clients'
 import { Theme } from '@/components/theme-provider'
 import { getUserId } from '@/api/users'
 
@@ -21,7 +21,7 @@ function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
   )
 }
 
-function _ClientLayout(clients: TClient[]) {
+function _ClientLayout(clients: TCLIENT_GET[]) {
   return (Story: StoryFn) => (
     <Clients open={true} clients={clients}>
       <Story />

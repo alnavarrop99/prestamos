@@ -5,19 +5,21 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useContext, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
 import { Checkbox } from '@/components/ui/checkbox'
-import { type TPayment } from "@/api/payment";
-import { type TCredit } from '@/api/credit'
+import { postPaymentId, type TPAYMENT_POST_BODY } from "@/api/payment";
+import { type TCREDIT_GET_FILTER, type TCREDIT_GET } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { _creditSelected } from "@/pages/_layout/credit";
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
+import { useMutation } from '@tanstack/react-query'
+import { formatISO } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit/pay')({
   component: PaySelectedCredit,
@@ -25,41 +27,52 @@ export const Route = createFileRoute('/_layout/credit/pay')({
 
 /* eslint-disable-next-line */
 interface TPaySelectedCreditProps {
-  credit?: TCredit
+  credit?: TCREDIT_GET
 }
 
 /* eslint-disable-next-line */
-export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySelectedCreditProps ) {
+type TFormName = keyof Omit<TPAYMENT_POST_BODY, "credito_id">
+
+/* eslint-disable-next-line */
+export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPaySelectedCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const credit = useContext(_creditSelected) ?? _credit
-  const { setNotification } = useNotifications()
+  const credit = useContext(_creditSelected) ?? {} as TCREDIT_GET_FILTER
+  const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
-  const navigate = useNavigate()
+  const { mutate: createPayment } = useMutation({
+    mutationKey: ["create-pay"],
+    mutationFn: postPaymentId,
+  })
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current) return
 
     const items = Object.fromEntries(
-      new FormData(form.current).entries()
-    ) as Record<keyof TPayment, string>
+      [...new FormData(form.current).entries()]?.map( ([ key, value ]) => {
+      if( value === "" ) return [ key, undefined ]
+      return [ key, value ]
+    })) as Record<TFormName, string>
 
     const description = text.notification.decription({
-      // TODO
-      username: "",
-      number: 0,
+      username: credit.nombre_del_cliente,
+      number: +items?.valor_del_pago,
     })
 
     const action =
-      ({ ...props }: Record<keyof TPayment, string>) =>
+      ({ ...items }: Record<TFormName, string>) =>
       () => {
-        console.table(props)
-        console.table(credit)
-      setNotification({
+      createPayment({
+          valor_del_pago: +items?.valor_del_pago,
+          comentario: items?.comentario ?? "",
+          credito_id: credit?.id,
+          fecha_de_pago: formatISO(items?.fecha_de_pago ?? new Date())
+      })
+      pushNotification({
           date: new Date(),
           action: "POST",
           description,
@@ -68,33 +81,31 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
 
     const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
-    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if ( true) {
-      // const { nombres: firstName, apellidos: lastName } = items
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from new user">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from new user">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     form.current.reset()
     ev.preventDefault()
   }
 
   return (
+    <>
+    { !open && <Navigate to={"../"} />}
     <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -116,15 +127,15 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
           <Input
             required
             min={0}
-            step={50}
-            name={'valor_del_pago' as keyof TPayment}
+            name={'valor_del_pago' as TFormName}
             type="number"
             placeholder={text.form.amount.placeholder}
+              defaultValue={ credit?.valor_de_cuota }
           />
         </Label>
         <Label className='!col-span-1'>
           <span>{text.form.date.label} </span>
-          <DatePicker name={"fecha_de_pago" as keyof TPayment}
+          <DatePicker name={"fecha_de_pago" as TFormName}
             label={text.form.date.placeholder}
             className='border border-primary'
           />
@@ -132,7 +143,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
         <Label className='cols-span-full'>
           <span>{text.form.comment.label}</span>
           <Textarea
-            name={"comentario" as keyof TPayment}
+            name={"comentario" as TFormName}
             rows={5}
             placeholder={text.form.comment.placeholder}
           />
@@ -161,9 +172,11 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
             }
           )}
         >
-          <Button form="pay-credit" type="submit" disabled={!checked} className={clsx({
-            "bg-green-500 hover:bg-green-700": checked,
-          })}>
+          <Button 
+            form="pay-credit"
+            type="submit"
+            disabled={!checked}
+            className={clsx({ "bg-green-500 hover:bg-green-700": checked, })}>
             {text.button.pay}
           </Button>
           <DialogClose asChild>
@@ -178,6 +191,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCredit }: TPaySele
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

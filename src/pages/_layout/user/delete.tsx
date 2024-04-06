@@ -4,15 +4,14 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { TUser } from '@/api/users'
-import { _selectUsers } from "@/pages/_layout/user"
+import { type TUsersState, _selectUsers, _usersContext } from "@/pages/_layout/user"
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 
@@ -22,62 +21,63 @@ export const Route = createFileRoute('/_layout/user/delete')({
 
 /* eslint-disable-next-line */
 interface TDeleteSelectedUsersProps {
-  users?: TUser[]
+  users?: TUsersState[]
 }
 
 /* eslint-disable-next-line */
-export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelectedUsersProps) {
+export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDeleteSelectedUsersProps) {
   const [checked, setChecked] = useState(false)
-  const users = useContext(_selectUsers) ?? _users
-  const { setNotification } = useNotifications()
+  const selectUsers = useContext(_selectUsers) ?? _users
+  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
+  const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
-  const navigate = useNavigate()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
     const description = text.notification.decription({
-      length: users?.length,
+      length: selectUsers?.length,
     })
-    const action = (clients?: TUser[]) => () => {
-      console.table(clients)
-      setNotification({
+    const action = (selectedUsers?: TUsersState[]) => () => {
+      import.meta.env.DEV && console.table(selectedUsers);
+      pushNotification({
         date: new Date(),
         action: "DELETE",
         description,
       })
     }
 
-    const timer = setTimeout(action(users), 6 * 1000)
+    const timer = setTimeout(action(selectUsers), 6 * 1000)
 
     setOpen({ open: !open })
-    navigate({to: "../"})
+    setUsers( users?.filter( ({ id }) => !selectUsers?.map(({ id }) => id)?.includes(id) ) ?? [] )
 
     const onClick = () => {
       clearTimeout(timer)
+      setUsers( users?.map( (user) => ({ ...user, selected: false }) ) )
     }
 
-    if ( true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from delete client">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from delete client">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     ev.preventDefault()
   }
 
   return (
+    <>
+    {!open && <Navigate to={"../"} />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -87,7 +87,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ length: users?.length })}
+              {text.alert.description({ length: selectUsers?.length })}
             </AlertDescription>
           </Alert>
         </DialogDescription>
@@ -138,6 +138,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUser[]}: TDeleteSelect
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

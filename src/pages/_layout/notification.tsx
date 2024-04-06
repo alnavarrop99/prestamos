@@ -1,8 +1,8 @@
 import { Separator } from '@/components/ui/separator'
 import { createFileRoute } from '@tanstack/react-router'
 import { useNotifications, type TNotification } from "@/lib/context/notification";
-import { Card, CardDescription, CardTitle } from '@/components/ui/card';
-import { Cross, Zap } from 'lucide-react';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { X as Close, Cross, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,14 @@ interface TNotificationProps {
 
 /* eslint-disable-next-line */
 export function Notifications({ notifications: _notifications = [] as TNotification[] }: TNotificationProps) {
-  const { notifications } = useNotifications( ({ notifications }) => ({ notifications: notifications ?? _notifications }) )
+  const { notifications, deleteNotificationById } = useNotifications( ({ notifications, ...items }) => ({ notifications: notifications ?? _notifications, ...items }) )
+
+  const onDelete: (index: number) => React.MouseEventHandler< HTMLSpanElement > = ( index ) => (  ) => {
+    const notification = notifications?.[index]
+    if(!notification || !notification?.id) return;
+    deleteNotificationById( notification.id ) 
+  }
+
   return (
     <div className='space-y-2'>
       <div className="flex items-center gap-2">
@@ -28,15 +35,23 @@ export function Notifications({ notifications: _notifications = [] as TNotificat
       <Separator />
       <div className='space-y-6 py-2'>
       { !notifications?.length && <p> {text.notfound} </p> }
-      { !!notifications?.length && notifications?.map( ({ id, description, action, date }) => 
-        <Card key={id} className={clsx('shadow-lg space-y-2 p-6 ring-2', {
+      { !!notifications?.length && notifications?.reverse()?.map( ({ id: notificationId, description, action, date }, index) => 
+        notificationId && <Card key={notificationId} className={clsx('shadow-lg space-y-2 ring-2', {
             "ring-green-500": action === "POST",
             "ring-blue-500": action === "PATH",
             "ring-red-500": action === "DELETE",
           })}>
-          <CardTitle className='flex items-center gap-4'> <ActionIcon action={action} />  {getAction(action)} </CardTitle>
-          <CardDescription className='text-lg'> <p>{description}</p> </CardDescription>
-          <div className='flex justify-end'><Badge>{format(date, "dd-MM-yyyy")}</Badge></div>
+            <CardHeader>
+              
+              <span onClick={onDelete(index)} className='p-1 ms-auto rounded-full [&>svg]:stroke-destructive hover:bg-destructive [&>svg]:hover:stroke-secondary cursor-pointer transition delay-150 duration-300 [&>svg]:transition [&>svg]:dalay-150 [&>svg]:duration-300'>
+                <Close className='p-1' />
+              </span>
+              <CardTitle className='flex items-center gap-4'> <ActionIcon action={action} />  {getAction(action)} </CardTitle>
+              <CardDescription className='text-lg'> <p>{description}</p> </CardDescription>
+            </CardHeader>
+            <CardFooter className='flex justify-end'>
+              <div><Badge>{format(date, "dd-MM-yyyy")}</Badge></div>
+            </CardFooter>
         </Card> 
       ) }
       </div>

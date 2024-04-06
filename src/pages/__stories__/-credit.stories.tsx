@@ -3,7 +3,7 @@ import $ from '@/lib/render'
 import { Layout } from '@/pages/_layout'
 import { Fragment } from 'react'
 import { Toaster } from '@/components/ui/toaster'
-import { getCreditId, getCredits, type TCredit } from '@/api/credit'
+import { getCreditById, getCreditsList, type TCredit } from '@/api/credit'
 import { Credits } from '@/pages/_layout/credit'
 import { CreditById } from '@/pages/_layout/credit_/$creditId'
 import { DeleteCreditById } from '@/pages/_layout/credit_/$creditId/delete'
@@ -83,7 +83,7 @@ export const _Credits: StoryObj<React.ComponentProps<typeof _CreditsBase>> = {
   name: '/credit',
   render: _CreditsBase,
   args: {
-    credits: getCredits(),
+    credits: getCreditsList(),
   },
 }
 
@@ -93,7 +93,7 @@ export const _NewCredit: StoryObj<React.ComponentProps<typeof NewCredit>> = {
   args: {
     clients: getClients(),
   },
-  decorators: [_CreditLayout(getCredits())],
+  decorators: [_CreditLayout(getCreditsList())],
 }
 
 export const _PaySelectedCredit: StoryObj<
@@ -102,9 +102,9 @@ export const _PaySelectedCredit: StoryObj<
   name: '/credit/$creditId/pay-selected',
   render: PaySelectedCredit,
   args: {
-    credit: getCreditId({ creditId: 4 }),
+    credit: getCreditById({ creditId: 4 }),
   },
-  decorators: [_CreditLayout(getCredits())],
+  decorators: [_CreditLayout(getCreditsList())],
 }
 
 export const _PrintSelectedCredit: StoryObj<
@@ -113,16 +113,16 @@ export const _PrintSelectedCredit: StoryObj<
   name: '/credit/$creditId/print-selected',
   render: PrintSelectedCredit,
   args: {
-    credit: getCreditId({ creditId: 4 }),
+    credit: getCreditById({ creditId: 4 }),
   },
-  decorators: [_CreditLayout(getCredits())],
+  decorators: [_CreditLayout(getCreditsList())],
 }
 
 export const _CreditById: StoryObj<React.ComponentProps<typeof CreditById>> = {
   name: '/credit/$creditId',
   render: CreditById,
   args: {
-    credit: getCreditId({ creditId: 4 }),
+    credit: getCreditById({ creditId: 4 }),
   },
 }
 
@@ -132,9 +132,9 @@ export const _DeleteCreditById: StoryObj<
   name: '/credit/$creditId/delete',
   render: DeleteCreditById,
   args: {
-    credit: getCreditId({ creditId: 4 }),
+    credit: getCreditById({ creditId: 4 }),
   },
-  decorators: [_CreditByIdLayout(getCreditId({ creditId: 4 }))],
+  decorators: [_CreditByIdLayout(getCreditById({ creditId: 4 }))],
 }
 
 export const _UpdateCreditById: StoryObj<
@@ -143,7 +143,7 @@ export const _UpdateCreditById: StoryObj<
   name: '/credit/$creditId/update',
   render: UpdateCreditById,
   args: {
-    credit: getCreditId({ creditId: 4 }),
+    credit: getCreditById({ creditId: 4 }),
     open: false,
   },
 }
@@ -154,9 +154,9 @@ export const _UpdateConfirmationCredit: StoryObj<
   name: '/credit/$creditId/update/confirmation',
   render: UpdateConfirmationCredit,
   args: {
-    credit: getCreditId({ creditId: 4 }),
+    credit: getCreditById({ creditId: 4 }),
   },
-  decorators: [_UpdateCreditLayout(getCreditId({ creditId: 4 }))],
+  decorators: [_UpdateCreditLayout(getCreditById({ creditId: 4 }))],
 }
 
 export const _PayCreditById: StoryObj<
@@ -165,9 +165,9 @@ export const _PayCreditById: StoryObj<
   name: '/credit/$creditId/pay',
   render: PayCreditById,
   args: {
-    credit: getCreditId({ creditId: 4 }),
+    credit: getCreditById({ creditId: 4 }),
   },
-  decorators: [_CreditByIdLayout(getCreditId({ creditId: 4 }))],
+  decorators: [_CreditByIdLayout(getCreditById({ creditId: 4 }))],
 }
 
 export const _PrintCreditById: StoryObj<
@@ -176,7 +176,7 @@ export const _PrintCreditById: StoryObj<
   name: '/credit/$creditId/print',
   render: PrintCreditById,
   args: {
-    credit: getCreditId({ creditId: 4 }),
+    credit: getCreditById({ creditId: 4 }),
   },
-  decorators: [_CreditByIdLayout(getCreditId({ creditId: 4 }))],
+  decorators: [_CreditByIdLayout(getCreditById({ creditId: 4 }))],
 }

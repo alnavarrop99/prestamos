@@ -1,89 +1,88 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { TUser, getUserIdRes } from '@/api/users'
+import { getUserById, type TUSER_GET } from '@/api/users'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
+import { type TUsersState, _usersContext } from '@/pages/_layout/user'
 
 export const Route = createFileRoute('/_layout/user/$userId/delete')({
   component: DeleteUserById,
-  loader: getUserIdRes,
+  loader: getUserById,
 })
 
 /* eslint-disable-next-line */
 interface TDeleteByUser {
-  user?: TUser
+  user?: TUsersState
 }
 
 /* eslint-disable-next-line */
-export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
+export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser) {
   const [checked, setChecked] = useState(false)
-  const user = Route.useLoaderData() ?? _user
-  const { nombre } = user
-  const { setNotification } = useNotifications()
+  const selectedUser = Route.useLoaderData() ?? _user
+  const { nombre } = selectedUser
+  const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
-  const navigate = useNavigate()
+  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ]
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    if(!user) return;
+    if(!selectedUser) return;
 
     const description = text.notification.decription({
       username: nombre,
     })
 
-    const action =
-      ({ ...props }: TUser) =>
-      () => {
-        console.table(props)
-        setNotification({
+    const action = (selectedUser: TUSER_GET) => () => {
+        import.meta.env.DEV && console.table(selectedUser);
+        pushNotification({
           date: new Date(),
           action: "DELETE",
           description,
         })
       }
   
-    const timer = setTimeout(action(user), 6 * 1000)
+    const timer = setTimeout(action(selectedUser), 6 * 1000)
     setOpen({ open: !open })
-    navigate({to: "../../"})
+    setUsers( users?.filter( ({ id }) => (id !== selectedUser?.id ) ) ?? [] )
 
     const onClick = () => {
       clearTimeout(timer)
+      setUsers( users )
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from delete client">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from delete client">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     ev.preventDefault()
   }
 
-
   return (
+    <>
+    { !open && <Navigate to={"../../"} />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -144,6 +143,7 @@ export function DeleteUserById({ user: _user={} as TUser }: TDeleteByUser) {
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

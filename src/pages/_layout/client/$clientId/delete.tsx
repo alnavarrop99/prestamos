@@ -4,86 +4,91 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { getClientIdRes, type TClient } from '@/api/clients'
+import { type TCLIENT_GET, deleteClientsById, getClientById } from '@/api/clients'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
+import { useMutation } from '@tanstack/react-query'
+import { _clientContext } from '@/pages/_layout/client'
+import { type TClientTable } from '@/pages/_layout/-column'
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteClientById,
-  loader: getClientIdRes,
+  loader: getClientById,
 })
 
 /* eslint-disable-next-line */
 interface TDeleteByClient {
-  client?: TClient
+  client?: TCLIENT_GET
 }
 
 /* eslint-disable-next-line */
-export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByClient) {
+export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDeleteByClient) {
   const [checked, setChecked] = useState(false)
-  const client = Route.useLoaderData() ?? _client
-  const { nombres: firstName, apellidos: lastName } = client
+  const clientDB = Route.useLoaderData() ?? _client
   const { setOpen, open } = useStatus()
-  const { setNotification } = useNotifications()
-  const navigate = useNavigate()
+  const { pushNotification } = useNotifications()
+  const { mutate: deleteClient } = useMutation({
+    mutationKey: ["delete-client-id" + clientDB.id],
+    mutationFn: deleteClientsById
+  })
+  const [ clients, setClients ] = useContext(_clientContext) ?? [[] as TClientTable[], (({})=>{})]
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
-    if(!client) return;
+  const onSubmit: React.FormEventHandler<React.ComponentRef< typeof Button >> = (ev) => {
+    if(!clientDB) return;
 
     const description = text.notification.decription({
-      username: firstName + ' ' + lastName,
+      username: clientDB?.nombres + ' ' + clientDB?.apellidos,
     })
 
-    const action =
-      ({ ...props }: TClient) =>
+    const action = (items: TCLIENT_GET) =>
       () => {
-        console.table(props)
-        setNotification( {
+        deleteClient({ clientId: items?.id })
+        pushNotification( {
           date: new Date(),
           action: "DELETE",
           description,
         })
       }
 
-    const timer = setTimeout(action(client), 6 * 1000)
+    const timer = setTimeout(action(clientDB), 6 * 1000)
     setOpen({ open: !open, })
-    navigate({to: "../../"})
+    setClients( { clients: clients?.filter( ( { id: clientId } ) => clientDB?.id !== clientId ) } )
 
     const onClick = () => {
       clearTimeout(timer)
+      setClients({ clients} )
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from delete client">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from delete client">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     ev.preventDefault()
   }
 
-
   return (
+  <>
+    { !open && <Navigate to={"../../"} /> }
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -93,7 +98,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ username: firstName + ' ' + lastName })}
+              {text.alert.description({ username: clientDB?.nombres + ' ' + clientDB?.apellidos })}
             </AlertDescription>
           </Alert>
         </DialogDescription>
@@ -144,6 +149,7 @@ export function DeleteClientById({ client: _client = {} as TClient }: TDeleteByC
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

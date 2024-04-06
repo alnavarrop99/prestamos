@@ -1,6 +1,7 @@
 import {
   createFileRoute,
   Outlet,
+  redirect,
   useChildMatches,
 } from '@tanstack/react-router'
 import styles from '@/styles/global.module.css'
@@ -11,6 +12,7 @@ import {
   BadgeDollarSign,
   Calendar as CalendarIcon,
   icons,
+  LogOut,
   MenuSquare,
   Moon,
   Network,
@@ -33,7 +35,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useStatus } from '@/lib/context/layout'
-import { getClientsRes, type TClient } from '@/api/clients'
+import { getClientsList, type TCLIENT_GET_ALL } from '@/api/clients'
 import { Theme, useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -41,7 +43,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { getCurrentUserRes, TUser } from '@/api/users'
+import { getCurrentUser, type TUSER_GET } from '@/api/users'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -49,13 +51,22 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
+import { useToken } from '@/lib/context/login'
+import { QueryObserver, useIsFetching, useIsMutating, useQuery, useQueryClient } from '@tanstack/react-query'
+import { SpinLoader } from '@/components/ui/loader'
+import { queryClient } from '@/pages/__root'
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
-  loader: async () => ({
-    clients: await getClientsRes(),
-    user: await getCurrentUserRes(),
-  }),
+  loader: getCurrentUser,
+  beforeLoad: async (  ) => {
+    const { token } = useToken.getState()
+    if( !token ){
+      throw redirect({
+        to: "/login",
+      })
+    }
+  }
 })
 
 /* eslint-disable-next-line */
@@ -68,8 +79,8 @@ interface TStatus {
 
 /* eslint-disable-next-line */
 interface TNavigationProps {
-  clients?: TClient[]
-  user?: TUser
+  clients?: TCLIENT_GET_ALL[]
+  user?: TUSER_GET
   theme?: Theme
   open?: boolean
 }
@@ -82,23 +93,32 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 export function Layout({
   children,
   theme: _theme,
-  clients: _clients = [] as TClient[],
+  clients: _clients = [] as TCLIENT_GET_ALL[],
   open: _open = false,
-  user: _user = {} as TUser,
+  user: _user = {} as TUSER_GET,
 }: React.PropsWithChildren<TNavigationProps>) {
+  const { data: clientsDB, isSuccess } = useQuery({
+    queryKey: [getClientsList.name],
+    queryFn: getClientsList,
+  })
   const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
     open: _open
   })
   const { setValue, setSearch, search, value } = useStatus()
-  const { clients: clientsDB, user: userDB } = Route.useLoaderData() ?? {
-    clients: _clients,
-    user: _user,
-  }
+  const  userDB = Route.useLoaderData() ?? { clients: _clients, user: _user, }
   const [clients, setClients] = useState(clientsDB)
   const [user] = useState(userDB)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
+  const { deleteToken } = useToken()
+  const isFetching = useIsFetching()
+  const isMutating = useIsMutating()
+
+  useEffect(() => {
+    setClients(clientsDB) 
+  }, [isSuccess])
+
 
   useEffect(() => {
     const onNotwork = () => {
@@ -175,6 +195,10 @@ export function Layout({
     window.history.back()
   }
 
+  const onLogut: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    deleteToken() 
+  }
+
   return (
     <div
       className={clsx(
@@ -197,7 +221,7 @@ export function Layout({
               className={clsx({ 'hover:animate-pulse': open })}
             />
             <span className={clsx('font-bold uppercase', { hidden: open })}>
-              {text.title}{' '}
+              {text.title}
             </span>
             <BadgeCent className={clsx({ hidden: open })} />
           </h2>
@@ -267,6 +291,7 @@ export function Layout({
                 </Button>
               )}
             </Link>
+            { (!!isFetching || !!isMutating) && <SpinLoader />}
           </div>
           <div>
             <Label className="flex cursor-pointer items-center gap-2">
@@ -274,7 +299,7 @@ export function Layout({
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
-              <Popover
+              { !!clients?.length && <Popover
                 open={search}
                 onOpenChange={onSearchChange}
               >
@@ -301,23 +326,23 @@ export function Layout({
                   <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
                     <h3 className="text-xl [&>span]:underline">
                       <span>{text.search.title}</span>
-                      <Badge variant="default"> {clients?.length} </Badge>{' '}
+                      <Badge variant="default"> {clients?.length} </Badge>
                     </h3>
                     <Separator />
                     <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
                       {clients?.map(
                         ({
-                          apellidos: lastName,
-                          nombres: firstName,
-                          id,
-                          numero_de_identificacion: SSN,
-                        }) => (
-                          <li key={id} className="group cursor-pointer" onClick={onSelect({ clientId: id })}>
+                          apellidos,
+                          nombres,
+                          id: clientId,
+                          numero_de_identificacion,
+                        }) => clientId &&
+                          <li key={clientId} className="group cursor-pointer" onClick={onSelect({ clientId })}>
                             <Link to={'/client'}>
                               <Avatar>
                                 <AvatarFallback>
-                                  {firstName.at(0) ??
-                                    'N' + lastName.at(0) ??
+                                  {nombres?.at(0) ??
+                                    'N' + apellidos?.at(0) ??
                                     'A'}
                                 </AvatarFallback>
                               </Avatar>
@@ -325,22 +350,21 @@ export function Layout({
                                 <p
                                   className={clsx("font-bold group-hover:after:content-['#']")}
                                 >
-                                  {firstName + ' ' + lastName}
+                                  {nombres + ' ' + apellidos}
                                 </p>
                                 <p className="italic">
-                                  {SSN.slice(0, 4) +
+                                  {numero_de_identificacion.slice(0, 4) +
                                     '...' +
-                                    SSN.slice(-4, SSN.length)}
+                                    numero_de_identificacion.slice(-4, numero_de_identificacion.length)}
                                 </p>
                               </div>
                             </Link>
                           </li>
-                        )
                       )}
                     </ul>
                   </div>
                 </PopoverContent>
-              </Popover>
+              </Popover>}
               <Input
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
@@ -350,7 +374,6 @@ export function Layout({
                 value={value}
               />
             </Label>
-            <div>
               <HoverCard>
                 <HoverCardTrigger>
                   <Badge className="cursor-pointer text-sm" variant="outline">
@@ -370,12 +393,21 @@ export function Layout({
                       <span className="font-bold">{user.nombre}</span>
                     </li>
                     <li>
-                      {' '}
+                      
                       <Badge> {user?.rol} </Badge>
                     </li>
                   </ul>
                 </HoverCardContent>
               </HoverCard>
+            <Link to={"/"}>
+              <Button
+                variant={"ghost"} 
+                className='p-2 [&>svg]:p-1 [&>svg]:transition [&>svg]:delay-150 [&>svg]:duration-300 group'
+                onClick={onLogut}
+              >
+                <LogOut className='group-hover:stroke-destructive' />
+              </Button>
+            </Link>
               {!offline && (
                 <Network
                   className={clsx('ms-auto animate-bounce', {
@@ -386,7 +418,6 @@ export function Layout({
               )}
             </div>
           </div>
-        </div>
       </header>
       <main className="space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
         <div>
@@ -416,8 +447,8 @@ export function Layout({
                       <BreadcrumbItem>
                         <Link to={route}>
                           <span className={'font-bold hover:underline'}>
-                            {' '}
-                            {name}{' '}
+                            
+                            {name}
                           </span>
                         </Link>
                       </BreadcrumbItem>
@@ -435,10 +466,10 @@ export function Layout({
         <Separator className="my-4" />
         <div className="flex justify-between">
           <h3>
-            <span>{text.footer.description}</span>{' '}
+            <span>{text.footer.description}</span>
           </h3>
           <h3>
-            <span className="italic">{text.footer.copyright}</span>{' '}
+            <span className="italic">{text.footer.copyright}</span>
             <Badge> &copy; {new Date().getFullYear()} </Badge>
           </h3>
         </div>

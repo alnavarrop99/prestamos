@@ -6,12 +6,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
-import { createFileRoute } from '@tanstack/react-router'
+import { Navigate, createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
 import styles from '@/styles/global.module.css'
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { useNotifications } from '@/lib/context/notification'
+import { useMutation } from '@tanstack/react-query'
+import { type TUSER_POST, postUser } from '@/api/users'
+import { getRolById, getRolByName, listRols } from "@/lib/type/rol";
+import { type TUsersState, _usersContext } from '@/pages/_layout/user'
+import { useStatus } from '@/lib/context/layout'
 
 export const Route = createFileRoute('/_layout/user/new')({
   component: NewUser,
@@ -27,46 +32,74 @@ interface TPassoword {
 interface TNewUserProps { }
 
 /* eslint-disable-next-line */
+type TFormName = "firstName" | "lastName" | "rol" | "password" | "confirmation"
+
+/* eslint-disable-next-line */
 export function NewUser({}: TNewUserProps) {
+  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
   const [ passItems, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
-  const { setNotification } = useNotifications()
+  const { pushNotification } = useNotifications()
+  const { open } = useStatus()
 
-  const onClick: ( {prop}:{ prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
+  const onSuccess: (data: TUSER_POST) => unknown = (newUser) => {
+    setUsers( [ ...users?.slice(0, -1), { ...(users?.at(-1) ?? {} as TUsersState), ...newUser } ]  )
+  }
+
+  const { mutate: createUser } = useMutation( {
+    mutationKey: ["create-user"],
+    mutationFn: postUser,
+    onSuccess,
+  })
+
+  const onClick: ( prop:{ prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
     setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler< HTMLFormElement > = (ev) => {
     if (!form.current) return
 
     const items = Object.fromEntries(
-      new FormData(form.current).entries()
-    ) as Record<keyof (typeof text.form & typeof text.form.password), string>
+      Array.from( new FormData(form.current).entries() )?.map( ([ key, value ]) => {
+      if( value === "" ) return [ key, undefined ]
+      return [ key, value ]
+    })) as Record<TFormName, string>
 
-    const { firstName, lastName } = items
     const description = text.notification.decription({
-      username: firstName + ' ' + lastName,
+      username: items?.firstName + ' ' + items?.lastName,
     })
 
     const action =
-      ({ ...props }: Record<keyof (typeof text.form & typeof text.form.password), string>) =>
+      ({ ...items }: Record<TFormName, string>) =>
       () => {
-        console.table(props)
-        setNotification({
+        createUser({
+          nombre: items?.firstName + " " + items?.lastName,
+          password: items?.password,
+          rol_id: +items?.rol
+        })
+        pushNotification({
           date: new Date(),
           action: "POST",
           description,
         })
       }
 
-
     const timer = setTimeout(action(items), 6 * 1000)
+    setUsers( [...users, { 
+      nombre: items?.firstName + " " +items?.lastName,
+      rol: getRolById( { rolId: +items?.rol } )?.nombre,
+      id: users?.at(-1)?.id ?? 0 + 1,
+      menu: false,
+      active: false,
+      selected: false,
+      clientes: []
+    }] )
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if ( true) {
+    if ( password === confirmation ) {
       toast({
         title: text.notification.titile,
         description,
@@ -88,6 +121,8 @@ export function NewUser({}: TNewUserProps) {
   const { password, confirmation } = passItems
 
   return (
+    <>
+    {!open && <Navigate to={"../"} />}
     <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -105,10 +140,10 @@ export function NewUser({}: TNewUserProps) {
         )}
       >
         <Label className='!col-span-1' >
-          <span>{text.form.firstName.label}</span>{' '}
+          <span>{text.form.firstName.label}</span>
           <Input
             required
-            name={'firstName' as keyof typeof text.form}
+            name={'firstName' as TFormName}
             type="text"
             placeholder={text.form.firstName.placeholder}
           />
@@ -117,20 +152,24 @@ export function NewUser({}: TNewUserProps) {
           <span>{text.form.lastName.label} </span>
           <Input
             required
-            name={'lastName' as keyof typeof text.form}
+            name={'lastName' as TFormName}
             type="text"
             placeholder={text.form.lastName.placeholder}
           />
         </Label>
         <Label>
           <span className="after:content-['_*_'] after:text-red-500">{text.form.rol.label} </span>
-          <Select required name={'rol' as keyof typeof text.form} defaultValue={text.form.rol.items.user}>
-            <SelectTrigger className="w-full ring ring-ring ring-1">
+          <Select 
+              required
+              name={'rol' as TFormName} 
+              defaultValue={""+getRolByName({ rolName: "Administrador" })?.id}>
+            <SelectTrigger className="w-full ring-ring ring-1">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              <SelectItem value={text.form.rol.items.admin}>{text.form.rol.items.admin}</SelectItem>
-              <SelectItem value={text.form.rol.items.user}>{text.form.rol.items.user}</SelectItem>
+              { listRols()?.map( ( { nombre, id }, index ) =>
+                <SelectItem key={index} value={""+id}>{nombre}</SelectItem>
+              ) }
             </SelectContent>
           </Select>
         </Label>
@@ -150,7 +189,7 @@ export function NewUser({}: TNewUserProps) {
             <Input
               id='user-password'
               required
-              name={'password' as keyof typeof text.form.password}
+              name={'password' as TFormName}
               type={!password ? "password" : "text"}
               placeholder={text.form.password.current.placeholder}
             />
@@ -172,7 +211,7 @@ export function NewUser({}: TNewUserProps) {
             <Input
               id='user-confirmation'
               required
-              name={'confirmation' as keyof typeof text.form.password}
+              name={'confirmation' as TFormName}
               type={!confirmation ? "password" : "text"}
               placeholder={text.form.password.confirmation.placeholder}
             />
@@ -194,6 +233,7 @@ export function NewUser({}: TNewUserProps) {
         </DialogClose>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

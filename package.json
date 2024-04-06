@@ -55,6 +55,8 @@
     "zustand": "^4.4.7"
   },
   "devDependencies": {
+    "@auth0/auth0-react": "^2.2.4",
+    "@faker-js/faker": "^8.4.1",
     "@storybook/addon-a11y": "^7.6.13",
     "@storybook/addon-essentials": "^7.6.12",
     "@storybook/addon-interactions": "^7.6.12",
@@ -118,5 +120,10 @@
     "vite-plugin-progress": "^0.0.7",
     "vite-plugin-svgr": "^4.2.0",
     "vitest": "^0.34.6"
+  },
+  "msw": {
+    "workerDirectory": [
+      "src/mock"
+    ]
   }
 }

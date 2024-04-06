@@ -1,7 +1,12 @@
 /// <reference types="vite/client" />
 /// <reference types="vite-plugin-svgr/client" />
 
-declare module '@gcss' {
-  import styles from './styles/gcss.module.css'
-  export default styles
+interface ImportMetaEnv {
+  readonly VITE_API: string
+  readonly VITE_AUTH0_DOMAIN: string
+  readonly VITE_AUTH0_CLIENT_ID: string
+  readonly VITE_MSW: number
+}
+interface ImportMeta {
+  readonly env: ImportMetaEnv
 }

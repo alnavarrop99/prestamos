@@ -4,12 +4,22 @@ import './index.css'
 import { createRouter, RouterProvider } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 
+async function enableMocking() {
+  if (!+import.meta.env.VITE_MSW){
+    return;
+  }
+  const { worker } = await import('@/mocks/config');
+  return worker.start();
+}
+
 export const route = createRouter({
   routeTree,
 })
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <RouterProvider router={route} />
-  </React.StrictMode>
-)
+enableMocking().then(() => {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <RouterProvider router={route} />
+    </React.StrictMode>
+  )
+})

@@ -1,4 +1,4 @@
-import { type TReport, getReportsRes, getTypeElementForm } from '@/api/report'
+import { getAllReport, type TREPORT_GET_ALL, typeDataByName, postReportById, TREPORT_POST_BODY, TREPORT_PARAMS_DATE_TYPE } from '@/api/report'
 import {
   Accordion,
   AccordionContent,
@@ -15,32 +15,43 @@ import clsx from 'clsx'
 import { Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useRef } from 'react'
+import { useMutation } from '@tanstack/react-query'
+
 
 export const Route = createFileRoute('/_layout/report')({
   component: Report,
-  loader: getReportsRes,
+  loader: getAllReport,
 })
 
 /* eslint-disable-next-line */
 interface TReportProps {
-  reports?: TReport[]
+  reports?: TREPORT_GET_ALL
 }
 
 /* eslint-disable-next-line */
-export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
+export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportProps) {
   const reports = Route.useLoaderData() ?? _reports
-  const form = useRef<HTMLFormElement>(null)
+  const form = reports?.map( () => useRef<HTMLFormElement>(null) ) 
+  const { mutate: reportById } = useMutation({
+    mutationKey: ["post-reports-by-id"],
+    mutationFn: postReportById
+  })
 
-  const onSubmit: React.FormEventHandler = (ev) => {
-    if (!form.current) return
+  const onSubmit: (  index: number  ) => React.FormEventHandler = ( index ) => (ev) =>  {
+    if (!form?.[index]) return;
 
     const items = Object.fromEntries(
-      new FormData(form.current).entries()
-    ) as Record<keyof string, string>
+      Array.from( new FormData(form?.[index]?.current ?? undefined).entries() )?.map( ([ key, value ], i, list) => {
+      if( value === "" ) return [ key, undefined ]
+      return list?.[i]
+    }) ) as Record<keyof TREPORT_POST_BODY, string>
 
-    console.table(items)
+    reportById({
+      code: reports?.[index]?.codigo,
+      report: items,
+    })
 
-    form.current?.reset()
+    form?.[index]?.current?.reset()
     ev.preventDefault()
   }
 
@@ -49,7 +60,7 @@ export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
       <h1 className="text-3xl font-bold">{text.title}</h1>
       <Separator />
       <Accordion className="my-2 space-y-2" type="multiple">
-        {reports.map(({ nombre, parametros, id, comentario }) => (
+        {reports.map(({ nombre, parametros, id, comentario}, index) => (
           <AccordionItem
             key={id}
             className={clsx('rounded-m px-4 py-2 shadow-lg hover:shadow-xl')}
@@ -63,15 +74,15 @@ export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
             </AccordionTrigger>
             <AccordionContent className="space-y-2">
               <form
-                ref={form}
-                onSubmit={onSubmit}
+                ref={form?.[index]}
+                onSubmit={onSubmit(index)}
                 className="grid grid-cols-2 gap-4 px-6 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
                 id={'report' + id}
               >
-                {parametros.map(({ nombre, id, tipo_dato }) => (
+                {parametros.map(({ nombre, id, tipo_dato, obligatorio }) => (
                   <Label key={id}>
                     <span>{nombre}:</span>
-                    <FormElement name={nombre} type={tipo_dato} />
+                    <FormElement required={obligatorio} name={nombre} type={tipo_dato} />
                   </Label>
                 ))}
                 <Label>
@@ -89,8 +100,7 @@ export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
                 variant="default"
                 className=" group ms-auto flex gap-2"
               >
-                {' '}
-                <Download />{' '}
+                <Download />
               </Button>
             </AccordionContent>
           </AccordionItem>
@@ -103,17 +113,20 @@ export function Report({ reports: _reports = [] as TReport[] }: TReportProps) {
 function FormElement({
   type,
   name,
+  required
 }: {
-  type: 'fecha' | 'texto' | 'numero' | 'like'
+  type: TREPORT_PARAMS_DATE_TYPE
   name?: string
+  required?: boolean
 }) {
-  if (type === 'fecha')
-    return <DatePicker label="Seleccione una fecha" name={name} />
+  if (type === 'date')
+    return <DatePicker required={required} label="Seleccione una fecha" name={name} />
   return (
     <Input
-      type={getTypeElementForm(type)}
+      type={typeDataByName(type)}
       placeholder="Escriba el parametro"
       name={name}
+      required={required}
     />
   )
 }

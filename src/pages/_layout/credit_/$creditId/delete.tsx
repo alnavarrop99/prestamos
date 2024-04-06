@@ -4,48 +4,54 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { useState } from 'react'
+import { createFileRoute } from '@tanstack/react-router'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { getCreditIdRes, type TCredit } from "@/api/credit";
+import { type TCREDIT_GET, deleteCreditById } from "@/api/credit";
 import { useNotifications } from '@/lib/context/notification'
+import { useMutation } from '@tanstack/react-query'
+import { _selectedCredit } from '@/pages/_layout/credit_/$creditId'
+import { Navigate } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
   component: DeleteCreditById,
-  loader: getCreditIdRes
 })
 
 /* eslint-disable-next-line */
 interface TDeleteCreditByIdProps {
-  credit?: TCredit
+  credit?: TCREDIT_GET
 }
 
 /* eslint-disable-next-line */
-export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCreditByIdProps) {
+export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDeleteCreditByIdProps) {
+  const [ credit ] = useContext(_selectedCredit) ?? [ _credit ]
   const [checked, setChecked] = useState(false)
-  const credit = Route.useLoaderData() ?? _credit
   const { open, setOpen } = useStatus()
-  const { setNotification } = useNotifications()
-  const navigate = useNavigate()
+  const { pushNotification } = useNotifications()
+  const { mutate: deleteCredit } = useMutation( {
+    mutationKey: ["delete-credit"],
+    mutationFn: deleteCreditById
+  })
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler = (ev) => {
+  const onSubmit: React.FormEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
     const description = text.notification.decription({
       // TODO
-      username: "Armando Navarro",
+      username: ""+credit?.owner_id,
     })
 
-    const action = (credit?: TCredit) => () => {
+    const action = (credit: TCREDIT_GET) => () => {
       console.table(credit)
-      setNotification({
+      deleteCredit({ creditId: credit?.id })
+      pushNotification({
         date: new Date(),
         action: "DELETE",
         description,
@@ -54,31 +60,30 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
 
     const timer = setTimeout(action(credit), 6 * 1000)
     setOpen({open: !open})
-    navigate({to: "../"})
 
     const onClick = () => {
       clearTimeout(timer)
     }
 
-    if (true) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from delete client">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+      action: (
+        <ToastAction altText="action from delete client">
+          <Button variant="default" onClick={onClick}>
+            {text.notification.undo}
+          </Button>
+        </ToastAction>
+      ),
+    })
 
     ev.preventDefault()
   }
 
   return (
+    <>
+    { !open && <Navigate to={"../../"} />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -90,7 +95,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
             <AlertDescription>
               {text.alert.description({ 
                 // TODO
-                username: "Armando Navarro" 
+                username: "" + credit?.owner_id 
               })}
             </AlertDescription>
           </Alert>
@@ -144,6 +149,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCredit }: TDeleteCre
         </div>
       </DialogFooter>
     </DialogContent>
+    </>
   )
 }
 

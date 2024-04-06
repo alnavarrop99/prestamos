@@ -1,7 +1,7 @@
 import type { Meta, StoryFn, StoryObj } from '@storybook/react'
 import $ from '@/lib/render'
 import { Layout } from '@/pages/_layout'
-import { getReports } from '@/api/report'
+import { getAllReports } from '@/api/report'
 import { Report } from '@/pages/_layout/report'
 import { getClients } from '@/api/clients'
 import { getUserId } from '@/api/users'
@@ -29,6 +29,6 @@ export default meta
 export const _Report: StoryObj<React.ComponentProps<typeof Report>> = {
   name: '/report',
   args: {
-    reports: getReports(),
+    reports: getAllReports(),
   },
 }

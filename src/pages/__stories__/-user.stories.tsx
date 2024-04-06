@@ -4,7 +4,7 @@ import { Users } from '@/pages/_layout/user'
 import { Layout } from '@/pages/_layout'
 import { Fragment } from 'react'
 import { Toaster } from '@/components/ui/toaster'
-import { TUser, getUserId, getUsers } from '@/api/users'
+import { TUSER_GET, getUserId, getUsers } from '@/api/users'
 import { NewUser } from '@/pages/_layout/user/new'
 import { DeleteUserById } from '@/pages/_layout/user/$userId/delete'
 import { UpdateUserById } from '@/pages/_layout/user/$userId/update'
@@ -20,7 +20,7 @@ function _Layout(Story: StoryFn, context: { globals: { theme: Theme } }) {
   )
 }
 
-function _UsersLayout(users: TUser[]) {
+function _UsersLayout(users: TUSER_GET[]) {
   return (Story: StoryFn) => (
     <Users users={users} open>
       <Story />
