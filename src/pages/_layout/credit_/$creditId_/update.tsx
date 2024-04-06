@@ -65,7 +65,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
 
   const active = useMemo(() =>
     Object.values(credit).flat().every( ( value, i ) => value === Object.values(creditChange).flat()?.[i] 
-  ) || !Object.values( paymentDelete ?? {} )?.length, [ creditChange, paymentDelete ])
+  ) && !Object.values( paymentDelete ?? {} )?.length, [ creditChange, paymentDelete ])
 
   const { client, user, ref } = useMemo( () => {
     const client = clients?.find( ({ id }) => ( id === credit?.owner_id ) )
@@ -168,8 +168,9 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
   const onDeletePaymentById: ( index: number ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = (index) => (ev) => {
     ev.stopPropagation()
 
-    if( !!paymentDelete?.[index] ){
+    if( !!paymentDelete?.[index] && form?.[index] ){
       setPaymentDelete( {  ...paymentDelete , [ index ]: undefined } )
+      form?.[index]?.current?.reset()
       return;
     }
 
@@ -391,11 +392,11 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                           className={clsx('ms-auto invisible opacity-0 group-hover/item:visible group-hover/item:opacity-100 transition delay-150 duration-300 p-1 w-6 h-6 rounded-full group/button',
                             {
                               "hover:bg-destructive": !paymentDelete?.[index],
-                              "hover:bg-green-500": paymentDelete?.[index] 
+                              "hover:bg-success": paymentDelete?.[index] 
                             } )}>
                           <Cross className={clsx('group-hover/button:stroke-white transition delay-150 duration-500', {
                             "stroke-destructive stroke-destructive rotate-45": !paymentDelete?.[index],
-                            "stroke-green-500": paymentDelete?.[index]
+                            "stroke-success": paymentDelete?.[index]
                       })} /> 
                       </Button>
                   </AccordionTrigger>
@@ -415,6 +416,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                         date={new Date(payment?.fecha_de_pago)}
                         label={text.form.pay.payDate.placeholder} 
                         defaultValue={payment?.fecha_de_pago}
+                        value={!!paymentDelete?.[index] ? "" : undefined}
                       />
                     </Label>
                     <Label>

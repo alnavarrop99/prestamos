@@ -79,7 +79,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
 
     const deleteItems = Object.values( deletePayment )
 
-    const action = (credit: Record< keyof TCREDIT_GET, string> & { id: number }, payment: (Record< keyof TPAYMENT_GET_BASE, string> & { id: number })[], deletePay: number[]) => () => {
+    const action = (credit: Record< keyof TCREDIT_GET, string> & { id: number }, payment: (Record< keyof TPAYMENT_GET_BASE, string> & { id: number })[], deletePay: (number | undefined)[]) => () => {
       if(credit?.id && Object?.values( credit )?.length > 1) {
         updateCredit({
           creditId: credit.id,
@@ -100,7 +100,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
       })
      }
       for ( const pay of payment ){
-        if( !pay?.id ) continue;
+        if( !pay?.id || ( pay?.id && deletePay?.includes(pay?.id)) ) continue;;
         updatePayment({
           paymentId: pay?.id,
           updatePayment: {
