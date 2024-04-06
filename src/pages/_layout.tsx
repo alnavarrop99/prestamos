@@ -78,7 +78,7 @@ interface TStatus {
 
 /* eslint-disable-next-line */
 interface TNavigationProps {
-  clients?: TCLIENT_GET_ALL[]
+  clients?: TCLIENT_GET_ALL
   user?: TUSER_GET
   theme?: Theme
   open?: boolean
@@ -92,7 +92,7 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 export function Layout({
   children,
   theme: _theme,
-  clients: _clients = [] as TCLIENT_GET_ALL[],
+  clients: _clients = [] as TCLIENT_GET_ALL,
   open: _open = false,
   user: _user = {} as TUSER_GET,
 }: React.PropsWithChildren<TNavigationProps>) {
@@ -215,7 +215,9 @@ export function Layout({
           }
         )}
       >
-        <img alt='brand' src={brand} className='my-4' />
+        <Link to={"/"}>
+          <img alt='brand' src={brand} className='my-4' />
+        </Link>
         <Separator className="my-4" />
         <div className="p-4 px-6 text-xl">
           <ul className="space-y-3 [&_button]:w-full">
@@ -244,7 +246,7 @@ export function Layout({
         <Separator className="my-4" />
         <div className="grid place-items-center">
           {!open ? (
-            <Calendar key={'calendar'} className="rounded-xl bg-secondary" />
+            <Calendar key={'calendar'} className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold" />
           ) : (
             <Popover onOpenChange={onclick(setStatus, { calendar: !calendar })}>
               <PopoverTrigger>
@@ -255,8 +257,8 @@ export function Layout({
                   <CalendarIcon />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-76 rounded-xl bg-secondary">
-                <Calendar key={'calendar'} />
+              <PopoverContent className="w-76 rounded-xl">
+                <Calendar key={'calendar'} className='rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold' />
               </PopoverContent>
             </Popover>
           )}

@@ -353,7 +353,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}

@@ -203,7 +203,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}

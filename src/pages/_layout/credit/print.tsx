@@ -97,7 +97,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TP
         <DialogClose asChild>
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             className="font-bold hover:ring hover:ring-primary"
           >
             {text.button.close}

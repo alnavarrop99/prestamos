@@ -134,7 +134,7 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}

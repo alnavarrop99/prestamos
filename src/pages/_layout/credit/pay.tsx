@@ -182,7 +182,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className={clsx("font-bold hover:ring hover:ring-primary")}
             >
               {text.button.close}

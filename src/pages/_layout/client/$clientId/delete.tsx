@@ -140,7 +140,7 @@ export function DeleteClientById({ client: _client = {} as TCLIENT_GET }: TDelet
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}

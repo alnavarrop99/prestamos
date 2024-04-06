@@ -303,7 +303,7 @@ export function UpdateClientById({ client: _client = {} as TCLIENT_GET }: TUpdat
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
