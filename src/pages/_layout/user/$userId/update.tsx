@@ -263,7 +263,7 @@ export function UpdateUserById({ user: _user = {} as TUsersState }: TUpdateUserB
         <DialogClose asChild>
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             className="font-bold hover:ring hover:ring-primary"
           >
             {text.button.close}
