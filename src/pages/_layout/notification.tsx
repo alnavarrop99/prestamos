@@ -31,6 +31,8 @@ export function Notifications({ notifications: _notifications = [] as TNotificat
     deleteNotificationById( notification.id ) 
   }
 
+  console.log(notifications);
+
   return (
     <div className='space-y-2'>
       <div className="flex items-center gap-2">
@@ -41,7 +43,7 @@ export function Notifications({ notifications: _notifications = [] as TNotificat
       <div className='space-y-6 py-2'>
       { !notifications?.length && <p> {text.notfound} </p> }
       { !!notifications?.length && notifications?.reverse()?.map( ({ id: notificationId, description, action, date }, index) => 
-        notificationId && <Card key={notificationId} className={clsx('shadow-lg space-y-2 ring-2', {
+        notificationId && <Card key={index} className={clsx('shadow-lg space-y-2 ring-2', {
             "ring-green-500": action === "POST",
             "ring-blue-500": action === "PATH",
             "ring-red-500": action === "DELETE",
