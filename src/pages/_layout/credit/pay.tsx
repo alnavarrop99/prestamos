@@ -130,7 +130,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
             name={'valor_del_pago' as TFormName}
             type="number"
             placeholder={text.form.amount.placeholder}
-              defaultValue={ credit?.valor_de_cuota }
+            defaultValue={ credit?.valor_de_cuota }
           />
         </Label>
         <Label className='!col-span-1'>

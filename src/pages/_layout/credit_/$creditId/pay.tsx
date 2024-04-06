@@ -6,7 +6,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useContext, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
@@ -18,6 +18,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
+import { _clientContext } from '@/pages/_layout/credit_/$creditId'
+import { TCLIENT_GET } from '@/api/clients'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
   component: PayCreditById,
@@ -43,6 +45,7 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
     mutationKey: ["create-pay"],
     mutationFn: postPaymentId,
   })
+  const [client] = useContext(_clientContext) ?? [{} as TCLIENT_GET]
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -52,23 +55,22 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
     if (!form.current) return
 
     const items = Object.fromEntries(
-      new FormData(form.current).entries()
-    ) as Record<TFormName, string>
+      [...new FormData(form.current).entries()]?.map( ([ key, value ]) => {
+      if( value === "" ) return [ key, undefined ]
+      return [ key, value ]
+    })) as Record<TFormName, string>
 
     const description = text.notification.decription({
-      // TODO: 
-      username: ""+credit?.owner_id,
+      username: client?.nombres + " " + client?.apellidos,
       number: +items?.valor_del_pago,
     })
 
     const action =
-      ({ ...items }: Record<TFormName, string>) =>
+      (items: Record<TFormName, string>) =>
       () => {
-        console.table(items)
-        console.table(credit)
         createPayment({
           valor_del_pago: +items?.valor_del_pago,
-          comentario: items?.comentario,
+          comentario: items?.comentario ?? "",
           credito_id: credit?.id,
           fecha_de_pago: items?.fecha_de_pago
       })
@@ -131,6 +133,7 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
             name={'valor_del_pago' as TFormName}
             type="number"
             placeholder={text.form.amount.placeholder}
+              defaultValue={credit?.cuotas?.at(0)?.valor_de_cuota}
           />
         </Label>
         <Label className='!col-span-1'>

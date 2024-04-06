@@ -28,7 +28,7 @@ import { getFrecuencyById } from '@/lib/type/frecuency'
 import { createContext } from 'react'
 import { TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
 import { _creditSelected } from '@/pages/_layout/credit'
-import { getClientById } from '@/api/clients'
+import { TCLIENT_GET, getClientById } from '@/api/clients'
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
   component: CreditById,
@@ -49,6 +49,7 @@ interface TCreditByIdProps {
 }
 
 export const _selectedCredit = createContext<[TCREDIT_GET] | undefined>(undefined)
+export const _clientContext = createContext<[TCLIENT_GET] | undefined>(undefined)
 
 /* eslint-disable-next-line */
 export function CreditById({
@@ -76,6 +77,7 @@ export function CreditById({
   const moreValue = moraType === "Porciento" ? ((credit?.valor_de_mora + credit?.tasa_de_interes)/100 * (cuoteValue ?? 1)) : credit?.valor_de_mora
 
   return (
+    <_clientContext.Provider value={[ client ]}>
     <_selectedCredit.Provider value={[ credit ]}>
       {!children && <Navigate to={Route.to} />}
       <div className="space-y-4">
@@ -227,6 +229,7 @@ export function CreditById({
         )}
       </div>
       </_selectedCredit.Provider>
+      </_clientContext.Provider>
   )
 }
 
