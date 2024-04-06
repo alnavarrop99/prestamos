@@ -3,13 +3,12 @@ import {
   Outlet,
   redirect,
   useChildMatches,
+  useRouter,
 } from '@tanstack/react-router'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import {
   ArrowLeftCircle,
-  BadgeCent,
-  BadgeDollarSign,
   Calendar as CalendarIcon,
   icons,
   LogOut,
@@ -52,9 +51,9 @@ import {
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
-import { QueryObserver, useIsFetching, useIsMutating, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useIsFetching, useIsMutating, useQuery } from '@tanstack/react-query'
 import { SpinLoader } from '@/components/ui/loader'
-import { queryClient } from '@/pages/__root'
+import brand from "@/assets/menu-brand.avif"
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
@@ -114,6 +113,7 @@ export function Layout({
   const { deleteToken } = useToken()
   const isFetching = useIsFetching()
   const isMutating = useIsMutating()
+  const { history } = useRouter()
 
   useEffect(() => {
     setClients(clientsDB) 
@@ -192,7 +192,7 @@ export function Layout({
   const onBack: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
   > = () => {
-    window.history.back()
+    history.back()
   }
 
   const onLogut: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
@@ -215,17 +215,7 @@ export function Layout({
           }
         )}
       >
-        <div className="grid place-items-center">
-          <h2 className="flex items-center gap-2 text-xl">
-            <BadgeDollarSign
-              className={clsx({ 'hover:animate-pulse': open })}
-            />
-            <span className={clsx('font-bold uppercase', { hidden: open })}>
-              {text.title}
-            </span>
-            <BadgeCent className={clsx({ hidden: open })} />
-          </h2>
-        </div>
+        <img alt='brand' src={brand} className='my-4' />
         <Separator className="my-4" />
         <div className="p-4 px-6 text-xl">
           <ul className="space-y-3 [&_button]:w-full">

@@ -31,8 +31,6 @@ export function Notifications({ notifications: _notifications = [] as TNotificat
     deleteNotificationById( notification.id ) 
   }
 
-  console.log(notifications);
-
   return (
     <div className='space-y-2'>
       <div className="flex items-center gap-2">

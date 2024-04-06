@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
-import { createRouter, RouterProvider } from '@tanstack/react-router'
+import { createBrowserHistory, createRouter, RouterProvider } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 
 async function enableMocking() {
@@ -12,9 +12,12 @@ async function enableMocking() {
   return worker.start();
 }
 
+const history = createBrowserHistory()
 export const route = createRouter({
   routeTree,
+  history
 })
+
 
 enableMocking().then(() => {
   ReactDOM.createRoot(document.getElementById('root')!).render(
