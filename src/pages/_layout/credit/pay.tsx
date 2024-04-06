@@ -176,7 +176,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
             form="pay-credit"
             type="submit"
             disabled={!checked}
-            className={clsx({ "bg-green-500 hover:bg-green-700": checked, })}>
+            className={clsx({ "bg-success hover:bg-success hover:ring-4 ring-success-foreground": checked, })}>
             {text.button.pay}
           </Button>
           <DialogClose asChild>

@@ -67,7 +67,7 @@ export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportPro
         {reports.map(({ nombre, parametros, id, comentario}, index) => (
           <AccordionItem
             key={id}
-            className={clsx('rounded-m px-4 py-2 shadow-lg hover:shadow-xl')}
+            className={clsx('rounded-m px-4 py-2 shadow-lg hover:shadow-xl bg-card rounded-md')}
             value={'item' + id}
           >
             <AccordionTrigger className="group !no-underline">

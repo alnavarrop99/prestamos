@@ -95,7 +95,7 @@ export function CreditById({
               <Link to={'./pay'}>
                 <Button
                   variant="default"
-                  className={clsx('bg-green-500 hover:bg-green-700')}
+                  className={clsx('bg-success hover:bg-success hover:ring-4 ring-success-foreground')}
                 >
                   <Pay />
                 </Button>
@@ -146,7 +146,7 @@ export function CreditById({
           <li>
             <b>{text.details.frecuency + ":"}</b> <span>{getFrecuencyById({ frecuencyId: credit?.frecuencia_del_credito_id })?.nombre  + '.'}</span>
           </li>
-          <li className={clsx({ "[&>b]:text-green-700": !moraStatus, "[&>b]:line-through": moraStatus })}>
+          <li className={clsx({ "[&>b]:text-success": !moraStatus, "[&>b]:line-through": moraStatus })}>
             <b>{text.details.interest + ":"}</b> <span>{credit?.tasa_de_interes + '% de $' + cuoteValue + "."}</span>
           </li>
           <li className={clsx({ "[&>b]:text-destructive": moraStatus, "[&>b]:line-through": !moraStatus })}>
@@ -189,7 +189,7 @@ export function CreditById({
                     {/* fix this date because returt a invalid date time */}
                     <ul>
                       <li className='before:content-["_-_"] before:font-bold before:text-destructive'>{credit?.pagos?.[index]?.fecha_de_pago?.slice(0,10)}</li>
-                      <li className='before:content-["_+_"] before:font-bold before:text-green-700'>{format(fecha_de_pago, 'yyyy-MM-dd')}</li>
+                      <li className='before:content-["_+_"] before:font-bold before:text-success'>{format(fecha_de_pago, 'yyyy-MM-dd')}</li>
                     </ul>
                   </TableCell>
                   <TableCell>

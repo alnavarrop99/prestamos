@@ -211,7 +211,7 @@ export function Credits({
                                 onClick={onClick(index)}
                                 variant="default"
                                 className={clsx(
-                                  'invisible bg-green-400 px-3 opacity-0 hover:bg-green-700 group-hover:visible group-hover:opacity-100'
+                                  'invisible opacity-0 group-hover:visible group-hover:opacity-100 bg-success hover:bg-success hover:ring-4 ring-success-foreground'
                                 )}
                               >
                                 <Pay />

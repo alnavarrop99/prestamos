@@ -403,8 +403,8 @@ export function Layout({
               {!offline && (
                 <Network
                   className={clsx('ms-auto animate-bounce', {
-                    'stroke-green-500': offline,
-                    'stroke-red-500': !offline,
+                    'stroke-success': offline,
+                    'stroke-destructive': !offline,
                   })}
                 />
               )}
