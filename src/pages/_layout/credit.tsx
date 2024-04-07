@@ -18,13 +18,14 @@ import {
   Printer,
   CircleDollarSign as Pay,
 } from 'lucide-react'
-import { createContext, useEffect, useState } from 'react'
+import { createContext, forwardRef, useEffect, useState } from 'react'
 import { getCreditById, getCreditsFilter, getCreditsList, type TCREDIT_GET_FILTER, type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 import { useStatus } from '@/lib/context/layout'
 import { format, isValid } from 'date-fns'
 import styles from "@/styles/global.module.css";
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { getClientById } from '@/api/clients'
+import brand from '@/assets/menu-brand.avif'
 
 export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
@@ -193,7 +194,7 @@ export function Credits({
                           <DialogTrigger asChild className="ms-auto" >
                             <Link
                               to={'./print'}
-                              params={{ creditId }}
+                              search={{ creditId }}
                             >
                               <Button
                                 variant="ghost"
@@ -234,6 +235,51 @@ export function Credits({
 
 Credits.dispalyname = 'CreditsList'
 
+interface TPrintCredit extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
+  client: string
+  ssn: string
+  telephone: string
+  phone: string
+  date: string
+  pay: number
+  mora?: number
+  cuoteNumber: number
+  pending: number
+  comment?: string
+}
+
+export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({ client, cuoteNumber, mora, pay, date, comment, pending, telephone, ssn, phone }, ref) {
+  return <div ref={ref} className='text-sm [&>section>p]:font-bold [&>section>p>span]:italic [&>section>p>span]:font-normal'>
+    <img alt='brand' src={brand} className='filter grayscale light:brightness-50 dark:brightness-200 mx-auto' width={140} />
+    <h4 className='text-sm font-bold'>{text.print.title}</h4>
+    <p>------------------------------------</p>
+    <section>
+      <p>{text.print.client + ":"}<span>{client}</span> </p>
+      <p >{text.print.ssn + ":"}<span>{ssn}</span> </p>
+      <p>{text.print.telephone + ":"}<span>{telephone}</span> </p>
+      <p>{text.print.title + ":"}<span>{phone}</span> </p>
+      <p>{text.print.date + ":"}<span>{date}</span></p>
+    {/* <p>Hora: 13:45</p> */}
+    </section>
+    <p>______________________________</p>
+    <section>
+      <p>{text.print.cuoteNumber + ":"}<span>{cuoteNumber}</span></p>
+      <p>{text.print.pay + ":"}<span> $ {pay} </span></p>
+      {  mora &&  <p>{text.print.mora + ":"}<span>{mora}</span></p> }
+    </section>
+    <p>______________________________</p>
+    <section>
+      <p>{text.print.pending + ":"} <span>{pending}</span></p>
+      { comment && <>
+        <p>{text.print.comment + ":"}</p>
+        <p className='italic !font-normal line-clamp-3'>{comment}</p>
+      </>}
+    </section>
+    <p>______________________________</p>
+    <p className='my-4 ms-auto w-fit italic underline'> {text.print.services} <span className='font-bold not-italic'>{import.meta.env.VITE_NAME}</span></p>
+  </div>
+}  )  
+
 const text = {
   title: 'Prestamos:',
   browser: 'Prestamos',
@@ -260,4 +306,18 @@ const text = {
     frecuency: 'Frecuencia',
     history: 'Historial de pagos',
   },
+  print: {
+    title: "Comprobante de pago",
+    client: "Cliente",
+    ssn: "Cédula",
+    telephone: "Teléfono",
+    phone: "Celular",
+    date: "Fecha",
+    pay: "Pago cuota",
+    mora: "Mora",
+    cuoteNumber: "Número de cuota",
+    pending: "Pendiente",
+    comment: "Comentario",
+    services: "Servicios",
+  }
 }
