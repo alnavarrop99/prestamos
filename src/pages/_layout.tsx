@@ -217,7 +217,7 @@ export function Layout({
         )}
       >
         <Link to={"/"}>
-          <img alt='brand' src={ !open ? brand : brandOff} className='my-4 min-h-32' />
+          <img alt='brand' src={ !open ? brand : brandOff} className='aspect-contain min-h-24' />
         </Link>
         <Separator className="my-4" />
         <div className="p-4 px-6 text-xl">
