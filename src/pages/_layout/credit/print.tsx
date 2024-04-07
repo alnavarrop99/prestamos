@@ -152,7 +152,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
                   telephone: client?.telefono,
                   phone: client?.celular,
                   // TODO: date: format( pay?.fecha_de_pago ?? "",  "dd-MM-yyyy / hh:mm aaaa" ),
-                  date: pay?.fecha_de_pago ?? "",
+                  date: pay?.fecha_de_pago?.slice(0,10) ?? "",
                   pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
                   mora: mora ? +mora.toFixed(2) : undefined,
                   cuoteNumber: (payIndex ?? creditDB?.pagos?.length - 1) + 1,

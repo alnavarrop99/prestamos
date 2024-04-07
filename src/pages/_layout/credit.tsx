@@ -261,7 +261,7 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
       <p>{text.print.client + ":"}<span>{client + "."}</span> </p>
       <p >{text.print.ssn + ":"}<span>{ssn + "."}</span> </p>
       <p>{text.print.telephone + ":"}<span>{telephone + "."}</span> </p>
-      <p>{text.print.title + ":"}<span>{phone + "."}</span> </p>
+      <p>{text.print.phone + ":"}<span>{phone + "."}</span> </p>
       <p>{text.print.date + ":"}<span>{date + "."}</span></p>
     </section>
     <section>
