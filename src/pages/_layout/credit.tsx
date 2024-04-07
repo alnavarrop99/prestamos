@@ -35,14 +35,14 @@ export const Route = createFileRoute('/_layout/credit')({
     const list = await getCreditsList()
     const data: TCREDIT_GET_FILTER_ALL = await Promise.all( list?.map<Promise<TCREDIT_GET_FILTER>>( async ({ id: creditId, owner_id, frecuencia_del_credito_id }) => {
       const { nombres, apellidos } = await getClientById({ params: { clientId: "" + owner_id } })
-      const { cuotas } = await getCreditById({ params: { creditId: "" + creditId } })
+      const { cuotas, pagos } = await getCreditById({ params: { creditId: "" + creditId } })
       return ({
         clientId: owner_id,
         id: creditId,
         frecuencia: getFrecuencyById({ frecuencyId: frecuencia_del_credito_id ?? 1 }),
         fecha_de_cuota: cuotas?.at(-1)?.fecha_de_pago ,
         valor_de_cuota: cuotas?.at(-1)?.valor_de_cuota,
-        numero_de_cuota: cuotas?.at(-1)?.numero_de_cuota,
+        numero_de_cuota: pagos?.length,
         valor_de_la_mora: cuotas?.at(-1)?.valor_de_mora,
         nombre_del_cliente: nombres + " " + apellidos,
       }) as TCREDIT_GET_FILTER
@@ -192,20 +192,23 @@ export function Credits({
                         { isValid(fecha_de_cuota) && <Badge> {format(fecha_de_cuota , "dd-MM-yyyy")} </Badge>}
                         <Dialog open={open} onOpenChange={onOpenChange}>
                           <DialogTrigger asChild className="ms-auto" >
-                            <Link
+                            {<Link
                               to={'./print'}
                               search={{ creditId }}
+                              disabled={numero_de_cuota <= 0}
                             >
                               <Button
                                 variant="ghost"
                                 onClick={onClick(index)}
+                                disabled={numero_de_cuota <= 0}
                                 className={clsx(
-                                  'invisible px-3 opacity-0 hover:ring hover:ring-primary group-hover:visible group-hover:opacity-100'
+                                  'invisible px-3 opacity-0 hover:ring hover:ring-primary  group-hover:opacity-100',
+                                { "group-hover:visible": numero_de_cuota > 0 }
                                 )}
                               >
                                 <Printer />
                               </Button>
-                            </Link>
+                            </Link>}
                           </DialogTrigger>
                           <DialogTrigger asChild>
                             <Link to={'./pay'} params={{ creditId }}>
@@ -269,7 +272,7 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
     </section>
     <p>______________________________</p>
     <section>
-      <p>{text.print.pending + ":"} <span>{pending}</span></p>
+      <p>{text.print.pending + ""} <span>$ {pending}</span></p>
       { comment && <>
         <p>{text.print.comment + ":"}</p>
         <p className='italic !font-normal line-clamp-3'>{comment}</p>

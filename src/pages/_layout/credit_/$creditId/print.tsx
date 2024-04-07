@@ -22,7 +22,6 @@ import { useReactToPrint } from 'react-to-print'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { _clientContext, _selectedCredit } from '../$creditId'
 import { TCLIENT_GET } from '@/api/clients'
-import { format } from 'date-fns'
 import { Input } from '@/components/ui/input'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
@@ -54,7 +53,10 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
   })
 
   const onChange: React.ChangeEventHandler< React.ComponentRef< typeof Input > > = ( ev ) => {
-    setOpt( { opt, payIndex: +ev.target.value })
+    const value = +ev.target.value - 1
+    if( value < 0 && value >= credit?.pagos?.length) return; 
+    setOpt( { opt, payIndex: value })
+
   }
 
   const onValueChange = ( value: string ) => {
@@ -114,7 +116,7 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
               onChange={onChange}
               type='number'
               min={1}
-              max={credit?.pagos?.length - 1}
+              max={credit?.pagos?.length}
               placeholder={text.form.pay.placeholder} 
            />
         </Label> }
@@ -122,8 +124,8 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
       <DialogFooter >
         <div className={clsx("flex gap-2",
         {
-          '!flex-row-reverse': opt === "last" || ( opt === "especific" && payIndex ),
-          '[&>*:last-child]:animate-pulse': !opt ||  (opt === "especific" && !payIndex),
+          '!flex-row-reverse': opt === "last" || ( opt === "especific" &&  typeof payIndex !== "undefined" ),
+          '[&>*:last-child]:animate-pulse': !opt ||  (opt === "especific" && typeof payIndex === "undefined"),
 
         }
       )}>
@@ -134,7 +136,7 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
                   variant="default"
                   form="print-credit"
                   type="submit"  
-                  disabled={!opt || ( opt === "especific" && !payIndex)}
+                  disabled={!opt || ( opt === "especific" && typeof payIndex === "undefined")}
                 >
                   {text.button.print}
               </Button>
@@ -146,20 +148,21 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
                   ssn: client?.numero_de_identificacion,
                   telephone: client?.telefono,
                   phone: client?.celular,
-                  date: format( pay?.fecha_de_pago ?? "",  "dd-MM-yyyy / hh:mm aaaa" ),
+                  // TODO: date: format( pay?.fecha_de_pago ?? "",  "dd-MM-yyyy / hh:mm aaaa" ),
+                  date: pay?.fecha_de_pago ?? "",
                   pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
                   mora: mora ? +mora.toFixed(2) : undefined,
-                  cuoteNumber: payIndex ?? credit?.pagos?.length - 1,
-                  pending: +(credit?.monto - credit?.pagos?.reduce( (prev, acc) => {
-                    acc.valor_del_pago += prev?.valor_del_pago
-                    return acc
-                  } )?.valor_del_pago)?.toFixed(2),
+                  cuoteNumber: (payIndex ?? credit?.pagos?.length - 1) + 1,
+                  pending: +(credit?.monto - credit?.pagos?.slice( 0, payIndex ? payIndex + 1 : -1)?.reduce( (prev, acc) => {
+                    const res: typeof acc = { ...acc } 
+                    res.valor_del_pago += prev?.valor_del_pago
+                    return res
+                  }, { valor_del_pago: 0 } )?.valor_del_pago)?.toFixed(2),
                     comment: pay?.comentario === "" ? pay?.comentario : undefined,
                 }}
                 ref={ref} />
           </HoverCardContent>}
         </HoverCard>
-        
         <DialogClose asChild>
           <Button
             type="button"

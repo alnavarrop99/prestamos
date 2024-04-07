@@ -85,8 +85,11 @@ export function CreditById({
           <h1 className="text-3xl font-bold">{text.title}</h1>
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
-              <Link to={'./print'}>
-                <Button variant="ghost" className='hover:ring hover:ring-primary'>
+              <Link to={'./print'} 
+                disabled={credit?.pagos?.length <= 0}>
+                <Button variant="ghost"
+                    className='hover:ring hover:ring-primary' 
+                    disabled={credit?.pagos?.length <= 0}>
                   <Printer />
                 </Button>
               </Link>

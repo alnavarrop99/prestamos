@@ -20,9 +20,7 @@ import { useStatus } from '@/lib/context/layout'
 import { useReactToPrint } from "react-to-print";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { getClientById } from '@/api/clients'
-import { format } from 'date-fns'
 import { Input } from '@/components/ui/input'
-import credit from '@/mocks/credit'
 
 type TSearch = {
   creditId: number
@@ -60,7 +58,9 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
   }
 
   const onChange: React.ChangeEventHandler< React.ComponentRef< typeof Input > > = ( ev ) => {
-    setOpt( { opt, payIndex: +ev.target.value })
+    const value = +ev.target.value - 1
+    if( value < 0 && value >= creditDB?.pagos?.length) return; 
+    setOpt( { opt, payIndex: value })
   }
 
   const handlePrint = useReactToPrint({
@@ -123,7 +123,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
                 onChange={onChange}
                 type='number'
                 min={1}
-                max={creditDB?.pagos?.length - 1}
+                max={creditDB?.pagos?.length }
                 placeholder={text.form.pay.placeholder} 
              />
           </Label> }
@@ -131,15 +131,15 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
       <DialogFooter >
         <div className={clsx("flex gap-2",
         {
-          '!flex-row-reverse': opt === "last" || ( opt === "especific" && payIndex ),
-          '[&>*:last-child]:animate-pulse': !opt ||  (opt === "especific" && !payIndex),
+          '!flex-row-reverse': opt === "last" || ( opt === "especific" &&  typeof payIndex !== "undefined" ),
+          '[&>*:last-child]:animate-pulse': !opt ||  (opt === "especific" && typeof payIndex === "undefined"),
         }
       )}>
         <HoverCard> 
             <HoverCardTrigger asChild className={clsx('[&>svg]:stroke-primary [&>svg]:cursor-pointer', {
             })}>
               <Button form="print-credit" type="submit"  
-                disabled={!opt || ( opt === "especific" && !payIndex)}
+                disabled={!opt || ( opt === "especific" && typeof payIndex === "undefined")}
               >
                 {text.button.print}
               </Button>
@@ -151,14 +151,16 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
                   ssn: client?.numero_de_identificacion,
                   telephone: client?.telefono,
                   phone: client?.celular,
-                  date: format( pay?.fecha_de_pago ?? "",  "dd-MM-yyyy / hh:mm aaaa" ),
+                  // TODO: date: format( pay?.fecha_de_pago ?? "",  "dd-MM-yyyy / hh:mm aaaa" ),
+                  date: pay?.fecha_de_pago ?? "",
                   pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
                   mora: mora ? +mora.toFixed(2) : undefined,
-                  cuoteNumber: payIndex ?? creditDB?.pagos?.length - 1,
-                  pending: +(creditDB?.monto - creditDB?.pagos?.reduce( (prev, acc) => {
-                    acc.valor_del_pago += prev?.valor_del_pago
-                    return acc
-                  } )?.valor_del_pago)?.toFixed(2),
+                  cuoteNumber: (payIndex ?? creditDB?.pagos?.length - 1) + 1,
+                  pending: +(creditDB?.monto - creditDB?.pagos?.slice( 0, payIndex ? payIndex + 1 : -1)?.reduce( (prev, acc) => {
+                    const res: typeof acc = { ...acc } 
+                    res.valor_del_pago += prev?.valor_del_pago
+                    return res
+                  }, { valor_del_pago: 0 } )?.valor_del_pago)?.toFixed(2),
                     comment: pay?.comentario === "" ? pay?.comentario : undefined,
                 }}
                 ref={ref} />
