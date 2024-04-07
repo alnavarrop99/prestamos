@@ -252,35 +252,34 @@ interface TPrintCredit extends React.DetailedHTMLProps<React.HTMLAttributes<HTML
 }
 
 export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({ client, cuoteNumber, mora, pay, date, comment, pending, telephone, ssn, phone }, ref) {
-  return <div ref={ref} className='text-sm [&>section>p]:font-bold [&>section>p>span]:italic [&>section>p>span]:font-normal'>
-    <img alt='brand' src={brand} className='filter grayscale light:brightness-50 dark:brightness-200 mx-auto' width={140} />
-    <h4 className='text-sm font-bold'>{text.print.title}</h4>
-    <p>------------------------------------</p>
+  return <main ref={ref} className='p-4 py-6 text-sm [&>section>p]:font-bold [&>section>p>span]:italic [&>section>p>span]:font-normal space-y-3 divide-y-2 divide-gray-900 dark:divide-gray-300'>
+    <header>
+      <img alt='brand' src={brand} className='filter grayscale light:brightness-50 dark:brightness-200 mx-auto' width={160} />
+      <h4 className='text-sm font-bold'>{text.print.title + ":"}</h4>
+    </header>
     <section>
-      <p>{text.print.client + ":"}<span>{client}</span> </p>
-      <p >{text.print.ssn + ":"}<span>{ssn}</span> </p>
-      <p>{text.print.telephone + ":"}<span>{telephone}</span> </p>
-      <p>{text.print.title + ":"}<span>{phone}</span> </p>
-      <p>{text.print.date + ":"}<span>{date}</span></p>
-    {/* <p>Hora: 13:45</p> */}
+      <p>{text.print.client + ":"}<span>{client + "."}</span> </p>
+      <p >{text.print.ssn + ":"}<span>{ssn + "."}</span> </p>
+      <p>{text.print.telephone + ":"}<span>{telephone + "."}</span> </p>
+      <p>{text.print.title + ":"}<span>{phone + "."}</span> </p>
+      <p>{text.print.date + ":"}<span>{date + "."}</span></p>
     </section>
-    <p>______________________________</p>
     <section>
-      <p>{text.print.cuoteNumber + ":"}<span>{cuoteNumber}</span></p>
-      <p>{text.print.pay + ":"}<span> $ {pay} </span></p>
-      {  mora &&  <p>{text.print.mora + ":"}<span>{mora}</span></p> }
+      <p>{text.print.cuoteNumber + ":"}<span>{cuoteNumber + "."}</span></p>
+      <p>{text.print.pay + ":"}<span> $ {pay + "."} </span></p>
+      {  mora &&  <p>{text.print.mora + ":"}<span>{mora + "."}</span></p> }
     </section>
-    <p>______________________________</p>
     <section>
-      <p>{text.print.pending + ""} <span>$ {pending}</span></p>
+      <p>{text.print.pending + ""} <span>$ {pending + "."}</span></p>
       { comment && <>
         <p>{text.print.comment + ":"}</p>
         <p className='italic !font-normal line-clamp-3'>{comment}</p>
       </>}
     </section>
-    <p>______________________________</p>
-    <p className='my-4 ms-auto w-fit italic underline'> {text.print.services} <span className='font-bold not-italic'>{import.meta.env.VITE_NAME}</span></p>
-  </div>
+    <footer>
+      <p className='my-4 ms-auto w-fit italic underline'> {text.print.services} <span className='font-bold not-italic'>{import.meta.env.VITE_NAME}</span></p>
+    </footer>
+  </main>
 }  )  
 
 const text = {
