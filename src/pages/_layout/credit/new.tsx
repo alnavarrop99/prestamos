@@ -347,7 +347,10 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <li><span>Monto por cuota</span>: {"$" + getAmountCuote({ interest, amount, coute })}. </li>
         </ul>
         <div className='space-x-2'>
-          <Button variant="default" form="new-credit" type="submit" className='self-end'>
+          <Button
+              variant="default"
+              form="new-credit"
+              type="submit" className='self-end'>
             {text.button.update}
           </Button>
           <DialogClose asChild>

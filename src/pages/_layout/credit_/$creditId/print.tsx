@@ -129,7 +129,7 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
 
         }
       )}>
-        <HoverCard> 
+        <HoverCard openDelay={0} closeDelay={0.5 * 1000}> 
             <HoverCardTrigger asChild className={clsx('[&>svg]:stroke-primary [&>svg]:cursor-pointer', {
             })}>
                 <Button

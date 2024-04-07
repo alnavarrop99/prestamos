@@ -69,7 +69,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
   })
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
-    if (!form.current || !opt) return
+    if (!form.current || !opt || !ref?.current) return
 
     console.table(creditDB)
     setOpen({ open: !open })
@@ -135,7 +135,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
           '[&>*:last-child]:animate-pulse': !opt ||  (opt === "especific" && typeof payIndex === "undefined"),
         }
       )}>
-        <HoverCard> 
+        <HoverCard openDelay={0} closeDelay={0.5 * 1000}> 
             <HoverCardTrigger asChild className={clsx('[&>svg]:stroke-primary [&>svg]:cursor-pointer', {
             })}>
               <Button form="print-credit" type="submit"  
