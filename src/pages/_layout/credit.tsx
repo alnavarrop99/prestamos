@@ -18,29 +18,31 @@ import {
   Printer,
   CircleDollarSign as Pay,
 } from 'lucide-react'
-import { createContext, useEffect, useState } from 'react'
-import { getCreditById, getCreditsList, type TCREDIT_GET_FILTER, type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
+import { createContext, forwardRef, useEffect, useState } from 'react'
+import { getCreditById, getCreditsFilter, getCreditsList, type TCREDIT_GET_FILTER, type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 import { useStatus } from '@/lib/context/layout'
 import { format, isValid } from 'date-fns'
 import styles from "@/styles/global.module.css";
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { getClientById } from '@/api/clients'
+import brand from '@/assets/menu-brand.avif'
 
 export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
   loader: async () => {
     // TODO: this is a temporal function to getFilter
+    if(+import.meta.env.VITE_MSW) return (await getCreditsFilter()());
     const list = await getCreditsList()
     const data: TCREDIT_GET_FILTER_ALL = await Promise.all( list?.map<Promise<TCREDIT_GET_FILTER>>( async ({ id: creditId, owner_id, frecuencia_del_credito_id }) => {
       const { nombres, apellidos } = await getClientById({ params: { clientId: "" + owner_id } })
-      const { cuotas } = await getCreditById({ params: { creditId: "" + creditId } })
+      const { cuotas, pagos } = await getCreditById({ params: { creditId: "" + creditId } })
       return ({
         clientId: owner_id,
         id: creditId,
         frecuencia: getFrecuencyById({ frecuencyId: frecuencia_del_credito_id ?? 1 }),
         fecha_de_cuota: cuotas?.at(-1)?.fecha_de_pago ,
         valor_de_cuota: cuotas?.at(-1)?.valor_de_cuota,
-        numero_de_cuota: cuotas?.at(-1)?.numero_de_cuota,
+        numero_de_cuota: pagos?.length,
         valor_de_la_mora: cuotas?.at(-1)?.valor_de_mora,
         nombre_del_cliente: nombres + " " + apellidos,
       }) as TCREDIT_GET_FILTER
@@ -190,20 +192,23 @@ export function Credits({
                         { isValid(fecha_de_cuota) && <Badge> {format(fecha_de_cuota , "dd-MM-yyyy")} </Badge>}
                         <Dialog open={open} onOpenChange={onOpenChange}>
                           <DialogTrigger asChild className="ms-auto" >
-                            <Link
+                            {<Link
                               to={'./print'}
-                              params={{ creditId }}
+                              search={{ creditId }}
+                              disabled={numero_de_cuota <= 0}
                             >
                               <Button
                                 variant="ghost"
                                 onClick={onClick(index)}
+                                disabled={numero_de_cuota <= 0}
                                 className={clsx(
-                                  'invisible px-3 opacity-0 hover:ring hover:ring-primary group-hover:visible group-hover:opacity-100'
+                                  'invisible px-3 opacity-0 hover:ring hover:ring-primary  group-hover:opacity-100',
+                                { "group-hover:visible": numero_de_cuota > 0 }
                                 )}
                               >
                                 <Printer />
                               </Button>
-                            </Link>
+                            </Link>}
                           </DialogTrigger>
                           <DialogTrigger asChild>
                             <Link to={'./pay'} params={{ creditId }}>
@@ -211,7 +216,7 @@ export function Credits({
                                 onClick={onClick(index)}
                                 variant="default"
                                 className={clsx(
-                                  'invisible bg-green-400 px-3 opacity-0 hover:bg-green-700 group-hover:visible group-hover:opacity-100'
+                                  'invisible opacity-0 group-hover:visible group-hover:opacity-100 bg-success hover:bg-success hover:ring-4 ring-success-foreground'
                                 )}
                               >
                                 <Pay />
@@ -232,6 +237,50 @@ export function Credits({
 }
 
 Credits.dispalyname = 'CreditsList'
+
+interface TPrintCredit extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
+  client: string
+  ssn: string
+  telephone: string
+  phone: string
+  date: string
+  pay: number
+  mora?: number
+  cuoteNumber: number
+  pending: number
+  comment?: string
+}
+
+export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({ client, cuoteNumber, mora, pay, date, comment, pending, telephone, ssn, phone }, ref) {
+  return <main ref={ref} className='p-4 py-6 text-sm [&>section>p]:font-bold [&>section>p>span]:italic [&>section>p>span]:font-normal space-y-3 divide-y-2 divide-gray-900 dark:divide-gray-300'>
+    <header>
+      <img alt='brand' src={brand} className='filter grayscale light:brightness-50 dark:brightness-200 mx-auto' width={160} />
+      <h4 className='text-sm font-bold'>{text.print.title + ":"}</h4>
+    </header>
+    <section>
+      <p>{text.print.client + ":"}<span>{client + "."}</span> </p>
+      <p >{text.print.ssn + ":"}<span>{ssn + "."}</span> </p>
+      <p>{text.print.telephone + ":"}<span>{telephone + "."}</span> </p>
+      <p>{text.print.phone + ":"}<span>{phone + "."}</span> </p>
+      <p>{text.print.date + ":"}<span>{date + "."}</span></p>
+    </section>
+    <section>
+      <p>{text.print.cuoteNumber + ":"}<span>{cuoteNumber + "."}</span></p>
+      <p>{text.print.pay + ":"}<span> $ {pay + "."} </span></p>
+      {  mora &&  <p>{text.print.mora + ":"}<span>{mora + "."}</span></p> }
+    </section>
+    <section>
+      <p>{text.print.pending + ""} <span>$ {pending + "."}</span></p>
+      { comment && <>
+        <p>{text.print.comment + ":"}</p>
+        <p className='italic !font-normal line-clamp-3'>{comment}</p>
+      </>}
+    </section>
+    <footer>
+      <p className='my-4 ms-auto w-fit italic underline'> {text.print.services} <span className='font-bold not-italic'>{import.meta.env.VITE_NAME}</span></p>
+    </footer>
+  </main>
+}  )  
 
 const text = {
   title: 'Prestamos:',
@@ -259,4 +308,18 @@ const text = {
     frecuency: 'Frecuencia',
     history: 'Historial de pagos',
   },
+  print: {
+    title: "Comprobante de pago",
+    client: "Cliente",
+    ssn: "Cédula",
+    telephone: "Teléfono",
+    phone: "Celular",
+    date: "Fecha",
+    pay: "Pago cuota",
+    mora: "Mora",
+    cuoteNumber: "Número de cuota",
+    pending: "Pendiente",
+    comment: "Comentario",
+    services: "Servicios",
+  }
 }

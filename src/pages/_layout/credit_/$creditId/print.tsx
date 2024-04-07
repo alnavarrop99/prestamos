@@ -10,17 +10,22 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
-import { useRef, useState } from 'react'
+import { useContext, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import styles from "@/styles/global.module.css"
-import { type TCREDIT_GET, getCreditById } from '@/api/credit'
+import { type TCREDIT_GET } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { Navigate } from '@tanstack/react-router'
+import { PrintCredit, _creditSelected } from '../../credit'
+import { useReactToPrint } from 'react-to-print'
+import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
+import { _clientContext, _selectedCredit } from '../$creditId'
+import { TCLIENT_GET } from '@/api/clients'
+import { Input } from '@/components/ui/input'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
   component: PrintCreditById,
-  loader: getCreditById
 })
 
 /* eslint-disable-next-line */
@@ -29,18 +34,33 @@ interface TPaymentCreditByIdProps {
 }
 
 /* eslint-disable-next-line */
-type TOptState = "last" | "especific"
+const options = { last: "Ultimo pago", especific: "Pago especifico" }
+type TOptState = keyof typeof options
   
 
 /* eslint-disable-next-line */
 export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPaymentCreditByIdProps ) {
   const form = useRef<HTMLFormElement>(null)
-  const [ opt, setOpt ] = useState<TOptState | undefined>(undefined)
-  const credit = Route.useLoaderData() ?? _credit
+  const [ { opt, payIndex }, setOpt ] = useState<{ payIndex?: number, opt?: TOptState }>({})
+  const [ credit ] = useContext(_selectedCredit) ?? [ {} as TCREDIT_GET ]
+  const [ client ] = useContext(_clientContext) ?? [ {} as TCLIENT_GET ]
   const { open, setOpen } = useStatus()
+  const ref = useRef< React.ComponentRef< typeof PrintCredit > >(null)
+
+  const handlePrint = useReactToPrint({
+    content: () => ref?.current,
+    documentTitle: "Pago-" + new Date(),
+  })
+
+  const onChange: React.ChangeEventHandler< React.ComponentRef< typeof Input > > = ( ev ) => {
+    const value = +ev.target.value - 1
+    if( value < 0 && value >= credit?.pagos?.length) return; 
+    setOpt( { opt, payIndex: value })
+
+  }
 
   const onValueChange = ( value: string ) => {
-    setOpt(value as TOptState)
+    setOpt({opt: value as TOptState })
   }
 
   const onSubmit: React.FormEventHandler< HTMLFormElement > = (ev) => {
@@ -49,9 +69,14 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
     console.table(credit)
     setOpen({ open: !open })
 
+    handlePrint()
+
     form.current.reset()
     ev.preventDefault()
   }
+
+  const pay = useMemo( () => credit?.pagos?.at( payIndex ?? -1 ), [payIndex] ) 
+  const mora = useMemo( () => credit?.cuotas?.at( payIndex ?? -1 )?.valor_de_mora, [payIndex] )
 
   return (
     <>
@@ -74,35 +99,74 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
       >
         <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500'>
           <span>{text.form.options.label} </span>
-          <Select required name={'options' as keyof typeof text.form} value={opt} onValueChange={onValueChange}>
+          <Select required name={'options'} value={opt} onValueChange={onValueChange}>
             <SelectTrigger className="w-full">
               <SelectValue placeholder={text.form.options.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { text.form.options.items.map( ( item ) => <SelectItem key={item} value={item}>{item}</SelectItem> ) }
+              { Object.entries(options).map( ( [ key, value ], i ) => <SelectItem key={i} value={key}>{value}</SelectItem> ) }
             </SelectContent>
           </Select>
         </Label>
+        { opt === "especific" &&
+        <Label>
+          <span>{text.form.pay.label}</span>
+          <Input 
+              required
+              onChange={onChange}
+              type='number'
+              min={1}
+              max={credit?.pagos?.length}
+              placeholder={text.form.pay.placeholder} 
+           />
+        </Label> }
       </form>
       <DialogFooter >
         <div className={clsx("flex gap-2",
         {
-          '!flex-row-reverse': opt,
-          '[&>*:last-child]:animate-pulse': !opt,
+          '!flex-row-reverse': opt === "last" || ( opt === "especific" &&  typeof payIndex !== "undefined" ),
+          '[&>*:last-child]:animate-pulse': !opt ||  (opt === "especific" && typeof payIndex === "undefined"),
+
         }
       )}>
-        <Button
-          variant="default"
-          form="print-credit"
-          type="submit"  
-          disabled={!opt}
-        >
-          {text.button.print}
-        </Button>
+        <HoverCard openDelay={0} closeDelay={0.5 * 1000}> 
+            <HoverCardTrigger asChild className={clsx('[&>svg]:stroke-primary [&>svg]:cursor-pointer', {
+            })}>
+                <Button
+                  variant="default"
+                  form="print-credit"
+                  type="submit"  
+                  disabled={!opt || ( opt === "especific" && typeof payIndex === "undefined")}
+                >
+                  {text.button.print}
+              </Button>
+            </HoverCardTrigger>
+          { opt && <HoverCardContent side='right' className='bg-secondary-foreground rounded-md'>
+              <PrintCredit
+                {...{
+                  client: client?.nombres + " " + client?.apellidos,
+                  ssn: client?.numero_de_identificacion,
+                  telephone: client?.telefono,
+                  phone: client?.celular,
+                  // TODO: date: format( pay?.fecha_de_pago ?? "",  "dd-MM-yyyy / hh:mm aaaa" ),
+                  date: pay?.fecha_de_pago ?? "",
+                  pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
+                  mora: mora ? +mora.toFixed(2) : undefined,
+                  cuoteNumber: (payIndex ?? credit?.pagos?.length - 1) + 1,
+                  pending: +(credit?.monto - credit?.pagos?.slice( 0, payIndex ? payIndex + 1 : -1)?.reduce( (prev, acc) => {
+                    const res: typeof acc = { ...acc } 
+                    res.valor_del_pago += prev?.valor_del_pago
+                    return res
+                  }, { valor_del_pago: 0 } )?.valor_del_pago)?.toFixed(2),
+                    comment: pay?.comentario === "" ? pay?.comentario : undefined,
+                }}
+                ref={ref} />
+          </HoverCardContent>}
+        </HoverCard>
         <DialogClose asChild>
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             className="font-bold hover:ring hover:ring-primary"
           >
             {text.button.close}
@@ -125,6 +189,10 @@ const text = {
     print: 'Imprimir',
   },
   form: {
+    pay: {
+      label: 'Numero del pago:',
+      placeholder: 'Escriba el numero del pago',
+    },
     options: {
       label: 'Opciones:',
       placeholder: 'Seleccione la opcion de impresion',

@@ -129,7 +129,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}

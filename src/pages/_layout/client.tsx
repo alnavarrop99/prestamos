@@ -109,7 +109,7 @@ export function Clients({
     return clients?.filter(
       ({ id: userId }) => userId && search?.clients?.includes(userId)
     )
-  }, [JSON.stringify(clients)])
+  }, [clients])
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser

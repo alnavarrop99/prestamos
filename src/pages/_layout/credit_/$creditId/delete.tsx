@@ -140,7 +140,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}

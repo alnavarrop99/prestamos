@@ -244,7 +244,7 @@ export function NewClient() {
         <DialogClose asChild>
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             className="font-bold hover:ring hover:ring-primary"
           >
             
