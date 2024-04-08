@@ -31,7 +31,7 @@ export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
   loader: async () => {
     // TODO: this is a temporal function to getFilter
-    if(+import.meta.env.VITE_MSW) return (await getCreditsFilter()());
+    if(!!+import.meta.env.VITE_MSW && import.meta.env.DEV) return (await getCreditsFilter()());
     const list = await getCreditsList()
     const data: TCREDIT_GET_FILTER_ALL = await Promise.all( list?.map<Promise<TCREDIT_GET_FILTER>>( async ({ id: creditId, owner_id, frecuencia_del_credito_id }) => {
       const { nombres, apellidos } = await getClientById({ params: { clientId: "" + owner_id } })

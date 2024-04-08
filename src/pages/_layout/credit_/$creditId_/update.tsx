@@ -23,7 +23,7 @@ import { TPAYMENT_GET, TPAYMENT_GET_BASE } from '@/api/payment'
 import { listFrecuencys } from '@/lib/type/frecuency'
 import { TCLIENT_GET_BASE, getClientsList } from '@/api/clients'
 import { getUsersList } from '@/api/users'
-import { X as Close, Cross } from 'lucide-react'
+import { Cross } from 'lucide-react'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,

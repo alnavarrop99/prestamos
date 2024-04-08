@@ -5,7 +5,7 @@ import { createBrowserHistory, createRouter, RouterProvider } from '@tanstack/re
 import { routeTree } from './routeTree.gen'
 
 async function enableMocking() {
-  if (!+import.meta.env.VITE_MSW){
+  if (!+import.meta.env.VITE_MSW || !import.meta.env.DEV){
     return;
   }
   const { worker } = await import('@/mocks/config');
