@@ -246,11 +246,7 @@ export function Clients({
                         column.toggleVisibility(!!value)
                       }
                     >
-                      {
-                        text.dropdown.items?.[
-                          getMenuItem(column.id as TMenuItems)
-                        ]
-                      }
+                      {getMenuItem(column.id)}
                     </DropdownMenuCheckboxItem>
                   ))}
               </DropdownMenuContent>
@@ -352,6 +348,7 @@ export function Clients({
 
 Clients.displayname = 'ClientsList'
 
+/* eslint-disable-next-line */
 type TMenuItems =
   | 'numero_de_identificacion'
   | 'telefono'
@@ -360,17 +357,18 @@ type TMenuItems =
   | 'fullName'
   | 'apellidos'
   | 'referencia'
-const getMenuItem = (name: TMenuItems) => {
+
+const getMenuItem = (name: string) => {
   const data = {
-    numero_de_identificacion: 'id' as keyof TClientTable,
-    telefono: 'telephone' as keyof TClientTable,
-    celular: 'phone' as keyof TClientTable,
-    direccion: 'direction' as keyof TClientTable,
-    fullName: 'firstName' as keyof TClientTable,
-    apellidos: 'lastName' as keyof TClientTable,
-    referencia: 'ref' as keyof TClientTable,
+    numero_de_identificacion: text.dropdown.items?.id,
+    telefono: text.dropdown.items?.telephone,
+    celular: text.dropdown.items?.phone,
+    direccion: text.dropdown.items?.direction,
+    fullName: text.dropdown.items?.firstName,
+    apellidos: text.dropdown.items?.lastName,
+    referencia: text.dropdown.items?.ref,
   }
-  return data?.[name] ?? 'fullName'
+  return data?.[name as TMenuItems] ?? 'fullName'
 }
 
 const text = {
