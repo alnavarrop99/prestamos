@@ -163,7 +163,7 @@ export function NewUser({}: TNewUserProps) {
               required
               name={'rol' as TFormName} 
               defaultValue={""+getRolByName({ rolName: "Administrador" })?.id}>
-            <SelectTrigger className="w-full ring-ring ring-1">
+            <SelectTrigger className="w-full !border-ring !border-1">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>

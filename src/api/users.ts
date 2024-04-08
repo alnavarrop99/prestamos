@@ -1,4 +1,5 @@
 import { useToken } from "@/lib/context/login";
+import { delay } from "msw";
 
 // GET
 export type TUSER_GET = {
@@ -135,6 +136,8 @@ export const getCurrentUser: TGetCurrentUser = async () => {
     method: "GET",
     headers
   })
+
+  await delay(5*1000)
   return data.json()
 }
 

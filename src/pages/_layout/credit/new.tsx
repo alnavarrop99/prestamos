@@ -205,7 +205,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <DatePicker
             name={"fecha_de_aprobacion" as TFormName}
             label={text.form.date.placeholder}
-            className='border border-primary' 
+            className='!border-1 !border-ring'
           />
         </Label>
         <Label>
@@ -277,7 +277,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
             name={'frecuencia_del_credito_id' as TFormName}
             defaultValue={""+getFrecuencyByName({ frecuencyName: "Mensual" })?.id}
           >
-            <SelectTrigger className="w-full ring-1 ring-ring">
+            <SelectTrigger className="w-full !border-1 !border-ring">
               <SelectValue placeholder={text.form.frecuency.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>

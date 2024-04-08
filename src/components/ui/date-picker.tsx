@@ -39,7 +39,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, TDatePicker>(function (
               ref={ref}
               id="date"
               className={cn(
-                'w-full justify-start text-left font-normal',
+                '!dalay-0 !duration-150 w-full justify-start text-left font-normal ring-ring ring-offset-2 aria-expanded:ring-2',
                 !dateRange && 'text-muted-foreground',
                 props.className
               )}
@@ -90,7 +90,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, TDatePicker>(function (
             {...props}
             ref={ref}
             className={cn(
-              'w-full justify-start text-left font-normal',
+              '!dalay-0 !duration-150 w-full justify-start text-left font-normal ring-ring ring-offset-2 aria-expanded:ring-2',
               !date && 'text-muted-foreground',
               props.className
             )}

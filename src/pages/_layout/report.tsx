@@ -124,7 +124,11 @@ function FormElement({
   required?: boolean
 }) {
   if (type === 'date')
-    return <DatePicker required={required} label="Seleccione una fecha" name={name} />
+    return <DatePicker
+    required={required}
+    label="Seleccione una fecha"
+    name={name} 
+  />
   return (
     <Input
       type={typeDataByName(type)}

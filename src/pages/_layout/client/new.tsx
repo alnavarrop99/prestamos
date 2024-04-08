@@ -179,7 +179,7 @@ export function NewClient() {
         <Label>
           <span>{text.form.typeId.label} </span>
           <Select required name={'tipo_de_identificacion' as TFormName} defaultValue={""+getIdByName({ idName: "Cédula" })?.id}>
-            <SelectTrigger className="w-full ring-ring ring-1">
+            <SelectTrigger className="w-full !border-ring !border-1">
               <SelectValue placeholder={text.form.typeId.placeholder} />
             </SelectTrigger>
             <SelectContent>

@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { Skeleton } from '@/components/ui/skeleton'
 
-export function Avatar() {
+function Avatar() {
   return (
     <div className="flex items-center space-x-4">
       <Skeleton className="h-12 w-12 rounded-full" />
@@ -13,7 +13,7 @@ export function Avatar() {
   )
 }
 
-export function Content() {
+function Content() {
   return (
     <div className="flex flex-col space-y-3">
       <Skeleton className="h-[125px] w-[250px] rounded-xl" />

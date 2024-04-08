@@ -140,7 +140,7 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
           <span>{text.form.date.label} </span>
           <DatePicker name={"fecha_de_pago" as TFormName}
             label={text.form.date.placeholder}
-            className='border border-primary'
+            className='!border-1 !border-ring'
           />
         </Label>
         <Label className='cols-span-full'>
