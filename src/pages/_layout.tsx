@@ -1,5 +1,7 @@
 import {
+    Await,
   createFileRoute,
+  defer,
   Outlet,
   redirect,
   useChildMatches,
@@ -22,7 +24,7 @@ import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import React, { useEffect, useReducer, useState } from 'react'
+import React, { Suspense, useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -55,10 +57,11 @@ import { useIsFetching, useIsMutating, useQuery } from '@tanstack/react-query'
 import { SpinLoader } from '@/components/ui/loader'
 import brand from "@/assets/menu-brand.avif"
 import brandOff from "@/assets/menu-off-brand.avif"
+import { Skeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/_layout')({
   component: Layout,
-  loader: getCurrentUser,
+  loader: async () => ({ user: defer(getCurrentUser()) }),
   beforeLoad: async (  ) => {
     const { token } = useToken.getState()
     if( !token ){
@@ -90,31 +93,22 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 }
 
 /* eslint-disable-next-line */
-export function Layout({
-  children,
-  theme: _theme,
-  clients: _clients = [] as TCLIENT_GET_ALL,
-  open: _open = false,
-  user: _user = {} as TUSER_GET,
-}: React.PropsWithChildren<TNavigationProps>) {
+export function Layout({ children }: React.PropsWithChildren<TNavigationProps>) {
   const { data: clientsDB, isSuccess } = useQuery({
     queryKey: [getClientsList.name],
     queryFn: getClientsList,
   })
-  const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
-    offline: navigator.onLine,
-    open: _open
-  })
+  const [{ offline, open, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, open: false })
   const { setValue, setSearch, search, value } = useStatus()
-  const  userDB = Route.useLoaderData() ?? { clients: _clients, user: _user, }
+  const  { user } = Route.useLoaderData()
   const [clients, setClients] = useState(clientsDB)
-  const [user] = useState(userDB)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
   const { deleteToken } = useToken()
   const isFetching = useIsFetching()
   const isMutating = useIsMutating()
   const { history } = useRouter()
+  const { name } = useToken()
 
   useEffect(() => {
     setClients(clientsDB) 
@@ -181,8 +175,6 @@ export function Layout({
   }
 
   const onSwitch = (checked: boolean) => {
-    if (_theme) return
-
     if (checked) {
       setTheme('dark')
       return
@@ -367,31 +359,42 @@ export function Layout({
                 value={value}
               />
             </Label>
-              <HoverCard>
-                <HoverCardTrigger>
-                  <Badge className="cursor-pointer text-sm" variant="outline">
-                    {user.nombre
-                      .split(' ')
-                      .map((char) => char.at(0))
-                      .join('')}
-                  </Badge>
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  <Avatar className="border border-primary">
-                    <AvatarImage src={text.avatar.src} alt="user-img" />
-                    <AvatarFallback>{text.avatar.name}</AvatarFallback>
-                  </Avatar>
-                  <ul className="space-y-2 [&>li]:w-fit">
-                    <li>
-                      <span className="font-bold">{user.nombre}</span>
-                    </li>
-                    <li>
-                      
-                      <Badge> {user?.rol} </Badge>
-                    </li>
-                  </ul>
-                </HoverCardContent>
-              </HoverCard>
+               
+                   <HoverCard>
+                    <HoverCardTrigger>
+                      <Badge className="cursor-pointer text-sm" variant="outline">
+                        {(name ?? "User")
+                          .split(' ')
+                          .map((char) => char.at(0))
+                          .join('')}
+                      </Badge>
+                    </HoverCardTrigger>
+                    <HoverCardContent>
+                      <Suspense fallback={
+                        <div className='p-2'>
+                          <Skeleton className='ring-1 ring-ring w-10 h-10 rounded-full'/>
+                          <ul className="space-y-2 [&>li]:w-fit">
+                            <li> <Skeleton className="w-32 h-5" /> </li>
+                            <li> <Skeleton className="w-16 h-4" /> </li>
+                          </ul>
+                        </div>
+                      }>
+                        <Await promise={user}>
+                          {(user) => (
+                        <div className='p-2'>
+                          <Avatar className='ring-1 ring-ring'>
+                            <AvatarFallback>{name?.split(" ")?.map( (items) => (items?.[0]) )}</AvatarFallback>
+                          </Avatar>
+                          <ul className="space-y-2 [&>li]:w-fit">
+                            <li> <span className="font-bold">{user.nombre}</span> </li>
+                            <li> <Badge> {user?.rol} </Badge> </li>
+                          </ul>
+                        </div>
+                          )}
+                        </Await>
+                      </Suspense>
+                  </HoverCardContent>
+                  </HoverCard>
             <Link to={"/"}>
               <Button
                 variant={"ghost"} 
