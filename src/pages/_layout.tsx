@@ -81,7 +81,7 @@ export const Route = createFileRoute('/_layout')({
 /* eslint-disable-next-line */
 interface TStatus {
   offline?: boolean
-  open?: boolean
+  menu?: boolean
   calendar?: boolean
   search?: boolean
 }
@@ -100,7 +100,8 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 
 /* eslint-disable-next-line */
 export function component({ children }: React.PropsWithChildren<TNavigationProps>) {
-  const [{ offline, open, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, open: false })
+  const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, menu: false })
+  const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()
   const  { user, clients: clientsDB } = Route.useLoaderData()
   const [clients, setClients] = useState<TCLIENT_GET_ALL | undefined>(undefined)
@@ -167,14 +168,12 @@ export function component({ children }: React.PropsWithChildren<TNavigationProps
     }
   }
 
-  const onSelect: ( { clientId }: {clientId: number} ) =>  React.MouseEventHandler< HTMLLIElement > = ({ clientId }) => () => {
-    const client = clients?.find( ({ id }) => id === clientId )
+  const onSelect: ( index: number ) =>  React.MouseEventHandler< HTMLLIElement > = ( index ) => () => {
+    const client = clients?.[index]
     if(!client) return;
 
-    const { nombres, apellidos } = client
-    setValue({value: nombres + " " + apellidos})
-    setSearch({ search: !search })
-    setClients([client])
+    // setValue({value: client?.nombres + " " + client?.apellidos})
+    setOpen({ open: !open })
   }
 
   const onSearchChange = () => {
@@ -211,13 +210,13 @@ export function component({ children }: React.PropsWithChildren<TNavigationProps
         className={clsx(
           'row-span-full h-[100dvh] rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl',
           {
-            [styles?.['menu-animation']]: !open,
-            [styles?.['menu-animation-reverse']]: open,
+            [styles?.['menu-animation']]: !menu,
+            [styles?.['menu-animation-reverse']]: menu,
           }
         )}
       >
         <Link to={"/"}>
-          <img alt='brand' src={ !open ? brand : brandOff} className='aspect-contain min-h-24' />
+          <img alt='brand' src={ !menu ? brand : brandOff} className='aspect-contain min-h-24' />
         </Link>
         <Separator className="my-4" />
         <div className="p-4 px-6 text-xl">
@@ -231,10 +230,10 @@ export function component({ children }: React.PropsWithChildren<TNavigationProps
                         <Button
                           variant={!isActive ? 'link' : 'default'}
                           className={clsx('delay-50 font-bold duration-300', {
-                            'p-2': open,
+                            'p-2': menu,
                           })}
                         >
-                          {!open ? title : <Icon />}
+                          {!menu ? title : <Icon />}
                         </Button>
                       )}
                     </Link>
@@ -246,13 +245,13 @@ export function component({ children }: React.PropsWithChildren<TNavigationProps
         </div>
         <Separator className="my-4" />
         <div className="grid place-items-center">
-          {!open ? (
+          {!menu ? (
             <Calendar key={'calendar'} className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold" />
           ) : (
             <Popover onOpenChange={onclick(setStatus, { calendar: !calendar })}>
               <PopoverTrigger>
                 <Button
-                  className={clsx({ 'p-2': open })}
+                  className={clsx({ 'p-2': menu })}
                   variant={!calendar ? 'outline' : 'default'}
                 >
                   <CalendarIcon />
@@ -269,8 +268,8 @@ export function component({ children }: React.PropsWithChildren<TNavigationProps
         <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg">
           <div className="[&>button]:px-2">
             <Button
-              variant={!open ? 'default' : 'outline'}
-              onClick={onclick(setStatus, { open: !open })}
+              variant={!menu ? 'default' : 'outline'}
+              onClick={onclick(setStatus, { menu: !menu })}
             >
               <MenuSquare />
             </Button>
@@ -332,9 +331,9 @@ export function component({ children }: React.PropsWithChildren<TNavigationProps
                             nombres,
                             id: clientId,
                             numero_de_identificacion,
-                          }) => clientId &&
-                            <li key={clientId} className="group cursor-pointer" onClick={onSelect({ clientId })}>
-                              <Link to={'/client'}>
+                          }, index) => clientId &&
+                            <li key={index} className="group cursor-pointer" onClick={onSelect(index)}>
+                              <Link to={'/client/$clientId/update'} params={{clientId}}>
                                 <Avatar>
                                   <AvatarFallback>
                                     {nombres?.split(" ")?.map( items => items?.[0] )?.join("")}
