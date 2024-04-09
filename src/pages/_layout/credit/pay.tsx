@@ -19,7 +19,7 @@ import { _creditSelected } from "@/pages/_layout/credit";
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { useMutation } from '@tanstack/react-query'
-import { formatISO } from 'date-fns'
+import { format, formatISO } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit/pay')({
   component: PaySelectedCredit,
@@ -70,7 +70,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
           valor_del_pago: +items?.valor_del_pago,
           comentario: items?.comentario ?? "",
           credito_id: credit?.id,
-          fecha_de_pago: formatISO(items?.fecha_de_pago ?? new Date())
+          fecha_de_pago: formatISO( items?.fecha_de_pago ?? new Date() ) 
       })
       pushNotification({
           date: new Date(),

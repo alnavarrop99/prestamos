@@ -20,6 +20,7 @@ import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { _clientContext } from '@/pages/_layout/credit_/$creditId'
 import { TCLIENT_GET } from '@/api/clients'
+import { formatISO } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
   component: PayCreditById,
@@ -72,7 +73,7 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
           valor_del_pago: +items?.valor_del_pago,
           comentario: items?.comentario ?? "",
           credito_id: credit?.id,
-          fecha_de_pago: items?.fecha_de_pago
+          fecha_de_pago: formatISO(items?.fecha_de_pago ?? new Date)
       })
         pushNotification({
           date: new Date(),
