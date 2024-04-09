@@ -1,5 +1,6 @@
 import {
     Await,
+  CatchBoundary,
   createFileRoute,
   defer,
   Outlet,
@@ -19,6 +20,7 @@ import {
   Network,
   NotepadText,
   Sun,
+  X as Error,
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
@@ -53,15 +55,19 @@ import {
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
-import { useIsFetching, useIsMutating, useQuery } from '@tanstack/react-query'
+import { useIsFetching, useIsMutating } from '@tanstack/react-query'
 import { SpinLoader } from '@/components/ui/loader'
 import brand from "@/assets/menu-brand.avif"
 import brandOff from "@/assets/menu-off-brand.avif"
 import { Skeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/_layout')({
-  component: Layout,
-  loader: async () => ({ user: defer(getCurrentUser()) }),
+  component,
+  pendingComponent,
+  loader: async () => ({ 
+    user: defer(getCurrentUser()), 
+    clients: defer(getClientsList()) 
+  }),
   beforeLoad: async (  ) => {
     const { token } = useToken.getState()
     if( !token ){
@@ -93,15 +99,11 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 }
 
 /* eslint-disable-next-line */
-export function Layout({ children }: React.PropsWithChildren<TNavigationProps>) {
-  const { data: clientsDB, isSuccess } = useQuery({
-    queryKey: [getClientsList.name],
-    queryFn: getClientsList,
-  })
+export function component({ children }: React.PropsWithChildren<TNavigationProps>) {
   const [{ offline, open, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, open: false })
   const { setValue, setSearch, search, value } = useStatus()
-  const  { user } = Route.useLoaderData()
-  const [clients, setClients] = useState(clientsDB)
+  const  { user, clients: clientsDB } = Route.useLoaderData()
+  const [clients, setClients] = useState<TCLIENT_GET_ALL | undefined>(undefined)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
   const { deleteToken, setUserId, userId, name } = useToken()
@@ -110,16 +112,16 @@ export function Layout({ children }: React.PropsWithChildren<TNavigationProps>) 
   const { history } = useRouter()
 
   useEffect( () => {
-    if( !userId ) {
+    if( !!userId ) {
        return () => { setUserId( undefined ) }
     }
     user?.then( ( { id } ) => setUserId( id ) )
   }, [ user ] )
 
   useEffect(() => {
-    setClients(clientsDB) 
-  }, [isSuccess])
-
+    clientsDB?.then( ( clients => setClients(clients) ) )
+    return () => setClients([])
+  }, [ clientsDB ])
 
   useEffect(() => {
     const onNotwork = () => {
@@ -145,11 +147,11 @@ export function Layout({ children }: React.PropsWithChildren<TNavigationProps>) 
     const { value } = ev.currentTarget
     setValue({ value })
 
-    const query = clientsDB?.filter(({ ...props }) =>
-      Object.values(props).join(' ').toLowerCase().includes(value.toLowerCase())
-    )
+    clientsDB?.then( ( clients ) =>{ 
+      const query = clients?.filter((props) => Object.values(props).join(' ').toLowerCase().includes(value.toLowerCase()))
+      setClients(query)
+    }) 
 
-    setClients(query)
   }
 
   const onKeyDown: React.KeyboardEventHandler<
@@ -290,72 +292,73 @@ export function Layout({ children }: React.PropsWithChildren<TNavigationProps>) 
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
-              { !!clients?.length && <Popover
-                open={search}
-                onOpenChange={onSearchChange}
-              >
-                <PopoverTrigger>
-                  <Button
-                    className={clsx('rounded-br-none rounded-tr-none p-2')}
-                    variant={ !search ? 'ghost' : 'default' }
-                  >
-                    <User />
-                    <Badge
-                      className={clsx(
-                        {
-                          '!hidden': search,
-                        },
-                        styles?.['search-badge-animation']
-                      )}
-                      variant={!search ? 'default' : 'secondary'}
+                <Popover
+                  open={search}
+                  onOpenChange={onSearchChange}
+                >
+                  <PopoverTrigger>
+                    <Button
+                      className={clsx('rounded-br-none rounded-tr-none p-2')}
+                      variant={ !search ? 'ghost' : 'default' }
                     >
-                      {clients?.length}
-                    </Badge>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="absolute -start-16 top-2 w-80">
-                  <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
-                    <h3 className="text-xl [&>span]:underline">
-                      <span>{text.search.title}</span>
-                      <Badge variant="default"> {clients?.length} </Badge>
-                    </h3>
-                    <Separator />
-                    <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
-                      {clients?.map(
-                        ({
-                          apellidos,
-                          nombres,
-                          id: clientId,
-                          numero_de_identificacion,
-                        }) => clientId &&
-                          <li key={clientId} className="group cursor-pointer" onClick={onSelect({ clientId })}>
-                            <Link to={'/client'}>
-                              <Avatar>
-                                <AvatarFallback>
-                                  {nombres?.at(0) ??
-                                    'N' + apellidos?.at(0) ??
-                                    'A'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p
-                                  className={clsx("font-bold group-hover:after:content-['#']")}
+                      <User />
+                        <Suspense fallback={< SpinLoader />} >
+                          <CatchBoundary getResetKey={() => "clients-loader"} errorComponent={errorComponent({ searchList: true })}>
+                            <Await promise={clientsDB}>
+                              { () => 
+                                <Badge
+                                  className={clsx( { '!hidden': search, }, styles?.['search-badge-animation'])}
+                                  variant={!search ? 'default' : 'secondary'}
                                 >
-                                  {nombres + ' ' + apellidos}
-                                </p>
-                                <p className="italic">
-                                  {numero_de_identificacion.slice(0, 4) +
-                                    '...' +
-                                    numero_de_identificacion.slice(-4, numero_de_identificacion.length)}
-                                </p>
-                              </div>
-                            </Link>
-                          </li>
-                      )}
-                    </ul>
-                  </div>
-                </PopoverContent>
-              </Popover>}
+                                  {clients?.length}
+                                </Badge>
+                             }
+                           </Await>
+                        </CatchBoundary>
+                      </Suspense>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="absolute -start-16 top-2 w-80" hidden={!clients?.length}>
+                    <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
+                      <h3 className="text-xl [&>span]:underline">
+                        <span>{text.search.title}</span>
+                        <Badge variant="default"> {clients?.length} </Badge>
+                      </h3>
+                      <Separator />
+                      <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
+                        {clients?.map(
+                          ({
+                            apellidos,
+                            nombres,
+                            id: clientId,
+                            numero_de_identificacion,
+                          }) => clientId &&
+                            <li key={clientId} className="group cursor-pointer" onClick={onSelect({ clientId })}>
+                              <Link to={'/client'}>
+                                <Avatar>
+                                  <AvatarFallback>
+                                    {nombres?.split(" ")?.map( items => items?.[0] )?.join("")}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p
+                                    className={clsx("font-bold group-hover:after:content-['#']")}
+                                  >
+                                    {nombres + ' ' + apellidos}
+                                  </p>
+                                  <p className="italic">
+                                    {numero_de_identificacion.slice(0, 4) +
+                                      '...' +
+                                      numero_de_identificacion.slice(-4, numero_de_identificacion.length)}
+                                  </p>
+                                </div>
+                              </Link>
+                            </li>
+                        )}
+                      </ul>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               <Input
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
@@ -365,7 +368,6 @@ export function Layout({ children }: React.PropsWithChildren<TNavigationProps>) 
                 value={value}
               />
             </Label>
-               
                    <HoverCard>
                     <HoverCardTrigger>
                       <Badge className="cursor-pointer text-sm" variant="outline">
@@ -385,19 +387,22 @@ export function Layout({ children }: React.PropsWithChildren<TNavigationProps>) 
                           </ul>
                         </div>
                       }>
-                        <Await promise={user}>
-                          {(user) => (
-                        <div className='p-2'>
-                          <Avatar className='ring-1 ring-ring'>
-                            <AvatarFallback>{name?.split(" ")?.map( (items) => (items?.[0]) )}</AvatarFallback>
-                          </Avatar>
-                          <ul className="space-y-2 [&>li]:w-fit">
-                            <li> <span className="font-bold">{user.nombre}</span> </li>
-                            <li> <Badge> {user?.rol} </Badge> </li>
-                          </ul>
-                        </div>
-                          )}
-                        </Await>
+                        <CatchBoundary getResetKey={() => "reset"} errorComponent={ errorComponent({ currentUser: true }) } >
+                          <Await promise={user}>
+                            {(user) => (
+                              <div className='p-2'>
+
+                                <Avatar className='ring-1 ring-ring'>
+                                  <AvatarFallback>{name?.split(" ")?.map( (items) => (items?.[0]) )}</AvatarFallback>
+                                </Avatar>
+                                <ul className="space-y-2 [&>li]:w-fit">
+                                  <li> <span className="font-bold">{user.nombre}</span> </li>
+                                  <li> <Badge> {user?.rol} </Badge> </li>
+                                </ul>
+                              </div>
+                            )}
+                          </Await>
+                        </CatchBoundary>
                       </Suspense>
                   </HoverCardContent>
                   </HoverCard>
@@ -475,10 +480,27 @@ export function Layout({ children }: React.PropsWithChildren<TNavigationProps>) 
   )
 }
 
-Layout.dispalyname = 'Layout'
+component.dispalyname = 'Layout'
+
+function pendingComponent() {
+  return <>Lodaing</>
+}
+
+const errorComponent = ({ searchList }:{ currentUser?: boolean, searchList?: boolean }) =>{
+  if( searchList ) {
+    return  () => <Error className='p-1 stroke-destructive' />
+  }
+  return () => <div className='!flex-row'>
+      <h2 className='font-bold text-destructive text-2xl'>:&nbsp;(</h2>
+      <p className='italic text-sm'>  {text.error} </p> 
+    </div>
+} 
+
+
 
 const text = {
   title: 'Matcor',
+  error: 'Ups!!! ha ocurrido un error inesperado',
   navegation: {
     credit: { title: 'Prestamos', url: '/credit', Icon: icons?.CreditCard },
     client: { title: 'Clientes', url: '/client', Icon: icons?.Award },
