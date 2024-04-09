@@ -21,6 +21,7 @@ import { useReactToPrint } from "react-to-print";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { getClientById } from '@/api/clients'
 import { Input } from '@/components/ui/input'
+import { format } from 'date-fns'
 
 type TSearch = {
   creditId: number
@@ -49,7 +50,7 @@ type TOptState = keyof typeof options
 export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTER }: TPrintSelectedCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
   const [ { opt, payIndex }, setOpt ] = useState<{ payIndex?: number, opt?: TOptState }>({})
-  const { client, credit: creditDB } = Route.useLoaderData()
+  const { client, credit } = Route.useLoaderData()
   const { open, setOpen } = useStatus()
   const ref = useRef< React.ComponentRef< typeof PrintCredit > >(null)
 
@@ -57,10 +58,10 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
     setOpt({opt: value as TOptState })
   }
 
-  const onChange: React.ChangeEventHandler< React.ComponentRef< typeof Input > > = ( ev ) => {
-    const value = +ev.target.value - 1
-    if( value < 0 && value >= creditDB?.pagos?.length) return; 
-    setOpt( { opt, payIndex: value })
+  const onChange = ( value: string ) => {
+     const pay = +value 
+     if( pay < 0 && pay >= credit?.pagos?.length) return; 
+     setOpt({ opt, payIndex: pay })
   }
 
   const handlePrint = useReactToPrint({
@@ -71,7 +72,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current || !opt || !ref?.current) return
 
-    console.table(creditDB)
+    console.table(credit)
     setOpen({ open: !open })
 
     handlePrint()
@@ -80,8 +81,8 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
     ev.preventDefault()
   }
 
-  const pay = useMemo( () => creditDB?.pagos?.at( payIndex ?? -1 ), [payIndex] ) 
-  const mora = useMemo( () => creditDB?.cuotas?.at( payIndex ?? -1 )?.valor_de_mora, [payIndex] )
+  const pay = useMemo( () => credit?.pagos?.at( payIndex ?? -1 ), [payIndex] ) 
+  const mora = useMemo( () => credit?.cuotas?.at( payIndex ?? -1 )?.valor_de_mora, [payIndex] )
 
   return (
     <>
@@ -118,14 +119,19 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
         { opt === "especific" &&
           <Label>
             <span>{text.form.pay.label}</span>
-            <Input 
-                required
-                onChange={onChange}
-                type='number'
-                min={1}
-                max={creditDB?.pagos?.length }
-                placeholder={text.form.pay.placeholder} 
-             />
+            <Select 
+              required
+              name={'payment'} 
+              onValueChange={onChange}
+              defaultValue={typeof payIndex !== "undefined" ? ""+payIndex : undefined}
+            >
+            <SelectTrigger className="w-full !border-ring !border-1">
+              <SelectValue placeholder={text.form.pay.placeholder} />
+            </SelectTrigger>
+            <SelectContent className='[&_*]:cursor-pointer'>
+              { credit?.pagos?.map( ( { fecha_de_pago }, index ) => ( <SelectItem value={""+index}> {format(fecha_de_pago, "dd-MM-yyyy")} </SelectItem> ) ) }
+            </SelectContent>
+          </Select>
           </Label> }
       </form>
       <DialogFooter >
@@ -155,8 +161,8 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
                   date: pay?.fecha_de_pago?.slice(0,10) ?? "",
                   pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
                   mora: mora ? +mora.toFixed(2) : undefined,
-                  cuoteNumber: (payIndex ?? creditDB?.pagos?.length - 1) + 1,
-                  pending: +(creditDB?.monto - creditDB?.pagos?.slice( 0, payIndex ? payIndex + 1 : -1)?.reduce( (prev, acc) => {
+                  cuoteNumber: (payIndex ?? credit?.pagos?.length - 1) + 1,
+                  pending: +(credit?.monto - credit?.pagos?.slice( 0, payIndex ? payIndex + 1 : -1)?.reduce( (prev, acc) => {
                     const res: typeof acc = { ...acc } 
                     res.valor_del_pago += prev?.valor_del_pago
                     return res
@@ -194,7 +200,7 @@ const text = {
   form: {
     pay: {
       label: 'Numero del pago:',
-      placeholder: 'Escriba el numero del pago',
+      placeholder: 'Seleccione el pago',
     },
     options: {
       label: 'Opciones:',

@@ -267,7 +267,7 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
     <section>
       <p>{text.print.cuoteNumber + ":"}<span>{cuoteNumber + "."}</span></p>
       <p>{text.print.pay + ":"}<span> $ {pay + "."} </span></p>
-      {  mora &&  <p>{text.print.mora + ":"}<span>{mora + "."}</span></p> }
+      {  mora &&  <p>{text.print.mora + ":"}<span> $ {mora + "."}</span></p> }
     </section>
     <section>
       <p>{text.print.pending + ""} <span>$ {pending + "."}</span></p>

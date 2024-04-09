@@ -25,7 +25,7 @@ import { CircleDollarSign as Pay } from 'lucide-react'
 import { format } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
 import { getFrecuencyById } from '@/lib/type/frecuency'
-import { createContext } from 'react'
+import { createContext, useMemo } from 'react'
 import { TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
 import { _creditSelected } from '@/pages/_layout/credit'
 import { TCLIENT_GET, getClientById } from '@/api/clients'
@@ -68,6 +68,12 @@ export function CreditById({
     setOpen({ open })
   }
 
+  const onPrint: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    onOpenChange(!open)
+  }
+
+  const table = useMemo( () => ( credit?.pagos?.map( ( _, i, list ) => ( { payment: list?.[i], cuote: credit?.cuotas?.[ i ] }))), [ credit?.pagos, credit?.cuotas ])
+
   const mora = credit?.cuotas?.at(-1)?.valor_de_mora
   const moraType = getMoraTypeById({ moraTypeId: credit?.tipo_de_mora_id })?.nombre
   const moraStatus = !!mora && mora > 0
@@ -87,7 +93,7 @@ export function CreditById({
             <DialogTrigger className="ms-auto" asChild>
               <Link to={'./print'} 
                 disabled={credit?.pagos?.length <= 0}>
-                <Button variant="ghost"
+                <Button variant="outline"
                     className='hover:ring hover:ring-primary' 
                     disabled={credit?.pagos?.length <= 0}>
                   <Printer />
@@ -176,47 +182,54 @@ export function CreditById({
                 <TableHead></TableHead>
                 <TableHead>{text.cuotes.payDate}</TableHead>
                 <TableHead>{text.cuotes.payValue}</TableHead>
-                <TableHead>{text.cuotes.payCuote}</TableHead>
                 <TableHead>{text.cuotes.installmantsDate}</TableHead>
                 <TableHead>{text.cuotes.payInstallmants}</TableHead>
                 <TableHead>{text.cuotes.payStatus}</TableHead>
+                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {credit?.cuotas.map(({fecha_de_pago, valor_pagado, valor_de_cuota, valor_de_mora, pagada, numero_de_cuota, fecha_de_aplicacion_de_mora}, index) => (
-                <TableRow key={index}>
+              {  table?.map( ( {payment, cuote}, index ) =>  (
+                <TableRow key={index} className='group'>
                   <TableCell>
-                    <p><b>{numero_de_cuota}</b></p>
+                    <p><b>{index}</b></p>
                   </TableCell>
                   <TableCell>
                     {/* fix this date because returt a invalid date time */}
                     <ul>
-                      <li className='before:content-["_-_"] before:font-bold before:text-destructive'>{credit?.pagos?.[index]?.fecha_de_pago?.slice(0,10)}</li>
-                      <li className='before:content-["_+_"] before:font-bold before:text-success'>{format(fecha_de_pago, 'yyyy-MM-dd')}</li>
+                      <li className='before:content-["_-_"] before:font-bold before:text-destructive'>{cuote?.fecha_de_pago?.slice(0,10)}</li>
+                      <li className='before:content-["_+_"] before:font-bold before:text-success'>{format(payment?.fecha_de_pago, 'yyyy-MM-dd')}</li>
                     </ul>
                   </TableCell>
                   <TableCell>
                     <p><b>$</b>
-                    {valor_pagado?.toFixed(2)}</p>
+                    {payment?.valor_del_pago?.toFixed(2)}</p>
                   </TableCell>
                   <TableCell>
-                    <p><b>$</b>
-                    {valor_de_cuota?.toFixed(2)}</p>
+                    <p>{cuote?.valor_de_mora > 0 ? format(cuote?.fecha_de_aplicacion_de_mora ?? "", 'dd-MM-yyyy') : "-"}</p>
                   </TableCell>
                   <TableCell>
-                    <p>{ valor_de_mora > 0 ? format(fecha_de_aplicacion_de_mora ?? "", 'dd-MM-yyyy') : "-"}</p>
-                  </TableCell>
-                  <TableCell>
-                    <p>{valor_de_mora > 0 ? <><b>$</b> {valor_de_mora?.toFixed(2) }</> : "-"}</p>
+                    <p>{cuote?.valor_de_mora > 0 ? <><b>$</b> {cuote?.valor_de_mora?.toFixed(2) }</> : "-"}</p>
                   </TableCell>
                   <TableCell>
                     <Switch
-                      checked={pagada}
+                      checked={cuote?.pagada}
                       className={'cursor-not-allowed'}
                     ></Switch>
                   </TableCell>
+                  <TableCell>
+                    <Link to={'./print'} search={{ index }} >
+                      <Button 
+                          onClick={onPrint}
+                          variant="ghost"
+                          className='hover:ring hover:ring-primary opacity-0 group-hover:opacity-100' 
+                          disabled={credit?.pagos?.length <= 0}>
+                        <Printer />
+                      </Button>
+                    </Link>
+                  </TableCell>
                 </TableRow>
-              ))?.slice(0, credit?.pagos?.length)}
+              ))}
             </TableBody>
             <TableFooter>
               <TableRow>
@@ -283,7 +296,6 @@ const text = {
     payDate: 'Fecha de pago',
     installmantsDate: 'Fecha de aplicacion de mora',
     payValue: 'Monto del pago',
-    payCuote: 'Monto cuota',
     payInstallmants: 'Monto de la mora',
     payStatus: 'Pagada',
     total: 'Monto total',
