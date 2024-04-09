@@ -26,9 +26,12 @@ import styles from "@/styles/global.module.css";
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { getClientById } from '@/api/clients'
 import brand from '@/assets/menu-brand.avif'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/_layout/credit')({
-  component: Credits,
+  component,
+  pendingComponent,
+  errorComponent,
   loader: async () => {
     // TODO: this is a temporal function to getFilter
     if(!!+import.meta.env.VITE_MSW && import.meta.env.DEV) return (await getCreditsFilter()());
@@ -60,7 +63,7 @@ interface TCreditsProps {
 export const _creditSelected = createContext<TCREDIT_GET_FILTER | undefined>(undefined)
 
 /* eslint-disable-next-line */
-export function Credits({
+export function component({
   children,
   open: _open,
   credits: _credits = [] as TCREDIT_GET_FILTER_ALL,
@@ -236,7 +239,9 @@ export function Credits({
   )
 }
 
-Credits.dispalyname = 'CreditsList'
+component.dispalyname = 'CreditsList'
+
+
 
 interface TPrintCredit extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   client: string
@@ -282,8 +287,55 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
   </main>
 }  )  
 
+function pendingComponent() {
+  return <div className="space-y-4">
+    <div className="flex items-center gap-2">
+      <Skeleton className='w-48 h-8' />
+      <Skeleton className='w-8 h-8 rounded-full' />
+      <Skeleton className='ms-auto w-24 h-12' />
+    </div>
+    <Separator />
+    <div className='flex flex-wrap'>
+      {Array.from( { length: 8 } )?.map( (_, index) => 
+        <div className='basis-1/2  p-4' key={index} >
+        <Card className={clsx("h-full shadow-lg grid justify-streetch items-end")}>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <CardTitle className="flex-row items-center">
+                <Skeleton className='w-48 h-8' />
+              </CardTitle>
+              <Skeleton className='ms-auto w-8 h-8 rounded-full' />
+            </div>
+        </CardHeader>
+          <CardContent>
+            <div className="space-y-2 px-4">
+              <Skeleton className='w-48 h-6' /> 
+              <Skeleton className='w-48 h-6' />
+              <Skeleton className='w-48 h-6' />
+            </div>
+          </CardContent>
+          <CardFooter className="flex items-center gap-2">
+              <Skeleton className='w-32 h-6' /> 
+            <Skeleton className='ms-auto w-11 h-10' />
+            <Skeleton className='w-11 h-10' />
+          </CardFooter>
+        </Card>
+        </div>
+        )}
+    </div>
+  </div>
+}
+
+function errorComponent() {
+  return <div className='!flex-row'>
+      <h2 className='font-bold text-destructive text-2xl'>:&nbsp;(</h2>
+      <p className='italic text-sm'>  {text.error} </p> 
+    </div>
+}
+
 const text = {
   title: 'Prestamos:',
+  error: 'Ups!!! ha ocurrido un error inesperado',
   browser: 'Prestamos',
   notfound: 'No existen prestamos activos.',
   alert: {
