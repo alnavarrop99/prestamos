@@ -104,11 +104,17 @@ export function Layout({ children }: React.PropsWithChildren<TNavigationProps>) 
   const [clients, setClients] = useState(clientsDB)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
-  const { deleteToken } = useToken()
+  const { deleteToken, setUserId, userId, name } = useToken()
   const isFetching = useIsFetching()
   const isMutating = useIsMutating()
   const { history } = useRouter()
-  const { name } = useToken()
+
+  useEffect( () => {
+    if( !userId ) {
+       return () => { setUserId( undefined ) }
+    }
+    user?.then( ( { id } ) => setUserId( id ) )
+  }, [ user ] )
 
   useEffect(() => {
     setClients(clientsDB) 
