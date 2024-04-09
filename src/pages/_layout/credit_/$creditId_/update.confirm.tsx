@@ -18,6 +18,8 @@ import { _clientContext, _creditChangeContext, _paymentDeleteContext } from './u
 import { useMutation } from '@tanstack/react-query'
 import { TPAYMENT_GET_BASE, deletePaymentById, patchPaymentById } from "@/api/payment";
 import { TCLIENT_GET_BASE } from '@/api/clients'
+import { formatISO } from 'date-fns'
+import { logDOM } from '@testing-library/react'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')({
   component: UpdateConfirmationCredit,
@@ -80,6 +82,8 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
     const deleteItems = Object.values( deletePayment )
 
     const action = (credit: Record< keyof TCREDIT_GET, string> & { id: number }, payment: (Record< keyof TPAYMENT_GET_BASE, string> & { id: number })[], deletePay: (number | undefined)[]) => () => {
+      console.log(credit);
+      
       if(credit?.id && Object?.values( credit )?.length > 1) {
         updateCredit({
           creditId: credit.id,
@@ -94,7 +98,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
             tipo_de_mora_id: +credit?.tipo_de_mora_id || undefined,
             dias_adicionales: +credit?.dias_adicionales || undefined,
             numero_de_cuotas: +credit?.numero_de_cuotas || undefined,
-            fecha_de_aprobacion: credit?.fecha_de_aprobacion,
+            fecha_de_aprobacion: credit?.fecha_de_aprobacion ? formatISO( credit?.fecha_de_aprobacion ) : undefined,
             frecuencia_del_credito_id: +credit?.frecuencia_del_credito_id || undefined,
           }
       })
@@ -106,7 +110,7 @@ export function UpdateConfirmationCredit({ credit: _credit = {} as TCREDIT_GET }
           updatePayment: {
             valor_del_pago: +pay?.valor_del_pago || undefined,
             comentario: pay?.comentario,
-            fecha_de_pago: pay?.fecha_de_pago
+            fecha_de_pago: formatISO( pay?.fecha_de_pago )
           }
         })
       }

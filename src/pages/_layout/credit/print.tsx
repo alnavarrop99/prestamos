@@ -129,7 +129,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
               <SelectValue placeholder={text.form.pay.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { credit?.pagos?.map( ( { fecha_de_pago }, index ) => ( <SelectItem value={""+index}> {format(fecha_de_pago, "dd-MM-yyyy")} </SelectItem> ) ) }
+              { credit?.pagos?.map( ( { fecha_de_pago }, index ) => ( <SelectItem value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
             </SelectContent>
           </Select>
           </Label> }
@@ -158,7 +158,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
                   telephone: client?.telefono,
                   phone: client?.celular,
                   // TODO: date: format( pay?.fecha_de_pago ?? "",  "dd-MM-yyyy / hh:mm aaaa" ),
-                  date: pay?.fecha_de_pago?.slice(0,10) ?? "",
+                  date: format( pay?.fecha_de_pago ?? "", "dd/MM/yyyy - hh:mm aaaa" ),
                   pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
                   mora: mora ? +mora.toFixed(2) : undefined,
                   cuoteNumber: (payIndex ?? credit?.pagos?.length - 1) + 1,

@@ -197,8 +197,8 @@ export function CreditById({
                   <TableCell>
                     {/* fix this date because returt a invalid date time */}
                     <ul>
-                      <li className='before:content-["_-_"] before:font-bold before:text-destructive'>{cuote?.fecha_de_pago?.slice(0,10)}</li>
-                      <li className='before:content-["_+_"] before:font-bold before:text-success'>{format(payment?.fecha_de_pago, 'yyyy-MM-dd')}</li>
+                      <li className='before:content-["_-_"] before:font-bold before:text-destructive'>{format(cuote?.fecha_de_pago, "dd/MM/yyyy")}</li>
+                      <li className='before:content-["_+_"] before:font-bold before:text-success'>{format(payment?.fecha_de_pago, 'dd/MM/yyyy')}</li>
                     </ul>
                   </TableCell>
                   <TableCell>

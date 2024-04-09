@@ -189,7 +189,7 @@ export function Credits({
                         </ul>
                       </CardContent>
                       <CardFooter className="flex items-center gap-2">
-                        { isValid(fecha_de_cuota) && <Badge> {format(fecha_de_cuota , "dd-MM-yyyy")} </Badge>}
+                        { isValid(fecha_de_cuota) && <Badge> {format(fecha_de_cuota , "dd/MM/yyyy")} </Badge>}
                         <Dialog open={open} onOpenChange={onOpenChange}>
                           <DialogTrigger asChild className="ms-auto" >
                             {<Link
