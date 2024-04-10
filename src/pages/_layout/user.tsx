@@ -36,6 +36,9 @@ import { useStatus } from '@/lib/context/layout'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton';
 import { useRouter } from '@tanstack/react-router';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } from '@/components/ui/pagination';
 
 export const Route = createFileRoute('/_layout/user')({
   pendingComponent,
@@ -57,9 +60,16 @@ export interface TUsersState extends TUSER_GET {
   active?: boolean
 }
 
-const LENGTH = 8
+const STEP = 3
+const LENGTH = 9
 export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
 export const _usersContext = createContext<[TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>] | undefined>(undefined)
+const usePagination = create< { start: number, end: number, setPagination: ( params: { start: number, end: number } ) => void } >()( persist( (set) => ({
+  start: 0,
+  end: STEP,
+  setPagination: ({ start, end }) => (set( () => ({ start, end }) ))
+}), { name: "users-pagination" } ) )
+
 
 /* eslint-disable-next-line */
 export function Users({
@@ -74,6 +84,28 @@ export function Users({
   const navigate = useNavigate()
   const { value } = useStatus()
   const { open = _open, setOpen } = useStatus()
+  const { setPagination, ...pagination } = usePagination()
+
+  const onPagnation: (params:{ prev?: boolean, next?: boolean, index?: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ next, prev, index }) => () => {
+    if( prev && pagination?.end - pagination?.start >= STEP && pagination?.start > 1 ){
+      setPagination({ ...pagination, start: pagination?.start - 1, end: pagination?.end - STEP })
+    }
+    else if( prev && pagination?.start > 0 && pagination?.start < pagination?.end ){
+      setPagination({ ...pagination, start: pagination?.start - 1 })
+    }
+    else if( next && pagination?.start < pagination?.end - 1 && pagination?.start < users?.length/LENGTH -1 ){
+      setPagination({ ...pagination, start: pagination?.start + 1 })
+    }
+    else if( next && pagination?.start === pagination?.end - 1 && pagination?.start < users?.length/LENGTH -1){
+      setPagination({ ...pagination, start: pagination?.start + 1,  end: pagination?.end + STEP })
+    }
+    else if( index ) {
+
+    }
+
+    if( typeof index === "undefined" ) return;
+    setPagination( { ...pagination, start: index } )
+  }
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
@@ -172,10 +204,50 @@ export function Users({
           </Dialog>
         </div>
         <Separator />
+          { users?.length > LENGTH && <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <Button
+                disabled={ pagination?.start <= 0 }
+                onClick={onPagnation({ prev: true })}
+                className='delay-0 duration-100'
+                variant={"outline"}
+              >
+                Atras
+              </Button>
+            </PaginationItem>
+            { pagination?.end - STEP > 0 && <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>}
+            {Array.from({ length: STEP })?.map( (_, index) => {
+              if( pagination?.end + index - STEP > (users?.length - 1)/LENGTH ) return null;
+              return <PaginationItem key={index} >
+                <Button
+                  className='delay-0 duration-100'
+                  variant={ pagination?.start === pagination?.end + index - STEP  ? "secondary" : "ghost"}
+                  onClick={onPagnation({ index: pagination?.end - STEP + index })}
+                >
+                  { pagination?.end - STEP + index + 1 }
+                </Button>
+             </PaginationItem>
+            })}
+           
+            { pagination?.end < (users?.length)/LENGTH && <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem> }
+
+            <PaginationItem >
+              <Button
+                disabled={pagination?.start >= users?.length/LENGTH - 1}
+                className='delay-0 duration-100'
+                variant={"outline"} 
+                onClick={onPagnation({ next: true })}> Siguiente </Button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>}
         { !users?.length && <p>{text.notFound}</p>}
         <div className="flex flex-wrap gap-4 [&>*]:flex-auto">
-          {!!users?.length &&
-            users?.map(
+          {!!users?.length && users?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map(
               ({ id, rol, nombre, clientes, selected, active, menu }, index) => (
                 <Card
                   key={id}
@@ -308,6 +380,7 @@ function pendingComponent() {
       <Skeleton className='w-24 h-10' />
     </div>
     <Separator />
+    <Skeleton className='w-80 h-10 mx-auto' />
     <div className='flex flex-wrap gap-4'>
       {Array.from( { length: LENGTH } )?.map( (_, index) => 
         <Card key={index} className={clsx("h-full shadow-lg grid justify-streetch items-end")}>
