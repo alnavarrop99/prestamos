@@ -39,6 +39,7 @@ import { useRouter } from '@tanstack/react-router';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const Route = createFileRoute('/_layout/user')({
   pendingComponent,
@@ -60,8 +61,12 @@ export interface TUsersState extends TUSER_GET {
   active?: boolean
 }
 
+/* eslint-disable-next-line */
+type TOrderType = "Nombre" | "Fecha de creacion" | "Rol"
+
 const STEP = 3
 const LENGTH = 9
+const ORDER: Record<keyof Omit<TUSER_GET, "clientes" >, TOrderType> = {id: "Fecha de creacion", nombre: "Nombre", rol: "Rol"}
 export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
 export const _usersContext = createContext<[TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>] | undefined>(undefined)
 const usePagination = create< { start: number, end: number, setPagination: ( params: { start: number, end: number } ) => void } >()( persist( (set) => ({
@@ -69,6 +74,10 @@ const usePagination = create< { start: number, end: number, setPagination: ( par
   end: STEP,
   setPagination: ({ start, end }) => (set( () => ({ start, end }) ))
 }), { name: "users-pagination" } ) )
+const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof typeof ORDER ) => void } >()( persist( (set) => ({
+  order: "id",
+  setOrder: ( order ) => (set( () => ({ order }) ))
+}), {  name: "user-order"} ) )
 
 
 /* eslint-disable-next-line */
@@ -85,6 +94,11 @@ export function Users({
   const { value } = useStatus()
   const { open = _open, setOpen } = useStatus()
   const { setPagination, ...pagination } = usePagination()
+  const { order, setOrder } = useOrder()
+
+  const onSelectOrder: ( value: string ) => void = ( value ) => {
+    setOrder(value as keyof typeof ORDER)
+  }
 
   const onPagnation: (params:{ prev?: boolean, next?: boolean, index?: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ next, prev, index }) => () => {
     if( prev && pagination?.end - pagination?.start >= STEP && pagination?.start > 1 ){
@@ -163,10 +177,31 @@ export function Users({
         )
       )
     }
+
+    setPagination({ ...pagination, start: 0, end: STEP })
     return () => {
       setUsers(usersDB)
     }
   }, [value])
+
+  useEffect( () => {
+    switch (order) {
+      case "nombre":
+        setUsers( usersDB?.sort( (a, b) => ((a.nombre.charCodeAt(0) ?? 0) - (b.nombre.charCodeAt(0) ?? 0)) ) )
+        break;
+      case "rol":
+        setUsers( usersDB?.sort( (a, b) => ((a.rol.charCodeAt(0) ?? 0) - (b.rol.charCodeAt(0) ?? 0)) ) )
+        break;
+      default:
+        setUsers(usersDB)
+        break;
+    }
+
+    return () => {
+      setUsers(usersDB)
+    }
+
+  }, [order] )
 
   return (
     <_usersContext.Provider value={ [ users, setUsers ] }>
@@ -204,49 +239,22 @@ export function Users({
           </Dialog>
         </div>
         <Separator />
-          { users?.length > LENGTH && <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <Button
-                disabled={ pagination?.start <= 0 }
-                onClick={onPagnation({ prev: true })}
-                className='delay-0 duration-100'
-                variant={"outline"}
-              >
-                Atras
-              </Button>
-            </PaginationItem>
-            { pagination?.end - STEP > 0 && <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>}
-            {Array.from({ length: STEP })?.map( (_, index) => {
-              if( pagination?.end + index - STEP > (users?.length - 1)/LENGTH ) return null;
-              return <PaginationItem key={index} >
-                <Button
-                  className='delay-0 duration-100'
-                  variant={ pagination?.start === pagination?.end + index - STEP  ? "secondary" : "ghost"}
-                  onClick={onPagnation({ index: pagination?.end - STEP + index })}
-                >
-                  { pagination?.end - STEP + index + 1 }
-                </Button>
-             </PaginationItem>
-            })}
-           
-            { pagination?.end < (users?.length)/LENGTH && <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem> }
 
-            <PaginationItem >
-              <Button
-                disabled={pagination?.start >= users?.length/LENGTH - 1}
-                className='delay-0 duration-100'
-                variant={"outline"} 
-                onClick={onPagnation({ next: true })}> Siguiente </Button>
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>}
+        <Select 
+          required
+          defaultValue={order}
+          onValueChange={onSelectOrder}
+        >
+          <SelectTrigger className="w-48 !border-1 !border-ring ms-auto">
+            <SelectValue placeholder={"Orden"}  />
+          </SelectTrigger>
+          <SelectContent className='[&_*]:cursor-pointer'>
+            { Object.entries(ORDER)?.map( ( [key, value], index ) => <SelectItem key={index} value={key}>{value}</SelectItem> ) }
+          </SelectContent>
+        </Select>
+
         { !users?.length && <p>{text.notFound}</p>}
-        <div className="flex flex-wrap gap-4 [&>*]:flex-auto">
+        <div className="flex flex-wrap gap-4 [&>*]:flex-auto h-[48rem] items-start content-start min-w-80">
           {!!users?.length && users?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map(
               ({ id, rol, nombre, clientes, selected, active, menu }, index) => (
                 <Card
@@ -365,6 +373,51 @@ export function Users({
               )
             )}
         </div>
+                    { users?.length > LENGTH && 
+          <Pagination className='w-fit'>
+            <PaginationContent>
+              <PaginationItem>
+                <Button
+                  disabled={ pagination?.start <= 0 }
+                  onClick={onPagnation({ prev: true })}
+                  className='delay-0 duration-100'
+                  variant={"outline"}
+                >
+                  {text.pagination.back}
+                </Button>
+              </PaginationItem>
+              { pagination?.end - STEP > 0 && <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>}
+              {Array.from({ length: STEP })?.map( (_, index) => {
+                if( pagination?.end + index - STEP > (users?.length - 1)/LENGTH ) return null;
+                return <PaginationItem key={index} >
+                  <Button
+                    className='delay-0 duration-100'
+                    variant={ pagination?.start === pagination?.end + index - STEP  ? "secondary" : "ghost"}
+                    onClick={onPagnation({ index: pagination?.end - STEP + index })}
+                  >
+                    { pagination?.end - STEP + index + 1 }
+                  </Button>
+               </PaginationItem>
+              })}
+             
+              { pagination?.end < (users?.length)/LENGTH && <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem> }
+
+              <PaginationItem >
+                <Button
+                  disabled={pagination?.start >= users?.length/LENGTH - 1}
+                  className='delay-0 duration-100'
+                  variant={"outline"} 
+                  onClick={onPagnation({ next: true })}>
+                  {text.pagination.next}
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>}
+
       </div>
     </_selectUsers.Provider>
     </_usersContext.Provider>
@@ -426,6 +479,10 @@ const text = {
   title: 'Usuarios:',
   error: 'Ups!!! ha ocurrido un error inesperado',
   back: 'Intente volver a la pestaña anterior',
+  pagination: {
+    back: "Anterior",
+    next: "Siguiente",
+  },
   browser: 'Usuarios',
   notFound: 'No se encontraron usuarios',
   button: {
