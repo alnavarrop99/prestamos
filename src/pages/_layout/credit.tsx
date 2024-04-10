@@ -11,7 +11,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog'
 import { Separator } from '@/components/ui/separator'
-import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Link, Outlet, createFileRoute, useMatch, useNavigate, useRouter } from '@tanstack/react-router'
 import clsx from 'clsx'
 import {
   AlertCircle,
@@ -358,7 +358,7 @@ function pendingComponent() {
     <div className="flex items-center gap-2">
       <Skeleton className='w-48 h-8' />
       <Skeleton className='w-8 h-8 rounded-full' />
-      <Skeleton className='ms-auto w-24 h-12' />
+      <Skeleton className='ms-auto w-24 h-10' />
     </div>
     <Separator />
     <Skeleton className='w-80 h-10 mx-auto' />
@@ -394,12 +394,16 @@ function pendingComponent() {
 }
 
 function errorComponent() {
-  return <div className='flex h-96 [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 text-2xl'>
+  const { history } = useRouter()
+  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    history.back()
+  }
+  return <div className='flex h-[60vh] [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 text-2xl'>
       <Annoyed  className='animate-bounce' />
       <div className='space-y-2'>
         <h1 className='font-bold'>{text.error}</h1>
         <Separator />
-        <Link to={".."} from={Route.to} className='italic text-xl hover:underline'> {text.back + "."} </Link>
+        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
       </div>
     </div>
 }
