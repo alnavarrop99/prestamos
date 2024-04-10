@@ -1,7 +1,7 @@
 import { type TUSER_GET_ALL, getUsersList } from '@/api/users'
 import { type TROLES } from "@/lib/type/rol";
 import { type TUSER_GET } from "@/api/users";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Link,
   Outlet,
@@ -29,12 +29,17 @@ import {
   UserCog as UserUpdate,
   UserX as UserDelete,
   Users as UsersList,
+  Annoyed,
 } from 'lucide-react'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { useStatus } from '@/lib/context/layout'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_layout/user')({
+  pendingComponent,
+  errorComponent,
   component: Users,
   loader: getUsersList,
 })
@@ -52,6 +57,7 @@ export interface TUsersState extends TUSER_GET {
   active?: boolean
 }
 
+const LENGTH = 8
 export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
 export const _usersContext = createContext<[TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>] | undefined>(undefined)
 
@@ -293,10 +299,60 @@ export function Users({
   )
 }
 
+function pendingComponent() {
+  return <div className="space-y-4">
+    <div className="flex items-center gap-2">
+      <Skeleton className='w-48 h-8' />
+      <Skeleton className='w-8 h-8 rounded-full' />
+      <Skeleton className='ms-auto w-24 h-10' />
+      <Skeleton className='w-24 h-10' />
+    </div>
+    <Separator />
+    <div className='flex flex-wrap gap-4'>
+      {Array.from( { length: LENGTH } )?.map( (_, index) => 
+        <Card key={index} className={clsx("h-full shadow-lg grid justify-streetch items-end")}>
+          <CardHeader>
+            <Skeleton className='ms-auto w-8 h-8 rounded-md' />
+        </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <Skeleton className='w-20 h-20 rounded-full' /> 
+              <div className='space-y-2'>
+                <Skeleton className='w-48 h-6' />
+                <Skeleton className='w-32 h-6' />
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex items-center gap-2">
+            <Skeleton className='w-32 h-6' /> 
+          </CardFooter>
+        </Card>
+        )}
+      </div>
+  </div>
+}
+
+function errorComponent() {
+  const { history } = useRouter()
+  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    history.back()
+  }
+  return <div className='flex h-[60vh] [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 text-2xl'>
+      <Annoyed  className='animate-bounce' />
+      <div className='space-y-2'>
+        <h1 className='font-bold'>{text.error}</h1>
+        <Separator />
+        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+      </div>
+    </div>
+}
+
 Users.dispalyname = 'UsersList'
 
 const text = {
   title: 'Usuarios:',
+  error: 'Ups!!! ha ocurrido un error inesperado',
+  back: 'Intente volver a la pestaña anterior',
   browser: 'Usuarios',
   notFound: 'No se encontraron usuarios',
   button: {
