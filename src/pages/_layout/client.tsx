@@ -86,7 +86,7 @@ interface TClientsProps {
 }
 
 const ROW = 14
-const COL = 6
+const COL = 5
 export const _selectedClients = createContext<TClientTable[] | undefined>( undefined)
 export const _clientContext = createContext< [ clients: TClientTable[], setClient: (({ clients }: { clients: TClientTable[] }) => void), resetSelectedRow: (defaultState?: boolean | undefined) => void ] | undefined>( undefined)
 
