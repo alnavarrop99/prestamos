@@ -335,8 +335,8 @@ export function component({ children }: React.PropsWithChildren<TNavigationProps
                             <li key={index} className="group cursor-pointer" onClick={onSelect(index)}>
                               <Link to={'/client/$clientId/update'} params={{clientId}}>
                                 <Avatar>
-                                  <AvatarFallback>
-                                    {nombres?.split(" ")?.map( items => items?.[0] )?.join("")}
+                                  <AvatarFallback className='!ring-2 ring-ring'>
+                                    {nombres?.[0] + apellidos?.[0]}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
@@ -494,8 +494,6 @@ const errorComponent = ({ searchList }:{ currentUser?: boolean, searchList?: boo
       <p className='italic text-sm'>  {text.error} </p> 
     </div>
 } 
-
-
 
 const text = {
   title: 'Matcor',
