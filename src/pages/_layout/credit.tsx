@@ -216,7 +216,7 @@ export function component({
                     className="group"
                     to="./$creditId"
                     params={{ creditId }}
-                    onClick={onLink(index)}
+                    onClick={onLink(index + pagination?.start * LENGTH)}
                   >
                     <Card className={clsx("h-full shadow-lg transition delay-150 duration-500 group-hover:scale-105 group-hover:shadow-xl grid justify-streetch items-end", styles?.["grid__credit--card"])}>
                       <CardHeader>
@@ -276,7 +276,7 @@ export function component({
                             >
                               <Button
                                 variant="ghost"
-                                onClick={onClick(index)}
+                                onClick={onClick(index + pagination?.start * LENGTH)}
                                 disabled={numero_de_cuota <= 0}
                                 className={clsx(
                                   'invisible px-3 opacity-0 hover:ring hover:ring-primary  group-hover:opacity-100',
@@ -290,7 +290,7 @@ export function component({
                           <DialogTrigger asChild>
                             <Link to={'./pay'} params={{ creditId }}>
                               <Button
-                                onClick={onClick(index)}
+                                onClick={onClick(index + pagination?.start * LENGTH)}
                                 variant="default"
                                 className={clsx(
                                   'invisible opacity-0 group-hover:visible group-hover:opacity-100 bg-success hover:bg-success hover:ring-4 ring-success-foreground'

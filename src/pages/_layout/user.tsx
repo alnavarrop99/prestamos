@@ -254,13 +254,13 @@ export function Users({
                   className={clsx(
                     'group max-w-sm cursor-pointer py-4 shadow-lg transition delay-150 duration-500 hover:scale-105'
                   )}
-                  onClick={onClick(index)}
+                  onClick={onClick(index + pagination?.start * LENGTH)}
                 >
                   <div className="flex items-center justify-end gap-2 px-4">
                     <Dialog open={open} onOpenChange={onOpenChange}>
                       <DropdownMenu
                         open={menu}
-                        onOpenChange={onCheckChanged( index,'menu')}
+                        onOpenChange={onCheckChanged( index + pagination?.start * LENGTH,'menu')}
                       >
                         <DropdownMenuTrigger asChild onClick={onClickStop}>
                           <Button
@@ -295,7 +295,7 @@ export function Users({
                           </DropdownMenuItem>
                           <DialogTrigger asChild>
                             <DropdownMenuItem
-                              onClick={onOpenChangeById(index)}
+                              onClick={onOpenChangeById(index + pagination?.start * LENGTH)}
                             >
                               <Link
                                 className="flex h-full w-full items-center justify-between gap-2"
@@ -308,7 +308,7 @@ export function Users({
                           </DialogTrigger>
                           <DialogTrigger asChild>
                             <DropdownMenuItem
-                              onClick={onOpenChangeById(index)}
+                              onClick={onOpenChangeById(index + pagination?.start * LENGTH)}
                             >
                               <Link
                                 className="flex h-full w-full items-center justify-between gap-2"
@@ -325,7 +325,7 @@ export function Users({
                     <Checkbox
                       name={'selected' as keyof typeof users[0]}
                       checked={selected}
-                      onCheckedChange={onCheckChanged(index, 'selected')}
+                      onCheckedChange={onCheckChanged(index + pagination?.start * LENGTH, 'selected')}
                     />
                   </div>
                   <CardHeader>
@@ -354,7 +354,7 @@ export function Users({
                     {active && (
                       <Switch
                         checked={active}
-                        onCheckedChange={onCheckChanged(index, 'active')}
+                        onCheckedChange={onCheckChanged(index + pagination?.start * LENGTH, 'active')}
                         onClick={onClickStop}
                       >
                         
