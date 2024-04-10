@@ -28,6 +28,7 @@ import { getFrecuencyById } from '@/lib/type/frecuency'
 import { getClientById } from '@/api/clients'
 import brand from '@/assets/menu-brand.avif'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
 
 export const Route = createFileRoute('/_layout/credit')({
   component,
@@ -61,6 +62,8 @@ interface TCreditsProps {
   open?: boolean
 }
 
+const STEP = 3
+const LENGTH = 8
 export const _creditSelected = createContext<TCREDIT_GET_FILTER | undefined>(undefined)
 
 /* eslint-disable-next-line */
@@ -69,23 +72,45 @@ export function component({
   open: _open,
   credits: _credits = [] as TCREDIT_GET_FILTER_ALL,
 }: React.PropsWithChildren<TCreditsProps>) {
-  const creditsDB = Route.useLoaderData() ?? _credits
+  const credits = Route.useLoaderData() ?? _credits
   const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
+  const [ pagination, setPagination ] = useState<{ start: number, end: number }>({ end: STEP, start: 0 })
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
   }, [] )
 
   const onClick: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Button>> = (index) => () => {
-    if(!creditsDB || !creditsDB?.[index]) return;
+    if(!credits || !credits?.[index]) return;
     setOpen({ open: !open })
-    setSelectedCredit(creditsDB?.[index])
+    setSelectedCredit(credits?.[index])
+  }
+
+  const onPagnation: (params:{ prev?: boolean, next?: boolean, index?: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ next, prev, index }) => () => {
+    if( prev && pagination?.end - pagination?.start >= STEP && pagination?.start > 1 ){
+      setPagination({ ...pagination, start: pagination?.start - 1, end: pagination?.end - STEP })
+    }
+    else if( prev && pagination?.start > 0 && pagination?.start < pagination?.end ){
+      setPagination({ ...pagination, start: pagination?.start - 1 })
+    }
+    else if( next && pagination?.start < pagination?.end - 1 && pagination?.start < credits?.length/LENGTH -1 ){
+      setPagination({ ...pagination, start: pagination?.start + 1 })
+    }
+    else if( next && pagination?.start === pagination?.end - 1 && pagination?.start < credits?.length/LENGTH -1){
+      setPagination({ ...pagination, start: pagination?.start + 1,  end: pagination?.end + STEP })
+    }
+    else if( index ) {
+
+    }
+
+    if( typeof index === "undefined" ) return;
+    setPagination( { ...pagination, start: index } )
   }
 
   const onLink: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Link>> = (index) => () => {
-    if(!creditsDB || !creditsDB?.[index]) return;
+    if(!credits || !credits?.[index]) return;
   }
 
   const onOpenChange = (open: boolean) => {
@@ -108,8 +133,8 @@ export function component({
               {text.title}
             </h1>
           </Label>
-          {!!creditsDB?.length && <Badge className="px-3 text-xl">
-            {creditsDB?.length}
+          {!!credits?.length && <Badge className="px-3 text-xl">
+            {credits?.length}
           </Badge>}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
@@ -121,12 +146,53 @@ export function component({
           </Dialog>
         </div>
         <Separator />
-        { !creditsDB?.length && <p>{text.notfound}</p> }
-        { !!creditsDB?.length && <div
+        { credits?.length > LENGTH && <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <Button
+                disabled={ pagination?.start <= 0 }
+                onClick={onPagnation({ prev: true })}
+                className='delay-0 duration-100'
+                variant={"outline"}
+              >
+                Atras
+              </Button>
+            </PaginationItem>
+            { pagination?.end - STEP > 0 && <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>}
+            {Array.from({ length: 3 })?.map( (_, index) => {
+              if( pagination?.end + index - STEP > (credits?.length - 1)/LENGTH ) return null;
+              return <PaginationItem key={index} >
+                <Button
+                  className='delay-0 duration-100'
+                  variant={ pagination?.start === pagination?.end + index - STEP  ? "secondary" : "ghost"}
+                  onClick={onPagnation({ index: pagination?.end - STEP + index })}
+                >
+                  { pagination?.end - STEP + index + 1 }
+                </Button>
+             </PaginationItem>
+            })}
+           
+            { pagination?.end < (credits?.length)/LENGTH  && <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem> }
+
+            <PaginationItem >
+              <Button
+                disabled={pagination?.start >= credits?.length/LENGTH - 1}
+                className='delay-0 duration-100'
+                variant={"outline"} 
+                onClick={onPagnation({ next: true })}> Siguiente </Button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>}
+        { !credits?.length && <p>{text.notfound}</p> }
+        { !!credits?.length && <div
           className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5', {
-            '[&>*]:basis-1/4': !!creditsDB?.length && creditsDB?.length > 15})}
+            '[&>*]:basis-1/4': !!credits?.length && credits?.length > 15})}
         >
-          {creditsDB?.map( ({
+          {credits?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map( ({
             id: creditId,
             clientId,
             frecuencia,
@@ -235,6 +301,7 @@ export function component({
               }
             )}
         </div>}
+        
       </div>
     </_creditSelected.Provider>
   )
@@ -269,8 +336,6 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
       <p>{text.print.telephone + ":"}<span>{telephone + "."}</span> </p>
       <p>{text.print.phone + ":"}<span>{phone + "."}</span> </p>
       <p>{text.print.date + ":"}<span>{date + "."}</span></p>
-    </section>
-    <section>
       <p>{text.print.cuoteNumber + ":"}<span>{cuoteNumber + "."}</span></p>
       <p>{text.print.pay + ":"}<span> $ {pay + "."} </span></p>
       {  mora &&  <p>{text.print.mora + ":"}<span> $ {mora + "."}</span></p> }
@@ -288,7 +353,6 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
   </main>
 }  )  
 
-const LENGTH = 8
 function pendingComponent() {
   return <div className="space-y-4">
     <div className="flex items-center gap-2">
@@ -297,6 +361,7 @@ function pendingComponent() {
       <Skeleton className='ms-auto w-24 h-12' />
     </div>
     <Separator />
+    <Skeleton className='w-80 h-10 mx-auto' />
     <div className='flex flex-wrap'>
       {Array.from( { length: LENGTH } )?.map( (_, index) => 
         <div className='basis-1/2  p-4' key={index} >
