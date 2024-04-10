@@ -17,7 +17,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ChevronDown } from 'lucide-react'
+import { Annoyed, ChevronDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -33,6 +33,7 @@ import {
   createFileRoute,
   Link,
   useNavigate,
+  useRouter,
 } from '@tanstack/react-router'
 import { useStatus } from '@/lib/context/layout'
 import {
@@ -47,9 +48,12 @@ import clsx from 'clsx'
 import { columns, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
 import { useClientByUsers } from '@/lib/context/client'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/_layout/client')({
   component: Clients,
+  pendingComponent,
+  errorComponent,
   loader: async () => {
     const clients = await getClientsList()
     return clients?.map<TClientTable>(({ nombres, apellidos, referencia_id, ...props }, _, list) => {
@@ -81,6 +85,8 @@ interface TClientsProps {
   filter?: keyof TClientTable
 }
 
+const ROW = 14
+const COL = 6
 export const _selectedClients = createContext<TClientTable[] | undefined>( undefined)
 export const _clientContext = createContext< [ clients: TClientTable[], setClient: (({ clients }: { clients: TClientTable[] }) => void), resetSelectedRow: (defaultState?: boolean | undefined) => void ] | undefined>( undefined)
 
@@ -348,6 +354,53 @@ export function Clients({
 
 Clients.displayname = 'ClientsList'
 
+function pendingComponent() {
+  return <div className="space-y-4">
+    <div className="flex items-center gap-2">
+      <Skeleton className='w-36 h-8' />
+      <Skeleton className='w-8 h-8 rounded-full' />
+    </div>
+    <Separator />
+    <div className='flex items-center gap-2'>
+      <Skeleton className='w-24 h-10' />
+      <Skeleton className='w-24 h-10' />
+      <Skeleton className='ms-auto w-32 h-8' />
+      <Skeleton className='w-32 h-8' />
+    </div>
+    <div className='flex flex-wrap px-4'>
+      <table className='ring-4 ring-transparent rounded-md w-full border-separate border-spacing-2'>
+      {Array.from( { length: ROW } )?.map( (_, index) => 
+        <tr key={index}>
+          {Array.from( { length: COL } )?.map( (_, index) => 
+            <td key={index}> <Skeleton className='w-full h-9' /> </td>
+          )}
+        </tr>
+        )}
+      </table>
+    </div>
+    <div className='flex items-center gap-2'>
+      <Skeleton className='w-48 h-8' />
+      <Skeleton className='ms-auto w-24 h-10' />
+      <Skeleton className='w-24 h-10' />
+    </div>
+  </div>
+}
+
+function errorComponent() {
+  const { history } = useRouter()
+  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    history.back()
+  }
+  return <div className='flex h-[60vh] [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 text-2xl'>
+      <Annoyed  className='animate-bounce' />
+      <div className='space-y-2'>
+        <h1 className='font-bold'>{text.error}</h1>
+        <Separator />
+        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+      </div>
+    </div>
+}
+
 /* eslint-disable-next-line */
 type TMenuItems =
   | 'numero_de_identificacion'
@@ -372,7 +425,9 @@ const getMenuItem = (name: string) => {
 }
 
 const text = {
+  back: 'Intente volver a la pestaña anterior',
   title: 'Clientes:',
+  error: 'Ups!!! ha ocurrido un error inesperado',
   browser: 'Clientes',
   search: {
     404: 'No se encontraron resultados',
