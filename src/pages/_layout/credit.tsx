@@ -29,6 +29,8 @@ import { getClientById } from '@/api/clients'
 import brand from '@/assets/menu-brand.avif'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export const Route = createFileRoute('/_layout/credit')({
   component,
@@ -65,6 +67,11 @@ interface TCreditsProps {
 const STEP = 3
 const LENGTH = 8
 export const _creditSelected = createContext<TCREDIT_GET_FILTER | undefined>(undefined)
+const usePagination = create< { start: number, end: number, setPagination: ( params: { start: number, end: number } ) => void } >()( persist( (set) => ({
+  start: 0,
+  end: STEP,
+  setPagination: ({ start, end }) => (set( () => ({ start, end }) ))
+}), { name: "credit-pagination" }) )
 
 /* eslint-disable-next-line */
 export function component({
@@ -76,7 +83,7 @@ export function component({
   const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
-  const [ pagination, setPagination ] = useState<{ start: number, end: number }>({ end: STEP, start: 0 })
+  const { setPagination, ...pagination } = usePagination()
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
@@ -161,7 +168,7 @@ export function component({
             { pagination?.end - STEP > 0 && <PaginationItem>
               <PaginationEllipsis />
             </PaginationItem>}
-            {Array.from({ length: 3 })?.map( (_, index) => {
+            {Array.from({ length: STEP })?.map( (_, index) => {
               if( pagination?.end + index - STEP > (credits?.length - 1)/LENGTH ) return null;
               return <PaginationItem key={index} >
                 <Button
