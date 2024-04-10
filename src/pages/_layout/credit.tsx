@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Printer,
   CircleDollarSign as Pay,
+  Annoyed,
 } from 'lucide-react'
 import { createContext, forwardRef, useEffect, useState } from 'react'
 import { getCreditById, getCreditsFilter, getCreditsList, type TCREDIT_GET_FILTER, type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
@@ -287,6 +288,7 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
   </main>
 }  )  
 
+const LENGTH = 8
 function pendingComponent() {
   return <div className="space-y-4">
     <div className="flex items-center gap-2">
@@ -296,7 +298,7 @@ function pendingComponent() {
     </div>
     <Separator />
     <div className='flex flex-wrap'>
-      {Array.from( { length: 8 } )?.map( (_, index) => 
+      {Array.from( { length: LENGTH } )?.map( (_, index) => 
         <div className='basis-1/2  p-4' key={index} >
         <Card className={clsx("h-full shadow-lg grid justify-streetch items-end")}>
           <CardHeader>
@@ -327,15 +329,20 @@ function pendingComponent() {
 }
 
 function errorComponent() {
-  return <div className='!flex-row'>
-      <h2 className='font-bold text-destructive text-2xl'>:&nbsp;(</h2>
-      <p className='italic text-sm'>  {text.error} </p> 
+  return <div className='flex h-96 [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 text-2xl'>
+      <Annoyed  className='animate-bounce' />
+      <div className='space-y-2'>
+        <h1 className='font-bold'>{text.error}</h1>
+        <Separator />
+        <Link to={".."} from={Route.to} className='italic text-xl hover:underline'> {text.back + "."} </Link>
+      </div>
     </div>
 }
 
 const text = {
   title: 'Prestamos:',
   error: 'Ups!!! ha ocurrido un error inesperado',
+  back: 'Intente volver a la pestaña anterior',
   browser: 'Prestamos',
   notfound: 'No existen prestamos activos.',
   alert: {
