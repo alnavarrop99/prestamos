@@ -20,7 +20,6 @@ import { useStatus } from '@/lib/context/layout'
 import { useReactToPrint } from "react-to-print";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { getClientById } from '@/api/clients'
-import { Input } from '@/components/ui/input'
 import { format } from 'date-fns'
 
 type TSearch = {
@@ -49,7 +48,9 @@ type TOptState = keyof typeof options
 /* eslint-disable-next-line */
 export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTER }: TPrintSelectedCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
-  const [ { opt, payIndex }, setOpt ] = useState<{ payIndex?: number, opt?: TOptState }>({})
+  const [ { opt, payIndex }, setOpt ] = useState<{ payIndex?: number, opt?: TOptState }>({
+    opt: "last"
+  })
   const { client, credit } = Route.useLoaderData()
   const { open, setOpen } = useStatus()
   const ref = useRef< React.ComponentRef< typeof PrintCredit > >(null)
