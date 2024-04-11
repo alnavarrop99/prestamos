@@ -11,7 +11,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog'
 import { Separator } from '@/components/ui/separator'
-import { Link, Outlet, createFileRoute, useMatch, useNavigate, useRouter } from '@tanstack/react-router'
+import { Link, Outlet, createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import clsx from 'clsx'
 import {
   AlertCircle,
@@ -28,9 +28,10 @@ import { getFrecuencyById } from '@/lib/type/frecuency'
 import { getClientById } from '@/api/clients'
 import brand from '@/assets/menu-brand.avif'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination'
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } from '@/components/ui/pagination'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { Select, SelectContent, SelectItem, SelectValue,  SelectTrigger  } from '@/components/ui/select'
 
 export const Route = createFileRoute('/_layout/credit')({
   component,
@@ -64,28 +65,46 @@ interface TCreditsProps {
   open?: boolean
 }
 
+/* eslint-disable-next-line */
+type TOrderType =  
+    | "Nombre"
+    | "Fecha de creacion"
+    | "Frecuencia"
+
 const STEP = 3
 const LENGTH = 8
+const ORDER: Record<keyof Omit<TCREDIT_GET_FILTER, "clientId" | "fecha_de_cuota" | "valor_de_cuota" | "numero_de_cuota" | "valor_de_la_mora" >, TOrderType> = {
+  id: "Fecha de creacion",
+  nombre_del_cliente: "Nombre",
+  frecuencia: "Frecuencia"
+}
 export const _creditSelected = createContext<TCREDIT_GET_FILTER | undefined>(undefined)
 const usePagination = create< { start: number, end: number, setPagination: ( params: { start: number, end: number } ) => void } >()( persist( (set) => ({
   start: 0,
   end: STEP,
   setPagination: ({ start, end }) => (set( () => ({ start, end }) ))
 }), { name: "credit-pagination" }) )
+const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof typeof ORDER ) => void } >()( persist((set) => ({
+  order: "id",
+  setOrder: ( order ) => (set( () => ({ order }) ))
+}), { name: "user-order" }) )
+
 
 /* eslint-disable-next-line */
-export function component({
-  children,
-  open: _open,
-  credits: _credits = [] as TCREDIT_GET_FILTER_ALL,
-}: React.PropsWithChildren<TCreditsProps>) {
-  const creditDB = Route.useLoaderData() ?? _credits
+export function component({}: TCreditsProps) {
+  const creditDB = Route.useLoaderData()
   const [ credits, setCredits ] = useState(creditDB)
   const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
-  const { open = _open, setOpen } = useStatus() 
+  const { open, setOpen } = useStatus() 
   const navigate = useNavigate()
   const { setPagination, ...pagination } = usePagination()
   const { value } = useStatus()
+  const { order, setOrder } = useOrder()
+
+  const onSelectOrder: ( value: string ) => void = ( value ) => {
+    setOrder(value as keyof typeof ORDER)
+
+  }
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
@@ -96,20 +115,6 @@ export function component({
     setOpen({ open: !open })
     setSelectedCredit(credits?.[index])
   }
-
-  useEffect(() => {
-    if (value) {
-      setCredits(
-        creditDB?.filter(({ nombre_del_cliente }) =>
-          nombre_del_cliente.toLowerCase().includes(value?.toLowerCase() ?? '')
-        )
-      )
-      setPagination({ ...pagination, start: 0, end: STEP })
-    }
-    return () => {
-      setCredits(creditDB)
-    }
-  }, [value])
 
   const onPagnation: (params:{ prev?: boolean, next?: boolean, index?: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ next, prev, index }) => () => {
     if( prev && pagination?.end - pagination?.start >= STEP && pagination?.start > 1 ){
@@ -124,12 +129,10 @@ export function component({
     else if( next && pagination?.start === pagination?.end - 1 && pagination?.start < credits?.length/LENGTH -1){
       setPagination({ ...pagination, start: pagination?.start + 1,  end: pagination?.end + STEP })
     }
-    else if( index ) {
-
-    }
 
     if( typeof index === "undefined" ) return;
     setPagination( { ...pagination, start: index } )
+
   }
 
   const onLink: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Link>> = (index) => () => {
@@ -138,7 +141,7 @@ export function component({
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
-      !children && navigate({ to: Route.to })
+      navigate({ to: Route.to })
     }
     setOpen({ open })
   }
@@ -146,6 +149,39 @@ export function component({
   const onOpenUser: React.MouseEventHandler< React.ComponentRef< typeof Link > > = () => {
     onOpenChange(!open)
   }
+
+  useEffect( () => {
+    switch (order) {
+      case "nombre_del_cliente":
+        setCredits( creditDB?.sort( (a, b) => (a.nombre_del_cliente.charCodeAt(0) - b.nombre_del_cliente.charCodeAt(0)) ) )
+        break;
+      case "frecuencia":
+        setCredits( creditDB?.sort( (a, b) => (a.frecuencia.nombre?.charCodeAt(0) - b.frecuencia.nombre?.charCodeAt(0)) ) )
+        break;
+      default:
+        setCredits( creditDB?.sort( (a, b) => (a.id - b.id) ) )
+        break;
+    }
+
+    return () => {
+      setCredits(creditDB)
+    }
+
+  }, [order] )
+
+  useEffect(() => {
+    if (value) {
+      setCredits(
+        creditDB?.filter(({ nombre_del_cliente }) =>
+          nombre_del_cliente.toLowerCase().includes(value?.toLowerCase() ?? '')
+        )
+      )
+      setPagination({ ...pagination, start: 0, end: STEP })
+    }
+    return () => {
+      setCredits(creditDB)
+    }
+  }, [value])
 
   return (
     <_creditSelected.Provider value={selectedCredit}>
@@ -165,16 +201,26 @@ export function component({
                 <Button variant="default">{text.button.create}</Button>
               </Link>
             </DialogTrigger>
-            {children ?? <Outlet />}
+            <Outlet />
           </Dialog>
         </div>
         <Separator />
+        <Select 
+          defaultValue={order}
+          onValueChange={onSelectOrder}
+        >
+          <SelectTrigger className="w-48 !border-1 !border-ring ms-auto">
+            <SelectValue placeholder={"Orden"}  />
+          </SelectTrigger>
+          <SelectContent className='[&_*]:cursor-pointer'>
+            { Object.entries(ORDER)?.map( ( [key, value], index ) => <SelectItem key={index} value={key}>{value}</SelectItem> ) }
+          </SelectContent>
+        </Select>
         { !credits?.length && <p>{text.notfound}</p> }
         { !!credits?.length && <div
-          className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5', {
-            '[&>*]:basis-1/4': !!credits?.length && credits?.length > 15})}
+          className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5')}
         >
-          {credits?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map( ({
+          { !!credits?.length && credits?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map( ({
             id: creditId,
             clientId,
             frecuencia,
@@ -241,7 +287,7 @@ export function component({
                         </ul>
                       </CardContent>
                       <CardFooter className="flex items-center gap-2">
-                        { isValid(fecha_de_cuota) && <Badge> {format(fecha_de_cuota , "dd/MM/yyyy")} </Badge>}
+                        { isValid(fecha_de_cuota) && <Badge>  {format(fecha_de_cuota , "dd/MM/yyyy")} </Badge>}
                         <Dialog open={open} onOpenChange={onOpenChange}>
                           <DialogTrigger asChild className="ms-auto" >
                             {<Link

@@ -27,10 +27,8 @@ import { useStatus } from '@/lib/context/layout'
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { createContext, useMemo } from 'react'
 import { TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
-import { _creditSelected } from '@/pages/_layout/credit'
 import { TCLIENT_GET, getClientById } from '@/api/clients'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useRouter } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
