@@ -253,15 +253,14 @@ export function Users({
           </SelectContent>
         </Select>
       </div>
-
         { !users?.length && <p>{text.notFound}</p>}
-        <div className="flex flex-wrap gap-4 [&>*]:flex-auto items-start content-start min-w-80">
+        <div className={clsx("flex flex-wrap gap-4 [&>*]:flex-auto  content-start min-w-80 [&>*]:min-w-1/4 [&>*]:shrink [&>*]:max-w-[24rem] justify-center", { "!justify-start": users?.length - pagination?.start * LENGTH < 3 })}>
           {!!users?.length && users?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map(
               ({ id, rol, nombre, clientes, selected, active, menu }, index) => (
                 <Card
                   key={id}
                   className={clsx(
-                    'group max-w-sm cursor-pointer py-4 shadow-lg transition delay-150 duration-500 hover:scale-105'
+                    'group cursor-pointer py-4 shadow-lg transition delay-150 duration-500 hover:scale-105'
                   )}
                   onClick={onClick(index + pagination?.start * LENGTH)}
                 >
