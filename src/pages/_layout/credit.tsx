@@ -269,7 +269,8 @@ export function component({
         </div>}
         
       </div>
-        { credits?.length > LENGTH && <Pagination>
+        { credits?.length > LENGTH &&
+        <Pagination className='relative v-10'>
           <PaginationContent>
             <PaginationItem>
               <Button
