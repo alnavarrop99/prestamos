@@ -381,14 +381,14 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
 }  )  
 
 function pendingComponent() {
-  return <div className="space-y-4">
+  return <>
+    <div className="space-y-4">
     <div className="flex items-center gap-2">
       <Skeleton className='w-48 h-8' />
       <Skeleton className='w-8 h-8 rounded-full' />
       <Skeleton className='ms-auto w-24 h-10' />
     </div>
     <Separator />
-    <Skeleton className='w-80 h-10 mx-auto' />
     <div className='flex flex-wrap'>
       {Array.from( { length: LENGTH } )?.map( (_, index) => 
         <div className='basis-1/2  p-4' key={index} >
@@ -418,6 +418,8 @@ function pendingComponent() {
         )}
     </div>
   </div>
+    <Skeleton className='w-80 h-10 mx-auto' />
+    </>
 }
 
 function errorComponent() {
@@ -425,10 +427,11 @@ function errorComponent() {
   const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
     history.back()
   }
-  return <div className='flex h-[60vh] [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 text-2xl'>
+  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
       <Annoyed  className='animate-bounce' />
       <div className='space-y-2'>
         <h1 className='font-bold'>{text.error}</h1>
+        <p className='italic'>{text.errorDescription}</p>
         <Separator />
         <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
       </div>
@@ -437,7 +440,8 @@ function errorComponent() {
 
 const text = {
   title: 'Prestamos:',
-  error: 'Ups!!! ha ocurrido un error inesperado',
+  error: 'Ups!!! ha ocurrido un error',
+  errorDescription: 'El listado de prestamos ha fallado.',
   back: 'Intente volver a la pestaña anterior',
   browser: 'Prestamos',
   notfound: 'No existen prestamos activos.',

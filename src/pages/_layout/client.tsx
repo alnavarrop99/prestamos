@@ -86,7 +86,7 @@ interface TClientsProps {
 }
 
 const ROW = 14
-const COL = 5
+const COL = 7
 export const _selectedClients = createContext<TClientTable[] | undefined>( undefined)
 export const _clientContext = createContext< [ clients: TClientTable[], setClient: (({ clients }: { clients: TClientTable[] }) => void), resetSelectedRow: (defaultState?: boolean | undefined) => void ] | undefined>( undefined)
 
@@ -367,12 +367,12 @@ function pendingComponent() {
       <Skeleton className='ms-auto w-32 h-8' />
       <Skeleton className='w-32 h-8' />
     </div>
-    <div className='flex flex-wrap px-4'>
+    <div className='px-4'>
       <table className='ring-4 ring-transparent rounded-md w-full border-separate border-spacing-2'>
       {Array.from( { length: ROW } )?.map( (_, index) => 
         <tr key={index}>
           {Array.from( { length: COL } )?.map( (_, index) => 
-            <td key={index}> <Skeleton className='w-full h-9' /> </td>
+            <td key={index} className='first:w-12 last:w-16'> <Skeleton className='w-full h-9' /> </td>
           )}
         </tr>
         )}
@@ -391,10 +391,11 @@ function errorComponent() {
   const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
     history.back()
   }
-  return <div className='flex h-[60vh] [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 text-2xl'>
+  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
       <Annoyed  className='animate-bounce' />
       <div className='space-y-2'>
         <h1 className='font-bold'>{text.error}</h1>
+        <p className='italic'>{text.errorDescription}</p>
         <Separator />
         <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
       </div>
@@ -427,7 +428,8 @@ const getMenuItem = (name: string) => {
 const text = {
   back: 'Intente volver a la pestaña anterior',
   title: 'Clientes:',
-  error: 'Ups!!! ha ocurrido un error inesperado',
+  error: 'Ups!!! ha ocurrido un error',
+  errorDescription: 'El listado de clientes ha fallado.',
   browser: 'Clientes',
   search: {
     404: 'No se encontraron resultados',
