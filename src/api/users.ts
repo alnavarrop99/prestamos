@@ -89,6 +89,10 @@ export const getUsersList: TGetUsersList = async () => {
     method: "GET",
     headers
   })
+
+  // await delay(5 * 1000)
+  // throw new Error("error")
+
   return data.json()
 }
 
@@ -137,7 +141,8 @@ export const getCurrentUser: TGetCurrentUser = async () => {
     headers
   })
 
-  await delay(5*1000)
+  // await delay(5*1000)
+  // throw new Error("error")
   return data.json()
 }
 
