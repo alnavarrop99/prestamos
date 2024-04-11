@@ -172,7 +172,7 @@ export function Users({
   useEffect(() => {
     if (value) {
       setUsers(
-        usersDB?.filter(({ nombre }) =>
+        usersDB?.map((_,index, list) => ( { ...list?.[index], selected: users?.[index]?.selected } ))?.filter(({ nombre }) =>
           nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
         )
       )
