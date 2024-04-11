@@ -153,47 +153,6 @@ export function component({
           </Dialog>
         </div>
         <Separator />
-        { credits?.length > LENGTH && <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <Button
-                disabled={ pagination?.start <= 0 }
-                onClick={onPagnation({ prev: true })}
-                className='delay-0 duration-100'
-                variant={"outline"}
-              >
-                Atras
-              </Button>
-            </PaginationItem>
-            { pagination?.end - STEP > 0 && <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>}
-            {Array.from({ length: STEP })?.map( (_, index) => {
-              if( pagination?.end + index - STEP > (credits?.length - 1)/LENGTH ) return null;
-              return <PaginationItem key={index} >
-                <Button
-                  className='delay-0 duration-100'
-                  variant={ pagination?.start === pagination?.end + index - STEP  ? "secondary" : "ghost"}
-                  onClick={onPagnation({ index: pagination?.end - STEP + index })}
-                >
-                  { pagination?.end - STEP + index + 1 }
-                </Button>
-             </PaginationItem>
-            })}
-           
-            { pagination?.end < (credits?.length)/LENGTH  && <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem> }
-
-            <PaginationItem >
-              <Button
-                disabled={pagination?.start >= credits?.length/LENGTH - 1}
-                className='delay-0 duration-100'
-                variant={"outline"} 
-                onClick={onPagnation({ next: true })}> Siguiente </Button>
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>}
         { !credits?.length && <p>{text.notfound}</p> }
         { !!credits?.length && <div
           className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5', {
@@ -310,6 +269,50 @@ export function component({
         </div>}
         
       </div>
+        { credits?.length > LENGTH && <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <Button
+                disabled={ pagination?.start <= 0 }
+                onClick={onPagnation({ prev: true })}
+                className='delay-0 duration-100'
+                variant={"outline"}
+              >
+                {text.pagination.back}
+              </Button>
+            </PaginationItem>
+            { pagination?.end - STEP > 0 && <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>}
+            {Array.from({ length: STEP })?.map( (_, index) => {
+              if( pagination?.end + index - STEP > (credits?.length - 1)/LENGTH ) return null;
+              return <PaginationItem key={index} >
+                <Button
+                  className='delay-0 duration-100'
+                  variant={ pagination?.start === pagination?.end + index - STEP  ? "secondary" : "ghost"}
+                  onClick={onPagnation({ index: pagination?.end - STEP + index })}
+                >
+                  { pagination?.end - STEP + index + 1 }
+                </Button>
+             </PaginationItem>
+            })}
+           
+            { pagination?.end < (credits?.length)/LENGTH  && <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem> }
+
+            <PaginationItem >
+              <Button
+                disabled={pagination?.start >= credits?.length/LENGTH - 1}
+                className='delay-0 duration-100'
+                variant={"outline"} 
+                onClick={onPagnation({ next: true })}> 
+                {text.pagination.next} 
+              </Button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>}
+
     </_creditSelected.Provider>
   )
 }
@@ -421,6 +424,10 @@ const text = {
   back: 'Intente volver a la pestaña anterior',
   browser: 'Prestamos',
   notfound: 'No existen prestamos activos.',
+  pagination: {
+    back: "Anterior",
+    next: "Siguiente",
+  },
   alert: {
     info: {
       title: 'Fecha limite',
