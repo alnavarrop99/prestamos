@@ -79,11 +79,13 @@ export function component({
   open: _open,
   credits: _credits = [] as TCREDIT_GET_FILTER_ALL,
 }: React.PropsWithChildren<TCreditsProps>) {
-  const credits = Route.useLoaderData() ?? _credits
+  const creditDB = Route.useLoaderData() ?? _credits
+  const [ credits, setCredits ] = useState(creditDB)
   const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
   const { open = _open, setOpen } = useStatus() 
   const navigate = useNavigate()
   const { setPagination, ...pagination } = usePagination()
+  const { value } = useStatus()
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
@@ -94,6 +96,20 @@ export function component({
     setOpen({ open: !open })
     setSelectedCredit(credits?.[index])
   }
+
+  useEffect(() => {
+    if (value) {
+      setCredits(
+        creditDB?.filter(({ nombre_del_cliente }) =>
+          nombre_del_cliente.toLowerCase().includes(value?.toLowerCase() ?? '')
+        )
+      )
+      setPagination({ ...pagination, start: 0, end: STEP })
+    }
+    return () => {
+      setCredits(creditDB)
+    }
+  }, [value])
 
   const onPagnation: (params:{ prev?: boolean, next?: boolean, index?: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ next, prev, index }) => () => {
     if( prev && pagination?.end - pagination?.start >= STEP && pagination?.start > 1 ){

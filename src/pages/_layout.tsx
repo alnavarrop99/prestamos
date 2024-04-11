@@ -466,7 +466,7 @@ export function component({ children }: React.PropsWithChildren<TNavigationProps
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="px-8">{children ?? <Outlet />}</div>
+        <div className="px-8 h-full flex flex-col justify-between py-4">{children ?? <Outlet />}</div>
       </main>
       <footer className="py-4">
         <Separator className="my-4" />
@@ -510,10 +510,9 @@ const text = {
     description: ({ username }: { username: string }) => username,
   },
   search: {
-    placeholder: ({ pathname }: { pathname?: string }) =>
-      'Buscar ' + getSearch({ pathname }),
+    placeholder: ({ pathname }: { pathname?: string }) => 'Buscar ' + getSearch({ pathname }),
     title: 'Clientes:',
-    current: 'actual',
+    current: 'actual', 
   },
   footer: {
     copyright: 'Todos los derechos reservados',
