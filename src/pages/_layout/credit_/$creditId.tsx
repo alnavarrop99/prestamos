@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/table'
 import clsx from 'clsx'
 import { Button } from '@/components/ui/button'
-import { Printer } from 'lucide-react'
+import { Annoyed, Printer } from 'lucide-react'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { CircleDollarSign as Pay } from 'lucide-react'
 import { format } from 'date-fns'
@@ -29,9 +29,14 @@ import { createContext, useMemo } from 'react'
 import { TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
 import { _creditSelected } from '@/pages/_layout/credit'
 import { TCLIENT_GET, getClientById } from '@/api/clients'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { useRouter } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
-  component: CreditById,
+  component,
+  pendingComponent,
+  errorComponent,
   loader: async ({ params }) => {
     const credit = await getCreditById({ params })
     const client = await getClientById({ params: { clientId: ""+credit?.owner_id } })
@@ -48,11 +53,13 @@ interface TCreditByIdProps {
   open?: boolean
 }
 
+const ROW = 8
+const COL = 6
 export const _selectedCredit = createContext<[TCREDIT_GET] | undefined>(undefined)
 export const _clientContext = createContext<[TCLIENT_GET] | undefined>(undefined)
 
 /* eslint-disable-next-line */
-export function CreditById({
+export function component({
   children,
   open: _open,
   credit: _credit = {} as TCREDIT_GET,
@@ -176,8 +183,8 @@ export function CreditById({
           <h2 className="text-2xl font-bold"> {text.cuotes.title} </h2>
         )}
         {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
-          <Table className="w-full px-4 py-2">
-            <TableHeader className='bg-muted'>
+          <Table className="px-4 py-2">
+            <TableHeader className='bg-muted [&_th]:text-center'>
               <TableRow>
                 <TableHead></TableHead>
                 <TableHead>{text.cuotes.payDate}</TableHead>
@@ -185,14 +192,22 @@ export function CreditById({
                 <TableHead>{text.cuotes.installmantsDate}</TableHead>
                 <TableHead>{text.cuotes.payInstallmants}</TableHead>
                 <TableHead>{text.cuotes.payStatus}</TableHead>
-                <TableHead></TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
+            <TableBody className='[&_td>*]:text-center'>
               {  table?.map( ( {payment, cuote}, index ) =>  (
                 <TableRow key={index} className='group'>
-                  <TableCell>
-                    <p><b>{index}</b></p>
+                  <TableCell className='flex justify-center items-center w-20 relative'>
+                    <p className='font-bold opacity-100 group-hover:opacity-0 trasition delay-150 duration-300'>{index}</p>
+                    <Link to={'./print'} search={{ index }} className='absolute z-index' >
+                      <Button 
+                          onClick={onPrint}
+                          variant="ghost"
+                          className='hover:ring hover:ring-primary opacity-0 group-hover:opacity-100' 
+                          disabled={credit?.pagos?.length <= 0}>
+                        <Printer />
+                      </Button>
+                    </Link>
                   </TableCell>
                   <TableCell>
                     {/* fix this date because returt a invalid date time */}
@@ -211,22 +226,11 @@ export function CreditById({
                   <TableCell>
                     <p>{cuote?.valor_de_mora > 0 ? <><b>$</b> {cuote?.valor_de_mora?.toFixed(2) }</> : "-"}</p>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className='flex justify-center'>
                     <Switch
                       checked={cuote?.pagada}
                       className={'cursor-not-allowed'}
                     ></Switch>
-                  </TableCell>
-                  <TableCell>
-                    <Link to={'./print'} search={{ index }} >
-                      <Button 
-                          onClick={onPrint}
-                          variant="ghost"
-                          className='hover:ring hover:ring-primary opacity-0 group-hover:opacity-100' 
-                          disabled={credit?.pagos?.length <= 0}>
-                        <Printer />
-                      </Button>
-                    </Link>
                   </TableCell>
                 </TableRow>
               ))}
@@ -249,7 +253,69 @@ export function CreditById({
   )
 }
 
-CreditById.dispalyname = 'CreditById'
+component.dispalyname = 'CreditById'
+
+function pendingComponent() {
+  return <div className="space-y-4">
+    <div className="flex items-center gap-2">
+      <Skeleton className='w-48 h-8' />
+      <Skeleton className='w-8 h-8 rounded-full' />
+      <Skeleton className='ms-auto w-10 h-10' />
+      <Skeleton className='w-10 h-10' />
+      <Skeleton className='w-24 h-10' />
+      <Skeleton className='w-24 h-10' />
+    </div>
+    <Separator />
+    <Skeleton className='w-64 h-8' />
+    <div className='px-4 space-y-4 [&>div]:flex [&>div:last-child]:flex-col [&>div]:gap-2'>
+      <div> <Skeleton className='w-24 h-8' /> <Skeleton className='w-24 h-8' /> </div>
+      <div> <Skeleton className='w-36 h-6' /> <Skeleton className='w-24 h-6' /> </div>
+      <div> <Skeleton className='w-32 h-6' /> <Skeleton className='w-10 h-6' /> </div>
+      <div> <Skeleton className='w-32 h-6' /> <Skeleton className='w-16 h-6' /> </div>
+      <div> <Skeleton className='w-36 h-6' /> <Skeleton className='w-24 h-6' /> </div>
+      <div> <Skeleton className='w-32 h-6' /> <Skeleton className='w-10 h-6' /> </div>
+      <div> <Skeleton className='w-36 h-6' /> <Skeleton className='w-24 h-6' /> </div>
+      <div> <Skeleton className='w-36 h-6' /> <Skeleton className='w-24 h-6' /> </div>
+      <div> <Skeleton className='w-24 h-6' /> <Skeleton className='w-24 h-6' /> </div>
+      <div> 
+        <Skeleton className='w-36 h-6' />
+        <Skeleton className='mx-4 w-[50rem] h-6' />
+        <Skeleton className='mx-4 w-[50rem] h-6' />
+        <Skeleton className='mx-4 w-[12rem] h-6' />
+      </div>
+    </div>
+    <Separator />
+    <Skeleton className='w-64 h-8' />
+    <div className='px-4'>
+      <table className='ring-4 ring-transparent rounded-md w-full border-separate border-spacing-2'>
+      {Array.from( { length: ROW } )?.map( (_, index) => 
+        <tr key={index}>
+          {Array.from( { length: COL } )?.map( (_, index) => 
+            <td key={index} className='last:w-12 first:w-24'> <Skeleton className='w-full h-9' /> </td>
+          )}
+        </tr>
+        )}
+      </table>
+    </div>
+
+  </div>
+}
+
+function errorComponent() {
+  const { history } = useRouter()
+  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    history.back()
+  }
+  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
+      <Annoyed  className='animate-bounce' />
+      <div className='space-y-2'>
+        <h1 className='font-bold'>{text.error}</h1>
+        <p className='italic'>{text.errorDescription}</p>
+        <Separator />
+        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+      </div>
+    </div>
+}
 
 function GetPay({ credit }: { credit: TCREDIT_GET }) {
   if (!credit.cuotas || !credit.pagos) return;
@@ -269,6 +335,9 @@ function GetPay({ credit }: { credit: TCREDIT_GET }) {
 
 const text = {
   title: 'Detalles:',
+  error: 'Ups!!! ha ocurrido un error',
+  errorDescription: 'Los detalles del prestamo ha fallado.',
+  back: 'Intente volver a la pestaña anterior',
   button: {
     update: 'Editar',
     delete: 'Eliminar',
