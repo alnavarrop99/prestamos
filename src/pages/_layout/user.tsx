@@ -176,9 +176,8 @@ export function Users({
           nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
         )
       )
+      setPagination({ ...pagination, start: 0, end: STEP })
     }
-
-    setPagination({ ...pagination, start: 0, end: STEP })
     return () => {
       setUsers(usersDB)
     }
@@ -256,7 +255,7 @@ export function Users({
       </div>
 
         { !users?.length && <p>{text.notFound}</p>}
-        <div className="flex flex-wrap gap-4 [&>*]:flex-auto h-[48rem] items-start content-start min-w-80">
+        <div className="flex flex-wrap gap-4 [&>*]:flex-auto items-start content-start min-w-80">
           {!!users?.length && users?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map(
               ({ id, rol, nombre, clientes, selected, active, menu }, index) => (
                 <Card
@@ -375,8 +374,9 @@ export function Users({
               )
             )}
         </div>
-                    { users?.length > LENGTH && 
-          <Pagination className='w-fit'>
+      </div>
+        { users?.length > LENGTH && 
+          <Pagination className='z-10 relative'>
             <PaginationContent>
               <PaginationItem>
                 <Button
@@ -419,8 +419,6 @@ export function Users({
               </PaginationItem>
             </PaginationContent>
           </Pagination>}
-
-      </div>
     </_selectUsers.Provider>
     </_usersContext.Provider>
   )
