@@ -239,7 +239,8 @@ export function Users({
           </Dialog>
         </div>
         <Separator />
-
+      <div className='flex items-between'>
+        <p className='text-muted-foreground'>  { users?.filter( ({ selected }) => (selected) )?.length } de { usersDB?.length } usuario(s) seleccionados. </p>
         <Select 
           required
           defaultValue={order}
@@ -252,6 +253,7 @@ export function Users({
             { Object.entries(ORDER)?.map( ( [key, value], index ) => <SelectItem key={index} value={key}>{value}</SelectItem> ) }
           </SelectContent>
         </Select>
+      </div>
 
         { !users?.length && <p>{text.notFound}</p>}
         <div className="flex flex-wrap gap-4 [&>*]:flex-auto h-[48rem] items-start content-start min-w-80">
@@ -433,7 +435,10 @@ function pendingComponent() {
       <Skeleton className='w-24 h-10' />
     </div>
     <Separator />
-    <Skeleton className='w-80 h-10 mx-auto' />
+    <div className='flex items-center'>
+      <Skeleton className='w-56 h-6' />
+      <Skeleton className='w-40 h-8 ms-auto' />
+    </div>
     <div className='flex flex-wrap gap-4'>
       {Array.from( { length: LENGTH } )?.map( (_, index) => 
         <Card key={index} className={clsx("h-full shadow-lg grid justify-streetch items-end")}>
