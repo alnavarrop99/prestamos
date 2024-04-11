@@ -186,13 +186,13 @@ export function Users({
   useEffect( () => {
     switch (order) {
       case "nombre":
-        setUsers( usersDB?.sort( (a, b) => ((a.nombre.charCodeAt(0) ?? 0) - (b.nombre.charCodeAt(0) ?? 0)) ) )
+        setUsers( usersDB?.map((_,index, list) => ( { ...list?.[index], selected: users?.[index]?.selected } ))?.sort( (a, b) => ((a.nombre.charCodeAt(0) ?? 0) - (b.nombre.charCodeAt(0) ?? 0)) ) )
         break;
       case "rol":
-        setUsers( usersDB?.sort( (a, b) => ((a.rol.charCodeAt(0) ?? 0) - (b.rol.charCodeAt(0) ?? 0)) ) )
+        setUsers( usersDB?.map((_,index, list) => ( { ...list?.[index], selected: users?.[index]?.selected } ))?.sort( (a, b) => ((a.rol.charCodeAt(0) ?? 0) - (b.rol.charCodeAt(0) ?? 0)) ) )
         break;
       default:
-        setUsers(usersDB)
+        setUsers(usersDB?.map((_,index, list) => ( { ...list?.[index], selected: users?.[index]?.selected } )))
         break;
     }
 
