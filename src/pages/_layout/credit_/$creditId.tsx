@@ -198,7 +198,7 @@ export function component({
               {  table?.map( ( {payment, cuote}, index ) =>  (
                 <TableRow key={index} className='group'>
                   <TableCell className='flex justify-center items-center w-20 relative'>
-                    <p className='font-bold opacity-100 group-hover:opacity-0 trasition delay-150 duration-300'>{index}</p>
+                    <p className='font-bold opacity-100 group-hover:opacity-0 trasition delay-150 duration-300'>{index+1}</p>
                     <Link to={'./print'} search={{ index }} className='absolute z-index' >
                       <Button 
                           onClick={onPrint}
