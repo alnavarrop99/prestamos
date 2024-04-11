@@ -127,6 +127,7 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
           <Input
             required
             min={0}
+            step={1}
             name={'valor_del_pago' as TFormName}
             type="number"
             placeholder={text.form.amount.placeholder}

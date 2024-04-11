@@ -130,7 +130,7 @@ export function PayCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayment
           <Input
             required
             min={0}
-            step={50}
+            step={1}
             name={'valor_del_pago' as TFormName}
             type="number"
             placeholder={text.form.amount.placeholder}

@@ -226,7 +226,7 @@ export function NewCredit( { clients: _clients = [] as TCLIENT_GET[] }: TNewCred
           <Input
             required
             min={0}
-            step={50}
+            step={1}
             value={amount}
             onChange={onChangeValue("amount")}
             name={'monto' as TFormName}

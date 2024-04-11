@@ -260,7 +260,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
             <Input
               required
               min={0}
-              step={50}
+              step={1}
               name={'monto' as TFormName}
               type="number"
               defaultValue={creditChange.monto}
@@ -341,7 +341,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               required
               min={0}
               max={installmants?.type === "Porciento" ? 100 : undefined}
-              step={installmants?.type === "Porciento" ? 1 : 50}
+              step={installmants?.type === "Porciento" ? 1 : 1}
               name={'valor_de_mora' as TFormName}
               type="number"
               defaultValue={creditChange?.valor_de_mora}
@@ -428,7 +428,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                         disabled={!!paymentDelete?.[index]}
                         type='number'
                         min={0}
-                        step={50}
+                        step={1}
                         name={"valor_del_pago" as keyof TPAYMENT_GET} 
                         defaultValue={payment?.valor_del_pago} 
                         placeholder={text.form.pay.payValue.placeholder} 

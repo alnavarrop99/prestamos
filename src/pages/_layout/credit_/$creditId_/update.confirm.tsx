@@ -19,7 +19,6 @@ import { useMutation } from '@tanstack/react-query'
 import { TPAYMENT_GET_BASE, deletePaymentById, patchPaymentById } from "@/api/payment";
 import { TCLIENT_GET_BASE } from '@/api/clients'
 import { formatISO } from 'date-fns'
-import { logDOM } from '@testing-library/react'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')({
   component: UpdateConfirmationCredit,
