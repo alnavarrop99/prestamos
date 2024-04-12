@@ -99,7 +99,7 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 }
 
 /* eslint-disable-next-line */
-export function component({ children }: React.PropsWithChildren<TNavigationProps>) {
+export function component({}: React.PropsWithChildren<TNavigationProps>) {
   const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, menu: false })
   const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()
@@ -466,7 +466,7 @@ export function component({ children }: React.PropsWithChildren<TNavigationProps
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="px-8 h-full flex flex-col justify-between py-4">{children ?? <Outlet />}</div>
+        <div className="px-8 h-full flex flex-col justify-between py-4"><Outlet /></div>
       </main>
       <footer className="py-4">
         <Separator className="my-4" />

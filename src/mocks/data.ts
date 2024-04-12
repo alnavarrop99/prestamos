@@ -12,8 +12,8 @@ import { faker } from "@faker-js/faker/locale/en"
 import { TPAYMENT_GET_BASE } from '@/api/payment';
 
 const CLIENTS_LENGTH = 20
-const USERS_LENGTH = 10
-const CREDITS_LENGTH = 20
+const USERS_LENGTH = 64
+const CREDITS_LENGTH = 10
 const REPORTS_LENGTH = 5
 
 export const users = new Map<number, TUSER_GET>( Array.from({ length: USERS_LENGTH })?.map<[number, TUSER_GET]>( (_, index) => {

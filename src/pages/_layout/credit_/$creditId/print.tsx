@@ -131,7 +131,7 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
               <SelectValue placeholder={text.form.pay.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { credit?.pagos?.map( ( { fecha_de_pago }, index ) => ( <SelectItem value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
+              { credit?.pagos?.map( (_, index ) => ( <SelectItem value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
             </SelectContent>
           </Select>
         </Label> }

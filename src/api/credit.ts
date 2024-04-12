@@ -151,6 +151,7 @@ export const getCreditById: TGetCreditById = async ({ params: { creditId} }) => 
     method: "GET",
     headers
   })
+
   return creditById.json()
 }
 
@@ -182,6 +183,7 @@ export const getCreditsFilter: TGetCreditsFilter = ( filter = { cliente: null, f
     body: JSON.stringify(filter),
     headers
   })
+
   return creditById.json()
 }
 

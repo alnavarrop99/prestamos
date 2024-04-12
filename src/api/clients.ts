@@ -112,6 +112,7 @@ export const getClientsList: TGetClientsList =  async () => {
     method: "GET",
     headers
   })
+
   return await res.json()
 }
 

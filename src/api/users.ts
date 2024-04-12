@@ -1,5 +1,4 @@
 import { useToken } from "@/lib/context/login";
-import { delay } from "msw";
 
 // GET
 export type TUSER_GET = {
@@ -90,9 +89,6 @@ export const getUsersList: TGetUsersList = async () => {
     headers
   })
 
-  // await delay(5 * 1000)
-  // throw new Error("error")
-
   return data.json()
 }
 
@@ -141,8 +137,6 @@ export const getCurrentUser: TGetCurrentUser = async () => {
     headers
   })
 
-  // await delay(5*1000)
-  // throw new Error("error")
   return data.json()
 }
 
