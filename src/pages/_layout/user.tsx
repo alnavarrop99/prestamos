@@ -42,8 +42,8 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } fro
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export const Route = createFileRoute('/_layout/user')({
-  pendingComponent,
-  errorComponent,
+  pendingComponent: Pending,
+  errorComponent: Error,
   component: Users,
   loader: getUsersList,
 })
@@ -67,8 +67,7 @@ type TOrderType = "Nombre" | "Fecha de creacion" | "Rol"
 const STEP = 3
 const LENGTH = 9
 const ORDER: Record<keyof Omit<TUSER_GET, "clientes" >, TOrderType> = {id: "Fecha de creacion", nombre: "Nombre", rol: "Rol"}
-export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
-export const _usersContext = createContext<[TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>] | undefined>(undefined)
+export const _selectUsers = createContext<TUsersState[]>([])
 const usePagination = create< { start: number, end: number, setPagination: ( params: { start: number, end: number } ) => void } >()( persist( (set) => ({
   start: 0,
   end: STEP,
@@ -81,18 +80,12 @@ const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof t
 
 
 /* eslint-disable-next-line */
-export function Users({
-  children,
-  open: _open,
-  users: _users = [] as TUSER_GET_ALL,
-}: React.PropsWithChildren<TUsersProps>) {
-  const usersDB = (Route.useLoaderData() ?? _users)?.map<TUsersState>(
-    (items) => ({ ...items, selected: false, menu: false })
-  )
-  const [users, setUsers] = useState<TUsersState[]>(usersDB)
+export function Users({}: React.PropsWithChildren<TUsersProps>) {
+  const usersDB = (Route.useLoaderData()) 
+  const [users, setUsers] = useState<TUsersState[]>(() => usersDB?.map<TUsersState>( (items) => ({ ...items, selected: false, menu: false })))
   const navigate = useNavigate()
   const { value } = useStatus()
-  const { open = _open, setOpen } = useStatus()
+  const { open, setOpen } = useStatus()
   const { setPagination, ...pagination } = usePagination()
   const { order, setOrder } = useOrder()
 
@@ -112,9 +105,6 @@ export function Users({
     }
     else if( next && pagination?.start === pagination?.end - 1 && pagination?.start < users?.length/LENGTH -1){
       setPagination({ ...pagination, start: pagination?.start + 1,  end: pagination?.end + STEP })
-    }
-    else if( index ) {
-
     }
 
     if( typeof index === "undefined" ) return;
@@ -153,7 +143,7 @@ export function Users({
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
-      !children && navigate({ to: Route.to })
+      navigate({ to: Route.to })
     }
     setOpen({ open })
   }
@@ -172,38 +162,37 @@ export function Users({
   useEffect(() => {
     if (value) {
       setUsers(
-        usersDB?.map((_,index, list) => ( { ...list?.[index], selected: users?.[index]?.selected } ))?.filter(({ nombre }) =>
+        usersDB?.map(( item,index ) => ( { ...item, selected: users?.[index]?.selected, menu: false } ))?.filter(({ nombre }) =>
           nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
         )
       )
       setPagination({ ...pagination, start: 0, end: STEP })
     }
     return () => {
-      setUsers(usersDB)
+      setUsers(usersDB?.map( ( item ) => ({ ...item, selected: false, menu: false }) ))
     }
   }, [value])
 
   useEffect( () => {
     switch (order) {
       case "nombre":
-        setUsers( usersDB?.map((_,index, list) => ( { ...list?.[index], selected: users?.[index]?.selected } ))?.sort( (a, b) => ((a.nombre.charCodeAt(0) ?? 0) - (b.nombre.charCodeAt(0) ?? 0)) ) )
+        setUsers( usersDB?.map(( item, index ) => ( { ...item, selected: users?.[index]?.selected, menu: false } ))?.sort( (a, b) => ((a.nombre.charCodeAt(0) ?? 0) - (b.nombre.charCodeAt(0) ?? 0)) ) )
         break;
       case "rol":
-        setUsers( usersDB?.map((_,index, list) => ( { ...list?.[index], selected: users?.[index]?.selected } ))?.sort( (a, b) => ((a.rol.charCodeAt(0) ?? 0) - (b.rol.charCodeAt(0) ?? 0)) ) )
+        setUsers( usersDB?.map(( item, index ) => ( { ...item, selected: users?.[index]?.selected, menu: false } ))?.sort( (a, b) => ((a.rol.charCodeAt(0) ?? 0) - (b.rol.charCodeAt(0) ?? 0)) ) )
         break;
       default:
-        setUsers(usersDB?.map((_,index, list) => ( { ...list?.[index], selected: users?.[index]?.selected } )))
+        setUsers(usersDB?.map(( item, index) => ( { ...item, selected: users?.[index]?.selected, menu: false } )))
         break;
     }
 
     return () => {
-      setUsers(usersDB)
+      setUsers(usersDB?.map( ( item ) => ({ ...item, selected: false, menu: false }) ))
     }
 
   }, [order] )
 
   return (
-    <_usersContext.Provider value={ [ users, setUsers ] }>
     <_selectUsers.Provider value={users?.filter(({ selected }) => selected)}>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
@@ -234,7 +223,7 @@ export function Users({
                 </Button>
               </Link>
             </DialogTrigger>
-            {children ?? <Outlet />}
+            <Outlet />
           </Dialog>
         </div>
         <Separator />
@@ -256,9 +245,9 @@ export function Users({
         { !users?.length && <p>{text.notFound}</p>}
         <div className={clsx("flex flex-wrap gap-4 [&>*]:flex-auto  content-start min-w-80 [&>*]:min-w-1/4 [&>*]:shrink [&>*]:max-w-[24rem] justify-center", { "!justify-start": users?.length - pagination?.start * LENGTH < 3 })}>
           {!!users?.length && users?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map(
-              ({ id, rol, nombre, clientes, selected, active, menu }, index) => (
+              ({ id: userId, rol, nombre, clientes, selected, active, menu }, index) => (
                 <Card
-                  key={id}
+                  key={userId}
                   className={clsx(
                     'group cursor-pointer py-4 shadow-lg transition delay-150 duration-500 hover:scale-105'
                   )}
@@ -308,7 +297,7 @@ export function Users({
                               <Link
                                 className="flex h-full w-full items-center justify-between gap-2"
                                 to={'./$userId/update'}
-                                params={{ userId: id }}
+                                params={{ userId: userId }}
                               >
                                 {text.menu.update} <UserUpdate />
                               </Link>
@@ -321,7 +310,8 @@ export function Users({
                               <Link
                                 className="flex h-full w-full items-center justify-between gap-2"
                                 to={'./$userId/delete'}
-                                params={{ userId: id }}
+                                params={{ userId: userId }}
+                                search={{ name: nombre }}
                               >
                                 {text.menu.delete} <UserDelete />
                               </Link>
@@ -331,7 +321,7 @@ export function Users({
                       </DropdownMenu>
                     </Dialog>
                     <Checkbox
-                      name={'selected' as keyof typeof users[0]}
+                      name={'selected' as keyof TUsersState}
                       checked={selected}
                       onCheckedChange={onCheckChanged(index + pagination?.start * LENGTH, 'selected')}
                     />
@@ -419,11 +409,11 @@ export function Users({
             </PaginationContent>
           </Pagination>}
     </_selectUsers.Provider>
-    </_usersContext.Provider>
   )
 }
 
-function pendingComponent() {
+/* eslint-disable-next-line */
+export function Pending() {
   return <>
     <div className="space-y-4">
     <div className="flex items-center gap-2">
@@ -463,7 +453,8 @@ function pendingComponent() {
     </>
 }
 
-function errorComponent() {
+/* eslint-disable-next-line */
+export function Error() {
   const { history } = useRouter()
   const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
     history.back()
@@ -480,6 +471,8 @@ function errorComponent() {
 }
 
 Users.dispalyname = 'UsersList'
+Error.dispalyname = 'UserListError'
+Pending.dispalyname = 'UserListPending'
 
 const text = {
   title: 'Usuarios:',
