@@ -26,7 +26,7 @@ import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import React, { Suspense, useEffect, useReducer, useState } from 'react'
+import React, { memo, Suspense, useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -46,7 +46,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { getCurrentUser, type TUSER_GET } from '@/api/users'
+import { getCurrentUser, getUserById, type TUSER_GET } from '@/api/users'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -55,11 +55,14 @@ import {
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
-import { useIsFetching, useIsMutating } from '@tanstack/react-query'
+import { useIsFetching, useIsMutating, useMutationState } from '@tanstack/react-query'
 import { SpinLoader } from '@/components/ui/loader'
 import brand from "@/assets/menu-brand.avif"
 import brandOff from "@/assets/menu-off-brand.avif"
 import { Skeleton } from '@/components/ui/skeleton'
+import { getUsersListOpt, Users } from './_layout/user'
+import { getUserByIdOpt, updateUserByIdOpt } from './_layout/user/$userId/update'
+import { postUserOpt } from './_layout/user/new'
 
 export const Route = createFileRoute('/_layout')({
   component,
@@ -283,7 +286,7 @@ export function component({}: React.PropsWithChildren<TNavigationProps>) {
                 </Button>
               )}
             </Link>
-            { (!!isFetching || !!isMutating) && <SpinLoader />}
+            <UsersSpinLoader />
           </div>
           <div>
             <Label className="flex cursor-pointer items-center gap-2">
@@ -479,13 +482,49 @@ export function component({}: React.PropsWithChildren<TNavigationProps>) {
   )
 }
 
-component.dispalyname = 'Layout'
+const UsersSpinLoader = memo(function () {
+   const get = useIsFetching({
+    type: "inactive",
+    fetchStatus: "fetching",
+    queryKey: ([] as string[]).concat( getUsersListOpt.queryKey ),
+  })
+
+  const id = useIsFetching({
+    type: "inactive",
+    fetchStatus: "fetching",
+    queryKey: ([] as string[]).concat( getUserByIdOpt({ userId: "" }).queryKey[0] ),
+  })
+
+  const post = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( postUserOpt.mutationKey ),
+  })
+
+  const update = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( updateUserByIdOpt?.mutationKey ),
+  })
+
+  const className = 'text-muted-foreground italic text-xs flex items-center gap-2'
+
+  if( !!get || !!id ) {
+    return <span className={className}><SpinLoader /> {text.loader.user.get}</span>
+  }
+  else if( !!post ) {
+    return <span className={className}><SpinLoader /> {text.loader.user.new} </span>
+  }
+  else if( !!update ) {
+    return <span className={className}><SpinLoader /> {text.loader.user.update} </span>
+  }
+
+})
+
 
 function pendingComponent() {
   return <>Lodaing</>
 }
 
-const errorComponent = ({ searchList }:{ currentUser?: boolean, searchList?: boolean }) =>{
+export const errorComponent = ({ searchList }:{ currentUser?: boolean, searchList?: boolean }) =>{
   if( searchList ) {
     return  () => <Error className='p-1 stroke-destructive' />
   }
@@ -495,9 +534,21 @@ const errorComponent = ({ searchList }:{ currentUser?: boolean, searchList?: boo
     </div>
 } 
 
+component.dispalyname = 'Layout'
+pendingComponent.dispalyname = 'Layout'
+errorComponent.dispalyname = 'Layout'
+
 const text = {
   title: 'Matcor',
   error: 'Ups!!! ha ocurrido un error inesperado',
+  loader: {
+    user: {
+      new: "Creando usuario",
+      update: "Actualizando usuario",
+      delete: "Eliminando usuario(s)",
+      get: "Cargando usuario(s)"
+    }
+  },
   navegation: {
     credit: { title: 'Prestamos', url: '/credit', Icon: icons?.CreditCard },
     client: { title: 'Clientes', url: '/client', Icon: icons?.Award },

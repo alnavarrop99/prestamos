@@ -40,12 +40,21 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query';
+import { queryClient } from '../__root';
+import { updateUserByIdOpt } from './user/$userId/update';
+import { postUserOpt } from './user/new';
+
+export const getUsersListOpt = {
+  queryKey: ["list-users"],
+  queryFn: getUsersList,
+}
 
 export const Route = createFileRoute('/_layout/user')({
   pendingComponent: Pending,
   errorComponent: Error,
   component: Users,
-  loader: getUsersList,
+  loader: () => queryClient.ensureQueryData( queryOptions( getUsersListOpt )),
 })
 
 /* eslint-disable-next-line */
@@ -81,16 +90,21 @@ const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof t
 
 /* eslint-disable-next-line */
 export function Users({}: React.PropsWithChildren<TUsersProps>) {
-  const usersDB = (Route.useLoaderData()) 
-  const [users, setUsers] = useState<TUsersState[]>(() => usersDB?.map<TUsersState>( (items) => ({ ...items, selected: false, menu: false })))
+  const { order, setOrder } = useOrder()
+  const select: ((data: TUSER_GET_ALL) => TUsersState[]) = ( data ) => ( sortUsers( order, data?.map<TUsersState>( (items) => ({ ...items, selected: false, menu: false })) ) )
+  const { data: usersRes, refetch } = useSuspenseQuery( queryOptions( { ...getUsersListOpt, select }) )
+  const [users, setUsers] = useState<TUsersState[]>(usersRes)
   const navigate = useNavigate()
   const { value } = useStatus()
   const { open, setOpen } = useStatus()
   const { setPagination, ...pagination } = usePagination()
-  const { order, setOrder } = useOrder()
+  const isUpdateUser = useIsMutating( { status: "success", mutationKey: updateUserByIdOpt.mutationKey } )
+  const isNewUser = useIsMutating( { status: "success", mutationKey: postUserOpt.mutationKey } )
 
   const onSelectOrder: ( value: string ) => void = ( value ) => {
+    if( order !== "rol" && order !== "nombre" && order !== "id" ) return;
     setOrder(value as keyof typeof ORDER)
+    setUsers( sortUsers(value as keyof typeof ORDER, usersRes ))
   }
 
   const onPagnation: (params:{ prev?: boolean, next?: boolean, index?: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ next, prev, index }) => () => {
@@ -160,37 +174,28 @@ export function Users({}: React.PropsWithChildren<TUsersProps>) {
     }
 
   useEffect(() => {
+    if( usersRes ){
+      refetch()?.then( ({ data }) => {
+        if( !data ) return;
+        setUsers(data )
+      } )
+    }
+    return () => {
+      // setUsers( usersRes )
+    }
+  }, [isUpdateUser, isNewUser])
+
+  useEffect(() => {
     if (value) {
-      setUsers(
-        usersDB?.map(( item,index ) => ( { ...item, selected: users?.[index]?.selected, menu: false } ))?.filter(({ nombre }) =>
+        usersRes?.filter(({ nombre }) =>
           nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
         )
-      )
       setPagination({ ...pagination, start: 0, end: STEP })
     }
     return () => {
-      setUsers(usersDB?.map( ( item ) => ({ ...item, selected: false, menu: false }) ))
+      // setUsers( usersRes )
     }
   }, [value])
-
-  useEffect( () => {
-    switch (order) {
-      case "nombre":
-        setUsers( usersDB?.map(( item, index ) => ( { ...item, selected: users?.[index]?.selected, menu: false } ))?.sort( (a, b) => ((a.nombre.charCodeAt(0) ?? 0) - (b.nombre.charCodeAt(0) ?? 0)) ) )
-        break;
-      case "rol":
-        setUsers( usersDB?.map(( item, index ) => ( { ...item, selected: users?.[index]?.selected, menu: false } ))?.sort( (a, b) => ((a.rol.charCodeAt(0) ?? 0) - (b.rol.charCodeAt(0) ?? 0)) ) )
-        break;
-      default:
-        setUsers(usersDB?.map(( item, index) => ( { ...item, selected: users?.[index]?.selected, menu: false } )))
-        break;
-    }
-
-    return () => {
-      setUsers(usersDB?.map( ( item ) => ({ ...item, selected: false, menu: false }) ))
-    }
-
-  }, [order] )
 
   return (
     <_selectUsers.Provider value={users?.filter(({ selected }) => selected)}>
@@ -228,7 +233,7 @@ export function Users({}: React.PropsWithChildren<TUsersProps>) {
         </div>
         <Separator />
       <div className='flex items-between'>
-        <p className='text-muted-foreground'>  { users?.filter( ({ selected }) => (selected) )?.length } de { usersDB?.length } usuario(s) seleccionados. </p>
+        <p className='text-muted-foreground'>  { users?.filter( ({ selected }) => (selected) )?.length } de { usersRes?.length } usuario(s) seleccionados. </p>
         <Select 
           required
           defaultValue={order}
@@ -468,6 +473,16 @@ export function Error() {
         <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
       </div>
     </div>
+}
+
+const sortUsers = (order: keyof typeof ORDER ,users: TUsersState[]) => {
+  return users?.sort( (a, b) => {
+    const valueA = a?.[order]
+    const valueB = b?.[order]
+    if( typeof valueA === "string" && typeof valueB === "string" ) return (valueA.charCodeAt(0) - valueB.charCodeAt(0) ) 
+    else if( typeof valueA === "number" && typeof valueB === "number" ) return (valueA - valueB) 
+    return 0
+  })
 }
 
 Users.dispalyname = 'UsersList'

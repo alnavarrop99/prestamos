@@ -17,6 +17,11 @@ import { type TUSER_GET, type TUSER_POST_BODY, postUser } from '@/api/users'
 import { getRolByName, listRols } from "@/lib/type/rol";
 import { useStatus } from '@/lib/context/layout'
 
+export const postUserOpt = {
+  mutationKey: ["create-user"],
+  mutationFn: postUser,
+}
+
 export const Route = createFileRoute('/_layout/user/new')({
   component: NewUser,
 })
@@ -79,9 +84,7 @@ export function NewUser({}: TNewUserProps) {
     })
   }
 
-  const { mutate: createUser } = useMutation( {
-    mutationKey: ["create-user"],
-    mutationFn: postUser,
+  const { mutate: createUser } = useMutation( { ...postUserOpt,
     onSuccess,
     onError
   })

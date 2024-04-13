@@ -4,7 +4,7 @@ import { _404 } from '@/pages/__404'
 import { ThemeProvider } from '@/components/theme-provider'
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query'
 
-const queryClient = new QueryClient()
+export const queryClient = new QueryClient()
 
 export const Route = createRootRoute({
   component: Root,

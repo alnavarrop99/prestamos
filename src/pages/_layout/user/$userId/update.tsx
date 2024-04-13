@@ -13,15 +13,28 @@ import { Eye, EyeOff } from 'lucide-react'
 import { TUSER_GET, getUserById, pathUserById } from '@/api/users'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
-import { useMutation } from '@tanstack/react-query'
+import { queryOptions, useMutation } from '@tanstack/react-query'
 import { type TROLES, getRolByName, listRols } from '@/lib/type/rol'
 import { type TUsersState } from '@/pages/_layout/user'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SpinLoader } from '@/components/ui/loader'
+import { queryClient } from '@/pages/__root'
+
+export const getUserByIdOpt = ( { userId = "" }: { userId: string }  ) => ({
+  queryKey: ["user-by-id", userId],
+  queryFn: () => getUserById({ params: { userId } }),
+})
+
+export const updateUserByIdOpt = {
+  mutationKey: ["update-user-by-id"],
+  mutationFn: pathUserById,
+}
 
 export const Route = createFileRoute('/_layout/user/$userId/update')({
   component: UpdateUserById,
-  loader: async ( { params } ) => ({ user: defer(getUserById({ params })) }),
+  errorComponent: Error,
+  loader: async ( { params } ) => ({ user: defer( queryClient.ensureQueryData( queryOptions( getUserByIdOpt( params ) ) ) ) }),
+
 })
 
 /* eslint-disable-next-line */
@@ -51,21 +64,9 @@ export function UpdateUserById({}: TUpdateUserById) {
   const { open, setOpen } = useStatus()
   const { userId } = Route.useParams()
   const { user: userRes } = Route.useLoaderData()
+  // const { data: userRes } = useSuspenseQuery( queryOptions( getUserByIdQueryOpt )  )
   const [ user, setUser ] = useState< (TUSER_GET & { password: string }) | undefined >()
   const init = useRef(user)
-
-  useEffect( () => {
-    if( !user ) {
-      userRes?.then( ( data ) => {
-        init.current = ({ ...data, password: "" })
-        setUser({ ...data, password: "" })
-        return;
-      })
-    }
-    return () => {
-      setUser(undefined)
-    }
-  }, [userRes] )
 
   const onSuccess = () => {
     if( !init?.current?.nombre ) return;
@@ -86,7 +87,6 @@ export function UpdateUserById({}: TUpdateUserById) {
       description,
     })
 
-    setOpen({ open: !open })
 
     toast({
       title: text.notification.titile,
@@ -124,12 +124,20 @@ export function UpdateUserById({}: TUpdateUserById) {
     })
   }
 
-  const {mutate: updateUser, isPending} = useMutation( {
-    mutationKey: ["update-user"],
-    mutationFn: pathUserById,
-    onError,
-    onSuccess
-  })
+  const {mutate: updateUser, isPending} = useMutation( { ...updateUserByIdOpt, onError, onSuccess } )
+
+  useEffect( () => {
+    if( !user ) {
+      userRes?.then( ( data ) => {
+        init.current = ({ ...data, password: "" })
+        setUser({ ...data, password: "" })
+        return;
+      })
+    }
+    return () => {
+      setUser(undefined)
+    }
+  }, [userRes] )
 
   const active = useMemo( () => Object.values(init?.current ?? {})?.every( ( value, i ) => ( value === Object.values(user ?? {})?.[i] ) ), [user] )
 
@@ -183,6 +191,7 @@ export function UpdateUserById({}: TUpdateUserById) {
         nombre: items?.firstName + " " + items?.lastName
     }})
     
+    setOpen({ open: !open })
     form.current.reset()
     ev.preventDefault()
   }
@@ -366,10 +375,29 @@ export function UpdateUserById({}: TUpdateUserById) {
   )
 }
 
+export function Error() {
+  useEffect( () => {
+    toast({
+      title: text.error.title,
+      description: <div className='flex flex-row gap-2 items-center'>
+      <h2 className='font-bold text-2xl'>:&nbsp;(</h2>
+      <p className='text-md'>  {text.error.descriiption} </p> 
+    </div>,
+      variant: 'destructive',
+    })
+  }, [] )
+  return ;
+}
+
 UpdateUserById.dispalyname = 'UpdateUserById'
+Error.dispalyname = 'UpdateUserByIdError'
 
 const text = {
   title: 'Actualizar Usuario:',
+  error: {
+    title: "Obtencion de datos de usuario",
+    descriiption: "Ha ocurrido un error inesperado"
+  },
   descriiption:
     'Modifique los campos para actualizar los datos del usuario en la plataforma.',
   button: {
