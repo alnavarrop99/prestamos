@@ -32,9 +32,9 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useRouter } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
-  component,
-  pendingComponent,
-  errorComponent,
+  component: CreditById,
+  pendingComponent: Pending,
+  errorComponent: Error,
   loader: async ({ params }) => {
     const credit = await getCreditById({ params })
     const client = await getClientById({ params: { clientId: ""+credit?.owner_id } })
@@ -57,7 +57,7 @@ export const _selectedCredit = createContext<[TCREDIT_GET] | undefined>(undefine
 export const _clientContext = createContext<[TCLIENT_GET] | undefined>(undefined)
 
 /* eslint-disable-next-line */
-export function component({
+export function CreditById({
   children,
   open: _open,
   credit: _credit = {} as TCREDIT_GET,
@@ -251,9 +251,8 @@ export function component({
   )
 }
 
-component.dispalyname = 'CreditById'
-
-function pendingComponent() {
+/* eslint-disable-next-line */
+export function Pending() {
   return <div className="space-y-4">
     <div className="flex items-center gap-2">
       <Skeleton className='w-48 h-8' />
@@ -299,7 +298,8 @@ function pendingComponent() {
   </div>
 }
 
-function errorComponent() {
+/* eslint-disable-next-line */
+export function Error() {
   const { history } = useRouter()
   const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
     history.back()
@@ -315,6 +315,7 @@ function errorComponent() {
     </div>
 }
 
+/* eslint-disable-next-line */
 function GetPay({ credit }: { credit: TCREDIT_GET }) {
   if (!credit.cuotas || !credit.pagos) return;
 
@@ -330,6 +331,11 @@ function GetPay({ credit }: { credit: TCREDIT_GET }) {
     </p>
   )
 }
+
+CreditById.dispalyname = 'CreditById'
+Pending.dispalyname = 'CreditByIdPending'
+Error.dispalyname = 'CreditByIdError'
+
 
 const text = {
   title: 'Detalles:',

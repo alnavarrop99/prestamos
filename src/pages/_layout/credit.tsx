@@ -34,9 +34,9 @@ import { persist } from 'zustand/middleware'
 import { Select, SelectContent, SelectItem, SelectValue,  SelectTrigger  } from '@/components/ui/select'
 
 export const Route = createFileRoute('/_layout/credit')({
-  component,
-  pendingComponent,
-  errorComponent,
+  component: Credits,
+  pendingComponent: Pending,
+  errorComponent: Error,
   loader: async () => {
     // TODO: this is a temporal function to getFilter
     if(!!+import.meta.env.VITE_MSW && import.meta.env.DEV) return (await getCreditsFilter()());
@@ -91,7 +91,7 @@ const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof t
 
 
 /* eslint-disable-next-line */
-export function component({}: TCreditsProps) {
+export function Credits({}: TCreditsProps) {
   const creditDB = Route.useLoaderData()
   const [ credits, setCredits ] = useState(creditDB)
   const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
@@ -380,10 +380,6 @@ export function component({}: TCreditsProps) {
   )
 }
 
-component.dispalyname = 'CreditsList'
-
-
-
 interface TPrintCredit extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   client: string
   ssn: string
@@ -426,7 +422,8 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
   </main>
 }  )  
 
-function pendingComponent() {
+/* eslint-disable-next-line */
+export function Pending() {
   return <>
     <div className="space-y-4">
     <div className="flex items-center gap-2">
@@ -468,7 +465,8 @@ function pendingComponent() {
     </>
 }
 
-function errorComponent() {
+/* eslint-disable-next-line */
+export function Error() {
   const { history } = useRouter()
   const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
     history.back()
@@ -483,6 +481,10 @@ function errorComponent() {
       </div>
     </div>
 }
+
+Credits.dispalyname = 'CreditsList'
+Error.dispalyname = 'CreditsListError'
+Pending.dispalyname = 'CreditsListPending'
 
 const text = {
   title: 'Prestamos:',

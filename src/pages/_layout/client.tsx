@@ -52,8 +52,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/_layout/client')({
   component: Clients,
-  pendingComponent,
-  errorComponent,
+  pendingComponent: Pending,
+  errorComponent: Error,
   loader: async () => {
     const clients = await getClientsList()
     return clients?.map<TClientTable>(({ nombres, apellidos, referencia_id, ...props }, _, list) => {
@@ -352,9 +352,8 @@ export function Clients({
   )
 }
 
-Clients.displayname = 'ClientsList'
-
-function pendingComponent() {
+/* eslint-disable-next-line */
+export function Pending() {
   return <div className="space-y-4">
     <div className="flex items-center gap-2">
       <Skeleton className='w-36 h-8' />
@@ -386,7 +385,8 @@ function pendingComponent() {
   </div>
 }
 
-function errorComponent() {
+/* eslint-disable-next-line */
+export function Error() {
   const { history } = useRouter()
   const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
     history.back()
@@ -401,6 +401,12 @@ function errorComponent() {
       </div>
     </div>
 }
+
+
+Clients.displayname = 'ClientsList'
+Error.displayname = 'ClientsListError'
+Pending.displayname = 'ClientsListPending'
+
 
 /* eslint-disable-next-line */
 type TMenuItems =
