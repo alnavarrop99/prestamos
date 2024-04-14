@@ -43,35 +43,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getClientsList } from '@/api/clients'
+import { TCLIENT_GET_ALL, getClientsList } from '@/api/clients'
 import clsx from 'clsx'
 import { columns, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
 import { useClientByUsers } from '@/lib/context/client'
 import { Skeleton } from '@/components/ui/skeleton'
+import { queryClient } from '../__root'
+import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query'
+import { postClientOpt } from './client/new'
+import { updateClientByIdOpt } from './client/$clientId/update'
+import { deleteClientByIdOpt } from './client/$clientId/delete'
+
+export const getClientListOpt = {
+  queryKey: ["list-clients"],
+  queryFn: getClientsList,
+}
 
 export const Route = createFileRoute('/_layout/client')({
   component: Clients,
   pendingComponent: Pending,
   errorComponent: Error,
-  loader: async () => {
-    const clients = await getClientsList()
-    return clients?.map<TClientTable>(({ nombres, apellidos, referencia_id, ...props }, _, list) => {
-      const ref = list?.find( ({ id: referenciaId }) => ( referenciaId === referencia_id ) )
-      if( !ref || !referencia_id ){
-        return ({
-          ...props,
-          fullName: nombres + ' ' + apellidos,
-          referencia: ""
-        })
-      }
-      return ({
-        ...props,
-        fullName: nombres + ' ' + apellidos,
-        referencia: ref.nombres + " " + ref.apellidos,
-      })
-    })
-  },
+  loader: () => queryClient.ensureQueryData( queryOptions( getClientListOpt ) ),
   validateSearch: (search: { clients?: number[] }) => {
     if (!search?.clients?.length) return { clients: [] }
     return search
@@ -87,29 +80,41 @@ interface TClientsProps {
 
 const ROW = 14
 const COL = 7
-export const _selectedClients = createContext<TClientTable[] | undefined>( undefined)
-export const _clientContext = createContext< [ clients: TClientTable[], setClient: (({ clients }: { clients: TClientTable[] }) => void), resetSelectedRow: (defaultState?: boolean | undefined) => void ] | undefined>( undefined)
+export const _clientContext = createContext< TClientTable[] | undefined>( undefined)
+export const _rowSelected = createContext< (() => void) | undefined >( undefined)
 
 /* eslint-disable-next-line */
-export function Clients({
-  children,
-  filter: _filter = 'fullName',
-  open: _open,
-  clients: _clients = [] as TClientTable[],
-}: React.PropsWithChildren<TClientsProps>) {
+export function Clients({ filter: _filter = 'fullName', }: React.PropsWithChildren<TClientsProps>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
-  const { open = _open, setOpen, value } = useStatus()
+  const { open, setOpen, value } = useStatus()
   const navigate = useNavigate()
-  const clientsDB: TClientTable[] = Route.useLoaderData() ?? _clients
   const [filter, setFilter] = useState(_filter)
   const search = Route.useSearch()
-  const { clients, setClient } = useClientByUsers(({ clients, setClient }) => ({
-    clients: clients ?? clientsDB,
-    setClient
-  }))
+  const isUpdateClient = useIsMutating( { status: "success", mutationKey: updateClientByIdOpt.mutationKey } )
+  const isNewClient = useIsMutating( { status: "success", mutationKey: postClientOpt.mutationKey } )
+  const isDeleteClient = useIsMutating( { status: "success", mutationKey: deleteClientByIdOpt.mutationKey } )
+  
+  const select: ((data: TCLIENT_GET_ALL) => TClientTable[]) = ( data ) => data?.map<TClientTable>(({ nombres, apellidos, referencia_id, ...props }, _, list) => {
+    const ref = list?.find( ({ id: referenciaId }) => ( referenciaId === referencia_id ) )
+    if( !ref || !referencia_id ){
+      return ({
+        ...props,
+        fullName: nombres + ' ' + apellidos,
+        referencia: ""
+      })
+    }
+    return ({
+      ...props,
+      fullName: nombres + ' ' + apellidos,
+      referencia: ref.nombres + " " + ref.apellidos,
+    })
+  })
+  const { data: clientsRes, refetch } = useSuspenseQuery( queryOptions( { ...getClientListOpt, select } ) )
+
+  const { clients, setClient } = useClientByUsers(({ clients, ...items }) => ({ clients: clients ?? clientsRes, ...items }))
   const data = useMemo(() => {
     if (!search?.clients?.length) return clients;
     return clients?.filter(
@@ -146,7 +151,7 @@ export function Clients({
 
   const onOpenChange: (open: boolean) => void = (open) => {
     if (!open) {
-      !children && navigate({ to: Route.to })
+      navigate({ to: Route.to })
     }
     setOpen({ open })
   }
@@ -156,9 +161,21 @@ export function Clients({
     table.resetRowSelection()
   }
 
+  useEffect(() => {
+    if( clientsRes ){
+      refetch()?.then( ({ data }) => {
+        if( !data ) return;
+        setClient({ clients: data } )
+      } )
+    }
+    return () => {
+      // setClients( clientsRes )
+    }
+  }, [isUpdateClient, isNewClient, isDeleteClient])
+
   return (
-    <_clientContext.Provider value={[ clients, setClient, table.resetRowSelection ]}>
-    <_selectedClients.Provider value={table .getFilteredSelectedRowModel() ?.rows?.map(({ original }) => original)} >
+    <_clientContext.Provider value={clients}>
+      <_rowSelected.Provider value={table.resetRowSelection}>
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
@@ -179,6 +196,9 @@ export function Clients({
                 <Link
                   disabled={!table.getFilteredSelectedRowModel().rows?.length}
                   to={'./delete'}
+                  search={{
+                    clients: table .getFilteredSelectedRowModel() ?.rows?.map(({ original }) => original.id) 
+                  }}
                 >
                   <Button
                     className={clsx({
@@ -191,7 +211,7 @@ export function Clients({
                   </Button>
                 </Link>
               </DialogTrigger>
-              {children ?? <Outlet />}
+              <Outlet />
             </Dialog>
             <Select value={filter} onValueChange={onValueChange}>
               <SelectTrigger className="ms-auto w-auto">
@@ -347,7 +367,7 @@ export function Clients({
           </div>
         </div>
       </div>
-    </_selectedClients.Provider>
+      </_rowSelected.Provider>
     </_clientContext.Provider>
   )
 }
@@ -406,7 +426,6 @@ export function Error() {
 Clients.displayname = 'ClientsList'
 Error.displayname = 'ClientsListError'
 Pending.displayname = 'ClientsListPending'
-
 
 /* eslint-disable-next-line */
 type TMenuItems =

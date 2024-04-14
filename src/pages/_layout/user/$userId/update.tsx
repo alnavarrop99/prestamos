@@ -381,6 +381,7 @@ export function UpdateUserById({}: TUpdateUserById) {
   )
 }
 
+/* eslint-disable-next-line */
 export function Error() {
   useEffect( () => {
     toast({

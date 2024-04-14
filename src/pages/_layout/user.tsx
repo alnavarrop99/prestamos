@@ -149,7 +149,7 @@ export function Users({}: React.PropsWithChildren<TUsersProps>) {
 
       const { selected } = user
       onCheckChanged(index,'selected')(!selected)
-    }
+  }
 
   const onClickStop: React.MouseEventHandler = (ev) => {
     ev.stopPropagation()
@@ -171,7 +171,7 @@ export function Users({}: React.PropsWithChildren<TUsersProps>) {
       onCheckChanged(index, 'menu')(!menu)
 
       ev.stopPropagation()
-    }
+  }
 
   useEffect(() => {
     if( usersRes ){

@@ -228,6 +228,9 @@ export const columns: ColumnDef<TClientTable>[] = [
                 className="flex h-full w-full items-center justify-between gap-2"
                 to={'./$clientId/delete'}
                 params={{ clientId: id }}
+                search={{
+                  name: fullName
+                }}
               >
                 {text.menu.delete} <UserDelete />
               </Link>

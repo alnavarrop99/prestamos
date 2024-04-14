@@ -20,7 +20,7 @@ import {
   Network,
   NotepadText,
   Sun,
-  X as Error,
+  X as ErrorIcon,
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
@@ -46,7 +46,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { getCurrentUser, getUserById, type TUSER_GET } from '@/api/users'
+import { getCurrentUser, type TUSER_GET } from '@/api/users'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -55,18 +55,21 @@ import {
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
-import { useIsFetching, useIsMutating, useMutationState } from '@tanstack/react-query'
-import { SpinLoader } from '@/components/ui/loader'
+import { useIsFetching, useIsMutating  } from '@tanstack/react-query'
+import { SpinLoader as Loader } from '@/components/ui/loader'
 import brand from "@/assets/menu-brand.avif"
 import brandOff from "@/assets/menu-off-brand.avif"
 import { Skeleton } from '@/components/ui/skeleton'
-import { getUsersListOpt, Users } from './_layout/user'
+import { getUsersListOpt } from './_layout/user'
 import { getUserByIdOpt, updateUserByIdOpt } from './_layout/user/$userId/update'
 import { postUserOpt } from './_layout/user/new'
+import { getClientListOpt } from './_layout/client'
+import { getClientByIdOpt, updateClientByIdOpt } from './_layout/client/$clientId/update'
+import { postClientOpt } from './_layout/client/new'
+import { deleteClientByIdOpt } from './_layout/client/$clientId/delete'
 
-export const Route = createFileRoute('/_layout')({
-  component,
-  pendingComponent,
+ export const Route = createFileRoute('/_layout')({
+  component: Layout,
   loader: async () => ({ 
     user: defer(getCurrentUser()), 
     clients: defer(getClientsList()) 
@@ -102,7 +105,7 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 }
 
 /* eslint-disable-next-line */
-export function component({}: React.PropsWithChildren<TNavigationProps>) {
+export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
   const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, menu: false })
   const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()
@@ -111,8 +114,6 @@ export function component({}: React.PropsWithChildren<TNavigationProps>) {
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
   const { deleteToken, setUserId, userId, name } = useToken()
-  const isFetching = useIsFetching()
-  const isMutating = useIsMutating()
   const { history } = useRouter()
 
   useEffect( () => {
@@ -286,7 +287,7 @@ export function component({}: React.PropsWithChildren<TNavigationProps>) {
                 </Button>
               )}
             </Link>
-            <UsersSpinLoader />
+            <SpinLoader />
           </div>
           <div>
             <Label className="flex cursor-pointer items-center gap-2">
@@ -305,7 +306,7 @@ export function component({}: React.PropsWithChildren<TNavigationProps>) {
                     >
                       <User />
                         <Suspense fallback={< SpinLoader />} >
-                          <CatchBoundary getResetKey={() => "clients-loader"} errorComponent={errorComponent({ searchList: true })}>
+                          <CatchBoundary getResetKey={() => "clients-loader"} errorComponent={Error({ searchList: true })}>
                             <Await promise={clientsDB}>
                               { () => 
                                 <Badge
@@ -389,7 +390,7 @@ export function component({}: React.PropsWithChildren<TNavigationProps>) {
                           </ul>
                         </div>
                       }>
-                        <CatchBoundary getResetKey={() => "reset"} errorComponent={ errorComponent({ currentUser: true }) } >
+                        <CatchBoundary getResetKey={() => "reset"} errorComponent={ Error({ currentUser: true }) } >
                           <Await promise={user}>
                             {(user) => (
                               <div className='p-2'>
@@ -482,51 +483,87 @@ export function component({}: React.PropsWithChildren<TNavigationProps>) {
   )
 }
 
-const UsersSpinLoader = memo(function () {
-   const get = useIsFetching({
+/* eslint-disable-next-line */
+export const SpinLoader = memo(function () {
+   const getUser = useIsFetching({
     type: "inactive",
     fetchStatus: "fetching",
     queryKey: ([] as string[]).concat( getUsersListOpt.queryKey ),
   })
 
-  const id = useIsFetching({
+  const userId = useIsFetching({
     type: "inactive",
     fetchStatus: "fetching",
-    queryKey: ([] as string[]).concat( getUserByIdOpt({ userId: "" }).queryKey[0] ),
+    queryKey: ([] as string[]).concat( getUserByIdOpt({ userId: "" }).queryKey[0] as string ),
   })
 
-  const post = useIsMutating({
+  const postUser = useIsMutating({
     status: "pending",
     mutationKey: ([] as string[]).concat( postUserOpt.mutationKey ),
   })
 
-  const update = useIsMutating({
+  const updateUser = useIsMutating({
     status: "pending",
     mutationKey: ([] as string[]).concat( updateUserByIdOpt?.mutationKey ),
   })
 
+  const getClient = useIsFetching({
+    type: "inactive",
+    fetchStatus: "fetching",
+    queryKey: ([] as string[]).concat( getClientListOpt.queryKey ),
+  })
+
+  const clientId = useIsFetching({
+    type: "inactive",
+    fetchStatus: "fetching",
+    queryKey: ([] as string[]).concat( getClientByIdOpt({ clientId: "" }).queryKey[0] as string ),
+  })
+
+  const postClient = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( postClientOpt.mutationKey ),
+  })
+
+  const updateClient = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( updateClientByIdOpt?.mutationKey ),
+  })
+
+  const deleteClient = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( deleteClientByIdOpt?.mutationKey ),
+  })
+
   const className = 'text-muted-foreground italic text-xs flex items-center gap-2'
 
-  if( !!get || !!id ) {
-    return <span className={className}><SpinLoader /> {text.loader.user.get}</span>
+  if( !!getUser || !!userId ) {
+    return <span className={className}><Loader /> {text.loader.user.get}</span>
   }
-  else if( !!post ) {
-    return <span className={className}><SpinLoader /> {text.loader.user.new} </span>
+  else if( !!postUser ) {
+    return <span className={className}><Loader /> {text.loader.user.new} </span>
   }
-  else if( !!update ) {
-    return <span className={className}><SpinLoader /> {text.loader.user.update} </span>
+  else if( !!updateUser ) {
+    return <span className={className}><Loader /> {text.loader.user.update} </span>
   }
+  else if( !!getClient || !!clientId ) {
+    return <span className={className}><Loader /> {text.loader.client.get}</span>
+  }
+  else if( !!postClient ) {
+    return <span className={className}><Loader /> {text.loader.client.new} </span>
+  }
+  else if( !!updateClient ) {
+    return <span className={className}><Loader /> {text.loader.client.update} </span>
+  }
+  else if( !!deleteClient ) {
+    return <span className={className}><Loader /> {text.loader.client.delete} </span>
+  }
+
 
 })
 
-
-function pendingComponent() {
-  return <>Lodaing</>
-}
-
-export const errorComponent = ({ searchList }:{ currentUser?: boolean, searchList?: boolean }) =>{
+export const Error = ({ searchList }:{ currentUser?: boolean, searchList?: boolean }) =>{
   if( searchList ) {
-    return  () => <Error className='p-1 stroke-destructive' />
+    return  () => <ErrorIcon className='p-1 stroke-destructive' />
   }
   return () => <div className='!flex-row'>
       <h2 className='font-bold text-destructive text-2xl'>:&nbsp;(</h2>
@@ -534,9 +571,8 @@ export const errorComponent = ({ searchList }:{ currentUser?: boolean, searchLis
     </div>
 } 
 
-component.dispalyname = 'Layout'
-pendingComponent.dispalyname = 'Layout'
-errorComponent.dispalyname = 'Layout'
+Layout.dispalyname = 'Layout'
+Error.dispalyname = 'LayoutError'
 
 const text = {
   title: 'Matcor',
@@ -547,6 +583,12 @@ const text = {
       update: "Actualizando usuario",
       delete: "Eliminando usuario(s)",
       get: "Cargando usuario(s)"
+    },
+    client: {
+      new: "Creando cliente",
+      update: "Actualizando cliente",
+      delete: "Eliminando cliente(s)",
+      get: "Cargando cliente(s)"
     }
   },
   navegation: {
