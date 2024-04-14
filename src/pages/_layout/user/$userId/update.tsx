@@ -10,7 +10,7 @@ import { Await, Navigate, createFileRoute, defer } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { ComponentRef, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { TUSER_GET, getUserById, pathUserById } from '@/api/users'
+import { type TUSER_GET, type TUSER_PATCH, getUserById, pathUserById } from '@/api/users'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { queryOptions, useMutation } from '@tanstack/react-query'
@@ -20,21 +20,23 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { SpinLoader } from '@/components/ui/loader'
 import { queryClient } from '@/pages/__root'
 
-export const getUserByIdOpt = ( { userId = "" }: { userId: string }  ) => ({
-  queryKey: ["user-by-id", userId],
-  queryFn: () => getUserById({ params: { userId } }),
-})
-
 export const updateUserByIdOpt = {
   mutationKey: ["update-user-by-id"],
   mutationFn: pathUserById,
 }
 
+export const getUserByIdOpt = ( { userId }: { userId: string }  ) => ({
+  queryKey: ["get-user-by-id", { userId }],
+  queryFn: () => getUserById({ params: { userId } }),
+})
+
 export const Route = createFileRoute('/_layout/user/$userId/update')({
   component: UpdateUserById,
   errorComponent: Error,
-  loader: async ( { params } ) => ({ user: defer( queryClient.ensureQueryData( queryOptions( getUserByIdOpt( params ) ) ) ) }),
-
+  loader: async ( { params } ) =>{
+    const data = queryClient.ensureQueryData( queryOptions( getUserByIdOpt(params) ) )
+    return ( { user: defer( data ) } )
+  } 
 })
 
 /* eslint-disable-next-line */
@@ -64,11 +66,10 @@ export function UpdateUserById({}: TUpdateUserById) {
   const { open, setOpen } = useStatus()
   const { userId } = Route.useParams()
   const { user: userRes } = Route.useLoaderData()
-  // const { data: userRes } = useSuspenseQuery( queryOptions( getUserByIdQueryOpt )  )
-  const [ user, setUser ] = useState< (TUSER_GET & { password: string }) | undefined >()
+  const [ user, setUser ] = useState< (TUSER_GET & { password: string }) | undefined >(undefined)
   const init = useRef(user)
 
-  const onSuccess = () => {
+  const onSuccess = ( data: TUSER_PATCH ) => {
     if( !init?.current?.nombre ) return;
 
     const description = text.notification.decription({
@@ -93,6 +94,11 @@ export function UpdateUserById({}: TUpdateUserById) {
       description,
       variant: 'default',
     })
+    
+    queryClient.setQueriesData( { queryKey: getUserByIdOpt({ userId }).queryKey }, data )
+
+    // TODO: not update user with exec a path update
+    setUser( { ...data, password: "" } )
   }
 
   const onError = () => {
@@ -127,7 +133,7 @@ export function UpdateUserById({}: TUpdateUserById) {
   const {mutate: updateUser, isPending} = useMutation( { ...updateUserByIdOpt, onError, onSuccess } )
 
   useEffect( () => {
-    if( !user ) {
+    if(!user){
       userRes?.then( ( data ) => {
         init.current = ({ ...data, password: "" })
         setUser({ ...data, password: "" })
@@ -135,7 +141,7 @@ export function UpdateUserById({}: TUpdateUserById) {
       })
     }
     return () => {
-      setUser(undefined)
+      // setUser()
     }
   }, [userRes] )
 
