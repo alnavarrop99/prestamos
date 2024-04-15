@@ -32,12 +32,10 @@ import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } fro
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { Select, SelectContent, SelectItem, SelectValue,  SelectTrigger  } from '@/components/ui/select'
+import { queryClient } from '@/pages/__root'
+import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query'
 
-export const Route = createFileRoute('/_layout/credit')({
-  component: Credits,
-  pendingComponent: Pending,
-  errorComponent: Error,
-  loader: async () => {
+const getFilterCredit = async () => {
     // TODO: this is a temporal function to getFilter
     if(!!+import.meta.env.VITE_MSW && import.meta.env.DEV) return (await getCreditsFilter()());
     const list = await getCreditsList()
@@ -56,7 +54,18 @@ export const Route = createFileRoute('/_layout/credit')({
       }) as TCREDIT_GET_FILTER
     }))
     return data
-  },
+}
+
+export const getCreditsListOpt = {
+  queryKey: ["list-filter-credits"],
+  queryFn: getFilterCredit,
+}
+
+export const Route = createFileRoute('/_layout/credit')({
+  component: Credits,
+  pendingComponent: Pending,
+  errorComponent: Error,
+  loader: () => queryClient.ensureQueryData( queryOptions( getCreditsListOpt ) ),
 })
 
 /* eslint-disable-next-line */
@@ -92,28 +101,41 @@ const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof t
 
 /* eslint-disable-next-line */
 export function Credits({}: TCreditsProps) {
-  const creditDB = Route.useLoaderData()
-  const [ credits, setCredits ] = useState(creditDB)
-  const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
   const { open, setOpen } = useStatus() 
   const navigate = useNavigate()
   const { setPagination, ...pagination } = usePagination()
   const { value } = useStatus()
   const { order, setOrder } = useOrder()
+  
+  const select: ((data: TCREDIT_GET_FILTER_ALL) => TCREDIT_GET_FILTER_ALL) = (data) => (
+    sortCredit(order, data)
+  )
+  const { data: creditRes, refetch } = useSuspenseQuery( queryOptions( { ...getCreditsListOpt,
+    select
+  } ) )
+  const [ credits, setCredits ] = useState(creditRes)
+
+  // const isUpdateCredit = useIsMutating( { status: "success", mutationKey: updateCreditByIdOpt.mutationKey } )
+  // const isNewCredit = useIsMutating( { status: "success", mutationKey: postCreditOpt.mutationKey } )
+  // const isDeleteCredit = useIsMutating( { status: "success", mutationKey: deleteCreditByIdOpt.mutationKey } )
 
   const onSelectOrder: ( value: string ) => void = ( value ) => {
-    setOrder(value as keyof typeof ORDER)
+    if( order !== "id" && order !== "frecuencia" && order !== "nombre_del_cliente" ) return;
 
+    if( value as keyof typeof ORDER === "frecuencia" ){
+      setCredits( sortCredit(value as keyof typeof ORDER, creditRes ))
+    }
+
+    setCredits( sortCredit(value as keyof typeof ORDER, creditRes ))
+    setOrder(value as keyof typeof ORDER)
   }
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
   }, [] )
 
-  const onClick: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Button>> = (index) => () => {
-    if(!credits || !credits?.[index]) return;
+  const onClick: React.MouseEventHandler<React.ComponentRef<typeof Button>> = () => {
     setOpen({ open: !open })
-    setSelectedCredit(credits?.[index])
   }
 
   const onPagnation: (params:{ prev?: boolean, next?: boolean, index?: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ next, prev, index }) => () => {
@@ -132,11 +154,6 @@ export function Credits({}: TCreditsProps) {
 
     if( typeof index === "undefined" ) return;
     setPagination( { ...pagination, start: index } )
-
-  }
-
-  const onLink: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Link>> = (index) => () => {
-    if(!credits || !credits?.[index]) return;
   }
 
   const onOpenChange = (open: boolean) => {
@@ -150,41 +167,35 @@ export function Credits({}: TCreditsProps) {
     onOpenChange(!open)
   }
 
-  useEffect( () => {
-    switch (order) {
-      case "nombre_del_cliente":
-        setCredits( creditDB?.sort( (a, b) => (a.nombre_del_cliente.charCodeAt(0) - b.nombre_del_cliente.charCodeAt(0)) ) )
-        break;
-      case "frecuencia":
-        setCredits( creditDB?.sort( (a, b) => (a.frecuencia.nombre?.charCodeAt(0) - b.frecuencia.nombre?.charCodeAt(0)) ) )
-        break;
-      default:
-        setCredits( creditDB?.sort( (a, b) => (a.id - b.id) ) )
-        break;
-    }
-
-    return () => {
-      setCredits(creditDB)
-    }
-
-  }, [order] )
-
   useEffect(() => {
     if (value) {
       setCredits(
-        creditDB?.filter(({ nombre_del_cliente }) =>
+        creditRes?.filter(({ nombre_del_cliente }) =>
           nombre_del_cliente.toLowerCase().includes(value?.toLowerCase() ?? '')
         )
       )
       setPagination({ ...pagination, start: 0, end: STEP })
     }
     return () => {
-      setCredits(creditDB)
+      // setCredits(creditRes)
     }
   }, [value])
 
+  useEffect(() => {
+    if( creditRes ){
+      refetch()?.then( ({ data }) => {
+        if( !data ) return;
+        setCredits(data )
+      } )
+    }
+    return () => {
+      // setUsers( usersRes )
+    }
+  }, [])
+  // }, [isUpdateCredit, isNewCredit, isDeleteCredit])
+
   return (
-    <_creditSelected.Provider value={selectedCredit}>
+    <>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Label htmlFor="acitve-credits" className="cursor-pointer">
@@ -233,11 +244,10 @@ export function Credits({}: TCreditsProps) {
                 const status: 'warn' | 'info' | undefined = valor_de_la_mora > 0 ? 'warn' : undefined
                 return (
                   <Link
-                    key={creditId}
+                    key={index}
                     className="group"
                     to="./$creditId"
                     params={{ creditId }}
-                    onClick={onLink(index + pagination?.start * LENGTH)}
                   >
                     <Card className={clsx("h-full shadow-lg transition delay-150 duration-500 group-hover:scale-105 group-hover:shadow-xl grid justify-streetch items-end", styles?.["grid__credit--card"])}>
                       <CardHeader>
@@ -297,7 +307,7 @@ export function Credits({}: TCreditsProps) {
                             >
                               <Button
                                 variant="ghost"
-                                onClick={onClick(index + pagination?.start * LENGTH)}
+                                onClick={onClick}
                                 disabled={numero_de_cuota <= 0}
                                 className={clsx(
                                   'invisible px-3 opacity-0 hover:ring hover:ring-primary  group-hover:opacity-100',
@@ -309,9 +319,12 @@ export function Credits({}: TCreditsProps) {
                             </Link>}
                           </DialogTrigger>
                           <DialogTrigger asChild>
-                            <Link to={'./pay'} params={{ creditId }}>
+                            <Link to={'./pay'} search={{ 
+                              name: nombre_del_cliente,
+                              pay: valor_de_cuota
+                            }}>
                               <Button
-                                onClick={onClick(index + pagination?.start * LENGTH)}
+                                onClick={onClick}
                                 variant="default"
                                 className={clsx(
                                   'invisible opacity-0 group-hover:visible group-hover:opacity-100 bg-success hover:bg-success hover:ring-4 ring-success-foreground'
@@ -329,7 +342,6 @@ export function Credits({}: TCreditsProps) {
               }
             )}
         </div>}
-        
       </div>
         { credits?.length > LENGTH &&
         <Pagination className='relative v-10'>
@@ -375,9 +387,7 @@ export function Credits({}: TCreditsProps) {
             </PaginationItem>
           </PaginationContent>
         </Pagination>}
-
-    </_creditSelected.Provider>
-  )
+      </>)
 }
 
 interface TPrintCredit extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
@@ -480,6 +490,17 @@ export function Error() {
         <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
       </div>
     </div>
+}
+
+const sortCredit = (order: keyof typeof ORDER ,users: TCREDIT_GET_FILTER_ALL) => {
+  return users?.sort( (a, b) => {
+    const valueA = a?.[order]
+    const valueB = b?.[order]
+    if( typeof valueA === "string" && typeof valueB === "string" ) return (valueA.charCodeAt(0) - valueB.charCodeAt(0) ) 
+    else if( typeof valueA === "number" && typeof valueB === "number" ) return (valueA - valueB) 
+    else if(  typeof valueA === "object" && typeof valueB === "object" ) return( valueA.nombre?.charCodeAt(0) - valueB.nombre?.charCodeAt(0) )
+    return 0
+  })
 }
 
 Credits.dispalyname = 'CreditsList'

@@ -26,10 +26,15 @@ import { format } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { createContext, useMemo } from 'react'
-import { TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
-import { TCLIENT_GET, getClientById } from '@/api/clients'
+import { type TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
+import { type TCLIENT_GET, getClientById } from '@/api/clients'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useRouter } from '@tanstack/react-router'
+
+export const getCreditByIdOpt = ( { creditId }: { creditId: string }  ) => ({
+  queryKey: ["get-credit-by-id", { creditId }],
+  queryFn: () => getCreditById({ params: { creditId } }),
+})
 
 export const Route = createFileRoute('/_layout/credit/$creditId')({
   component: CreditById,

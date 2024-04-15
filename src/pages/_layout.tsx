@@ -484,7 +484,7 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
 }
 
 /* eslint-disable-next-line */
-export const SpinLoader = memo(function () {
+const SpinLoader = memo(function () {
    const getUser = useIsFetching({
     type: "inactive",
     fetchStatus: "fetching",
@@ -557,10 +557,9 @@ export const SpinLoader = memo(function () {
   else if( !!deleteClient ) {
     return <span className={className}><Loader /> {text.loader.client.delete} </span>
   }
-
-
 })
 
+/* eslint-disable-next-line */
 export const Error = ({ searchList }:{ currentUser?: boolean, searchList?: boolean }) =>{
   if( searchList ) {
     return  () => <ErrorIcon className='p-1 stroke-destructive' />

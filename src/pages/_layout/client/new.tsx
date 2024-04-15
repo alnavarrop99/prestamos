@@ -63,7 +63,7 @@ export function NewClient() {
   }
 
   const onError: (data: TCLIENT_POST, variables: TCLIENT_POST_BODY) => unknown = (_, items) => {
-    const description = text.notification.decription({
+    const description = text.notification.error({
       username: items?.nombres + items?.apellidos,
     })
 
