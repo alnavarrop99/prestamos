@@ -59,10 +59,6 @@ export function DeleteCreditById({}: TDeleteCreditByIdProps) {
       title: text.notification.titile,
       description,
       variant: 'default',
-      action: (
-        <ToastAction altText="action from delete client">
-        </ToastAction>
-      ),
     })
   }
   const onError: ((error: Error, variables: { creditId: number; }, context: unknown) => Promise<unknown>) = async () => {
@@ -78,10 +74,8 @@ export function DeleteCreditById({}: TDeleteCreditByIdProps) {
       description,
       variant: 'destructive',
       action: (
-        <ToastAction altText="action from new user">
-          <Button variant="default" onClick={onClick}>
+        <ToastAction altText="action from new user" onClick={onClick}>
             {text.notification.retry}
-          </Button>
         </ToastAction>
       ),
     })

@@ -115,10 +115,8 @@ export function UpdateUserById({}: TUpdateUserById) {
       description,
       variant: 'destructive',
       action: (
-        <ToastAction altText="action from new user">
-          <Button variant="default" onClick={onClick}>
+        <ToastAction altText="action from new user" onClick={onClick}>
             {text.notification.retry}
-          </Button>
         </ToastAction>
       ),
     })
@@ -184,6 +182,8 @@ export function UpdateUserById({}: TUpdateUserById) {
       if( value === "" ) return [ key, undefined ]
       return list?.[i]
     })) as Record<TFormName, string>
+
+    if( items.password !== items.newPassword ) return;
 
     updateUser({ 
       userId: +userId, 
@@ -396,11 +396,11 @@ const text = {
     },
     password: {
       current: {
-        label: 'Contraseña actual:',
+        label: 'Nueva contraseña:',
         placeholder: 'Escriba la cantraseña actual del usuario',
       },
       new: {
-        label: 'Nueva contraseña:',
+        label: 'Confirmar contraseña:',
         placeholder: 'Escriba la nuva cantraseña del usuario',
       }
     },

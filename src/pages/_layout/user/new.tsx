@@ -75,10 +75,8 @@ export function NewUser({}: TNewUserProps) {
       description,
       variant: 'destructive',
       action: (
-        <ToastAction altText="action from new user">
-          <Button variant="default" onClick={onClick}>
+        <ToastAction altText="action from new user" onClick={onClick}>
             {text.notification.retry}
-          </Button>
         </ToastAction>
       ),
     })
@@ -89,7 +87,7 @@ export function NewUser({}: TNewUserProps) {
     onError
   })
 
-  const onClick: ( params: { prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
+  const onClick: ( prop: keyof TPassoword ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( prop ) => () => {
     setPassword( { ...password, [ prop ]: !password?.[prop]  } )
   }
 
@@ -173,16 +171,16 @@ export function NewUser({}: TNewUserProps) {
             <Button
               type="button"
               className="w-fit p-1.5"
-              onClick={onClick({ prop: "password" })}
-              variant={!password ? 'outline' : 'default'}
+              onClick={onClick("password")}
+              variant={!password.password ? 'outline' : 'default'}
             >
-              {!password ? <PassOn /> : <PassOff />}
+              {!password.password ? <PassOn /> : <PassOff />}
             </Button>
             <Input
               id='user-password'
               required
               name={'password' as TFormName}
-              type={!password ? "password" : "text"}
+              type={!password.password ? "password" : "text"}
               placeholder={text.form.password.current.placeholder}
             />
           </div>
@@ -195,7 +193,7 @@ export function NewUser({}: TNewUserProps) {
             <Button
               type="button"
               className="w-fit p-1.5"
-              onClick={onClick({ prop: "confirmation" })}
+              onClick={onClick("confirmation")}
               variant={!password?.confirmation ? 'outline' : 'default'}
             >
               {!password?.confirmation ? <PassOn /> : <PassOff />}

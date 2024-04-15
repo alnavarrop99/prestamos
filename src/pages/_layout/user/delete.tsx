@@ -55,10 +55,8 @@ export function DeleteSelectedUsers({}: TDeleteSelectedUsersProps) {
       description,
       variant: 'default',
       action: (
-        <ToastAction altText="action from delete client">
-          <Button variant="default" onClick={onClick}>
+        <ToastAction altText="action from delete client" onClick={onClick}>
             {text.notification.retry}
-          </Button>
         </ToastAction>
       ),
     })

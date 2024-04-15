@@ -73,10 +73,8 @@ export function DeleteSelectedClients({}: TDeleteClientProps) {
       description,
       variant: 'destructive',
       action: (
-        <ToastAction altText="action from new user">
-          <Button variant="default" onClick={onClick}>
+        <ToastAction altText="action from new user" onClick={onClick}>
             {text.notification.retry}
-          </Button>
         </ToastAction>
       ),
     })

@@ -79,10 +79,8 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
       description,
       variant: 'destructive',
       action: (
-        <ToastAction altText="action from new user">
-          <Button variant="default" onClick={onClick}>
+        <ToastAction altText="action from new user" onClick={onClick}>
             {text.notification.retry}
-          </Button>
         </ToastAction>
       ),
     })
