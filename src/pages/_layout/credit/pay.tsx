@@ -11,25 +11,20 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
 import { Checkbox } from '@/components/ui/checkbox'
-import { postPaymentId, type TPAYMENT_POST, type TPAYMENT_POST_BODY } from "@/api/payment";
+import { type TPAYMENT_POST, type TPAYMENT_POST_BODY } from "@/api/payment";
 import { type TCREDIT_GET } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
-import { _creditSelected } from "@/pages/_layout/credit";
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { useMutation } from '@tanstack/react-query'
 import { formatISO } from 'date-fns'
+import { postPaymentOpt } from "@/pages/_layout/credit_/$creditId/pay"
 
 type TSearch = {
   name: string
   pay: number
   creditId: number
-}
-
-export const postCreditOpt = {
-  mutationKey: ["create-payment"],
-  mutationFn: postPaymentId,
 }
 
 export const Route = createFileRoute('/_layout/credit/pay')({
@@ -72,10 +67,9 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
     })
   }
 
-  const onError: ((error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = ( _, items ) => {
-    const description = text.notification.decription({
+  const onError: ((error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = ( ) => {
+    const description = text.notification.error({
       username: name,
-      number: +items?.valor_del_pago,
     })
 
     const onClick = () => {}
@@ -94,7 +88,7 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
     })
   }
 
-  const { mutate: createPayment } = useMutation({ ...postCreditOpt,
+  const { mutate: createPayment } = useMutation({ ...postPaymentOpt,
     onSuccess,
     onError
   })
@@ -233,7 +227,7 @@ const text = {
     titile: 'Ejecucion de un pago',
     decription: ({ username, number }: { username: string, number: number }) =>
       'Se ha pagado la cuota con un monto de $' + number + " del usuario " + username + ' con exito.',
-    error: (username: string) => 'Ha fallado el pago de la cuota del usuario ' + username,
+    error: ({username}:{username: string}) => 'Ha fallado el pago de la cuota del usuario ' + username,
     retry: 'Reintentar',
   },
   form: {

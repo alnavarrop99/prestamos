@@ -1,6 +1,5 @@
 import {
   Link,
-  Navigate,
   Outlet,
   createFileRoute,
   useNavigate,
@@ -22,14 +21,20 @@ import { Button } from '@/components/ui/button'
 import { Annoyed, Printer } from 'lucide-react'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { CircleDollarSign as Pay } from 'lucide-react'
-import { format } from 'date-fns'
+import { format, isValid } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
 import { getFrecuencyById } from '@/lib/type/frecuency'
-import { createContext, useMemo } from 'react'
+import { createContext, useEffect, useMemo, useState } from 'react'
 import { type TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
-import { type TCLIENT_GET, getClientById } from '@/api/clients'
+import { type TCLIENT_GET } from '@/api/clients'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useRouter } from '@tanstack/react-router'
+import { queryClient } from '@/pages/__root'
+import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query'
+import { getClientByIdOpt } from '../client/$clientId/update'
+import { deletePaymentByIdOpt, updateCreditByIdOpt } from './$creditId_/update.confirm'
+import { postCreditOpt } from '../credit/new'
+import { deleteCreditByIdOpt } from './$creditId/delete'
 
 export const getCreditByIdOpt = ( { creditId }: { creditId: string }  ) => ({
   queryKey: ["get-credit-by-id", { creditId }],
@@ -41,12 +46,9 @@ export const Route = createFileRoute('/_layout/credit/$creditId')({
   pendingComponent: Pending,
   errorComponent: Error,
   loader: async ({ params }) => {
-    const credit = await getCreditById({ params })
-    const client = await getClientById({ params: { clientId: ""+credit?.owner_id } })
-    return ({
-      credit,
-      client
-    })
+    const credit = queryClient.ensureQueryData( queryOptions(getCreditByIdOpt( params )))
+    const client = queryClient.ensureQueryData( queryOptions(getClientByIdOpt( { clientId: "" + (await credit)?.owner_id } )))
+    return ({ credit, client })
   },
 })
 
@@ -58,18 +60,26 @@ interface TCreditByIdProps {
 
 const ROW = 8
 const COL = 6
-export const _selectedCredit = createContext<[TCREDIT_GET] | undefined>(undefined)
-export const _clientContext = createContext<[TCLIENT_GET] | undefined>(undefined)
+export const _credit = createContext<TCREDIT_GET | undefined>(undefined)
+export const _client = createContext<TCLIENT_GET | undefined>(undefined)
 
 /* eslint-disable-next-line */
-export function CreditById({
-  children,
-  open: _open,
-  credit: _credit = {} as TCREDIT_GET,
-}: React.PropsWithChildren<TCreditByIdProps>) {
-  const  { credit, client } = Route.useLoaderData() ?? _credit
-  const { open = _open, setOpen } = useStatus() 
+export function CreditById({ }: React.PropsWithChildren<TCreditByIdProps>) {
+  const { creditId } = Route.useParams()
+  const  { data: creditRes, refetch: refetchCredit } = useSuspenseQuery( queryOptions( getCreditByIdOpt({ creditId }) ) )
+  const  { data: clientRes, refetch: refetchClient } = useSuspenseQuery( queryOptions( getClientByIdOpt( { clientId: "" + creditRes.owner_id } ) ) )
+  const [ credit, setCredit ] = useState(creditRes)
+  const [ client, setClient ] = useState(clientRes)
+
+  const { open, setOpen } = useStatus() 
   const navigate = useNavigate()
+
+  const isUpdateCredit = useIsMutating( { status: "success", mutationKey: updateCreditByIdOpt.mutationKey } )
+  const isNewCredit = useIsMutating( { status: "success", mutationKey: postCreditOpt.mutationKey } )
+  const isDeleteCredit = useIsMutating( { status: "success", mutationKey: deleteCreditByIdOpt.mutationKey } )
+  const isNewPayment = useIsMutating( { status: "success", mutationKey: deletePaymentByIdOpt.mutationKey } )
+  const isDeletePayment = useIsMutating( { status: "success", mutationKey: deletePaymentByIdOpt.mutationKey } )
+  const isUpdatePayment = useIsMutating( { status: "success", mutationKey: updateCreditByIdOpt.mutationKey } )
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
@@ -84,6 +94,24 @@ export function CreditById({
 
   const table = useMemo( () => ( credit?.pagos?.map( ( _, i, list ) => ( { payment: list?.[i], cuote: credit?.cuotas?.[ i ] }))), [ credit?.pagos, credit?.cuotas ])
 
+  useEffect(() => {
+    if( creditRes ){
+      refetchCredit()?.then( ({ data }) => {
+        if( !data ) return;
+        setCredit(data)
+      } )
+    }
+
+    if( clientRes ){
+      refetchClient()?.then( ({ data }) => {
+        if( !data ) return;
+        setClient(data)
+      } )
+    }
+        return () => {
+    }
+  }, [ isUpdateCredit, isNewCredit, isDeleteCredit, isNewPayment, isDeletePayment, isUpdatePayment ])
+
   const mora = credit?.cuotas?.at(-1)?.valor_de_mora
   const moraType = getMoraTypeById({ moraTypeId: credit?.tipo_de_mora_id })?.nombre
   const moraStatus = !!mora && mora > 0
@@ -93,9 +121,8 @@ export function CreditById({
   const moreValue = moraType === "Porciento" ? ((credit?.valor_de_mora + credit?.tasa_de_interes)/100 * (cuoteValue ?? 1)) : credit?.valor_de_mora
 
   return (
-    <_clientContext.Provider value={[ client ]}>
-    <_selectedCredit.Provider value={[ credit ]}>
-      {!children && <Navigate to={Route.to} />}
+    <_client.Provider value={client}>
+    <_credit.Provider value={credit}>
       <div className="space-y-4">
         <div className="flex gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
@@ -130,7 +157,7 @@ export function CreditById({
                 </Button>
               </Link>
             </DialogTrigger>
-            {children ?? <Outlet />}
+            <Outlet />
           </Dialog>
         </div>
         <Separator />
@@ -147,9 +174,11 @@ export function CreditById({
           <li>
             <b>{text.details.name + ":"}</b> <span>{ client?.nombres + " " + client?.apellidos + "." }</span>
           </li>
+              { isValid( credit?.fecha_de_aprobacion ) &&
           <li>
-            <b>{text.details.date + ":"}</b> <span>{ format(credit?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'}</span>
+              <b>{text.details.date + ":"}</b> <span>{ format(credit?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'}</span> 
           </li>
+              }
           <li>
             <b>{text.details.aditionalsDays + ":"}</b> <span>{credit?.dias_adicionales + '.'}</span>
           </li>
@@ -214,17 +243,19 @@ export function CreditById({
                   </TableCell>
                   <TableCell>
                     {/* fix this date because returt a invalid date time */}
-                    <ul>
+                    { isValid(cuote?.fecha_de_pago) && isValid(payment?.fecha_de_pago) && <ul>
                       <li className='before:content-["_-_"] before:font-bold before:text-destructive'>{format(cuote?.fecha_de_pago, "dd/MM/yyyy")}</li>
                       <li className='before:content-["_+_"] before:font-bold before:text-success'>{format(payment?.fecha_de_pago, 'dd/MM/yyyy')}</li>
                     </ul>
+                    }
                   </TableCell>
                   <TableCell>
                     <p><b>$</b>
                     {payment?.valor_del_pago?.toFixed(2)}</p>
                   </TableCell>
                   <TableCell>
-                    <p>{cuote?.valor_de_mora > 0 ? format(cuote?.fecha_de_aplicacion_de_mora ?? "", 'dd-MM-yyyy') : "-"}</p>
+                      { isValid(cuote?.fecha_de_aplicacion_de_mora) &&  <p>{cuote?.valor_de_mora > 0 ? format(cuote?.fecha_de_aplicacion_de_mora ?? "", 'dd-MM-yyyy') : "-"}</p>
+ }
                   </TableCell>
                   <TableCell>
                     <p>{cuote?.valor_de_mora > 0 ? <><b>$</b> {cuote?.valor_de_mora?.toFixed(2) }</> : "-"}</p>
@@ -251,8 +282,8 @@ export function CreditById({
           </Table>
         )}
       </div>
-      </_selectedCredit.Provider>
-      </_clientContext.Provider>
+      </_credit.Provider>
+      </_client.Provider>
   )
 }
 
@@ -270,7 +301,7 @@ export function Pending() {
     <Separator />
     <Skeleton className='w-64 h-8' />
     <div className='px-4 space-y-4 [&>div]:flex [&>div:last-child]:flex-col [&>div]:gap-2'>
-      <div> <Skeleton className='w-24 h-8' /> <Skeleton className='w-24 h-8' /> </div>
+      <div className='flex items-end'> <Skeleton className='w-24 h-6' /> <Skeleton className='w-24 h-8' /> </div>
       <div> <Skeleton className='w-36 h-6' /> <Skeleton className='w-24 h-6' /> </div>
       <div> <Skeleton className='w-32 h-6' /> <Skeleton className='w-10 h-6' /> </div>
       <div> <Skeleton className='w-32 h-6' /> <Skeleton className='w-16 h-6' /> </div>

@@ -17,11 +17,10 @@ import { type TCREDIT_GET } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { Navigate } from '@tanstack/react-router'
-import { PrintCredit, _creditSelected } from '../../credit'
+import { PrintCredit } from '../../credit'
 import { useReactToPrint } from 'react-to-print'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { _clientContext, _selectedCredit } from '../$creditId'
-import { TCLIENT_GET } from '@/api/clients'
+import { _client, _credit } from '../$creditId'
 import { format } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
@@ -40,10 +39,10 @@ type TOptState = keyof typeof options
   
 
 /* eslint-disable-next-line */
-export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPaymentCreditByIdProps ) {
+export function PrintCreditById( {}: TPaymentCreditByIdProps ) {
   const form = useRef<HTMLFormElement>(null)
-  const [ credit ] = useContext(_selectedCredit) ?? [ {} as TCREDIT_GET ]
-  const [ client ] = useContext(_clientContext) ?? [ {} as TCLIENT_GET ]
+  const credit = useContext(_credit)
+  const client = useContext(_client)
   const { open, setOpen } = useStatus()
   const ref = useRef< React.ComponentRef< typeof PrintCredit > >(null)
   const search = Route.useSearch()
@@ -58,6 +57,7 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
   })
 
   const onChange = ( value: string ) => {
+     if( !credit?.pagos?.length ) return;
      const pay = +value 
      if( pay < 0 && pay >= credit?.pagos?.length) return; 
      setOpt({ opt, payIndex: pay })
@@ -156,7 +156,7 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
                   {text.button.print}
               </Button>
             </HoverCardTrigger>
-          { opt && <HoverCardContent side='right' className='bg-secondary-foreground rounded-md'>
+          { opt && client && credit && <HoverCardContent side='right' className='bg-secondary-foreground rounded-md'>
               <PrintCredit
                 {...{
                   client: client?.nombres + " " + client?.apellidos,

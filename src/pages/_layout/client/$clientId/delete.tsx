@@ -96,7 +96,7 @@ export function DeleteClientById({}: TDeleteByClient) {
   }
 
   const onSubmit: React.FormEventHandler<React.ComponentRef< typeof Button >> = (ev) => {
-    if(!name || !clientId) return;
+    if(!name || !clientId || !checked) return;
 
     deleteClient({ clientId: +clientId })
 

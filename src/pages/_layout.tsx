@@ -1,6 +1,4 @@
 import {
-    Await,
-  CatchBoundary,
   createFileRoute,
   defer,
   Outlet,
@@ -26,7 +24,7 @@ import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import React, { memo, Suspense, useEffect, useReducer, useState } from 'react'
+import React, { memo, useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -38,7 +36,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useStatus } from '@/lib/context/layout'
-import { getClientsList, type TCLIENT_GET_ALL } from '@/api/clients'
+import { type TCLIENT_GET_ALL } from '@/api/clients'
 import { Theme, useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -55,24 +53,36 @@ import {
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
-import { useIsFetching, useIsMutating  } from '@tanstack/react-query'
-import { SpinLoader as Loader } from '@/components/ui/loader'
+import { queryOptions, useIsFetching, useIsMutating, useQuery  } from '@tanstack/react-query'
+import { SpinLoader as Loader, BoundleLoader } from '@/components/ui/loader'
 import brand from "@/assets/menu-brand.avif"
 import brandOff from "@/assets/menu-off-brand.avif"
 import { Skeleton } from '@/components/ui/skeleton'
-import { getUsersListOpt } from './_layout/user'
+import { getUsersListOpt } from '@/pages/_layout/user'
 import { getUserByIdOpt, updateUserByIdOpt } from './_layout/user/$userId/update'
-import { postUserOpt } from './_layout/user/new'
-import { getClientListOpt } from './_layout/client'
-import { getClientByIdOpt, updateClientByIdOpt } from './_layout/client/$clientId/update'
-import { postClientOpt } from './_layout/client/new'
-import { deleteClientByIdOpt } from './_layout/client/$clientId/delete'
+import { postUserOpt } from '@/pages/_layout/user/new'
+import { getClientListOpt } from '@/pages/_layout/client'
+import { getClientByIdOpt, updateClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+import { postClientOpt } from '@/pages/_layout/client/new'
+import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
+import { getCreditsListOpt } from '@/pages/_layout/credit'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
+import { deletePaymentByIdOpt, updateCreditByIdOpt, updatePaymentByIdOpt } from '@/pages/_layout/credit_/$creditId_/update.confirm'
+import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
+import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
+import { postCreditOpt } from '@/pages/_layout/credit/new'
+import { queryClient } from '@/pages/__root'
+
+export const getCurrentUserOpt = {
+  queryKey: ["login-user", useToken.getState()],
+  queryFn: getCurrentUser
+}
 
  export const Route = createFileRoute('/_layout')({
   component: Layout,
   loader: async () => ({ 
-    user: defer(getCurrentUser()), 
-    clients: defer(getClientsList()) 
+    user: defer( queryClient.ensureQueryData( queryOptions( getCurrentUserOpt ) ) ), 
+    clients: defer( queryClient.ensureQueryData( queryOptions( getClientListOpt ) )) 
   }),
   beforeLoad: async (  ) => {
     const { token } = useToken.getState()
@@ -109,7 +119,8 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
   const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, menu: false })
   const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()
-  const  { user, clients: clientsDB } = Route.useLoaderData()
+  const  { data: currentUserRes, isSuccess: isCurrentUser, isError: errorCurrentUser } = useQuery( queryOptions( getCurrentUserOpt ) )
+  const  { data: clientsRes, isSuccess: isClients, error: errorClients } = useQuery( queryOptions( getClientListOpt ) )
   const [clients, setClients] = useState<TCLIENT_GET_ALL | undefined>(undefined)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
@@ -117,16 +128,17 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
   const { history } = useRouter()
 
   useEffect( () => {
-    if( !!userId ) {
+    if( !!userId  ) {
        return () => { setUserId( undefined ) }
     }
-    user?.then( ( { id } ) => setUserId( id ) )
-  }, [ user ] )
+    if( !currentUserRes || !isCurrentUser || errorCurrentUser) return; 
+    setUserId( currentUserRes.id )
+  }, [ currentUserRes, isCurrentUser, errorCurrentUser ] )
 
   useEffect(() => {
-    clientsDB?.then( ( clients => setClients(clients) ) )
-    return () => setClients([])
-  }, [ clientsDB ])
+    if( !clientsRes || !isClients || errorClients ) return;
+    setClients(clientsRes)
+  }, [ clientsRes, isClients, errorClients ])
 
   useEffect(() => {
     const onNotwork = () => {
@@ -152,11 +164,10 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
     const { value } = ev.currentTarget
     setValue({ value })
 
-    clientsDB?.then( ( clients ) =>{ 
+    if(clientsRes){ 
       const query = clients?.filter((props) => Object.values(props).join(' ').toLowerCase().includes(value.toLowerCase()))
       setClients(query)
-    }) 
-
+    }
   }
 
   const onKeyDown: React.KeyboardEventHandler<
@@ -305,20 +316,14 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
                       variant={ !search ? 'ghost' : 'default' }
                     >
                       <User />
-                        <Suspense fallback={< SpinLoader />} >
-                          <CatchBoundary getResetKey={() => "clients-loader"} errorComponent={Error({ searchList: true })}>
-                            <Await promise={clientsDB}>
-                              { () => 
-                                <Badge
-                                  className={clsx( { '!hidden': search, }, styles?.['search-badge-animation'])}
-                                  variant={!search ? 'default' : 'secondary'}
-                                >
-                                  {clients?.length}
-                                </Badge>
-                             }
-                           </Await>
-                        </CatchBoundary>
-                      </Suspense>
+                        { !isClients ? <BoundleLoader /> : errorClients ? <Error searchList /> :
+                          <Badge
+                            className={clsx( { '!hidden': search, }, styles?.['search-badge-animation'])}
+                            variant={!search ? 'default' : 'secondary'}
+                          >
+                            {clients?.length}
+                          </Badge>
+                        }
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="absolute -start-16 top-2 w-80" hidden={!clients?.length}>
@@ -371,44 +376,35 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
                 value={value}
               />
             </Label>
-                   <HoverCard>
-                    <HoverCardTrigger>
-                      <Badge className="cursor-pointer text-sm" variant="outline">
-                        {(name ?? "User")
-                          .split(' ')
-                          .map((char) => char.at(0))
-                          .join('')}
-                      </Badge>
-                    </HoverCardTrigger>
-                    <HoverCardContent>
-                      <Suspense fallback={
-                        <div className='p-2'>
-                          <Skeleton className='ring-1 ring-ring w-10 h-10 rounded-full'/>
-                          <ul className="space-y-2 [&>li]:w-fit">
-                            <li> <Skeleton className="w-32 h-5" /> </li>
-                            <li> <Skeleton className="w-16 h-4" /> </li>
-                          </ul>
-                        </div>
-                      }>
-                        <CatchBoundary getResetKey={() => "reset"} errorComponent={ Error({ currentUser: true }) } >
-                          <Await promise={user}>
-                            {(user) => (
-                              <div className='p-2'>
-
-                                <Avatar className='ring-1 ring-ring'>
-                                  <AvatarFallback>{name?.split(" ")?.map( (items) => (items?.[0]) )}</AvatarFallback>
-                                </Avatar>
-                                <ul className="space-y-2 [&>li]:w-fit">
-                                  <li> <span className="font-bold">{user.nombre}</span> </li>
-                                  <li> <Badge> {user?.rol} </Badge> </li>
-                                </ul>
-                              </div>
-                            )}
-                          </Await>
-                        </CatchBoundary>
-                      </Suspense>
-                  </HoverCardContent>
-                  </HoverCard>
+               <HoverCard>
+                <HoverCardTrigger>
+                  <Badge className="cursor-pointer text-sm" variant="outline">
+                    {(name ?? "User")
+                      .split(' ')
+                      .map((char) => char.at(0))
+                      .join('')}
+                  </Badge>
+                </HoverCardTrigger>
+                <HoverCardContent>
+                  { !isCurrentUser ? <div className='p-2'>
+                      <Skeleton className='ring-1 ring-ring w-10 h-10 rounded-full'/>
+                      <ul className="space-y-2 [&>li]:w-fit">
+                        <li> <Skeleton className="w-32 h-5" /> </li>
+                        <li> <Skeleton className="w-16 h-4" /> </li>
+                      </ul>
+                    </div> : errorCurrentUser ? <Error currentUser /> : 
+                    <div className='p-2'>
+                      <Avatar className='ring-1 ring-ring'>
+                         <AvatarFallback>{name?.split(" ")?.map( (items) => (items?.[0]) )}</AvatarFallback>
+                      </Avatar>
+                      <ul className="space-y-2 [&>li]:w-fit">
+                        <li> <span className="font-bold">{currentUserRes.nombre}</span> </li>
+                        <li> <Badge> {currentUserRes?.rol} </Badge> </li>
+                      </ul>
+                    </div>
+                  }
+              </HoverCardContent>
+              </HoverCard>
             <Link to={"/"}>
               <Button
                 variant={"ghost"} 
@@ -486,14 +482,16 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
 /* eslint-disable-next-line */
 const SpinLoader = memo(function () {
    const getUser = useIsFetching({
+    fetchStatus: "idle",
     type: "inactive",
-    fetchStatus: "fetching",
+    stale: true,
     queryKey: ([] as string[]).concat( getUsersListOpt.queryKey ),
   })
 
   const userId = useIsFetching({
+    fetchStatus: "idle",
+    stale: true,
     type: "inactive",
-    fetchStatus: "fetching",
     queryKey: ([] as string[]).concat( getUserByIdOpt({ userId: "" }).queryKey[0] as string ),
   })
 
@@ -508,14 +506,16 @@ const SpinLoader = memo(function () {
   })
 
   const getClient = useIsFetching({
+    fetchStatus: "idle",
+    stale: true,
     type: "inactive",
-    fetchStatus: "fetching",
     queryKey: ([] as string[]).concat( getClientListOpt.queryKey ),
   })
 
   const clientId = useIsFetching({
+    fetchStatus: "idle",
+    stale: true,
     type: "inactive",
-    fetchStatus: "fetching",
     queryKey: ([] as string[]).concat( getClientByIdOpt({ clientId: "" }).queryKey[0] as string ),
   })
 
@@ -534,37 +534,106 @@ const SpinLoader = memo(function () {
     mutationKey: ([] as string[]).concat( deleteClientByIdOpt?.mutationKey ),
   })
 
+  const getCredit = useIsFetching({
+    fetchStatus: "idle",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( getCreditsListOpt.queryKey ),
+  })
+
+  const creditId = useIsFetching({
+    fetchStatus: "idle",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( getCreditByIdOpt({ creditId: "" }).queryKey[0] as string ),
+  })
+
+  const postCredit = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( postCreditOpt.mutationKey ),
+  })
+
+  const updateCredit = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( updateCreditByIdOpt?.mutationKey ),
+  })
+
+  const deleteCredit = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( deleteCreditByIdOpt?.mutationKey ),
+  })
+
+  const postPayment = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( postPaymentOpt.mutationKey ),
+  })
+
+  const updatePayment = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( updatePaymentByIdOpt?.mutationKey ),
+  })
+
+  const deletePayment = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( deletePaymentByIdOpt?.mutationKey ),
+  })
+
+
   const className = 'text-muted-foreground italic text-xs flex items-center gap-2'
 
-  if( !!getUser || !!userId ) {
+  if( getUser || userId ) {
     return <span className={className}><Loader /> {text.loader.user.get}</span>
   }
-  else if( !!postUser ) {
+  else if( postUser ) {
     return <span className={className}><Loader /> {text.loader.user.new} </span>
   }
-  else if( !!updateUser ) {
+  else if( updateUser ) {
     return <span className={className}><Loader /> {text.loader.user.update} </span>
   }
-  else if( !!getClient || !!clientId ) {
+  
+  if( getClient || clientId ) {
     return <span className={className}><Loader /> {text.loader.client.get}</span>
   }
-  else if( !!postClient ) {
+  else if( postClient ) {
     return <span className={className}><Loader /> {text.loader.client.new} </span>
   }
-  else if( !!updateClient ) {
+  else if( updateClient ) {
     return <span className={className}><Loader /> {text.loader.client.update} </span>
   }
-  else if( !!deleteClient ) {
+  else if( deleteClient ) {
     return <span className={className}><Loader /> {text.loader.client.delete} </span>
+  }
+
+  if( getCredit || creditId ) {
+    return <span className={className}><Loader /> {text.loader.credit.get}</span>
+  }
+  else if( postCredit ) {
+    return <span className={className}><Loader /> {text.loader.credit.new} </span>
+  }
+  else if( updateCredit ) {
+    return <span className={className}><Loader /> {text.loader.credit.update} </span>
+  }
+  else if( deleteCredit ) {
+    return <span className={className}><Loader /> {text.loader.credit.delete} </span>
+  }
+
+  if( postPayment ) {
+    return <span className={className}><Loader /> {text.loader.payment.new} </span>
+  }
+  else if( updatePayment ) {
+    return <span className={className}><Loader /> {text.loader.payment.update} </span>
+  }
+  else if( deletePayment ) {
+    return <span className={className}><Loader /> {text.loader.payment.delete} </span>
   }
 })
 
 /* eslint-disable-next-line */
-export const Error = ({ searchList }:{ currentUser?: boolean, searchList?: boolean }) =>{
+export const Error = ({ searchList }:{ currentUser?: boolean, searchList?: boolean }) => {
   if( searchList ) {
-    return  () => <ErrorIcon className='p-1 stroke-destructive' />
+    return <ErrorIcon className='p-1 stroke-destructive' />
   }
-  return () => <div className='!flex-row'>
+  return <div className='!flex-row'>
       <h2 className='font-bold text-destructive text-2xl'>:&nbsp;(</h2>
       <p className='italic text-sm'>  {text.error} </p> 
     </div>
@@ -588,6 +657,18 @@ const text = {
       update: "Actualizando cliente",
       delete: "Eliminando cliente(s)",
       get: "Cargando cliente(s)"
+    },
+    credit: {
+      new: "Creando prestamo",
+      update: "Actualizando prestamo",
+      delete: "Eliminando prestamo(s)",
+      get: "Cargando prestamo(s)"
+    },
+    payment: {
+      new: "Creando pago",
+      update: "Actualizando pago",
+      delete: "Eliminando pago(s)",
+      get: "Cargando pago(s)"
     }
   },
   navegation: {

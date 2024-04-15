@@ -5,29 +5,29 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { Await, createFileRoute, defer } from '@tanstack/react-router'
-import React, { ComponentRef, Suspense, useEffect, useRef, useState } from 'react'
+import { createFileRoute, defer } from '@tanstack/react-router'
+import React, { ComponentRef, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { TCLIENT_GET_BASE, type TCLIENT_GET } from "@/api/clients";
+import { type TCLIENT_GET_BASE, type TCLIENT_GET } from "@/api/clients";
 import styles from "@/styles/global.module.css"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
-import { postCredit, TCREDIT_GET_BASE, type TCREDIT_POST_BODY } from '@/api/credit'
+import { postCredit, type TCREDIT_GET_BASE, type TCREDIT_POST_BODY } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { type TMORA_TYPE, getMoraTypeByName } from '@/lib/type/moraType'
 import { getFrecuencyByName, listFrecuencys } from '@/lib/type/frecuency'
-import { queryOptions, useMutation } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import { Navigate } from '@tanstack/react-router'
 import { getStatusByName } from '@/lib/type/status'
 import { formatISO } from 'date-fns'
 import { queryClient } from '@/pages/__root'
-import { getClientListOpt } from '../client'
-import { getUsersListOpt } from '../user'
+import { getClientListOpt } from '@/pages/_layout/client'
+import { getUsersListOpt } from '@/pages/_layout/user'
 import { TUSER_GET } from '@/api/users'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -45,8 +45,8 @@ export const Route = createFileRoute('/_layout/credit/new')({
   errorComponent: Error,
   validateSearch: ( search: TSearch ) => search,
   loader: () => ({
-    clients: defer( queryClient.ensureQueryData( queryOptions( getClientListOpt ) ) ),
-    users:  defer( queryClient.ensureQueryData( queryOptions( getUsersListOpt ) ) )
+    clients:  defer(queryClient.ensureQueryData( queryOptions( getClientListOpt ) )),
+    users:  defer(queryClient.ensureQueryData( queryOptions( getUsersListOpt ) ))
   }),
 })
 
@@ -62,8 +62,6 @@ interface TCuotesState {
 }
 
 /* eslint-disable-next-line */
-
-
 const initialCuotes: TCuotesState = {
   type: "Porciento" 
 }
@@ -74,7 +72,8 @@ type TFormName = keyof (Omit<TCREDIT_POST_BODY, "cobrador_id" | "owner_id" | "ga
 /* eslint-disable-next-line */
 export function NewCredit( {}: TNewCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
-  const { users: usersRes, clients: clientsRes } = Route.useLoaderData()
+  const { data: usersRes, isSuccess: isSuccessUsers } = useQuery( queryOptions( getUsersListOpt ) )
+  const { data: clientsRes, isSuccess: isSuccessClients } = useQuery( queryOptions( getClientListOpt ) )
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { pushNotification } = useNotifications()
@@ -86,33 +85,28 @@ export function NewCredit( {}: TNewCreditProps ) {
   const [ ref, setRef ] = useState< TCLIENT_GET_BASE | undefined >()
 
   useEffect(() => {
-      clientsRes?.then( (data) => {
-        if( !data?.length ) return;
-        const client = data?.find( ({ id }) => ( id === clientId ) )
-
+      if(clientsRes) {
+        if( !clientsRes?.length ) return;
+        const client = clientsRes?.find( ({ id }) => ( id === clientId ) )
         if(!client) return;
         setClient( client )
 
-        const ref = data?.find( ({ id: refId }) => ( refId === client?.referencia_id ) )
+        const ref = clientsRes?.find( ({ id: refId }) => ( refId === client?.referencia_id ) )
         if(!ref) return;
         setRef( ref )
-      } )
-    return () => {
-
-    }
+      }
+    return () => { }
   }, [clientsRes, clientId])
 
   useEffect(() => {
-      usersRes?.then( (data) => {
-        if( !data?.length ) return;
-        const user = data?.find( ({ id: userId }) => ( userId === client?.owner_id )  )
+      if(usersRes) {
+        if( !usersRes?.length ) return;
+        const user = usersRes?.find( ({ id: userId }) => ( userId === client?.owner_id )  )
 
         if(!user) return;
         setUser( user )
-      } )
-    return () => {
-
-    }
+      }
+    return () => { }
   }, [clientsRes, client, clientId])
 
   const onSuccess: (data: TCREDIT_GET_BASE, variables: TCREDIT_POST_BODY, context: unknown) => unknown = () => {
@@ -169,11 +163,11 @@ export function NewCredit( {}: TNewCreditProps ) {
 
   const onChangeValue: ( prop: "coute" | "interest" | "amount" ) => React.ChangeEventHandler< ComponentRef< typeof Input > > = (prop) => (ev) => {
     const { value } = ev.target
-    if(+value === 0 && prop === "coute") return;
+    // if(+value === 0 && prop === "coute") return;
     setCuote( { ...{ interest, coute, amount }, [prop]: Number.parseInt(value) } ) 
   }
 
-  const onSubmit: React.FormEventHandler<HTMLFormElement> = async (ev) => {
+  const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current) return;
 
     const items = Object.fromEntries(
@@ -183,9 +177,9 @@ export function NewCredit( {}: TNewCreditProps ) {
     })
     ) as Record<TFormName, string>
 
-    const userId = (await usersRes)?.find( ({ nombre }) => ( nombre == items?.user ) )?.id
-    const clientId = (await clientsRes)?.find( ({ nombres, apellidos }) => ( [nombres, apellidos].join(" ") === items?.client ) )?.id
-    const refId = ( await clientsRes )?.find( ({ nombres, apellidos }) => ( [nombres, apellidos].join(" ") === items?.client ) )?.id
+    const userId = usersRes?.find( ({ nombre }) => ( nombre == items?.user ) )?.id
+    const clientId = clientsRes?.find( ({ nombres, apellidos }) => ( [nombres, apellidos].join(" ") === items?.client ) )?.id
+    const refId = clientsRes?.find( ({ nombres, apellidos }) => ( [nombres, apellidos].join(" ") === items?.client ) )?.id
 
     if( !userId || !clientId ) return;
 
@@ -232,144 +226,86 @@ export function NewCredit( {}: TNewCreditProps ) {
       >
         <Label className='!col-span-1'>
           <span>{text.form.cliente.label} </span>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { ([ _, clients ]) => <>
-                <Input
-                  required
-                  name={'client' as TFormName}
-                  type="text"
-                  placeholder={text.form.cliente.placeholder}
-                  list='credit-clients'
-                  defaultValue={ client ? client?.nombres + " " + client?.apellidos : undefined }
-                />
-                <datalist id='credit-clients' >
-                  {clients?.map( ( { nombres, apellidos }, index ) => <option key={index} value={nombres + " " + apellidos} /> )}
-                </datalist>
-           </>}
-          </Await>
-          </Suspense>
+          { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
+           <> <Input
+            required
+            name={'client' as TFormName}
+            type="text"
+            placeholder={text.form.cliente.placeholder}
+            list='credit-clients'
+            defaultValue={ client ? client?.nombres + " " + client?.apellidos : undefined }
+          />
+          <datalist id='credit-clients' >
+            {clientsRes?.map( ( { nombres, apellidos }, index ) => <option key={index} value={nombres + " " + apellidos} /> )}
+          </datalist> </>}
         </Label>
         <Label>
           <span>{text.form.date.label} </span>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { () =>
+            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
               <DatePicker
                 name={"fecha_de_aprobacion" as TFormName}
                 label={text.form.date.placeholder}
-                className='!border-1 !border-ring'
-              />  
-            }
-          </Await>
-          </Suspense>
+                className='!border-1 !border-ring' />
+            }  
         </Label>
         <Label>
           <span>{text.form.ref.label} </span>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { () =>
+            {!isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
               <Input
                 name={'ref' as TFormName}
                 list='credit-clients'
                 type="text"
                 placeholder={text.form.ref.placeholder}
                 defaultValue={ ref ? ref?.nombres + ref?.apellidos : undefined }
-              />
-            }
-          </Await>
-          </Suspense>
+            />}
         </Label>
         <Label className='row-start-2'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
             <span className='after:content-["_*_"] after:text-red-500'>{text.form.amount.label} </span>
-            <Suspense fallback={
-              <Skeleton className='w-8 rounded-full h-6' />
-            }>
-            <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-              { () =>
-              <Badge>$</Badge>
-              }
-            </Await>
-            </Suspense>
+              { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-8 rounded-full h-6' /> : 
+              <Badge>$</Badge> }
           </div>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { () =>
+            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
               <Input
                 required
-                min={0}
+                min={1}
                 step={1}
-                value={amount}
+                // defaultValue={amount}
                 onChange={onChangeValue("amount")}
                 name={'monto' as TFormName}
                 type="number"
                 placeholder={text.form.amount.placeholder}
-              />
-            }
-          </Await>
-          </Suspense>
+              /> }
         </Label>
         <Label htmlFor='credit-cuote' className='row-start-2'>
            <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
             <span className='after:content-["_*_"] after:text-red-500'>{text.form.interest.label} </span>
-            <Suspense fallback={
-              <Skeleton className='w-8 rounded-full h-6' />
-            }>
-            <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-              { () =>
+              { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-8 rounded-full h-6' /> :
               <Badge>%</Badge>
               }
-            </Await>
-            </Suspense>
-          </div>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { () =>
+            </div>
+            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
               <Input
                 id='credit-cuote'
                 required
-                min={0}
+                min={1}
                 max={100}
                 step={1}
                 name={'tasa_de_interes' as TFormName}
-                value={interest}
+                // defaultValue={interest}
                 onChange={onChangeValue("interest")}
                 type="number"
                 placeholder={text.form.interest.placeholder}
-              />
-            }
-          </Await>
-          </Suspense>
+              /> }
         </Label>
         <Label htmlFor='credit-pay' className='row-start-2'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
             <span className='after:content-["_*_"] after:text-red-500'>{text.form.cuote.label} </span>
-             <Suspense fallback={
-              <Skeleton className='w-8 rounded-full h-6' />
-            }>
-            <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-              { () =>
+              { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-8 rounded-full h-6' /> :
                 <Badge>#</Badge>
               }
-            </Await>
-            </Suspense>
-          </div>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { () =>
+           </div>
+            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
               <Input
                 id='credit-pay'
                 required
@@ -377,22 +313,16 @@ export function NewCredit( {}: TNewCreditProps ) {
                 max={25}
                 step={1}
                 name={'numero_de_cuotas' as TFormName}
-                value={coute}
+                // defaultValue={coute}
                 onChange={onChangeValue("coute")}
                 type="number"
                 placeholder={text.form.cuote.placeholder}
               />
             }
-          </Await>
-          </Suspense>
         </Label>
         <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500 row-start-3'>
           <span>{text.form.frecuency.label} </span>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { () =>
+            { !isSuccessUsers && !isSuccessClients ?  <Skeleton className='w-full h-10' /> :
               <Select 
                 required
                 name={'frecuencia_del_credito_id' as TFormName}
@@ -406,16 +336,10 @@ export function NewCredit( {}: TNewCreditProps ) {
                 </SelectContent>
               </Select>
             }
-          </Await>
-          </Suspense>
-        </Label>
+          </Label>
         <Label className='row-start-3'>
           <span>{text.form.user.label} </span>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { ([ users ]) => <>
+            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> : <>
               <Input
                 required
                 name={'user' as TFormName}
@@ -425,34 +349,24 @@ export function NewCredit( {}: TNewCreditProps ) {
                 defaultValue={ user ? user?.nombre : undefined }
               />
               <datalist id='credit-user'>
-                {users?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )}
-              </datalist>
-           </> }
-          </Await>
-          </Suspense>
+                {usersRes?.map( ( { nombre, id } ) => <option key={id} value={nombre} />  )}
+              </datalist> </> }
         </Label>
         <Label htmlFor='credit-installments' className='row-start-4'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
           <span className='after:content-["_*_"] after:text-red-500'>{text.form.installments.label} </span>
-          <Suspense fallback={<div>
-              <Skeleton className='w-8 rounded-full h-6' />
-              <Skeleton className='w-8 rounded-full h-6' />
-          </div>}>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { () =>
+              { !isSuccessUsers && !isSuccessClients ?
+              <div>
+                <Skeleton className='w-8 rounded-full h-6' />
+                <Skeleton className='w-8 rounded-full h-6' />
+              </div> :
               <RadioGroup name={'tipo_de_mora' as TFormName} defaultValue={ getMoraTypeByName({ moraTypeName: "Porciento" })?.nombre } onChange={onChangeType}  >
                 <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "Valor fijo" })?.nombre } /> <Badge>$</Badge> </Label>
                 <Label><RadioGroupItem value={ getMoraTypeByName({ moraTypeName: "Porciento" })?.nombre } /> <Badge>%</Badge> </Label>
               </RadioGroup>
-           }
-          </Await>
-          </Suspense>
+              }
           </div>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { () =>
+             { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
             <Input
               id='credit-installments'
               required
@@ -463,45 +377,29 @@ export function NewCredit( {}: TNewCreditProps ) {
               type="number"
               value={installmants.value}
               placeholder={text.form.installments.placeholder?.[installmants.type]}
-            />
-          }
-          </Await>
-          </Suspense>
+            /> }
         </Label>
         <Label className='row-start-4'>
           <span>{text.form.aditionalDays.label} </span>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { () =>
+            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
             <Input
-              min={0}
+              min={1}
               max={10}
               name={'dias_adicionales' as TFormName}
               type="number"
               placeholder={text.form.aditionalDays.placeholder}
-            />
-          }
-          </Await>
-          </Suspense>
+            /> }
         </Label>
         <Label>
           <span>{text.form.comment.label}</span>
-          <Suspense fallback={
-            <Skeleton className='w-full h-32' />
-          }>
-          <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-            { () =>
-          <Textarea
-            rows={5}
-            name={'comentario' as TFormName}
-            placeholder={text.form.comment.placeholder}
-          />
+           {!isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-32' /> :
+            <Textarea
+              rows={5}
+              name={'comentario' as TFormName}
+              placeholder={text.form.comment.placeholder}
+            />
           }
-          </Await>
-          </Suspense>
-        </Label>
+          </Label>
       </form>
       <DialogFooter className="!justify-between !items-center">
         <ul className={clsx('[&_span]:font-bold [&>li]:list-disc [&>li]:list-inside transition delay-150 duration-500', { 
@@ -512,12 +410,10 @@ export function NewCredit( {}: TNewCreditProps ) {
           <li><span>Monto por cuota</span>: {"$" + getAmountCuote({ interest, amount, coute })}. </li>
         </ul>
         <div className='space-x-2'>
-        <Suspense fallback={<>
+        { !isSuccessUsers && !isSuccessClients ?  <>
           <Skeleton className='w-24 h-12 inline-block' />
           <Skeleton className='w-24 h-12 inline-block' />
-        </>}>
-        <Await promise={defer(Promise.all([ usersRes, clientsRes ]))}>
-          { () => <>
+        </> : <>
             <Button
                 variant="default"
                 form="new-credit"
@@ -533,9 +429,7 @@ export function NewCredit( {}: TNewCreditProps ) {
                 {text.button.close}
               </Button>
             </DialogClose>
-         </>}
-       </Await>
-       </Suspense>
+         </> }
         </div>
       </DialogFooter>
     </DialogContent>

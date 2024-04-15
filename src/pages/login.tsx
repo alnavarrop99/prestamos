@@ -11,6 +11,11 @@ import { useMutation } from '@tanstack/react-query'
 import { type TUSER_LOGIN, type TUSER_LOGIN_BODY, loginUser } from '@/api/users'
 import { useToken } from '@/lib/context/login'
 
+export const postCurrentUser = {
+  mutationKey: ["login-user"],
+  mutationFn: loginUser,
+}
+
 export const Route = createFileRoute('/login')({
   component: Login,
 })
@@ -46,10 +51,8 @@ export function Login({}: TLoginProps) {
   const onSuccess: (data: TUSER_LOGIN) => unknown = ( user ) => {
     setToken(user.access_token)
   }
-
   const { mutate: login } = useMutation({
-    mutationKey: ["login-user"],
-    mutationFn: loginUser,
+    ...postCurrentUser,
     onSuccess
   })
 

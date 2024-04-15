@@ -34,6 +34,9 @@ import { persist } from 'zustand/middleware'
 import { Select, SelectContent, SelectItem, SelectValue,  SelectTrigger  } from '@/components/ui/select'
 import { queryClient } from '@/pages/__root'
 import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query'
+import { deletePaymentByIdOpt, updateCreditByIdOpt } from './credit_/$creditId_/update.confirm'
+import { postCreditOpt } from './credit/new'
+import { deleteCreditByIdOpt } from './credit_/$creditId/delete'
 
 const getFilterCredit = async () => {
     // TODO: this is a temporal function to getFilter
@@ -110,23 +113,26 @@ export function Credits({}: TCreditsProps) {
   const select: ((data: TCREDIT_GET_FILTER_ALL) => TCREDIT_GET_FILTER_ALL) = (data) => (
     sortCredit(order, data)
   )
-  const { data: creditRes, refetch } = useSuspenseQuery( queryOptions( { ...getCreditsListOpt,
+  const { data: creditsRes, refetch } = useSuspenseQuery( queryOptions( { ...getCreditsListOpt,
     select
   } ) )
-  const [ credits, setCredits ] = useState(creditRes)
+  const [ credits, setCredits ] = useState(creditsRes)
 
-  // const isUpdateCredit = useIsMutating( { status: "success", mutationKey: updateCreditByIdOpt.mutationKey } )
-  // const isNewCredit = useIsMutating( { status: "success", mutationKey: postCreditOpt.mutationKey } )
-  // const isDeleteCredit = useIsMutating( { status: "success", mutationKey: deleteCreditByIdOpt.mutationKey } )
+  const isUpdateCredit = useIsMutating( { status: "success", mutationKey: updateCreditByIdOpt.mutationKey } )
+  const isNewCredit = useIsMutating( { status: "success", mutationKey: postCreditOpt.mutationKey } )
+  const isDeleteCredit = useIsMutating( { status: "success", mutationKey: deleteCreditByIdOpt.mutationKey } )
+  const isNewPayment = useIsMutating( { status: "success", mutationKey: deletePaymentByIdOpt.mutationKey } )
+  const isDeletePayment = useIsMutating( { status: "success", mutationKey: deletePaymentByIdOpt.mutationKey } )
+  const isUpdatePayment = useIsMutating( { status: "success", mutationKey: updateCreditByIdOpt.mutationKey } )
 
   const onSelectOrder: ( value: string ) => void = ( value ) => {
     if( order !== "id" && order !== "frecuencia" && order !== "nombre_del_cliente" ) return;
 
     if( value as keyof typeof ORDER === "frecuencia" ){
-      setCredits( sortCredit(value as keyof typeof ORDER, creditRes ))
+      setCredits( sortCredit(value as keyof typeof ORDER, creditsRes ))
     }
 
-    setCredits( sortCredit(value as keyof typeof ORDER, creditRes ))
+    setCredits( sortCredit(value as keyof typeof ORDER, creditsRes ))
     setOrder(value as keyof typeof ORDER)
   }
 
@@ -170,7 +176,7 @@ export function Credits({}: TCreditsProps) {
   useEffect(() => {
     if (value) {
       setCredits(
-        creditRes?.filter(({ nombre_del_cliente }) =>
+        creditsRes?.filter(({ nombre_del_cliente }) =>
           nombre_del_cliente.toLowerCase().includes(value?.toLowerCase() ?? '')
         )
       )
@@ -182,17 +188,15 @@ export function Credits({}: TCreditsProps) {
   }, [value])
 
   useEffect(() => {
-    if( creditRes ){
+    if( creditsRes ){
       refetch()?.then( ({ data }) => {
         if( !data ) return;
-        setCredits(data )
+        setCredits( data )
       } )
     }
     return () => {
-      // setUsers( usersRes )
     }
-  }, [])
-  // }, [isUpdateCredit, isNewCredit, isDeleteCredit])
+  }, [ isUpdateCredit, isNewCredit, isDeleteCredit, isNewPayment, isDeletePayment, isUpdatePayment ])
 
   return (
     <>
