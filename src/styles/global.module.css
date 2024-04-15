@@ -18,6 +18,10 @@
   animation: 350ms badge;
 }
 
+.search-badge-animation-off {
+  animation: 350ms badge-off;
+}
+
 .scale-users {
   &:hover{
     animation: 500ms users;
@@ -94,7 +98,17 @@
 
   100% {
     transform: scale(100%);
-    opacity: 1;
+  }
+}
+
+@keyframes badge-off {
+  0% {
+    transform: scale(100%);
+  }
+
+  100% {
+    transform: scale(0);
+    opacity: 0;
   }
 }
 

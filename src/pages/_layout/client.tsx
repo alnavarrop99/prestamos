@@ -54,6 +54,8 @@ import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-q
 import { postClientOpt } from './client/new'
 import { updateClientByIdOpt } from './client/$clientId/update'
 import { deleteClientByIdOpt } from './client/$clientId/delete'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
 
 export const getClientListOpt = {
   queryKey: ["list-clients"],
@@ -82,16 +84,20 @@ const ROW = 14
 const COL = 7
 export const _clientContext = createContext< TClientTable[] | undefined>( undefined)
 export const _rowSelected = createContext< (() => void) | undefined >( undefined)
+const useFilter = create< { filter: keyof TClientTable, setFilter: ( value: keyof TClientTable ) => void } >()( persist((set) => ({
+  filter: "fullName",
+  setFilter: ( filter ) => (set( () => ({ filter }) ))
+}), { name: "client-filter" }) )
 
 /* eslint-disable-next-line */
-export function Clients({ filter: _filter = 'fullName', }: React.PropsWithChildren<TClientsProps>) {
+export function Clients({ }: React.PropsWithChildren<TClientsProps>) {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const { open, setOpen, value } = useStatus()
   const navigate = useNavigate()
-  const [filter, setFilter] = useState(_filter)
+  const {filter, setFilter} = useFilter()
   const search = Route.useSearch()
   const isUpdateClient = useIsMutating( { status: "success", mutationKey: updateClientByIdOpt.mutationKey } )
   const isNewClient = useIsMutating( { status: "success", mutationKey: postClientOpt.mutationKey } )
@@ -214,7 +220,7 @@ export function Clients({ filter: _filter = 'fullName', }: React.PropsWithChildr
               <Outlet />
             </Dialog>
             <Select value={filter} onValueChange={onValueChange}>
-              <SelectTrigger className="ms-auto w-auto">
+              <SelectTrigger title='Filtro de busqueda' className="ms-auto w-auto">
                 <SelectValue placeholder={text.select.placeholder} />
               </SelectTrigger>
               <SelectContent className="[&>div]:cursor-pointer">

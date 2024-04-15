@@ -6,14 +6,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
-import { Await, Navigate, createFileRoute, defer } from '@tanstack/react-router'
+import { Navigate, createFileRoute, defer } from '@tanstack/react-router'
 import clsx from 'clsx'
-import { ComponentRef, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { ComponentRef, useEffect, useMemo, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 import { type TUSER_GET, type TUSER_PATCH, getUserById, pathUserById } from '@/api/users'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
-import { queryOptions, useMutation } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import { type TROLES, getRolByName, listRols } from '@/lib/type/rol'
 import { type TUsersState } from '@/pages/_layout/user'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -65,7 +65,7 @@ export function UpdateUserById({}: TUpdateUserById) {
   const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const { userId } = Route.useParams()
-  const { user: userRes } = Route.useLoaderData()
+  const { data: userRes, isSuccess } = useQuery( queryOptions( getUserByIdOpt({ userId }) ) )
   const [ user, setUser ] = useState< (TUSER_GET & { password: string }) | undefined >(undefined)
   const init = useRef(user)
 
@@ -98,7 +98,7 @@ export function UpdateUserById({}: TUpdateUserById) {
     queryClient.setQueriesData( { queryKey: getUserByIdOpt({ userId }).queryKey }, data )
 
     // TODO: not update user with exec a path update
-    setUser( { ...data, password: "" } )
+    // setUser( { ...data, password: "" } )
   }
 
   const onError = () => {
@@ -133,13 +133,9 @@ export function UpdateUserById({}: TUpdateUserById) {
   const {mutate: updateUser, isPending} = useMutation( { ...updateUserByIdOpt, onError, onSuccess } )
 
   useEffect( () => {
-    if(!user){
-      userRes?.then( ( data ) => {
-        init.current = ({ ...data, password: "" })
-        setUser({ ...data, password: "" })
-        return;
-      })
-    }
+    if(!userRes) return;
+    init.current = ({ ...userRes, password: "" })
+    setUser({ ...userRes, password: "" })
     return () => {
       // setUser()
     }
@@ -223,53 +219,36 @@ export function UpdateUserById({}: TUpdateUserById) {
       >
         <Label className='!col-span-1' >
           <span>{text.form.firstName.label}</span>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-          <Await promise={userRes}>
-              { (data) => 
+            { !isSuccess ? <Skeleton className='w-full h-10' /> :
               <Input
                 required
                 name={'firstName' as TFormName}
                 type="text"
                 placeholder={text.form.firstName.placeholder}
-                defaultValue={data?.nombre.split(" ")?.at(0)}
+                defaultValue={userRes?.nombre.split(" ")?.at(0)}
                 onChange={onChangeName("firstName")}
-              />
-             }
-          </Await>
-          </Suspense>
+              /> }
         </Label>
         <Label className='!col-span-1' >
           <span>{text.form.lastName.label} </span>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-            <Await promise={userRes}>
-              { (data) => 
+            { !isSuccess ? <Skeleton className='w-full h-10' /> :
               <Input
                 required
                 name={'lastName' as TFormName}
                 type="text"
                 placeholder={text.form.lastName.placeholder}
-                defaultValue={data?.nombre.split(" ")?.at(1)}
+                defaultValue={userRes?.nombre.split(" ")?.at(1)}
                 onChange={onChangeName("lastName")}
               />
-             }
-            </Await>
-          </Suspense>
-        </Label>
+            }
+          </Label>
         <Label>
           <span>{text.form.rol.label} </span>
-          <Suspense fallback={
-            <Skeleton className='w-full h-10' />
-          }>
-            <Await promise={userRes}>
-              { (data) => 
+            { !isSuccess ? <Skeleton className='w-full h-10' /> :
                 <Select
                   required
                   name={'rol' as TFormName} 
-                  defaultValue={ ""+getRolByName({ rolName: data?.rol as TROLES })?.id }
+                  defaultValue={ ""+getRolByName({ rolName: userRes?.rol as TROLES })?.id }
                 >
                   <SelectTrigger className="w-full">
                     <SelectValue placeholder={text.form.rol.placeholder} />
@@ -277,22 +256,17 @@ export function UpdateUserById({}: TUpdateUserById) {
                   <SelectContent className='[&_*]:cursor-pointer'>
                     { listRols()?.map( ({ id, nombre }) => <SelectItem key={id} value={""+id}>{nombre}</SelectItem>) }
                   </SelectContent>
-                </Select>
-             }
-            </Await>
-          </Suspense>
+                </Select> }
         </Label>
         <div>
           <Label htmlFor='user-password'>
             <span>{text.form.password.current.label} </span>
           </Label>
               <div className="flex flex-row-reverse items-center gap-x-2">
-                <Suspense fallback={ <>
+                { !isSuccess ? <>
                   <Skeleton className='w-10 h-10' />
                   <Skeleton className='w-full h-10' />
-                </> }>
-                <Await promise={userRes}>
-                  { () => <>
+                </> : <>
                     <Button
                       type="button"
                       className="w-fit p-1.5"
@@ -309,9 +283,7 @@ export function UpdateUserById({}: TUpdateUserById) {
                       value={password?.password}
                       onChange={onChangePassword}
                     />
-                 </>}
-               </Await>
-             </Suspense>
+                 </> }
             </div>
         </div>
         <div>
@@ -319,12 +291,11 @@ export function UpdateUserById({}: TUpdateUserById) {
             <span>{text.form.password.new.label} </span>
           </Label>
           <div className="flex flex-row-reverse items-center gap-x-2">
-            <Suspense fallback={ <>
+            { !isSuccess ? <>
               <Skeleton className='w-10 h-10' />
               <Skeleton className='w-full h-10' />
-            </> }>
-            <Await promise={userRes}>
-              { () => <>
+            </> :
+              <>
                 <Button
                   type="button"
                   className="w-fit p-1.5"
@@ -342,19 +313,16 @@ export function UpdateUserById({}: TUpdateUserById) {
                   value={password?.confirmation}
                   onChange={onChangePassword}
                 />
-             </>}
-           </Await>
-           </Suspense>
+             </> }
           </div>
         </div>
       </form>
       <DialogFooter className="justify-end gap-2">
-        <Suspense fallback={<>
+        { !isSuccess ? <>
           <Skeleton className='w-24 h-12' />
           <Skeleton className='w-24 h-12' />
-        </>}>
-        <Await promise={userRes}>
-          { () => <>
+        </> :
+                <>
             <Button 
               disabled={ active || isPending }
               variant="default" 
@@ -372,9 +340,7 @@ export function UpdateUserById({}: TUpdateUserById) {
                 {text.button.close}
               </Button>
             </DialogClose>
-         </>}
-       </Await>
-       </Suspense>
+         </> }
       </DialogFooter>
     </DialogContent>
     </>
