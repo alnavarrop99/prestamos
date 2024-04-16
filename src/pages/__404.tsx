@@ -1,5 +1,5 @@
 import { NotFoundRoute } from '@tanstack/react-router'
-import { Route as _root } from './__root'
+import { Route as _root } from '@/pages/__root'
 import { SearchX } from 'lucide-react'
 import { useEffect } from 'react';
 

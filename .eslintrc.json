@@ -9,7 +9,7 @@
     "plugin:@typescript-eslint/recommended",
     "prettier"
   ],
-  "ignorePatterns": ["dist", ".eslintrc.cjs", "tailwind.config.js"],
+  "ignorePatterns": ["dist", "src/mocks", ".eslintrc.cjs", "tailwind.config.js"],
   "parser": "@typescript-eslint/parser",
   "plugins": ["react-refresh"],
   "rules": {
@@ -24,7 +24,6 @@
     {
       "files": ["**/*.tsx"],
       "extends": [
-        "plugin:jsx-a11y/recommended",
         "plugin:compat/recommended",
         "plugin:tailwindcss/recommended",
         "plugin:react-hooks/recommended",

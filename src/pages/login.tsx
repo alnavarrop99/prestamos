@@ -27,9 +27,6 @@ interface TStatus {
   error?: boolean
 }
 
-/* eslint-disable-next-line */
-interface TLoginProps { }
-
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
@@ -40,7 +37,7 @@ const initUser: TStatus = {
 }
 
 /* eslint-disable-next-line */
-export function Login({}: TLoginProps) {
+export function Login() {
   const ref = useRef<HTMLFormElement>(null)
   const [{ error, password }, setStatus] = useReducer(reducer, initUser)
   const { token, setToken } = useToken()

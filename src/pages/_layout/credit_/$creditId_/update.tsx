@@ -43,12 +43,6 @@ export const Route = createFileRoute('/_layout/credit/$creditId/update')({
 })
 
 /* eslint-disable-next-line */
-interface TUpdateCreditProps {
-  credit?: TCREDIT_GET,
-  open?: boolean
-}
-
-/* eslint-disable-next-line */
 interface TCuotesState {
   value?: number
   type: TMORA_TYPE
@@ -63,7 +57,7 @@ export const _payDelete = createContext<{ [k: number]: number | undefined } | un
 export const _client = createContext<TCLIENT_GET_BASE | undefined >(undefined)
 
 /* eslint-disable-next-line */
-export function UpdateCreditById( {}: React.PropsWithChildren<TUpdateCreditProps> ) {
+export function UpdateCreditById() {
   const { creditId } = Route.useParams()
   const { data: clients } = useSuspenseQuery( queryOptions( getClientListOpt ) )
   const { data: users } = useSuspenseQuery( queryOptions( getUsersListOpt ) )

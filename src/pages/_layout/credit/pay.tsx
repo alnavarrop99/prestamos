@@ -12,7 +12,6 @@ import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
 import { Checkbox } from '@/components/ui/checkbox'
 import { type TPAYMENT_POST, type TPAYMENT_POST_BODY } from "@/api/payment";
-import { type TCREDIT_GET } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { useNotifications } from '@/lib/context/notification'
@@ -33,15 +32,10 @@ export const Route = createFileRoute('/_layout/credit/pay')({
 })
 
 /* eslint-disable-next-line */
-interface TPaySelectedCreditProps {
-  credit?: TCREDIT_GET
-}
-
-/* eslint-disable-next-line */
 type TFormName = keyof Omit<TPAYMENT_POST_BODY, "credito_id">
 
 /* eslint-disable-next-line */
-export function PaySelectedCredit( {}: TPaySelectedCreditProps ) {
+export function PaySelectedCredit() {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const { pushNotification } = useNotifications()

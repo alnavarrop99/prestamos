@@ -31,10 +31,10 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useRouter } from '@tanstack/react-router'
 import { queryClient } from '@/pages/__root'
 import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query'
-import { getClientByIdOpt } from '../client/$clientId/update'
-import { deletePaymentByIdOpt, updateCreditByIdOpt } from './$creditId_/update.confirm'
-import { postCreditOpt } from '../credit/new'
-import { deleteCreditByIdOpt } from './$creditId/delete'
+import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+import { deletePaymentByIdOpt, updateCreditByIdOpt } from '@/pages/_layout/credit_/$creditId_/update.confirm'
+import { postCreditOpt } from '@/pages/_layout/credit/new'
+import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
 
 export const getCreditByIdOpt = ( { creditId }: { creditId: string }  ) => ({
   queryKey: ["get-credit-by-id", { creditId }],
@@ -52,19 +52,13 @@ export const Route = createFileRoute('/_layout/credit/$creditId')({
   },
 })
 
-/* eslint-disable-next-line */
-interface TCreditByIdProps {
-  credit?: TCREDIT_GET
-  open?: boolean
-}
-
 const ROW = 8
 const COL = 6
 export const _credit = createContext<TCREDIT_GET | undefined>(undefined)
 export const _client = createContext<TCLIENT_GET | undefined>(undefined)
 
 /* eslint-disable-next-line */
-export function CreditById({ }: React.PropsWithChildren<TCreditByIdProps>) {
+export function CreditById() {
   const { creditId } = Route.useParams()
   const  { data: creditRes, refetch: refetchCredit } = useSuspenseQuery( queryOptions( getCreditByIdOpt({ creditId }) ) )
   const  { data: clientRes, refetch: refetchClient } = useSuspenseQuery( queryOptions( getClientByIdOpt( { clientId: "" + creditRes.owner_id } ) ) )

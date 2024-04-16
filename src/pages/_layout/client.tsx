@@ -49,11 +49,11 @@ import { columns, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
 import { useClientByUsers } from '@/lib/context/client'
 import { Skeleton } from '@/components/ui/skeleton'
-import { queryClient } from '../__root'
+import { queryClient } from '@/pages/__root'
 import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query'
-import { postClientOpt } from './client/new'
-import { updateClientByIdOpt } from './client/$clientId/update'
-import { deleteClientByIdOpt } from './client/$clientId/delete'
+import { postClientOpt } from '@/pages/_layout/client/new'
+import { updateClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -73,13 +73,6 @@ export const Route = createFileRoute('/_layout/client')({
   },
 })
 
-/* eslint-disable-next-line */
-interface TClientsProps {
-  clients?: TClientTable[]
-  open?: boolean
-  filter?: keyof TClientTable
-}
-
 const ROW = 14
 const COL = 7
 export const _clientContext = createContext< TClientTable[] | undefined>( undefined)
@@ -90,7 +83,7 @@ const useFilter = create< { filter: keyof TClientTable, setFilter: ( value: keyo
 }), { name: "client-filter" }) )
 
 /* eslint-disable-next-line */
-export function Clients({ }: React.PropsWithChildren<TClientsProps>) {
+export function Clients() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})

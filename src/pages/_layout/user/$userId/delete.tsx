@@ -12,7 +12,6 @@ import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { type TUsersState } from '@/pages/_layout/user'
 import { useToken } from '@/lib/context/login'
 
 type TSearch = {
@@ -25,12 +24,7 @@ export const Route = createFileRoute('/_layout/user/$userId/delete')({
 })
 
 /* eslint-disable-next-line */
-interface TDeleteByUser {
-  user?: TUsersState
-}
-
-/* eslint-disable-next-line */
-export function DeleteUserById({}: TDeleteByUser) {
+export function DeleteUserById() {
   const [checked, setChecked] = useState(false)
   const { name } = Route.useSearch()
   const { userId } = Route.useParams()

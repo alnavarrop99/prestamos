@@ -11,7 +11,7 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { type TCLIENT_GET_BASE, type TCLIENT_GET } from "@/api/clients";
+import { type TCLIENT_GET_BASE } from "@/api/clients";
 import styles from "@/styles/global.module.css"
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
@@ -51,11 +51,6 @@ export const Route = createFileRoute('/_layout/credit/new')({
 })
 
 /* eslint-disable-next-line */
-interface TNewCreditProps {
-  clients?: TCLIENT_GET[]
-}
-
-/* eslint-disable-next-line */
 interface TCuotesState {
   value?: number
   type: TMORA_TYPE
@@ -70,7 +65,7 @@ const initialCuotes: TCuotesState = {
 type TFormName = keyof (Omit<TCREDIT_POST_BODY, "cobrador_id" | "owner_id" | "garante_id" | "tipo_de_mora_id"> & Record<"user" | "client" | "ref" | "tipo_de_mora", string>)
 
 /* eslint-disable-next-line */
-export function NewCredit( {}: TNewCreditProps ) {
+export function NewCredit() {
   const form = useRef<HTMLFormElement>(null)
   const { data: usersRes, isSuccess: okUsers } = useQuery( queryOptions( getUsersListOpt ) )
   const { data: clientsRes, isSuccess: okClients } = useQuery( queryOptions( getClientListOpt ) )

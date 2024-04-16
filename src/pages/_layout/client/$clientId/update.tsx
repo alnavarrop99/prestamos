@@ -42,15 +42,10 @@ export const Route = createFileRoute('/_layout/client/$clientId/update')({
 })
 
 /* eslint-disable-next-line */
-interface TUpdateClientByIdProps {
-  client?: TCLIENT_GET
-}
-
-/* eslint-disable-next-line */
 type TFormName = keyof ( Omit<TCLIENT_PATCH_BODY, "referencia_id"> & Record<"referencia", string> )
 
 /* eslint-disable-next-line */
-export function UpdateClientById({ }: TUpdateClientByIdProps) {
+export function UpdateClientById() {
   const { clientId } = Route.useParams()
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)

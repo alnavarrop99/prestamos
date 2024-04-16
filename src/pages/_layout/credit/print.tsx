@@ -13,7 +13,7 @@ import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import styles from "@/styles/global.module.css"
-import { type TCREDIT_GET, type TCREDIT_GET_FILTER } from '@/api/credit'
+import { type TCREDIT_GET } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { PrintCredit } from "@/pages/_layout/credit";
 import { useStatus } from '@/lib/context/layout'
@@ -22,8 +22,8 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { format, isValid } from 'date-fns'
 import { queryClient } from '@/pages/__root'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { getCreditByIdOpt } from '../credit_/$creditId'
-import { getClientByIdOpt } from '../client/$clientId/update'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
+import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { defer } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Await } from '@tanstack/react-router'
@@ -48,15 +48,10 @@ export const Route = createFileRoute('/_layout/credit/print')({
 const options = { last: "Ultimo pago", especific: "Pago especifico" }
 
 /* eslint-disable-next-line */
-interface TPrintSelectedCreditProps {
-  credit?: TCREDIT_GET_FILTER
-}
-
-/* eslint-disable-next-line */
 type TOptState = keyof typeof options
 
 /* eslint-disable-next-line */
-export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTER }: TPrintSelectedCreditProps ) {
+export function PrintSelectedCredit() {
   const form = useRef<HTMLFormElement>(null)
   const [ { opt, payIndex }, setOpt ] = useState<{ payIndex?: number, opt?: TOptState }>({
     opt: "last"

@@ -34,9 +34,9 @@ import { persist } from 'zustand/middleware'
 import { Select, SelectContent, SelectItem, SelectValue,  SelectTrigger  } from '@/components/ui/select'
 import { queryClient } from '@/pages/__root'
 import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query'
-import { deletePaymentByIdOpt, updateCreditByIdOpt } from './credit_/$creditId_/update.confirm'
-import { postCreditOpt } from './credit/new'
-import { deleteCreditByIdOpt } from './credit_/$creditId/delete'
+import { deletePaymentByIdOpt, updateCreditByIdOpt } from '@/pages/_layout/credit_/$creditId_/update.confirm'
+import { postCreditOpt } from '@/pages/_layout/credit/new'
+import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
 
 const getFilterCredit = async () => {
     // TODO: this is a temporal function to getFilter
@@ -73,12 +73,6 @@ export const Route = createFileRoute('/_layout/credit')({
 })
 
 /* eslint-disable-next-line */
-interface TCreditsProps {
-  credits: TCREDIT_GET_FILTER_ALL
-  open?: boolean
-}
-
-/* eslint-disable-next-line */
 type TOrderType =  
     | "Nombre"
     | "Fecha de creacion"
@@ -104,7 +98,7 @@ const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof t
 
 
 /* eslint-disable-next-line */
-export function Credits({}: TCreditsProps) {
+export function Credits() {
   const { open, setOpen } = useStatus() 
   const navigate = useNavigate()
   const { setPagination, ...pagination } = usePagination()

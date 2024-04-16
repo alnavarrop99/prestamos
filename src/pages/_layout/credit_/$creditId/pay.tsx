@@ -11,8 +11,7 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
 import { Checkbox } from '@/components/ui/checkbox'
-import { postPaymentId, TPAYMENT_POST, type TPAYMENT_POST_BODY } from "@/api/payment";
-import { type TCREDIT_GET } from '@/api/credit'
+import { postPaymentId, type TPAYMENT_POST, type TPAYMENT_POST_BODY } from "@/api/payment";
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { useStatus } from '@/lib/context/layout'
@@ -31,15 +30,10 @@ export const Route = createFileRoute('/_layout/credit/$creditId/pay')({
 })
 
 /* eslint-disable-next-line */
-interface TPaymentCreditByIdProps {
-  credit?: TCREDIT_GET
-}
-
-/* eslint-disable-next-line */
 type TFormName = keyof TPAYMENT_POST_BODY
 
 /* eslint-disable-next-line */
-export function PayCreditById( {}: TPaymentCreditByIdProps ) {
+export function PayCreditById() {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
   const credit = useContext( _credit )

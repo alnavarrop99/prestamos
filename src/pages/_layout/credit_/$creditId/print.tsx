@@ -13,14 +13,13 @@ import { createFileRoute } from '@tanstack/react-router'
 import { useContext, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import styles from "@/styles/global.module.css"
-import { type TCREDIT_GET } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { Navigate } from '@tanstack/react-router'
-import { PrintCredit } from '../../credit'
+import { PrintCredit } from '@/pages/_layout/credit'
 import { useReactToPrint } from 'react-to-print'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { _client, _credit } from '../$creditId'
+import { _client, _credit } from '@/pages/_layout/credit_/$creditId'
 import { format } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
@@ -29,17 +28,12 @@ export const Route = createFileRoute('/_layout/credit/$creditId/print')({
 })
 
 /* eslint-disable-next-line */
-interface TPaymentCreditByIdProps {
-  credit?: TCREDIT_GET
-}
-
-/* eslint-disable-next-line */
 const options = { last: "Ultimo pago", especific: "Pago especifico" }
 type TOptState = keyof typeof options
   
 
 /* eslint-disable-next-line */
-export function PrintCreditById( {}: TPaymentCreditByIdProps ) {
+export function PrintCreditById() {
   const form = useRef<HTMLFormElement>(null)
   const credit = useContext(_credit)
   const client = useContext(_client)

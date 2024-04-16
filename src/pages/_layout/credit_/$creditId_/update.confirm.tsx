@@ -14,7 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
 import { patchCreditsById, type TCREDIT_GET_BASE, type TCREDIT_GET, type TCREDIT_PATCH_BODY } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
-import { _client, _credit, _creditChange, _payDelete } from './update'
+import { _client, _credit, _creditChange, _payDelete } from '@/pages/_layout/credit_/$creditId_/update'
 import { useMutation } from '@tanstack/react-query'
 import { type TPAYMENT_GET_BASE, deletePaymentById, patchPaymentById, type TPAYMENT_PATCH_BODY } from "@/api/payment";
 import { formatISO } from 'date-fns'
@@ -39,12 +39,7 @@ export const Route = createFileRoute('/_layout/credit/$creditId/update/confirm')
 })
 
 /* eslint-disable-next-line */
-interface TUpdateConfirmationCreditProps {
-  credit?: TCREDIT_GET
-}
-
-/* eslint-disable-next-line */
-export function UpdateConfirmationCredit({}: TUpdateConfirmationCreditProps) {
+export function UpdateConfirmationCredit() {
   const [checked, setChecked] = useState(false)
   const credit = useContext(_credit)
   const creditChange = useContext(_creditChange)

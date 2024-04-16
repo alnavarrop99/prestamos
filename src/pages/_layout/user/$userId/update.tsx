@@ -15,7 +15,6 @@ import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import { type TROLES, getRolByName, listRols } from '@/lib/type/rol'
-import { type TUsersState } from '@/pages/_layout/user'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SpinLoader } from '@/components/ui/loader'
 import { queryClient } from '@/pages/__root'
@@ -52,15 +51,10 @@ interface TPassowordValueState{
   confirmation?: string
 }
 
-/* eslint-disable-next-line */
-interface TUpdateUserById {
-  user?: TUsersState
-}
-
 type TFormName = "firstName" | "lastName" | "rol" | "password" | "newPassword"
 
 /* eslint-disable-next-line */
-export function UpdateUserById({}: TUpdateUserById) {
+export function UpdateUserById() {
   const [ visibility, setVisibility ] = useState<TPassowordVisibilityState>({})
   const [ password, setPassword ] = useState<TPassowordValueState | undefined>(undefined)
   const form = useRef<HTMLFormElement>(null)

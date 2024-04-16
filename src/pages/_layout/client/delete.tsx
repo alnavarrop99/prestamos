@@ -16,7 +16,6 @@ import { type TCLIENT_DELETE  } from "@/api/clients"
 import { _rowSelected } from "@/pages/_layout/client";
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { type TClientTable } from '@/pages/_layout/-column'
 import { deleteClientByIdOpt } from "@/pages/_layout/client/$clientId/delete"
 
 type TSearch = {
@@ -30,12 +29,7 @@ export const Route = createFileRoute('/_layout/client/delete')({
 })
 
 /* eslint-disable-next-line */
-interface TDeleteClientProps {
-  clients?: TClientTable[]
-}
-
-/* eslint-disable-next-line */
-export function DeleteSelectedClients({}: TDeleteClientProps) {
+export function DeleteSelectedClients() {
   const [checked, setChecked] = useState(false)
   const { open, setOpen } = useStatus()
   const { pushNotification } = useNotifications()

@@ -33,13 +33,10 @@ interface TPassoword {
 }
 
 /* eslint-disable-next-line */
-interface TNewUserProps { }
-
-/* eslint-disable-next-line */
 type TFormName = "firstName" | "lastName" | "rol" | "password" | "confirmation"
 
 /* eslint-disable-next-line */
-export function NewUser({}: TNewUserProps) {
+export function NewUser() {
   const [ password, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
   const { pushNotification } = useNotifications()

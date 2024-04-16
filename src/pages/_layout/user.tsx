@@ -41,9 +41,9 @@ import { persist } from 'zustand/middleware';
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } from '@/components/ui/pagination';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query';
-import { queryClient } from '../__root';
-import { updateUserByIdOpt } from './user/$userId/update';
-import { postUserOpt } from './user/new';
+import { queryClient } from '@/pages/__root';
+import { updateUserByIdOpt } from '@/pages/_layout/user/$userId/update';
+import { postUserOpt } from '@/pages/_layout/user/new';
 import { useToken } from '@/lib/context/login';
 
 export const getUsersListOpt = {
@@ -57,12 +57,6 @@ export const Route = createFileRoute('/_layout/user')({
   component: Users,
   loader: () => queryClient.ensureQueryData( queryOptions( getUsersListOpt )),
 })
-
-/* eslint-disable-next-line */
-interface TUsersProps {
-  open?: boolean
-  users?: TUSER_GET_ALL
-}
 
 /* eslint-disable-next-line */
 export interface TUsersState extends TUSER_GET {
@@ -90,7 +84,7 @@ const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof t
 
 
 /* eslint-disable-next-line */
-export function Users({}: React.PropsWithChildren<TUsersProps>) {
+export function Users() {
   const { order, setOrder } = useOrder()
   const { userId } = useToken()
   const select: ((data: TUSER_GET_ALL) => TUsersState[]) = ( data ) => ( sortUsers( order, data?.map<TUsersState>( (items) => ({ ...items, selected: false, menu: false }))?.filter( ( { id } ) => ( userId !== id ) ) ) )

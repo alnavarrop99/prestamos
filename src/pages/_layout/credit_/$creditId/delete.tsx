@@ -12,13 +12,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { type TCREDIT_GET, deleteCreditById, type TCREDIT_GET_BASE } from "@/api/credit";
+import { deleteCreditById, type TCREDIT_GET_BASE } from "@/api/credit";
 import { useNotifications } from '@/lib/context/notification'
 import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
 import { _credit } from '@/pages/_layout/credit_/$creditId'
 import { Navigate } from '@tanstack/react-router'
 import { queryClient } from '@/pages/__root'
-import { getClientByIdOpt } from '../../client/$clientId/update'
+import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 
 export const deleteCreditByIdOpt = {
   mutationKey: ["delete-credit-by-id"],
@@ -30,12 +30,7 @@ export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
 })
 
 /* eslint-disable-next-line */
-interface TDeleteCreditByIdProps {
-  credit?: TCREDIT_GET
-}
-
-/* eslint-disable-next-line */
-export function DeleteCreditById({}: TDeleteCreditByIdProps) {
+export function DeleteCreditById() {
   const credit = useContext(_credit)
   const [checked, setChecked] = useState(false)
   const { open, setOpen } = useStatus()

@@ -19,7 +19,7 @@ import { queryOptions, useMutation, useSuspenseQuery } from '@tanstack/react-que
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useRouter } from '@tanstack/react-router'
-import { queryClient } from '../__root'
+import { queryClient } from '@/pages/__root'
 
 export const getReportsOpt = {
   queryKey: [ "get-reports" ],

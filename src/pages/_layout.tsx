@@ -37,14 +37,14 @@ import {
 } from '@/components/ui/popover'
 import { useStatus } from '@/lib/context/layout'
 import { type TCLIENT_GET_ALL } from '@/api/clients'
-import { Theme, useTheme } from '@/components/theme-provider'
+import { useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from '@/components/ui/hover-card'
-import { getCurrentUser, type TUSER_GET } from '@/api/users'
+import { getCurrentUser } from '@/api/users'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -59,7 +59,7 @@ import brand from "@/assets/menu-brand.avif"
 import brandOff from "@/assets/menu-off-brand.avif"
 import { Skeleton } from '@/components/ui/skeleton'
 import { getUsersListOpt } from '@/pages/_layout/user'
-import { getUserByIdOpt, updateUserByIdOpt } from './_layout/user/$userId/update'
+import { getUserByIdOpt, updateUserByIdOpt } from '@/pages/_layout/user/$userId/update'
 import { postUserOpt } from '@/pages/_layout/user/new'
 import { getClientListOpt } from '@/pages/_layout/client'
 import { getClientByIdOpt, updateClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
@@ -72,7 +72,7 @@ import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
 import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { queryClient } from '@/pages/__root'
-import { getReportsOpt, postReportOpt } from './_layout/report'
+import { getReportsOpt, postReportOpt } from '@/pages/_layout/report'
 import { getRolByName, TROLES } from '@/lib/type/rol'
 
 export const getCurrentUserOpt = {
@@ -104,20 +104,12 @@ interface TStatus {
   search?: boolean
 }
 
-/* eslint-disable-next-line */
-interface TNavigationProps {
-  clients?: TCLIENT_GET_ALL
-  user?: TUSER_GET
-  theme?: Theme
-  open?: boolean
-}
-
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
 
 /* eslint-disable-next-line */
-export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
+export function Layout() {
   const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, menu: false })
   const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()

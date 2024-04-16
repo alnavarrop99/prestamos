@@ -11,7 +11,6 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { type TCLIENT_GET } from '@/api/clients'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
@@ -33,12 +32,7 @@ export const Route = createFileRoute('/_layout/client/$clientId/delete')({
 })
 
 /* eslint-disable-next-line */
-interface TDeleteByClient {
-  client?: TCLIENT_GET
-}
-
-/* eslint-disable-next-line */
-export function DeleteClientById({}: TDeleteByClient) {
+export function DeleteClientById() {
   const { name } = Route.useSearch()
   const { clientId } = Route.useParams()
   const [checked, setChecked] = useState(false)

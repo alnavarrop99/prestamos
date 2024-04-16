@@ -1,6 +1,6 @@
 import { Separator } from '@/components/ui/separator'
 import { createFileRoute } from '@tanstack/react-router'
-import { useNotifications, type TNotification } from "@/lib/context/notification";
+import { useNotifications } from "@/lib/context/notification";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { X as Close, Cross, Zap } from 'lucide-react';
 import clsx from 'clsx';
@@ -13,13 +13,8 @@ export const Route = createFileRoute('/_layout/notification')({
 })
 
 /* eslint-disable-next-line */
-interface TNotificationProps {
-  notifications?: TNotification[]
-}
-
-/* eslint-disable-next-line */
-export function Notifications({ notifications: _notifications = [] as TNotification[] }: TNotificationProps) {
-  const { notifications, deleteNotificationById } = useNotifications( ({ notifications, ...items }) => ({ notifications: notifications ?? _notifications, ...items }) )
+export function Notifications() {
+  const { notifications, deleteNotificationById } = useNotifications()
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
