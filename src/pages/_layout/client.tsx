@@ -43,7 +43,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { TCLIENT_GET_ALL, getClientsList } from '@/api/clients'
+import { type TCLIENT_GET_ALL, getClientsList } from '@/api/clients'
 import clsx from 'clsx'
 import { columns, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
@@ -103,21 +103,24 @@ export function Clients({ }: React.PropsWithChildren<TClientsProps>) {
   const isNewClient = useIsMutating( { status: "success", mutationKey: postClientOpt.mutationKey } )
   const isDeleteClient = useIsMutating( { status: "success", mutationKey: deleteClientByIdOpt.mutationKey } )
   
-  const select: ((data: TCLIENT_GET_ALL) => TClientTable[]) = ( data ) => data?.map<TClientTable>(({ nombres, apellidos, referencia_id, ...props }, _, list) => {
-    const ref = list?.find( ({ id: referenciaId }) => ( referenciaId === referencia_id ) )
-    if( !ref || !referencia_id ){
+  const select: ((data: TCLIENT_GET_ALL) => TClientTable[]) = ( data ) => {
+    const clients = data?.map<TClientTable>(({ nombres, apellidos, referencia_id, ...props }, _, list) => {
+      const ref = list?.find( ({ id: referenciaId }) => ( referenciaId === referencia_id ) )
+      if( !ref || !referencia_id ){
+        return ({
+          ...props,
+          fullName: nombres + ' ' + apellidos,
+          referencia: ""
+        })
+      }
       return ({
         ...props,
         fullName: nombres + ' ' + apellidos,
-        referencia: ""
+        referencia: ref.nombres + " " + ref.apellidos,
       })
-    }
-    return ({
-      ...props,
-      fullName: nombres + ' ' + apellidos,
-      referencia: ref.nombres + " " + ref.apellidos,
     })
-  })
+    return clients
+  }
   const { data: clientsRes, refetch } = useSuspenseQuery( queryOptions( { ...getClientListOpt, select } ) )
 
   const { clients, setClient } = useClientByUsers(({ clients, ...items }) => ({ clients: clients ?? clientsRes, ...items }))

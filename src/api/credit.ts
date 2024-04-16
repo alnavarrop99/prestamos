@@ -79,6 +79,7 @@ export type TCREDIT_GET_FILTER = {
   numero_de_cuota: number
   valor_de_la_mora: number
   frecuencia: TFRECUENCY
+  cobrador_id: number
 }
 
 export type TCREDIT_GET_FILTER_ALL = TCREDIT_GET_FILTER[]

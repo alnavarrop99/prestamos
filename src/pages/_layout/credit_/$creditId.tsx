@@ -70,7 +70,6 @@ export function CreditById({ }: React.PropsWithChildren<TCreditByIdProps>) {
   const  { data: clientRes, refetch: refetchClient } = useSuspenseQuery( queryOptions( getClientByIdOpt( { clientId: "" + creditRes.owner_id } ) ) )
   const [ credit, setCredit ] = useState(creditRes)
   const [ client, setClient ] = useState(clientRes)
-
   const { open, setOpen } = useStatus() 
   const navigate = useNavigate()
 

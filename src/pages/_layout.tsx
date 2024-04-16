@@ -73,6 +73,7 @@ import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { queryClient } from '@/pages/__root'
 import { getReportsOpt, postReportOpt } from './_layout/report'
+import { getRolByName, TROLES } from '@/lib/type/rol'
 
 export const getCurrentUserOpt = {
   queryKey: ["login-user", { userId: useToken.getState().userId }],
@@ -125,7 +126,7 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
   const [clients, setClients] = useState<TCLIENT_GET_ALL | undefined>(undefined)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
-  const { deleteToken, setUserId, userId, name } = useToken()
+  const { deleteToken, setUserId, userId, name, setRol } = useToken()
   const { history } = useRouter()
   const [ pendingClients, setPendingClients  ] = useState<boolean>(_pendingClients)
 
@@ -134,6 +135,9 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
       cancelRefetch: !userId
     } )?.then( ( { data, isPending} ) => {
         if( !data ) return;
+        const { nombre, id } = getRolByName( { rolName: data.rol as TROLES } )
+        setRol( { rolId: id, rolName: nombre } )
+
         setUserId( data.id )
         setPendingClients( _pendingClients || isPending )
       } ) 
@@ -144,7 +148,11 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
        return () => { setUserId( undefined ) }
     }
     if( !currentUserRes || !okCurrentUser || errorCurrentUser) return; 
+
     setUserId( currentUserRes.id )
+
+    const { nombre, id } = getRolByName( { rolName: currentUserRes.rol as TROLES } )
+    setRol( { rolId: id, rolName: nombre } )
   }, [ currentUserRes, okCurrentUser, errorCurrentUser ] )
 
   useEffect(() => {

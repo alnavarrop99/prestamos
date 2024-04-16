@@ -42,7 +42,7 @@ const getFilterCredit = async () => {
     // TODO: this is a temporal function to getFilter
     if(!!+import.meta.env.VITE_MSW && import.meta.env.DEV) return (await getCreditsFilter()());
     const list = await getCreditsList()
-    const data: TCREDIT_GET_FILTER_ALL = await Promise.all( list?.map<Promise<TCREDIT_GET_FILTER>>( async ({ id: creditId, owner_id, frecuencia_del_credito_id }) => {
+    const data: TCREDIT_GET_FILTER_ALL = await Promise.all( list?.map<Promise<TCREDIT_GET_FILTER>>( async ({ id: creditId, owner_id, frecuencia_del_credito_id, cobrador_id }) => {
       const { nombres, apellidos } = await getClientById({ params: { clientId: "" + owner_id } })
       const { cuotas, pagos } = await getCreditById({ params: { creditId: "" + creditId } })
       return ({
@@ -54,6 +54,7 @@ const getFilterCredit = async () => {
         numero_de_cuota: pagos?.length,
         valor_de_la_mora: cuotas?.at(-1)?.valor_de_mora,
         nombre_del_cliente: nombres + " " + apellidos,
+        cobrador_id
       }) as TCREDIT_GET_FILTER
     }))
     return data
@@ -85,7 +86,7 @@ type TOrderType =
 
 const STEP = 3
 const LENGTH = 8
-const ORDER: Record<keyof Omit<TCREDIT_GET_FILTER, "clientId" | "fecha_de_cuota" | "valor_de_cuota" | "numero_de_cuota" | "valor_de_la_mora" >, TOrderType> = {
+const ORDER: Record<keyof Omit<TCREDIT_GET_FILTER, "clientId" | "fecha_de_cuota" | "valor_de_cuota" | "numero_de_cuota" | "valor_de_la_mora" | "cobrador_id" >, TOrderType> = {
   id: "Fecha de creacion",
   nombre_del_cliente: "Nombre",
   frecuencia: "Frecuencia"
@@ -110,9 +111,10 @@ export function Credits({}: TCreditsProps) {
   const { value } = useStatus()
   const { order, setOrder } = useOrder()
   
-  const select: ((data: TCREDIT_GET_FILTER_ALL) => TCREDIT_GET_FILTER_ALL) = (data) => (
-    sortCredit(order, data)
-  )
+  const select: ((data: TCREDIT_GET_FILTER_ALL) => TCREDIT_GET_FILTER_ALL) = (data) => {
+    const credits = sortCredit(order, data) 
+    return credits
+  }
   const { data: creditsRes, refetch } = useSuspenseQuery( queryOptions( { ...getCreditsListOpt,
     select
   } ) )

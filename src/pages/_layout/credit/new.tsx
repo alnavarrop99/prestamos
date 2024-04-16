@@ -72,8 +72,8 @@ type TFormName = keyof (Omit<TCREDIT_POST_BODY, "cobrador_id" | "owner_id" | "ga
 /* eslint-disable-next-line */
 export function NewCredit( {}: TNewCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
-  const { data: usersRes, isSuccess: okUsers, isError: errorUsers } = useQuery( queryOptions( getUsersListOpt ) )
-  const { data: clientsRes, isSuccess: okClients, isError: errorClients } = useQuery( queryOptions( getClientListOpt ) )
+  const { data: usersRes, isSuccess: okUsers } = useQuery( queryOptions( getUsersListOpt ) )
+  const { data: clientsRes, isSuccess: okClients } = useQuery( queryOptions( getClientListOpt ) )
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { pushNotification } = useNotifications()
@@ -83,10 +83,6 @@ export function NewCredit( {}: TNewCreditProps ) {
   const [ user, setUser ] = useState<  TUSER_GET | undefined >()
   const [ client, setClient ] = useState< TCLIENT_GET_BASE | undefined >()
   const [ ref, setRef ] = useState< TCLIENT_GET_BASE | undefined >()
-
-  useEffect( () => {
-    if( !clientsRes || !usersRes ) throw Error()
-  }, [ errorClients, errorUsers ] )
 
   useEffect(() => {
       if(clientsRes) {
@@ -179,9 +175,13 @@ export function NewCredit( {}: TNewCreditProps ) {
     })
     ) as Record<TFormName, string>
 
-    const userId = usersRes?.find( ({ nombre }) => ( nombre == items?.user ) )?.id
-    const clientId = clientsRes?.find( ({ nombres, apellidos }) => ( [nombres, apellidos].join(" ") === items?.client ) )?.id
-    const refId = clientsRes?.find( ({ nombres, apellidos }) => ( [nombres, apellidos].join(" ") === items?.client ) )?.id
+    const user = usersRes?.find( ({ nombre }) => ( nombre == items?.user ) )
+    const client = clientsRes?.find( ({ nombres, apellidos }) => ( [nombres, apellidos].join(" ") === items?.client ) )
+    const ref = clientsRes?.find( ({ nombres, apellidos }) => ( [nombres, apellidos].join(" ") === items?.client ) )
+
+    const userId = user?.id
+    const clientId = client?.id
+    const refId = ref?.id
 
     if( !userId || !clientId ) return;
 
@@ -202,6 +202,10 @@ export function NewCredit( {}: TNewCreditProps ) {
     })
 
     setOpen({ open: !open })
+
+    if( user ) setUser(user)
+    if( client ) setClient(client)
+    if( ref ) setRef(ref)
 
     form.current.reset()
     ev.preventDefault()
@@ -339,7 +343,7 @@ export function NewCredit( {}: TNewCreditProps ) {
               </Select>
             }
           </Label>
-        <Label className='row-start-3'>
+          <Label className='row-start-3'>
           <span>{text.form.user.label} </span>
             { !okUsers && !okClients ? <Skeleton className='w-full h-10' /> : <>
               <Input
