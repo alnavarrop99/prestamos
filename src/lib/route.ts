@@ -41,13 +41,14 @@ export const getRoute = ({ pathname }: { pathname: string }) => {
   return pathname?.split('/')?.map((pathname) => {
     if ('/' + pathname === '/update') {
       return {
-        name: translate()?.['/' + pathname].name ?? pathname.replace(/\//g, ''),
+        name:
+          translate()?.['/' + pathname]?.name ?? pathname.replace(/\//g, ''),
         route: undefined,
       }
     }
     return {
-      name: translate()?.['/' + pathname].name ?? pathname.replace(/\//g, ''),
-      route: translate()?.['/' + pathname].name ? '/' + pathname : undefined,
+      name: translate()?.['/' + pathname]?.name ?? pathname.replace(/\//g, ''),
+      route: translate()?.['/' + pathname]?.name ? '/' + pathname : undefined,
     }
   })
 }

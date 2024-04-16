@@ -91,6 +91,8 @@ import { queryClient } from '@/pages/__root'
 import { getReportsOpt, postReportOpt } from '@/pages/_layout/report'
 import { getRolByName, TROLES } from '@/lib/type/rol'
 import { translate } from '@/lib/route'
+import { Dialog, DialogTrigger } from '@/components/ui/dialog'
+import { MyUserInfo } from '@/pages/-info'
 
 export const getCurrentUserOpt = {
   queryKey: ['login-user', { userId: useToken.getState().userId }],
@@ -276,8 +278,8 @@ export function Layout() {
     deleteToken()
   }
 
-  const onClick: React.MouseEventHandler<HTMLLIElement> = () => {
-    setOpen({ open: !open })
+  const onOpenChange: (open: boolean) => void = (open) => {
+    setOpen({ open })
   }
 
   return (
@@ -308,9 +310,9 @@ export function Layout() {
           <ul className="space-y-3 [&_button]:w-full">
             {Object.entries(translate())
               ?.filter(([, { validation }]) => validation)
-              ?.map(([url, { name: title, icon: Icon }]) => {
+              ?.map(([url, { name: title, icon: Icon }], index) => {
                 return (
-                  <li key={name}>
+                  <li key={index}>
                     <Link to={url}>
                       {({ isActive }) => (
                         <Button
@@ -510,15 +512,18 @@ export function Layout() {
                       </AvatarFallback>
                     </Avatar>
                     <ul className="space-y-2 [&>li]:w-fit">
-                      <li onClick={onClick}>
-                        <Link
-                          title="Modificar mi usuario"
-                          className="font-bold after:opacity-0 after:transition after:transition after:delay-150 after:duration-300 hover:after:opacity-100 hover:after:content-['#']"
-                          to={'/user/$userId/update'}
-                          params={{ userId }}
-                        >
-                          {currentUserRes.nombre}
-                        </Link>{' '}
+                      <li>
+                        <Dialog open={open} onOpenChange={onOpenChange}>
+                          <DialogTrigger asChild>
+                            <span
+                              title="Modificar mi usuario"
+                              className="cursor-pointer font-bold after:opacity-0 after:transition after:transition after:delay-150 after:duration-300 hover:after:opacity-100 hover:after:content-['#']"
+                            >
+                              {currentUserRes?.nombre}
+                            </span>
+                          </DialogTrigger>
+                          <MyUserInfo />
+                        </Dialog>
                       </li>
                       <li>
                         {' '}
