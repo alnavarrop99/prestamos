@@ -1,38 +1,59 @@
-const translate = {
-  "/": "Home",
-  "/user": "Usuarios",
-  "/credit": "Prestamos",
-  "/client": "Clientes",
-  "/notification": "Notificaciones",
-  "/report": "Reportes",
-  "/update": "Editar",
+import { useToken } from './context/login'
+import { LucideIcon, icons } from 'lucide-react'
+
+export type TTranslete = {
+  [k: string]: {
+    name: string
+    validation: boolean
+    icon: LucideIcon
+  }
+}
+export type TSearch = keyof typeof search
+
+export const translate = () => {
+  const rol = useToken.getState()?.rol?.rolName
+  return {
+    '/': { name: 'Home', validation: false, icon: icons.Home },
+    '/credit': { name: 'Prestamos', validation: true, icon: icons.CreditCard },
+    '/client': { name: 'Clientes', validation: true, icon: icons.Award },
+    '/user': {
+      name: 'Usuarios',
+      validation: rol && rol !== 'Cobrador',
+      icon: icons.BookUser,
+    },
+    '/report': { name: 'Reportes', validation: true, icon: icons.BookA },
+    '/notification': {
+      name: 'Notificaciones',
+      validation: false,
+      icon: icons.Notebook,
+    },
+    '/update': { name: 'Editar', validation: false, icon: icons.Upload },
+  } as TTranslete
 }
 
 const search = {
-  "/user": "usuarios",
-  "/client": "clientes",
+  '/user': 'usuarios',
+  '/client': 'clientes',
+  '/credit': 'prestamos',
 }
 
-export type TTranslete = keyof typeof translate
-export type TSearch = keyof typeof search
-
-export const getRoute = ( {pathname}: {pathname: string} ) => {
-  return pathname?.split("/")?.map( ( pathname => {
-    if( ("/" + pathname) === "/update" as TTranslete ){
-      return ({
-        name: translate?.[("/" + pathname) as TTranslete] ?? pathname.replace(/\//g, ""),
-        route: undefined
-      })
+export const getRoute = ({ pathname }: { pathname: string }) => {
+  return pathname?.split('/')?.map((pathname) => {
+    if ('/' + pathname === '/update') {
+      return {
+        name: translate()?.['/' + pathname].name ?? pathname.replace(/\//g, ''),
+        route: undefined,
+      }
     }
-    return ({
-      name: translate?.[("/" + pathname) as TTranslete] ?? pathname.replace(/\//g, ""),
-      route: translate?.[("/" + pathname) as TTranslete] ? "/" + pathname : undefined
-    })})
-  )
+    return {
+      name: translate()?.['/' + pathname].name ?? pathname.replace(/\//g, ''),
+      route: translate()?.['/' + pathname].name ? '/' + pathname : undefined,
+    }
+  })
 }
 
-export const getSearch = ( { pathname }: { pathname?: string } ) => {
-  const name = search?.[pathname as TSearch];
-  if( !pathname || !name ) return "clientes activos ...";
-  return (name + " ...");
+export const getSearch = ({ pathname }: { pathname?: string }) => {
+  const name = search?.[pathname as TSearch]
+  if (!pathname || !name) return 'clientes activos ...'
+  return name + ' ...'
 }

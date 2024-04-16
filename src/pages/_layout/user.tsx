@@ -1,11 +1,18 @@
 import { type TUSER_GET_ALL, getUsersList } from '@/api/users'
-import { type TROLES } from "@/lib/type/rol";
-import { type TUSER_GET } from "@/api/users";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { type TROLES } from '@/lib/type/rol'
+import { type TUSER_GET } from '@/api/users'
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import {
   Link,
   Outlet,
   createFileRoute,
+  redirect,
   useNavigate,
 } from '@tanstack/react-router'
 import { Avatar } from '@/components/ui/avatar'
@@ -34,20 +41,35 @@ import {
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { useStatus } from '@/lib/context/layout'
 import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton';
-import { useRouter } from '@tanstack/react-router';
-import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } from '@/components/ui/pagination';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query';
-import { queryClient } from '@/pages/__root';
-import { updateUserByIdOpt } from '@/pages/_layout/user/$userId/update';
-import { postUserOpt } from '@/pages/_layout/user/new';
-import { useToken } from '@/lib/context/login';
+import { Skeleton } from '@/components/ui/skeleton'
+import { useRouter } from '@tanstack/react-router'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+} from '@/components/ui/pagination'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  queryOptions,
+  useIsMutating,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
+import { queryClient } from '@/pages/__root'
+import { updateUserByIdOpt } from '@/pages/_layout/user/$userId/update'
+import { postUserOpt } from '@/pages/_layout/user/new'
+import { useToken } from '@/lib/context/login'
 
 export const getUsersListOpt = {
-  queryKey: ["list-users"],
+  queryKey: ['list-users'],
   queryFn: getUsersList,
 }
 
@@ -55,7 +77,11 @@ export const Route = createFileRoute('/_layout/user')({
   pendingComponent: Pending,
   errorComponent: Error,
   component: Users,
-  loader: () => queryClient.ensureQueryData( queryOptions( getUsersListOpt )),
+  loader: () => queryClient.ensureQueryData(queryOptions(getUsersListOpt)),
+  beforeLoad: () => {
+    const { rol, userId } = useToken.getState()
+    if (!userId || rol?.rolName === 'Cobrador') throw redirect({ to: '/' })
+  },
 })
 
 /* eslint-disable-next-line */
@@ -66,66 +92,136 @@ export interface TUsersState extends TUSER_GET {
 }
 
 /* eslint-disable-next-line */
-type TOrderType = "Nombre" | "Fecha de creacion" | "Rol"
+type TOrderType = 'Nombre' | 'Fecha de creacion' | 'Rol'
 
 const STEP = 3
 const LENGTH = 9
-const ORDER: Record<keyof Omit<TUSER_GET, "clientes" >, TOrderType> = {id: "Fecha de creacion", nombre: "Nombre", rol: "Rol"}
+const ORDER: Record<keyof Omit<TUSER_GET, 'clientes'>, TOrderType> = {
+  id: 'Fecha de creacion',
+  nombre: 'Nombre',
+  rol: 'Rol',
+}
 export const _selectUsers = createContext<TUsersState[]>([])
-const usePagination = create< { start: number, end: number, setPagination: ( params: { start: number, end: number } ) => void } >()( persist( (set) => ({
-  start: 0,
-  end: STEP,
-  setPagination: ({ start, end }) => (set( () => ({ start, end }) ))
-}), { name: "users-pagination" } ) )
-const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof typeof ORDER ) => void } >()( persist( (set) => ({
-  order: "id",
-  setOrder: ( order ) => (set( () => ({ order }) ))
-}), {  name: "user-order"} ) )
-
+const usePagination = create<{
+  start: number
+  end: number
+  setPagination: (params: { start: number; end: number }) => void
+}>()(
+  persist(
+    (set) => ({
+      start: 0,
+      end: STEP,
+      setPagination: ({ start, end }) => set(() => ({ start, end })),
+    }),
+    { name: 'users-pagination' }
+  )
+)
+const useOrder = create<{
+  order: keyof typeof ORDER
+  setOrder: (value: keyof typeof ORDER) => void
+}>()(
+  persist(
+    (set) => ({
+      order: 'id',
+      setOrder: (order) => set(() => ({ order })),
+    }),
+    { name: 'user-order' }
+  )
+)
 
 /* eslint-disable-next-line */
 export function Users() {
   const { order, setOrder } = useOrder()
   const { userId } = useToken()
-  const select: ((data: TUSER_GET_ALL) => TUsersState[]) = ( data ) => ( sortUsers( order, data?.map<TUsersState>( (items) => ({ ...items, selected: false, menu: false }))?.filter( ( { id } ) => ( userId !== id ) ) ) )
-  const { data: usersRes, refetch } = useSuspenseQuery( queryOptions( { ...getUsersListOpt, select }) )
+  const select: (data: TUSER_GET_ALL) => TUsersState[] = (data) =>
+    sortUsers(
+      order,
+      data
+        ?.map<TUsersState>((items) => ({
+          ...items,
+          selected: false,
+          menu: false,
+        }))
+        ?.filter(({ id }) => userId !== id)
+    )
+  const { data: usersRes, refetch } = useSuspenseQuery(
+    queryOptions({ ...getUsersListOpt, select })
+  )
   const [users, setUsers] = useState<TUsersState[]>(usersRes)
   const navigate = useNavigate()
   const { value } = useStatus()
   const { open, setOpen } = useStatus()
   const { setPagination, ...pagination } = usePagination()
-  const isUpdateUser = useIsMutating( { status: "success", mutationKey: updateUserByIdOpt.mutationKey } )
-  const isNewUser = useIsMutating( { status: "success", mutationKey: postUserOpt.mutationKey } )
+  const isUpdateUser = useIsMutating({
+    status: 'success',
+    mutationKey: updateUserByIdOpt.mutationKey,
+  })
+  const isNewUser = useIsMutating({
+    status: 'success',
+    mutationKey: postUserOpt.mutationKey,
+  })
 
-  const onSelectOrder: ( value: string ) => void = ( value ) => {
-    if( order !== "rol" && order !== "nombre" && order !== "id" ) return;
+  const onSelectOrder: (value: string) => void = (value) => {
+    if (order !== 'rol' && order !== 'nombre' && order !== 'id') return
     setOrder(value as keyof typeof ORDER)
-    setUsers( sortUsers(value as keyof typeof ORDER, usersRes ))
+    setUsers(sortUsers(value as keyof typeof ORDER, usersRes))
   }
 
-  const onPagnation: (params:{ prev?: boolean, next?: boolean, index?: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ next, prev, index }) => () => {
-    if( prev && pagination?.end - pagination?.start >= STEP && pagination?.start > 1 ){
-      setPagination({ ...pagination, start: pagination?.start - 1, end: pagination?.end - STEP })
-    }
-    else if( prev && pagination?.start > 0 && pagination?.start < pagination?.end ){
-      setPagination({ ...pagination, start: pagination?.start - 1 })
-    }
-    else if( next && pagination?.start < pagination?.end - 1 && pagination?.start < users?.length/LENGTH -1 ){
-      setPagination({ ...pagination, start: pagination?.start + 1 })
-    }
-    else if( next && pagination?.start === pagination?.end - 1 && pagination?.start < users?.length/LENGTH -1){
-      setPagination({ ...pagination, start: pagination?.start + 1,  end: pagination?.end + STEP })
+  const onPagnation: (params: {
+    prev?: boolean
+    next?: boolean
+    index?: number
+  }) => React.MouseEventHandler<React.ComponentRef<typeof Button>> =
+    ({ next, prev, index }) =>
+    () => {
+      if (
+        prev &&
+        pagination?.end - pagination?.start >= STEP &&
+        pagination?.start > 1
+      ) {
+        setPagination({
+          ...pagination,
+          start: pagination?.start - 1,
+          end: pagination?.end - STEP,
+        })
+      } else if (
+        prev &&
+        pagination?.start > 0 &&
+        pagination?.start < pagination?.end
+      ) {
+        setPagination({ ...pagination, start: pagination?.start - 1 })
+      } else if (
+        next &&
+        pagination?.start < pagination?.end - 1 &&
+        pagination?.start < users?.length / LENGTH - 1
+      ) {
+        setPagination({ ...pagination, start: pagination?.start + 1 })
+      } else if (
+        next &&
+        pagination?.start === pagination?.end - 1 &&
+        pagination?.start < users?.length / LENGTH - 1
+      ) {
+        setPagination({
+          ...pagination,
+          start: pagination?.start + 1,
+          end: pagination?.end + STEP,
+        })
+      }
+
+      if (typeof index === 'undefined') return
+      setPagination({ ...pagination, start: index })
     }
 
-    if( typeof index === "undefined" ) return;
-    setPagination( { ...pagination, start: index } )
-  }
+  useEffect(() => {
+    document.title = import.meta.env.VITE_NAME + ' | ' + text.browser
+  }, [])
 
-  useEffect( () => {
-    document.title = import.meta.env.VITE_NAME + " | " + text.browser
-  }, [] )
-
-  const onCheckChanged = (index: number, prop: keyof Omit<TUsersState, 'id' | 'rol' | 'clientes' | 'nombre'> ) => (checked: boolean) => {
+  const onCheckChanged =
+    (
+      index: number,
+      prop: keyof Omit<TUsersState, 'id' | 'rol' | 'clientes' | 'nombre'>
+    ) =>
+    (checked: boolean) => {
       const list = users?.map((user, i) => {
         if (i === index && prop === 'selected') {
           return { ...user, selected: checked }
@@ -139,13 +235,16 @@ export function Users() {
       setUsers(list)
     }
 
-  const onClick: ( index: number) => React.MouseEventHandler<React.ComponentRef<typeof Card>> = (index) => () => {
+  const onClick: (
+    index: number
+  ) => React.MouseEventHandler<React.ComponentRef<typeof Card>> =
+    (index) => () => {
       const user = users?.[index]
       if (!user || !user.id) return
 
       const { selected } = user
-      onCheckChanged(index,'selected')(!selected)
-  }
+      onCheckChanged(index, 'selected')(!selected)
+    }
 
   const onClickStop: React.MouseEventHandler = (ev) => {
     ev.stopPropagation()
@@ -158,23 +257,26 @@ export function Users() {
     setOpen({ open })
   }
 
-  const onOpenChangeById: ( index: number ) => React.MouseEventHandler<React.ComponentRef<typeof DropdownMenuItem>> = ( index ) => (ev) => {
+  const onOpenChangeById: (
+    index: number
+  ) => React.MouseEventHandler<React.ComponentRef<typeof DropdownMenuItem>> =
+    (index) => (ev) => {
       const user = users?.[index]
-      if (!user || !user?.id ) return;
+      if (!user || !user?.id) return
       const { menu } = user
 
       onOpenChange(!open)
       onCheckChanged(index, 'menu')(!menu)
 
       ev.stopPropagation()
-  }
+    }
 
   useEffect(() => {
-    if( usersRes ){
-      refetch()?.then( ({ data }) => {
-        if( !data ) return;
-        setUsers(data )
-      } )
+    if (usersRes) {
+      refetch()?.then(({ data }) => {
+        if (!data) return
+        setUsers(data)
+      })
     }
     return () => {
       // setUsers( usersRes )
@@ -183,9 +285,9 @@ export function Users() {
 
   useEffect(() => {
     if (value) {
-        usersRes?.filter(({ nombre }) =>
-          nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
-        )
+      usersRes?.filter(({ nombre }) =>
+        nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
+      )
       setPagination({ ...pagination, start: 0, end: STEP })
     }
     return () => {
@@ -198,7 +300,9 @@ export function Users() {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
-            {!!users?.length && <Badge className="px-3 text-xl">{users?.length}</Badge>}
+          {!!users?.length && (
+            <Badge className="px-3 text-xl">{users?.length}</Badge>
+          )}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild className="ms-auto">
               <Link to={'./new'}>
@@ -228,255 +332,315 @@ export function Users() {
           </Dialog>
         </div>
         <Separator />
-      <div className='flex items-between'>
-        <p className='text-muted-foreground'>  { users?.filter( ({ selected }) => (selected) )?.length } de { usersRes?.length } usuario(s) seleccionados. </p>
-        <Select 
-          required
-          defaultValue={order}
-          onValueChange={onSelectOrder}
+        <div className="items-between flex">
+          <p className="text-muted-foreground">
+            {' '}
+            {users?.filter(({ selected }) => selected)?.length} de{' '}
+            {usersRes?.length} usuario(s) seleccionados.{' '}
+          </p>
+          <Select required defaultValue={order} onValueChange={onSelectOrder}>
+            <SelectTrigger className="!border-1 ms-auto w-48 !border-ring">
+              <SelectValue placeholder={'Orden'} />
+            </SelectTrigger>
+            <SelectContent className="[&_*]:cursor-pointer">
+              {Object.entries(ORDER)?.map(([key, value], index) => (
+                <SelectItem key={index} value={key}>
+                  {value}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        {!users?.length && <p>{text.notFound}</p>}
+        <div
+          className={clsx(
+            'min-w-80 [&>*]:min-w-1/4 flex flex-wrap  content-start justify-center gap-4 [&>*]:max-w-[24rem] [&>*]:flex-auto [&>*]:shrink',
+            { '!justify-start': users?.length - pagination?.start * LENGTH < 3 }
+          )}
         >
-          <SelectTrigger className="w-48 !border-1 !border-ring ms-auto">
-            <SelectValue placeholder={"Orden"}  />
-          </SelectTrigger>
-          <SelectContent className='[&_*]:cursor-pointer'>
-            { Object.entries(ORDER)?.map( ( [key, value], index ) => <SelectItem key={index} value={key}>{value}</SelectItem> ) }
-          </SelectContent>
-        </Select>
-      </div>
-        { !users?.length && <p>{text.notFound}</p>}
-        <div className={clsx("flex flex-wrap gap-4 [&>*]:flex-auto  content-start min-w-80 [&>*]:min-w-1/4 [&>*]:shrink [&>*]:max-w-[24rem] justify-center", { "!justify-start": users?.length - pagination?.start * LENGTH < 3 })}>
-          {!!users?.length && users?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map(
-              ({ id: userId, rol, nombre, clientes, selected, active, menu }, index) => (
-                <Card
-                  key={userId}
-                  className={clsx(
-                    'group cursor-pointer py-4 shadow-lg transition delay-150 duration-500 hover:scale-105'
-                  )}
-                  onClick={onClick(index + pagination?.start * LENGTH)}
-                >
-                  <div className="flex items-center justify-end gap-2 px-4">
-                    <Dialog open={open} onOpenChange={onOpenChange}>
-                      <DropdownMenu
-                        open={menu}
-                        onOpenChange={onCheckChanged( index + pagination?.start * LENGTH,'menu')}
-                      >
-                        <DropdownMenuTrigger asChild onClick={onClickStop}>
-                          <Button
-                            variant="ghost"
-                            className="h-8 w-8 p-0 hover:ring hover:ring-primary"
-                          >
-                            <span className="sr-only">{text.menu.aria}</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          onClick={onClickStop}
-                          align="center"
-                          className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
-                        >
-                          <DropdownMenuLabel className="text-md">
-                            {text.menu.title}
-                          </DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            disabled={!clientes || !clientes.length}
-                          >
-                            <Link
-                              className="flex h-full w-full items-center justify-between gap-2"
-                              to={'/client'}
-                              search={{
-                                clients: clientes,
-                              }}
-                            >
-                              {text.menu.client} <UsersList />
-                            </Link>
-                          </DropdownMenuItem>
-                          <DialogTrigger asChild>
-                            <DropdownMenuItem
-                              onClick={onOpenChangeById(index + pagination?.start * LENGTH)}
-                            >
-                              <Link
-                                className="flex h-full w-full items-center justify-between gap-2"
-                                to={'./$userId/update'}
-                                params={{ userId }}
-                              >
-                                {text.menu.update} <UserUpdate />
-                              </Link>
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                          <DialogTrigger asChild>
-                            <DropdownMenuItem
-                              onClick={onOpenChangeById(index + pagination?.start * LENGTH)}
-                            >
-                              <Link
-                                className="flex h-full w-full items-center justify-between gap-2"
-                                to={'./$userId/delete'}
-                                params={{ userId: userId }}
-                                search={{ name: nombre }}
-                              >
-                                {text.menu.delete} <UserDelete />
-                              </Link>
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </Dialog>
-                    <Checkbox
-                      name={'selected' as keyof TUsersState}
-                      checked={selected}
-                      onCheckedChange={onCheckChanged(index + pagination?.start * LENGTH, 'selected')}
-                    />
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Avatar className="grid h-16 w-16 place-items-center ring-2 ring-ring ">
-                        <AvatarFallback className="text-2xl uppercase">
-                          {nombre
-                            .split(' ')
-                            .map((val) => val.at(0))
-                            .join('')}
-                        </AvatarFallback>
-                      </Avatar>
-                      {nombre}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex justify-between [&>*]:flex [&>*]:cursor-pointer [&>*]:items-center [&>*]:gap-2">
-                    <Badge
-                      className={clsx('hover:bg-[auto]', {
-                        'bg-red-500': rol === ('Administrador' as TROLES),
-                        'bg-blue-500': rol === ('Cobrador' as TROLES),
-                        'bg-green-500': rol === ('Usuario' as TROLES),
-                      })}
-                    >
-                      {rol}
-                    </Badge>
-                    {active && (
-                      <Switch
-                        checked={active}
-                        onCheckedChange={onCheckChanged(index + pagination?.start * LENGTH, 'active')}
-                        onClick={onClickStop}
-                      >
-                        
-                      </Switch>
-                    )}
-                  </CardContent>
-                </Card>
+          {!!users?.length &&
+            users
+              ?.slice(
+                pagination?.start * LENGTH,
+                (pagination?.start + 1) * LENGTH
               )
-            )}
+              ?.map(
+                (
+                  { id: userId, rol, nombre, clientes, selected, active, menu },
+                  index
+                ) => (
+                  <Card
+                    key={userId}
+                    className={clsx(
+                      'group cursor-pointer py-4 shadow-lg transition delay-150 duration-500 hover:scale-105'
+                    )}
+                    onClick={onClick(index + pagination?.start * LENGTH)}
+                  >
+                    <div className="flex items-center justify-end gap-2 px-4">
+                      <Dialog open={open} onOpenChange={onOpenChange}>
+                        <DropdownMenu
+                          open={menu}
+                          onOpenChange={onCheckChanged(
+                            index + pagination?.start * LENGTH,
+                            'menu'
+                          )}
+                        >
+                          <DropdownMenuTrigger asChild onClick={onClickStop}>
+                            <Button
+                              variant="ghost"
+                              className="h-8 w-8 p-0 hover:ring hover:ring-primary"
+                            >
+                              <span className="sr-only">{text.menu.aria}</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            onClick={onClickStop}
+                            align="center"
+                            className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
+                          >
+                            <DropdownMenuLabel className="text-md">
+                              {text.menu.title}
+                            </DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              disabled={!clientes || !clientes.length}
+                            >
+                              <Link
+                                className="flex h-full w-full items-center justify-between gap-2"
+                                to={'/client'}
+                                search={{
+                                  clients: clientes,
+                                }}
+                              >
+                                {text.menu.client} <UsersList />
+                              </Link>
+                            </DropdownMenuItem>
+                            <DialogTrigger asChild>
+                              <DropdownMenuItem
+                                onClick={onOpenChangeById(
+                                  index + pagination?.start * LENGTH
+                                )}
+                              >
+                                <Link
+                                  className="flex h-full w-full items-center justify-between gap-2"
+                                  to={'./$userId/update'}
+                                  params={{ userId }}
+                                >
+                                  {text.menu.update} <UserUpdate />
+                                </Link>
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DialogTrigger asChild>
+                              <DropdownMenuItem
+                                onClick={onOpenChangeById(
+                                  index + pagination?.start * LENGTH
+                                )}
+                              >
+                                <Link
+                                  className="flex h-full w-full items-center justify-between gap-2"
+                                  to={'./$userId/delete'}
+                                  params={{ userId: userId }}
+                                  search={{ name: nombre }}
+                                >
+                                  {text.menu.delete} <UserDelete />
+                                </Link>
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </Dialog>
+                      <Checkbox
+                        name={'selected' as keyof TUsersState}
+                        checked={selected}
+                        onCheckedChange={onCheckChanged(
+                          index + pagination?.start * LENGTH,
+                          'selected'
+                        )}
+                      />
+                    </div>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Avatar className="grid h-16 w-16 place-items-center ring-2 ring-ring ">
+                          <AvatarFallback className="text-2xl uppercase">
+                            {nombre
+                              .split(' ')
+                              .map((val) => val.at(0))
+                              .join('')}
+                          </AvatarFallback>
+                        </Avatar>
+                        {nombre}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex justify-between [&>*]:flex [&>*]:cursor-pointer [&>*]:items-center [&>*]:gap-2">
+                      <Badge
+                        className={clsx('hover:bg-[auto]', {
+                          'bg-red-500': rol === ('Administrador' as TROLES),
+                          'bg-blue-500': rol === ('Cobrador' as TROLES),
+                          'bg-green-500': rol === ('Usuario' as TROLES),
+                        })}
+                      >
+                        {rol}
+                      </Badge>
+                      {active && (
+                        <Switch
+                          checked={active}
+                          onCheckedChange={onCheckChanged(
+                            index + pagination?.start * LENGTH,
+                            'active'
+                          )}
+                          onClick={onClickStop}
+                        ></Switch>
+                      )}
+                    </CardContent>
+                  </Card>
+                )
+              )}
         </div>
       </div>
-        { users?.length > LENGTH && 
-          <Pagination className='z-10 relative'>
-            <PaginationContent>
+      {users?.length > LENGTH && (
+        <Pagination className="relative z-10">
+          <PaginationContent>
+            <PaginationItem>
+              <Button
+                disabled={pagination?.start <= 0}
+                onClick={onPagnation({ prev: true })}
+                className="delay-0 duration-100"
+                variant={'outline'}
+              >
+                {text.pagination.back}
+              </Button>
+            </PaginationItem>
+            {pagination?.end - STEP > 0 && (
               <PaginationItem>
-                <Button
-                  disabled={ pagination?.start <= 0 }
-                  onClick={onPagnation({ prev: true })}
-                  className='delay-0 duration-100'
-                  variant={"outline"}
-                >
-                  {text.pagination.back}
-                </Button>
-              </PaginationItem>
-              { pagination?.end - STEP > 0 && <PaginationItem>
                 <PaginationEllipsis />
-              </PaginationItem>}
-              {Array.from({ length: STEP })?.map( (_, index) => {
-                if( pagination?.end + index - STEP > (users?.length - 1)/LENGTH ) return null;
-                return <PaginationItem key={index} >
+              </PaginationItem>
+            )}
+            {Array.from({ length: STEP })?.map((_, index) => {
+              if (pagination?.end + index - STEP > (users?.length - 1) / LENGTH)
+                return null
+              return (
+                <PaginationItem key={index}>
                   <Button
-                    className='delay-0 duration-100'
-                    variant={ pagination?.start === pagination?.end + index - STEP  ? "secondary" : "ghost"}
-                    onClick={onPagnation({ index: pagination?.end - STEP + index })}
+                    className="delay-0 duration-100"
+                    variant={
+                      pagination?.start === pagination?.end + index - STEP
+                        ? 'secondary'
+                        : 'ghost'
+                    }
+                    onClick={onPagnation({
+                      index: pagination?.end - STEP + index,
+                    })}
                   >
-                    { pagination?.end - STEP + index + 1 }
+                    {pagination?.end - STEP + index + 1}
                   </Button>
-               </PaginationItem>
-              })}
-             
-              { pagination?.end < (users?.length)/LENGTH && <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem> }
+                </PaginationItem>
+              )
+            })}
 
-              <PaginationItem >
-                <Button
-                  disabled={pagination?.start >= users?.length/LENGTH - 1}
-                  className='delay-0 duration-100'
-                  variant={"outline"} 
-                  onClick={onPagnation({ next: true })}>
-                  {text.pagination.next}
-                </Button>
+            {pagination?.end < users?.length / LENGTH && (
+              <PaginationItem>
+                <PaginationEllipsis />
               </PaginationItem>
-            </PaginationContent>
-          </Pagination>}
+            )}
+
+            <PaginationItem>
+              <Button
+                disabled={pagination?.start >= users?.length / LENGTH - 1}
+                className="delay-0 duration-100"
+                variant={'outline'}
+                onClick={onPagnation({ next: true })}
+              >
+                {text.pagination.next}
+              </Button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      )}
     </_selectUsers.Provider>
   )
 }
 
 /* eslint-disable-next-line */
 export function Pending() {
-  return <>
-    <div className="space-y-4">
-    <div className="flex items-center gap-2">
-      <Skeleton className='w-48 h-8' />
-      <Skeleton className='w-8 h-8 rounded-full' />
-      <Skeleton className='ms-auto w-24 h-10' />
-      <Skeleton className='w-24 h-10' />
-    </div>
-    <Separator />
-    <div className='flex items-center'>
-      <Skeleton className='w-56 h-6' />
-      <Skeleton className='w-40 h-8 ms-auto' />
-    </div>
-    <div className='flex flex-wrap gap-4 px-2'>
-      {Array.from( { length: LENGTH } )?.map( (_, index) => 
-        <Card key={index} className={clsx("h-full shadow-lg grid justify-streetch items-end")}>
-          <CardHeader>
-            <Skeleton className='ms-auto w-8 h-8 rounded-md' />
-        </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <Skeleton className='w-20 h-20 rounded-full' /> 
-              <div className='space-y-2'>
-                <Skeleton className='w-48 h-6' />
-                <Skeleton className='w-32 h-6' />
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex items-center gap-2">
-            <Skeleton className='w-32 h-6' /> 
-          </CardFooter>
-        </Card>
-        )}
+  return (
+    <>
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-8 w-8 rounded-full" />
+          <Skeleton className="ms-auto h-10 w-24" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+        <Separator />
+        <div className="flex items-center">
+          <Skeleton className="h-6 w-56" />
+          <Skeleton className="ms-auto h-8 w-40" />
+        </div>
+        <div className="flex flex-wrap gap-4 px-2">
+          {Array.from({ length: LENGTH })?.map((_, index) => (
+            <Card
+              key={index}
+              className={clsx(
+                'justify-streetch grid h-full items-end shadow-lg'
+              )}
+            >
+              <CardHeader>
+                <Skeleton className="ms-auto h-8 w-8 rounded-md" />
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-20 w-20 rounded-full" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-48" />
+                    <Skeleton className="h-6 w-32" />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter className="flex items-center gap-2">
+                <Skeleton className="h-6 w-32" />
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
-  </div>
-    <Skeleton className='w-80 h-10 mx-auto' />
+      <Skeleton className="mx-auto h-10 w-80" />
     </>
+  )
 }
 
 /* eslint-disable-next-line */
 export function Error() {
   const { history } = useRouter()
-  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+  const onClick: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
     history.back()
   }
-  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
-      <Annoyed  className='animate-bounce' />
-      <div className='space-y-2'>
-        <h1 className='font-bold'>{text.error}</h1>
-        <p className='italic'>{text.errorDescription}</p>
+  return (
+    <div className="flex h-full items-center items-center justify-center gap-4 [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+      <Annoyed className="animate-bounce" />
+      <div className="space-y-2">
+        <h1 className="font-bold">{text.error}</h1>
+        <p className="italic">{text.errorDescription}</p>
         <Separator />
-        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+        <Button variant="ghost" onClick={onClick} className="text-sm">
+          {' '}
+          {text.back + '.'}{' '}
+        </Button>
       </div>
     </div>
+  )
 }
 
-const sortUsers = (order: keyof typeof ORDER ,users: TUsersState[]) => {
-  return users?.sort( (a, b) => {
+const sortUsers = (order: keyof typeof ORDER, users: TUsersState[]) => {
+  return users?.sort((a, b) => {
     const valueA = a?.[order]
     const valueB = b?.[order]
-    if( typeof valueA === "string" && typeof valueB === "string" ) return (valueA.charCodeAt(0) - valueB.charCodeAt(0) ) 
-    else if( typeof valueA === "number" && typeof valueB === "number" ) return (valueA - valueB) 
+    if (typeof valueA === 'string' && typeof valueB === 'string')
+      return valueA.charCodeAt(0) - valueB.charCodeAt(0)
+    else if (typeof valueA === 'number' && typeof valueB === 'number')
+      return valueA - valueB
     return 0
   })
 }
@@ -491,8 +655,8 @@ const text = {
   errorDescription: 'El listado de usuarios ha fallado.',
   back: 'Intente volver a la pestaña anterior',
   pagination: {
-    back: "Anterior",
-    next: "Siguiente",
+    back: 'Anterior',
+    next: 'Siguiente',
   },
   browser: 'Usuarios',
   notFound: 'No se encontraron usuarios',
