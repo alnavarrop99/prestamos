@@ -17,7 +17,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { ChevronDown } from 'lucide-react'
+import { Annoyed, ChevronDown } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
@@ -33,6 +33,7 @@ import {
   createFileRoute,
   Link,
   useNavigate,
+  useRouter,
 } from '@tanstack/react-router'
 import { useStatus } from '@/lib/context/layout'
 import {
@@ -42,17 +43,61 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { getClientsList } from '@/api/clients'
+import { type TCLIENT_GET_ALL, getClientsList } from '@/api/clients'
 import clsx from 'clsx'
 import { columns, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
 import { useClientByUsers } from '@/lib/context/client'
+import { Skeleton } from '@/components/ui/skeleton'
+import { queryClient } from '@/pages/__root'
+import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query'
+import { postClientOpt } from '@/pages/_layout/client/new'
+import { updateClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+
+export const getClientListOpt = {
+  queryKey: ["list-clients"],
+  queryFn: getClientsList,
+}
 
 export const Route = createFileRoute('/_layout/client')({
   component: Clients,
-  loader: async () => {
-    const clients = await getClientsList()
-    return clients?.map<TClientTable>(({ nombres, apellidos, referencia_id, ...props }, _, list) => {
+  pendingComponent: Pending,
+  errorComponent: Error,
+  loader: () => queryClient.ensureQueryData( queryOptions( getClientListOpt ) ),
+  validateSearch: (search: { clients?: number[] }) => {
+    if (!search?.clients?.length) return { clients: [] }
+    return search
+  },
+})
+
+const ROW = 14
+const COL = 7
+export const _clientContext = createContext< TClientTable[] | undefined>( undefined)
+export const _rowSelected = createContext< (() => void) | undefined >( undefined)
+const useFilter = create< { filter: keyof TClientTable, setFilter: ( value: keyof TClientTable ) => void } >()( persist((set) => ({
+  filter: "fullName",
+  setFilter: ( filter ) => (set( () => ({ filter }) ))
+}), { name: "client-filter" }) )
+
+/* eslint-disable-next-line */
+export function Clients() {
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [rowSelection, setRowSelection] = useState({})
+  const { open, setOpen, value } = useStatus()
+  const navigate = useNavigate()
+  const {filter, setFilter} = useFilter()
+  const search = Route.useSearch()
+  const isUpdateClient = useIsMutating( { status: "success", mutationKey: updateClientByIdOpt.mutationKey } )
+  const isNewClient = useIsMutating( { status: "success", mutationKey: postClientOpt.mutationKey } )
+  const isDeleteClient = useIsMutating( { status: "success", mutationKey: deleteClientByIdOpt.mutationKey } )
+  
+  const select: ((data: TCLIENT_GET_ALL) => TClientTable[]) = ( data ) => {
+    const clients = data?.map<TClientTable>(({ nombres, apellidos, referencia_id, ...props }, _, list) => {
       const ref = list?.find( ({ id: referenciaId }) => ( referenciaId === referencia_id ) )
       if( !ref || !referencia_id ){
         return ({
@@ -67,49 +112,21 @@ export const Route = createFileRoute('/_layout/client')({
         referencia: ref.nombres + " " + ref.apellidos,
       })
     })
-  },
-  validateSearch: (search: { clients?: number[] }) => {
-    if (!search?.clients?.length) return { clients: [] }
-    return search
-  },
-})
+    return clients
+  }
+  const { data: clientsRes, refetch } = useSuspenseQuery( queryOptions( { ...getClientListOpt, select } ) )
 
-/* eslint-disable-next-line */
-interface TClientsProps {
-  clients?: TClientTable[]
-  open?: boolean
-  filter?: keyof TClientTable
-}
-
-export const _selectedClients = createContext<TClientTable[] | undefined>( undefined)
-export const _clientContext = createContext< [ clients: TClientTable[], setClient: (({ clients }: { clients: TClientTable[] }) => void), resetSelectedRow: (defaultState?: boolean | undefined) => void ] | undefined>( undefined)
-
-/* eslint-disable-next-line */
-export function Clients({
-  children,
-  filter: _filter = 'fullName',
-  open: _open,
-  clients: _clients = [] as TClientTable[],
-}: React.PropsWithChildren<TClientsProps>) {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = useState({})
-  const { open = _open, setOpen, value } = useStatus()
-  const navigate = useNavigate()
-  const clientsDB: TClientTable[] = Route.useLoaderData() ?? _clients
-  const [filter, setFilter] = useState(_filter)
-  const search = Route.useSearch()
-  const { clients, setClient } = useClientByUsers(({ clients, setClient }) => ({
-    clients: clients ?? clientsDB,
-    setClient
-  }))
+  const { clients, setClient } = useClientByUsers(({ clients, ...items }) => ({ clients: clients ?? clientsRes, ...items }))
   const data = useMemo(() => {
     if (!search?.clients?.length) return clients;
     return clients?.filter(
       ({ id: userId }) => userId && search?.clients?.includes(userId)
     )
-  }, [JSON.stringify(clients)])
+  }, [clients])
+
+  useEffect( () => {
+    document.title = import.meta.env.VITE_NAME + " | " + text.browser
+  }, [] )
 
   const table = useReactTable({
     data,
@@ -136,7 +153,7 @@ export function Clients({
 
   const onOpenChange: (open: boolean) => void = (open) => {
     if (!open) {
-      !children && navigate({ to: Route.to })
+      navigate({ to: Route.to })
     }
     setOpen({ open })
   }
@@ -146,9 +163,21 @@ export function Clients({
     table.resetRowSelection()
   }
 
+  useEffect(() => {
+    if( clientsRes ){
+      refetch()?.then( ({ data }) => {
+        if( !data ) return;
+        setClient({ clients: data } )
+      } )
+    }
+    return () => {
+      // setClients( clientsRes )
+    }
+  }, [isUpdateClient, isNewClient, isDeleteClient])
+
   return (
-    <_clientContext.Provider value={[ clients, setClient, table.resetRowSelection ]}>
-    <_selectedClients.Provider value={table .getFilteredSelectedRowModel() ?.rows?.map(({ original }) => original)} >
+    <_clientContext.Provider value={clients}>
+      <_rowSelected.Provider value={table.resetRowSelection}>
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
@@ -169,6 +198,9 @@ export function Clients({
                 <Link
                   disabled={!table.getFilteredSelectedRowModel().rows?.length}
                   to={'./delete'}
+                  search={{
+                    clients: table .getFilteredSelectedRowModel() ?.rows?.map(({ original }) => original.id) 
+                  }}
                 >
                   <Button
                     className={clsx({
@@ -181,10 +213,10 @@ export function Clients({
                   </Button>
                 </Link>
               </DialogTrigger>
-              {children ?? <Outlet />}
+              <Outlet />
             </Dialog>
             <Select value={filter} onValueChange={onValueChange}>
-              <SelectTrigger className="ms-auto w-auto">
+              <SelectTrigger title='Filtro de busqueda' className="ms-auto w-auto">
                 <SelectValue placeholder={text.select.placeholder} />
               </SelectTrigger>
               <SelectContent className="[&>div]:cursor-pointer">
@@ -242,11 +274,7 @@ export function Clients({
                         column.toggleVisibility(!!value)
                       }
                     >
-                      {
-                        text.dropdown.items?.[
-                          getMenuItem(column.id as TMenuItems)
-                        ]
-                      }
+                      {getMenuItem(column.id)}
                     </DropdownMenuCheckboxItem>
                   ))}
               </DropdownMenuContent>
@@ -341,13 +369,67 @@ export function Clients({
           </div>
         </div>
       </div>
-    </_selectedClients.Provider>
+      </_rowSelected.Provider>
     </_clientContext.Provider>
   )
 }
 
-Clients.displayname = 'ClientsList'
+/* eslint-disable-next-line */
+export function Pending() {
+  return <div className="space-y-4">
+    <div className="flex items-center gap-2">
+      <Skeleton className='w-36 h-8' />
+      <Skeleton className='w-8 h-8 rounded-full' />
+    </div>
+    <Separator />
+    <div className='flex items-center gap-2'>
+      <Skeleton className='w-24 h-10' />
+      <Skeleton className='w-24 h-10' />
+      <Skeleton className='ms-auto w-32 h-8' />
+      <Skeleton className='w-32 h-8' />
+    </div>
+    <div className='px-4'>
+      <table className='ring-4 ring-transparent rounded-md w-full border-separate border-spacing-2'>
+      {Array.from( { length: ROW } )?.map( (_, index) => 
+        <tr key={index}>
+          {Array.from( { length: COL } )?.map( (_, index) => 
+            <td key={index} className='first:w-12 last:w-16'> <Skeleton className='w-full h-9' /> </td>
+          )}
+        </tr>
+        )}
+      </table>
+    </div>
+    <div className='flex items-center gap-2'>
+      <Skeleton className='w-48 h-8' />
+      <Skeleton className='ms-auto w-24 h-10' />
+      <Skeleton className='w-24 h-10' />
+    </div>
+  </div>
+}
 
+/* eslint-disable-next-line */
+export function Error() {
+  const { history } = useRouter()
+  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    history.back()
+  }
+  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
+      <Annoyed  className='animate-bounce' />
+      <div className='space-y-2'>
+        <h1 className='font-bold'>{text.error}</h1>
+        <p className='italic'>{text.errorDescription}</p>
+        <Separator />
+        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+      </div>
+    </div>
+}
+
+
+Clients.displayname = 'ClientsList'
+Error.displayname = 'ClientsListError'
+Pending.displayname = 'ClientsListPending'
+
+/* eslint-disable-next-line */
 type TMenuItems =
   | 'numero_de_identificacion'
   | 'telefono'
@@ -356,21 +438,26 @@ type TMenuItems =
   | 'fullName'
   | 'apellidos'
   | 'referencia'
-const getMenuItem = (name: TMenuItems) => {
+
+const getMenuItem = (name: string) => {
   const data = {
-    numero_de_identificacion: 'id' as keyof TClientTable,
-    telefono: 'telephone' as keyof TClientTable,
-    celular: 'phone' as keyof TClientTable,
-    direccion: 'direction' as keyof TClientTable,
-    fullName: 'firstName' as keyof TClientTable,
-    apellidos: 'lastName' as keyof TClientTable,
-    referencia: 'ref' as keyof TClientTable,
+    numero_de_identificacion: text.dropdown.items?.id,
+    telefono: text.dropdown.items?.telephone,
+    celular: text.dropdown.items?.phone,
+    direccion: text.dropdown.items?.direction,
+    fullName: text.dropdown.items?.firstName,
+    apellidos: text.dropdown.items?.lastName,
+    referencia: text.dropdown.items?.ref,
   }
-  return data?.[name] ?? 'fullName'
+  return data?.[name as TMenuItems] ?? 'fullName'
 }
 
 const text = {
+  back: 'Intente volver a la pestaña anterior',
   title: 'Clientes:',
+  error: 'Ups!!! ha ocurrido un error',
+  errorDescription: 'El listado de clientes ha fallado.',
+  browser: 'Clientes',
   search: {
     404: 'No se encontraron resultados',
     selected: ({ selected, total }: { selected: number; total: number }) =>

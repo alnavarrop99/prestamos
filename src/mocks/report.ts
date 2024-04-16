@@ -1,6 +1,7 @@
 import { HttpResponse, http } from 'msw'
-import type { TREPORT_GET, TREPORT_GET_ALL, TREPORT_PARAMS_DATE_TYPE, TREPORT_POST } from '@/api/report'
+import type { TREPORT_GET, TREPORT_GET_ALL, TREPORT_PARAMS_DATE_TYPE } from '@/api/report'
 import { reports, token } from '@/mocks/data'
+import { faker } from '@faker-js/faker'
 
 const allReports = http.all(import.meta.env.VITE_API + '/reportes/list', async ({request}) => {
   const auth = request.headers.get("Authorization")
@@ -26,9 +27,14 @@ const getPaymentById = http.post( import.meta.env.VITE_API + '/reportes/obtener_
     throw new Error("Fail post request")
   }
 
-  return HttpResponse.json<TREPORT_POST>( {
-    error: "not found error",
-    resultado: [ "response" ]
+  return HttpResponse.json( {
+    data1: faker.lorem.text(),
+    data2: faker.lorem.text(),
+    data3: {
+      subData1: faker.lorem.text(),
+      subData2: faker.lorem.text(),
+      subData3: faker.lorem.text(),
+    }
   }, { status: 201 } )
 })
 

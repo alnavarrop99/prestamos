@@ -2,14 +2,20 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, 
 import { Input } from '@/components/ui/input'
 import { Label } from '@radix-ui/react-label'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
-import { useReducer, useRef } from 'react'
+import { useEffect, useReducer, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/use-toast'
 import { Eye, EyeOff } from 'lucide-react'
-import { Checkbox } from '@/components/ui/checkbox'
 import { useMutation } from '@tanstack/react-query'
 import { type TUSER_LOGIN, type TUSER_LOGIN_BODY, loginUser } from '@/api/users'
 import { useToken } from '@/lib/context/login'
+import { BoundleLoader } from '@/components/ui/loader'
+import { ToastAction } from '@radix-ui/react-toast'
+
+export const postCurrentUser = {
+  mutationKey: ["login-user"],
+  mutationFn: loginUser,
+}
 
 export const Route = createFileRoute('/login')({
   component: Login,
@@ -21,9 +27,6 @@ interface TStatus {
   error?: boolean
 }
 
-/* eslint-disable-next-line */
-interface TLoginProps { }
-
 const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
   return { ...prev, ...state }
 }
@@ -34,19 +37,46 @@ const initUser: TStatus = {
 }
 
 /* eslint-disable-next-line */
-export function Login({}: TLoginProps) {
+export function Login() {
   const ref = useRef<HTMLFormElement>(null)
   const [{ error, password }, setStatus] = useReducer(reducer, initUser)
   const { token, setToken } = useToken()
 
-  const onSuccess: (data: TUSER_LOGIN) => unknown = ( user ) => {
+  useEffect( () => {
+    document.title = import.meta.env.VITE_NAME + " | " + text.browser
+  }, [] )
+
+  const onSuccess: (data: TUSER_LOGIN, variables: TUSER_LOGIN_BODY) => unknown = ( user, { username } ) => {
+    toast({
+      title: text.notification?.title,
+      description: text.notification?.description({ username }),
+      variant: !error ? 'default' : 'destructive',
+    })
+
     setToken(user.access_token)
   }
 
-  const { mutate: login } = useMutation({
-    mutationKey: ["login-user"],
-    mutationFn: loginUser,
-    onSuccess
+  const onError: ((error: Error, variables: TUSER_LOGIN_BODY, context: unknown) => unknown) = (_, { username }) => {
+    if (!ref.current) return
+    const onClick = () => {}
+
+    toast({
+      title: text.notification.title,
+      description: text.notification.error({ username }),
+      variant: 'destructive',
+      action: (
+        <ToastAction altText="action from new user" onClick={onClick}>
+          {text.notification.retry}
+        </ToastAction>
+      ),
+    })
+
+    ref.current.reset()
+  }
+  const { mutate: login, isPending } = useMutation({
+    ...postCurrentUser,
+    onSuccess,
+    onError
   })
 
   const onSubmit: React.FormEventHandler = (ev) => {
@@ -58,11 +88,6 @@ export function Login({}: TLoginProps) {
 
     if (!!username && !!password) {
       login({ username, password })
-      toast({
-        title: text.notification?.success.title,
-        description: text.notification?.success.description({ username }),
-        variant: !error ? 'default' : 'destructive',
-      })
     }
 
     ev.preventDefault()
@@ -117,9 +142,6 @@ export function Login({}: TLoginProps) {
                 </Button>
               </div>
             </Label>
-            <Label className="flex items-center gap-2 px-4">
-              <Checkbox name={"remember"} /> {text.remember}
-            </Label>
           </form>
         </CardContent>
         <CardFooter>
@@ -129,7 +151,8 @@ export function Login({}: TLoginProps) {
             variant="default"
             className="ms-auto"
           >
-            {text.login}
+            {text.login} 
+            { isPending && <BoundleLoader /> }
           </Button>
         </CardFooter>
       </Card>
@@ -141,6 +164,7 @@ Login.dispalyname = 'Login'
 
 const text = {
   title: 'Inicio de sesion:',
+  browser: 'Bienvenido',
   description: [
     'Bienvenido a su aplicacion de creditos.',
     'Por favor introdusca sus credenciales para acceder a su cuenta.',
@@ -155,16 +179,12 @@ const text = {
   },
   remember: 'Recuerdame.',
   notification: {
-    success: {
-      title: 'Usuario logeado con exito!.',
-      description: ({ username }: { username: string }) =>
-        'Bienvenido ' + username,
-    },
-    error: {
-      title: 'Error:',
-      description: ({ username }: { username: string }) =>
-        `El nombre de usuario ${username} o la contraseña son incorrecttos.`,
-    },
+    title: 'Usuario logeado con exito!.',
+    description: ({ username }: { username: string }) =>
+      'Bienvenido ' + username,
+    error: ({ username }: { username: string }) =>
+    "El inicio de sesion del usuario" + username + "ha fallado",
+    retry: 'Reintentar',
   },
   login: 'Login',
 }

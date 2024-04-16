@@ -25,7 +25,7 @@ const filterCredits = http.post(import.meta.env.VITE_API + '/creditos/filtrar_pr
       ( saldo_en_mora && [ ...cuotas?.values() ]?.some( ({ valor_de_mora }) => (valor_de_mora > 0) ) ) ||
       ( saldo_por_pagar && pagos.length < cuotas.length ) ||
       ( !fecha_de_pago || !cliente || !saldo_en_mora || !saldo_por_pagar )
-    })?.map<TCREDIT_GET_FILTER>(({ id, cuotas, pagos, owner_id, frecuencia_del_credito }) => ({
+    })?.map<TCREDIT_GET_FILTER>(({ id, cuotas, pagos, owner_id, frecuencia_del_credito, cobrador_id }) => ({
         id,
         valor_de_cuota: cuotas?.[0]?.valor_de_cuota,
         numero_de_cuota: pagos?.length+1,
@@ -33,7 +33,8 @@ const filterCredits = http.post(import.meta.env.VITE_API + '/creditos/filtrar_pr
         fecha_de_cuota: cuotas?.at(pagos?.length + 1)?.fecha_de_pago ?? cuotas?.[0]?.fecha_de_pago,
         valor_de_la_mora: cuotas?.at(pagos?.length + 1)?.valor_de_mora ?? 0,
         nombre_del_cliente: clients?.get(owner_id)?.nombres + " " + clients?.get(owner_id)?.apellidos,
-        frecuencia: frecuencia_del_credito
+        frecuencia: frecuencia_del_credito,
+        cobrador_id
     }))
   )
 })

@@ -17,7 +17,7 @@ interface TNotificationContext {
 }
 
 export const useNotifications = create<TNotificationContext>()( persist( (set) => ({
-  pushNotification: (notification) => set(({ notifications }) => ({ notifications: [ ...(notifications ?? []), { id: notifications?.at(-1)?.id ?? 0 + 1 , ...notification } ] })),
+  pushNotification: (notification) => set(({ notifications }) => ({ notifications: [ ...(notifications ?? []), { id: (notifications?.at(-1)?.id ?? 0) + 1, ...notification } ] })),
   setNotifications: ( notifications ) => set( ( ) => ({ notifications }) ),
   deleteNotificationById: ( notificationById ) => set( ( { notifications } ) => ({ notifications: notifications?.filter( ({ id }) => ( id !== notificationById ) ) })  ),
   updateNotificationById: ({ notificationId }, notification ) => set( ( { notifications } ) => ({ notifications: notifications?.map( ({ id }, i, list) => { 

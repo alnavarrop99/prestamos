@@ -1,4 +1,4 @@
-import { ColumnDef } from '@tanstack/react-table'
+import { ColumnDef, Row } from '@tanstack/react-table'
 import {
   ArrowUpDown,
   Copy,
@@ -141,16 +141,17 @@ export const columns: ColumnDef<TClientTable>[] = [
   {
     id: 'actions',
     enableHiding: false,
-    cell: ({ row }) => {
+    cell: ({ row }) => <ClientActions row={row} />
+  },
+]
+
+function ClientActions( {row} : { row: Row<TClientTable>} ) {
       const { id, celular, fullName, numero_de_identificacion } = row.original
 
-      /* eslint-disable-next-line */
       const { open, setOpen } = useStatus()
 
-      /* eslint-disable-next-line */
       const [{ menu }, setMenu] = useState<{ menu?: boolean }>({ menu: false })
 
-      /* eslint-disable-next-line */
       const navigate = useNavigate()
 
       const onClickCopy: React.MouseEventHandler<
@@ -228,6 +229,9 @@ export const columns: ColumnDef<TClientTable>[] = [
                 className="flex h-full w-full items-center justify-between gap-2"
                 to={'./$clientId/delete'}
                 params={{ clientId: id }}
+                search={{
+                  name: fullName
+                }}
               >
                 {text.menu.delete} <UserDelete />
               </Link>
@@ -235,9 +239,7 @@ export const columns: ColumnDef<TClientTable>[] = [
           </DropdownMenuContent>
         </DropdownMenu>
       )
-    },
-  },
-]
+}
 
 const text = {
   menu: {

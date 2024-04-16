@@ -11,7 +11,6 @@ import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { type TUsersState, _selectUsers, _usersContext } from "@/pages/_layout/user"
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 
@@ -20,15 +19,9 @@ export const Route = createFileRoute('/_layout/user/delete')({
 })
 
 /* eslint-disable-next-line */
-interface TDeleteSelectedUsersProps {
-  users?: TUsersState[]
-}
-
-/* eslint-disable-next-line */
-export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDeleteSelectedUsersProps) {
+export function DeleteSelectedUsers() {
   const [checked, setChecked] = useState(false)
-  const selectUsers = useContext(_selectUsers) ?? _users
-  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
+  const selectUsers = useContext(_selectUsers)
   const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
 
@@ -40,34 +33,24 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
     const description = text.notification.decription({
       length: selectUsers?.length,
     })
-    const action = (selectedUsers?: TUsersState[]) => () => {
-      import.meta.env.DEV && console.table(selectedUsers);
-      pushNotification({
-        date: new Date(),
-        action: "DELETE",
-        description,
-      })
-    }
 
-    const timer = setTimeout(action(selectUsers), 6 * 1000)
+    pushNotification({
+      date: new Date(),
+      action: "DELETE",
+      description,
+    })
 
     setOpen({ open: !open })
-    setUsers( users?.filter( ({ id }) => !selectUsers?.map(({ id }) => id)?.includes(id) ) ?? [] )
 
-    const onClick = () => {
-      clearTimeout(timer)
-      setUsers( users?.map( (user) => ({ ...user, selected: false }) ) )
-    }
+    const onClick = () => {}
 
     toast({
       title: text.notification.titile,
       description,
       variant: 'default',
       action: (
-        <ToastAction altText="action from delete client">
-          <Button variant="default" onClick={onClick}>
-            {text.notification.undo}
-          </Button>
+        <ToastAction altText="action from delete client" onClick={onClick}>
+            {text.notification.retry}
         </ToastAction>
       ),
     })
@@ -77,7 +60,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
 
   return (
     <>
-    {!open && <Navigate to={"../"} />}
+    {!open && <Navigate to={"../"} replace />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -129,7 +112,7 @@ export function DeleteSelectedUsers({users: _users=[] as TUsersState[]}: TDelete
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
@@ -163,6 +146,6 @@ const text = {
     decription: ({ length = 0 }: { length?: number }) =>
       'Se han eliminado ' + length + ' usuarios con exito.',
     error: 'Error: la eliminacion de los usuarios ha fallado',
-    undo: 'Deshacer',
+    retry: 'Reintentar',
   },
 }

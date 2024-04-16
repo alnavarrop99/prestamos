@@ -1,6 +1,7 @@
 import { NotFoundRoute } from '@tanstack/react-router'
-import { Route as _root } from './__root'
+import { Route as _root } from '@/pages/__root'
 import { SearchX } from 'lucide-react'
+import { useEffect } from 'react';
 
 export const Route = new NotFoundRoute({
   component: _404,
@@ -8,6 +9,11 @@ export const Route = new NotFoundRoute({
 })
 
 export function _404() {
+
+  useEffect( () => {
+    document.title = import.meta.env.VITE_NAME + " | " + text.browser
+  }, [] )
+
   return (
     <section className="grid min-h-screen place-content-center place-items-center">
       <div className="subgrid grid-row-3 grid place-items-center justify-start">
@@ -23,5 +29,6 @@ _404.dispalyname = 'Not Found'
 
 const text = {
   title: '( 404 )',
+  browser: "404",
   description: 'Pagina no encontrada',
 }

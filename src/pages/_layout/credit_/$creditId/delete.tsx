@@ -12,30 +12,75 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { type TCREDIT_GET, deleteCreditById } from "@/api/credit";
+import { deleteCreditById, type TCREDIT_GET_BASE } from "@/api/credit";
 import { useNotifications } from '@/lib/context/notification'
-import { useMutation } from '@tanstack/react-query'
-import { _selectedCredit } from '@/pages/_layout/credit_/$creditId'
+import { queryOptions, useMutation, useQueryClient } from '@tanstack/react-query'
+import { _credit } from '@/pages/_layout/credit_/$creditId'
 import { Navigate } from '@tanstack/react-router'
+import { queryClient } from '@/pages/__root'
+import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+
+export const deleteCreditByIdOpt = {
+  mutationKey: ["delete-credit-by-id"],
+  mutationFn: deleteCreditById,
+}
 
 export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
   component: DeleteCreditById,
 })
 
 /* eslint-disable-next-line */
-interface TDeleteCreditByIdProps {
-  credit?: TCREDIT_GET
-}
-
-/* eslint-disable-next-line */
-export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDeleteCreditByIdProps) {
-  const [ credit ] = useContext(_selectedCredit) ?? [ _credit ]
+export function DeleteCreditById() {
+  const credit = useContext(_credit)
   const [checked, setChecked] = useState(false)
   const { open, setOpen } = useStatus()
   const { pushNotification } = useNotifications()
+  const qClient = useQueryClient( queryClient )
+  const { creditId } = Route.useParams()
+
+  const onSuccess: ((data: TCREDIT_GET_BASE, variables: { creditId: number; }, context: unknown) => Promise<unknown>) = async () => {
+    const client = await qClient?.fetchQuery( queryOptions( getClientByIdOpt({ clientId: "" + credit?.owner_id }) ) )
+    const description = text.notification.decription({
+      username: client?.nombres + " " + client?.apellidos,
+    })
+
+    pushNotification({
+      date: new Date(),
+      action: "DELETE",
+      description,
+    })
+
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+    })
+  }
+  const onError: ((error: Error, variables: { creditId: number; }, context: unknown) => Promise<unknown>) = async () => {
+    const client = await qClient?.fetchQuery( queryOptions( getClientByIdOpt({ clientId: "" + credit?.owner_id }) ) )
+    const description = text.notification.error({
+      username: client?.nombres + " " + client?.apellidos,
+    })
+
+    const onClick = () => {}
+
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'destructive',
+      action: (
+        <ToastAction altText="action from new user" onClick={onClick}>
+            {text.notification.retry}
+        </ToastAction>
+      ),
+    })
+
+  }
+
   const { mutate: deleteCredit } = useMutation( {
-    mutationKey: ["delete-credit"],
-    mutationFn: deleteCreditById
+    ...deleteCreditByIdOpt,
+    onSuccess,
+    onError
   })
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -43,47 +88,17 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
   }
 
   const onSubmit: React.FormEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
-    const description = text.notification.decription({
-      // TODO
-      username: ""+credit?.owner_id,
-    })
+    if( !checked || !creditId ) return;
+    deleteCredit({ creditId: +creditId })
 
-    const action = (credit: TCREDIT_GET) => () => {
-      console.table(credit)
-      deleteCredit({ creditId: credit?.id })
-      pushNotification({
-        date: new Date(),
-        action: "DELETE",
-        description,
-      })
-    }
-
-    const timer = setTimeout(action(credit), 6 * 1000)
     setOpen({open: !open})
-
-    const onClick = () => {
-      clearTimeout(timer)
-    }
-
-    toast({
-      title: text.notification.titile,
-      description,
-      variant: 'default',
-      action: (
-        <ToastAction altText="action from delete client">
-          <Button variant="default" onClick={onClick}>
-            {text.notification.undo}
-          </Button>
-        </ToastAction>
-      ),
-    })
 
     ev.preventDefault()
   }
 
   return (
     <>
-    { !open && <Navigate to={"../../"} />}
+    { !open && <Navigate to={"../../"} replace />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -140,7 +155,7 @@ export function DeleteCreditById({ credit: _credit = {} as TCREDIT_GET }: TDelet
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
@@ -171,7 +186,8 @@ const text = {
     titile: 'Eliminacion de un credito',
     decription: ({ username }: { username?: string }) =>
       'Se ha eliminado prestamo del cliente ' + username + ' con exito.',
-    error: 'Error: la eliminacion del prestamo ha fallado',
-    undo: 'Deshacer',
+    error: ({ username }: { username: string }) =>
+      "La eliminacion del prestamo del cliente " + username + " ha fallado",
+    retry: 'Reintentar',
   },
-}
+} 

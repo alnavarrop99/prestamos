@@ -46,8 +46,10 @@ export const getAllReport: TGetAllReport = async () => {
   const res = await fetch(import.meta.env.VITE_API + "/reportes/list", {
     method: "GET",
     headers
-
   })
+
+  if( !res.ok ) throw Error()
+
   return res.json()
 }
 
@@ -64,5 +66,8 @@ export const postReportById: TPostReportsById = async ({ code, report }) => {
     body: JSON.stringify(report),
     headers
   })
+
+  if( !res.ok ) throw Error()
+
   return res.json()
 }

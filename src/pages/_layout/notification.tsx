@@ -1,24 +1,24 @@
 import { Separator } from '@/components/ui/separator'
 import { createFileRoute } from '@tanstack/react-router'
-import { useNotifications, type TNotification } from "@/lib/context/notification";
+import { useNotifications } from "@/lib/context/notification";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { X as Close, Cross, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { format } from 'date-fns';
 import { Badge } from "@/components/ui/badge";
+import { useEffect } from 'react';
 
 export const Route = createFileRoute('/_layout/notification')({
   component: Notifications,
 })
 
 /* eslint-disable-next-line */
-interface TNotificationProps {
-  notifications?: TNotification[]
-}
+export function Notifications() {
+  const { notifications, deleteNotificationById } = useNotifications()
 
-/* eslint-disable-next-line */
-export function Notifications({ notifications: _notifications = [] as TNotification[] }: TNotificationProps) {
-  const { notifications, deleteNotificationById } = useNotifications( ({ notifications, ...items }) => ({ notifications: notifications ?? _notifications, ...items }) )
+  useEffect( () => {
+    document.title = import.meta.env.VITE_NAME + " | " + text.browser
+  }, [] )
 
   const onDelete: (index: number) => React.MouseEventHandler< HTMLSpanElement > = ( index ) => (  ) => {
     const notification = notifications?.[index]
@@ -36,7 +36,7 @@ export function Notifications({ notifications: _notifications = [] as TNotificat
       <div className='space-y-6 py-2'>
       { !notifications?.length && <p> {text.notfound} </p> }
       { !!notifications?.length && notifications?.reverse()?.map( ({ id: notificationId, description, action, date }, index) => 
-        notificationId && <Card key={notificationId} className={clsx('shadow-lg space-y-2 ring-2', {
+        notificationId && <Card key={index} className={clsx('shadow-lg space-y-2 ring-2', {
             "ring-green-500": action === "POST",
             "ring-blue-500": action === "PATH",
             "ring-red-500": action === "DELETE",
@@ -78,5 +78,6 @@ Notifications.dispalyname = 'Notification'
 
 const text = {
   title: 'Notificaciones:',
+  browser: 'Notificaciones',
   notfound: 'No existen notificaciones.',
 }

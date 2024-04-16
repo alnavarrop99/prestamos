@@ -1,9 +1,3 @@
-import _payments from '@/mocks/__mock__/PAYMENTS.json'
-import _credits from "@/mocks/__mock__/CREDITS.json";
-import _clients from '@/mocks/__mock__/CLIENTS.json'
-import _cuotes from "@/mocks/__mock__/CUOTES.json"
-import _mora from '@/mocks/__mock__/MORA.json'
-import _reports from '@/mocks/__mock__/REPORT.json'
 import type { TUSER_GET } from '@/api/users';
 import type { TCLIENT_GET_BASE } from '@/api/clients';
 import type { TCREDIT_GET, TCUOTE } from '@/api/credit';
@@ -17,7 +11,7 @@ import { formatISO } from 'date-fns';
 import { faker } from "@faker-js/faker/locale/en"
 import { TPAYMENT_GET_BASE } from '@/api/payment';
 
-const CLIENTS_LENGTH = 100
+const CLIENTS_LENGTH = 20
 const USERS_LENGTH = 10
 const CREDITS_LENGTH = 200
 const REPORTS_LENGTH = 5

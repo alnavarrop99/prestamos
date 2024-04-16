@@ -1,88 +1,73 @@
-import { Navigate, createFileRoute } from '@tanstack/react-router'
+import { Navigate, createFileRoute, redirect } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { useContext, useState } from 'react'
+import { useState } from 'react'
 import clsx from 'clsx'
-import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
-import { getUserById, type TUSER_GET } from '@/api/users'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { type TUsersState, _usersContext } from '@/pages/_layout/user'
+import { useToken } from '@/lib/context/login'
+
+type TSearch = {
+  name: string
+}
 
 export const Route = createFileRoute('/_layout/user/$userId/delete')({
   component: DeleteUserById,
-  loader: getUserById,
+  validateSearch: ( search: TSearch ) => (search as TSearch),
 })
 
 /* eslint-disable-next-line */
-interface TDeleteByUser {
-  user?: TUsersState
-}
-
-/* eslint-disable-next-line */
-export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser) {
+export function DeleteUserById() {
   const [checked, setChecked] = useState(false)
-  const selectedUser = Route.useLoaderData() ?? _user
-  const { nombre } = selectedUser
+  const { name } = Route.useSearch()
+  const { userId } = Route.useParams()
   const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
-  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ]
+  const { userId: currentUserId, deleteToken } = useToken()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
   const onSubmit: React.FormEventHandler = (ev) => {
-    if(!selectedUser) return;
+    if(!userId) return;
 
     const description = text.notification.decription({
-      username: nombre,
+      username: name,
     })
 
-    const action = (selectedUser: TUSER_GET) => () => {
-        import.meta.env.DEV && console.table(selectedUser);
-        pushNotification({
-          date: new Date(),
-          action: "DELETE",
-          description,
-        })
-      }
+    pushNotification({
+      date: new Date(),
+      action: "DELETE",
+      description,
+    })
   
-    const timer = setTimeout(action(selectedUser), 6 * 1000)
     setOpen({ open: !open })
-    setUsers( users?.filter( ({ id }) => (id !== selectedUser?.id ) ) ?? [] )
-
-    const onClick = () => {
-      clearTimeout(timer)
-      setUsers( users )
-    }
 
     toast({
       title: text.notification.titile,
       description,
       variant: 'default',
-      action: (
-        <ToastAction altText="action from delete client">
-          <Button variant="default" onClick={onClick}>
-            {text.notification.undo}
-          </Button>
-        </ToastAction>
-      ),
     })
+
+    if( +userId === currentUserId ){
+      deleteToken()
+      throw redirect({ to: "/" })
+    }
 
     ev.preventDefault()
   }
 
   return (
     <>
-    { !open && <Navigate to={"../../"} />}
+    { !open && <Navigate to={"../../"} replace />}
     <DialogContent className="max-w-xl">
       <DialogHeader>
         <DialogTitle className="text-2xl">{text.title}</DialogTitle>
@@ -92,7 +77,7 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{text.alert.title}</AlertTitle>
             <AlertDescription>
-              {text.alert.description({ username: nombre })}
+              {text.alert.description({ username: name })}
             </AlertDescription>
           </Alert>
         </DialogDescription>
@@ -134,7 +119,7 @@ export function DeleteUserById({ user: _user={} as TUsersState }: TDeleteByUser)
           <DialogClose asChild>
             <Button
               type="button"
-              variant="secondary"
+              variant="outline"
               className="font-bold hover:ring hover:ring-primary"
             >
               {text.button.close}
