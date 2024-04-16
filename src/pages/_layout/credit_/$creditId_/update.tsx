@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Dialog } from '@radix-ui/react-dialog'
 import { Link, Outlet, createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
-import {createContext, useEffect, useMemo, useRef, useState } from 'react'
+import {createContext, useMemo, useRef, useState } from 'react'
 import { Switch } from '@/components/ui/switch'
 import { type TCREDIT_PATCH_BODY, type TCREDIT_GET } from '@/api/credit'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -429,7 +429,7 @@ export function UpdateCreditById( {}: React.PropsWithChildren<TUpdateCreditProps
                         date={new Date(payment?.fecha_de_pago)}
                         label={text.form.pay.payDate.placeholder} 
                         defaultValue={payment?.fecha_de_pago}
-                        value={!!paymentDelete?.[index] ? "" : undefined}
+                        value={paymentDelete?.[index] ? "" : undefined}
                       />
                     </Label>
                     <Label>
@@ -508,8 +508,8 @@ export function Pending() {
           <Skeleton className='w-48 h-8' />
       </CardHeader>
       <CardContent className='space-y-4 [&>div]:pt-4 [&>div]:flex [&>div]:gap-2 [&>div]:flex-row [&>div>*:last-child]:ms-auto divide-y-2' >
-        { Array.from( { length: 10 } )?.map( () => (
-            <div> <Skeleton className='w-8 h-6' /> <Skeleton className='w-44 h-6' /> <Skeleton className='w-8 h-6' /> </div>
+        { Array.from( { length: 10 } )?.map( (_, index) => (
+            <div key={index}> <Skeleton className='w-8 h-6' /> <Skeleton className='w-44 h-6' /> <Skeleton className='w-8 h-6' /> </div>
         ))}
       </CardContent >
     </Card>

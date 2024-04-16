@@ -144,7 +144,7 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
   }, [ userId ] )
 
   useEffect( () => {
-    if( !!userId  ) {
+    if( userId  ) {
        return () => { setUserId( undefined ) }
     }
     if( !currentUserRes || !okCurrentUser || errorCurrentUser) return; 
@@ -196,6 +196,7 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
     const { key } = ev
 
     if (!clients || !clients?.length) return;
+    if (!rchild?.[0]) return;
     const { pathname } = rchild?.[0]
 
     if (key === 'Enter' && pathname !== "/user" as TSearch && pathname !== "/client" as TSearch) {

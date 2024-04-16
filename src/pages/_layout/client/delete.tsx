@@ -13,7 +13,7 @@ import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
 import { type TCLIENT_DELETE  } from "@/api/clients"
-import { _clientContext, _rowSelected } from "@/pages/_layout/client";
+import { _rowSelected } from "@/pages/_layout/client";
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { type TClientTable } from '@/pages/_layout/-column'

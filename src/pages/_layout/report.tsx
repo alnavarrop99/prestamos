@@ -1,4 +1,4 @@
-import { getAllReport, type TREPORT_GET_ALL, typeDataByName, postReportById, TREPORT_POST_BODY, TREPORT_PARAMS_DATE_TYPE } from '@/api/report'
+import { getAllReport, typeDataByName, postReportById, type TREPORT_POST_BODY, type TREPORT_PARAMS_DATE_TYPE } from '@/api/report'
 import {
   Accordion,
   AccordionContent,
@@ -15,7 +15,7 @@ import clsx from 'clsx'
 import { Annoyed, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useEffect, useRef } from 'react'
-import { queryOptions, useMutation } from '@tanstack/react-query'
+import { queryOptions, useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useRouter } from '@tanstack/react-router'
@@ -38,16 +38,11 @@ export const Route = createFileRoute('/_layout/report')({
   loader: () => queryClient.ensureQueryData( queryOptions( getReportsOpt ) ),
 })
 
-/* eslint-disable-next-line */
-interface TReportProps {
-  reports?: TREPORT_GET_ALL
-}
-
 const LENGTH = 5
 
 /* eslint-disable-next-line */
-export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportProps) {
-  const reports = Route.useLoaderData() ?? _reports
+export function Report() {
+  const { data: reports } = useSuspenseQuery( queryOptions( getReportsOpt ) )
   const form = reports?.map( () => useRef<HTMLFormElement>(null) ) 
   const { mutate: reportById } = useMutation( postReportOpt )
 

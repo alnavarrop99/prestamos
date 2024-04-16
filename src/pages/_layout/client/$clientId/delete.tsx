@@ -15,7 +15,6 @@ import { type TCLIENT_GET } from '@/api/clients'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { _clientContext } from '@/pages/_layout/client'
 import { deleteClientsById } from '@/api/clients'
 
 type TSearch = {

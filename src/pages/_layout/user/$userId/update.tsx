@@ -150,6 +150,7 @@ export function UpdateUserById({}: TUpdateUserById) {
 
   const onChangePassword: React.ChangeEventHandler< ComponentRef< typeof Input > > = (ev) => {
     const { name, value } = ev?.target
+    if( !name || !value ) return;
     setPassword( { ...password, [ name ]: value  } )
   }
 

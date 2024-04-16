@@ -15,7 +15,7 @@ import clsx from 'clsx'
 import styles from "@/styles/global.module.css"
 import { type TCREDIT_GET, type TCREDIT_GET_FILTER } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
-import { PrintCredit, _creditSelected } from "@/pages/_layout/credit";
+import { PrintCredit } from "@/pages/_layout/credit";
 import { useStatus } from '@/lib/context/layout'
 import { useReactToPrint } from "react-to-print";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
@@ -180,7 +180,7 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
                   <SelectValue placeholder={text.form.pay.placeholder} />
                 </SelectTrigger>
                 <SelectContent className='[&_*]:cursor-pointer'>
-                  { credit?.pagos?.map( ( _, index ) => ( <SelectItem value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
+                  { credit?.pagos?.map( ( _, index ) => ( <SelectItem key={key} value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
                 </SelectContent>
               </Select>
             }

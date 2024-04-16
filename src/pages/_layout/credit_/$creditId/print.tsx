@@ -47,7 +47,7 @@ export function PrintCreditById( {}: TPaymentCreditByIdProps ) {
   const ref = useRef< React.ComponentRef< typeof PrintCredit > >(null)
   const search = Route.useSearch()
   const [ { opt, payIndex }, setOpt ] = useState<{ payIndex?: number, opt?: TOptState }>({
-    opt: !!Object?.values(search)?.length ? "especific" : undefined,
+    opt: Object?.values(search)?.length ? "especific" : undefined,
     payIndex: search?.index,
   })
 
@@ -131,7 +131,7 @@ export function PrintCreditById( {}: TPaymentCreditByIdProps ) {
               <SelectValue placeholder={text.form.pay.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { credit?.pagos?.map( (_, index ) => ( <SelectItem value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
+              { credit?.pagos?.map( (_, index ) => ( <SelectItem key={index} value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
             </SelectContent>
           </Select>
         </Label> }
