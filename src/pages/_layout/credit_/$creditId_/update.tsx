@@ -1,10 +1,10 @@
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Dialog } from '@radix-ui/react-dialog'
-import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
-import {createContext, useMemo, useRef, useState } from 'react'
+import { Link, Outlet, createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
+import {createContext, useEffect, useMemo, useRef, useState } from 'react'
 import { Switch } from '@/components/ui/switch'
-import { getCreditById, type TCREDIT_PATCH_BODY, type TCREDIT_GET } from '@/api/credit'
+import { type TCREDIT_PATCH_BODY, type TCREDIT_GET } from '@/api/credit'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@radix-ui/react-label'
 import { Input } from '@/components/ui/input'
@@ -18,20 +18,28 @@ import clsx from 'clsx'
 import { useStatus } from '@/lib/context/layout'
 import { Navigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
-import { TMORA_TYPE, getMoraTypeById, getMoraTypeByName } from '@/lib/type/moraType'
-import { TPAYMENT_GET, TPAYMENT_GET_BASE } from '@/api/payment'
+import { type TMORA_TYPE, getMoraTypeById, getMoraTypeByName } from '@/lib/type/moraType'
+import { type TPAYMENT_GET, type TPAYMENT_GET_BASE } from '@/api/payment'
 import { listFrecuencys } from '@/lib/type/frecuency'
-import { TCLIENT_GET_BASE, getClientsList } from '@/api/clients'
-import { getUsersList } from '@/api/users'
-import { Cross } from 'lucide-react'
+import { type TCLIENT_GET_BASE } from '@/api/clients'
+import { Annoyed, Cross } from 'lucide-react'
+import { queryClient } from '@/pages/__root'
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
+import { getClientListOpt } from '@/pages/_layout/client'
+import { getUsersListOpt } from '@/pages/_layout/user'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,
-  loader: async ({ params }) => ({
-    credit: await getCreditById( { params } ),
-    clients: await getClientsList(),
-    users: await getUsersList()
-  })
+  errorComponent: Error,
+  pendingComponent: Pending,
+  loader: ({ params }) => {
+    const clients = queryClient.ensureQueryData( queryOptions( getClientListOpt ) )
+    const users = queryClient.ensureQueryData( queryOptions( getUsersListOpt ) )
+    const credit = queryClient.ensureQueryData( queryOptions( getCreditByIdOpt(params) ) )
+    return ({ clients, users, credit })
+  }
 })
 
 /* eslint-disable-next-line */
@@ -49,16 +57,20 @@ interface TCuotesState {
 /* eslint-disable-next-line */
 type TFormName = keyof (Omit<TCREDIT_PATCH_BODY, "cobrador_id" | "owner_id" | "garante_id" | "tipo_de_mora_id"> & Record<"user" | "client" | "ref" | "tipo_de_mora", string>)
 
-export const _creditChangeContext = createContext<[TCREDIT_GET] | undefined>(undefined)
-export const _paymentDeleteContext = createContext<[ { [k: number]: number | undefined }, (( params: { [k: number]: number | undefined } ) => void) ] | undefined  >(undefined)
-export const _clientContext = createContext<[ TCLIENT_GET_BASE ] | undefined >(undefined)
+export const _creditChange = createContext<TCREDIT_GET | undefined>(undefined)
+export const _credit = createContext<TCREDIT_GET | undefined>(undefined)
+export const _payDelete = createContext<{ [k: number]: number | undefined } | undefined>(undefined)
+export const _client = createContext<TCLIENT_GET_BASE | undefined >(undefined)
 
 /* eslint-disable-next-line */
-export function UpdateCreditById( { children, open: _open, credit: _credit = {} as TCREDIT_GET }: React.PropsWithChildren<TUpdateCreditProps> ) {
-  const { credit, users, clients } = Route.useLoaderData() ?? _credit
+export function UpdateCreditById( {}: React.PropsWithChildren<TUpdateCreditProps> ) {
+  const { creditId } = Route.useParams()
+  const { data: clients } = useSuspenseQuery( queryOptions( getClientListOpt ) )
+  const { data: users } = useSuspenseQuery( queryOptions( getUsersListOpt ) )
+  const { data: credit } = useSuspenseQuery( queryOptions( getCreditByIdOpt( { creditId } ) ) )
   const [ creditChange, setCreditChange ] = useState(credit)
   const [ installmants, setInstallmants ] = useState< TCuotesState>( { type: getMoraTypeById({ moraTypeId: credit?.tipo_de_mora_id })?.nombre } )
-  const { open = _open, setOpen } = useStatus() 
+  const { open, setOpen } = useStatus() 
   const navigate = useNavigate()
   const form =  (credit?.pagos ?? []).map( () => (useRef<HTMLFormElement>(null)))
   const [ paymentDelete, setPaymentDelete ] = useState<{ [k: number]: number | undefined } | undefined>(undefined)
@@ -181,9 +193,10 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
   }
 
   return (
-    <_creditChangeContext.Provider value={[creditChange]}>
-    <_paymentDeleteContext.Provider value={[paymentDelete ?? {}, setPaymentDelete]}>
-    <_clientContext.Provider value={[ client ?? {} as TCLIENT_GET_BASE ]}>
+    <_credit.Provider value={credit}>
+    <_creditChange.Provider value={creditChange}>
+    <_payDelete.Provider value={paymentDelete}>
+    <_client.Provider value={client}>
       <Navigate to={Route.to} />
       <div className='space-y-4'>
         <div className='flex gap-2'>
@@ -200,7 +213,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               <Link to={'../'}>
                 <Button variant="outline" className='hover:ring hover:ring-primary'> {text.button.close} </Button>
               </Link>
-            {children ?? <Outlet />}
+            <Outlet />
           </Dialog>
         </div>
         <Separator />
@@ -260,7 +273,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
             <Input
               required
               min={0}
-              step={50}
+              step={1}
               name={'monto' as TFormName}
               type="number"
               defaultValue={creditChange.monto}
@@ -341,7 +354,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
               required
               min={0}
               max={installmants?.type === "Porciento" ? 100 : undefined}
-              step={installmants?.type === "Porciento" ? 1 : 50}
+              step={installmants?.type === "Porciento" ? 1 : 1}
               name={'valor_de_mora' as TFormName}
               type="number"
               defaultValue={creditChange?.valor_de_mora}
@@ -428,7 +441,7 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
                         disabled={!!paymentDelete?.[index]}
                         type='number'
                         min={0}
-                        step={50}
+                        step={1}
                         name={"valor_del_pago" as keyof TPAYMENT_GET} 
                         defaultValue={payment?.valor_del_pago} 
                         placeholder={text.form.pay.payValue.placeholder} 
@@ -452,16 +465,83 @@ export function UpdateCreditById( { children, open: _open, credit: _credit = {} 
           </CardContent>
         </Card>}
       </div>
-    </_clientContext.Provider>
-    </_paymentDeleteContext.Provider>
-    </_creditChangeContext.Provider>
+    </_client.Provider>
+    </_payDelete.Provider>
+    </_creditChange.Provider>
+    </_credit.Provider>
   )
 }
 
+/* eslint-disable-next-line */
+export function Pending() {
+  return <div className="space-y-4">
+    <div className="flex items-center gap-2">
+      <Skeleton className='w-56 h-8' />
+      <Skeleton className='ms-auto w-24 h-10' />
+      <Skeleton className='w-24 h-10' />
+    </div>
+    <Separator />
+    <Card>
+      <CardHeader className='flex items-between'>
+        <div className='flex flex-row justify-between'>
+          <Skeleton className='w-52 h-8' />
+          <Skeleton className='ms-auto w-16 h-10' />
+        </div>
+      </CardHeader>
+      <CardContent className='grid grid-cols-3 gap-4 [&>div]:flex [&>div]:gap-2 [&>div]:flex-col' >
+        <div> <Skeleton className='w-36 h-6' /> <Skeleton className='w-full h-10' /> </div>
+        <div> <Skeleton className='w-24 h-6' /> <Skeleton className='w-full h-10' /> </div>
+        <div> <Skeleton className='w-32 h-6' /> <Skeleton className='w-full h-10' /> </div>
+        <div> <Skeleton className='w-24 h-6' /> <Skeleton className='w-full h-10' /> </div>
+        <div> <Skeleton className='w-36 h-6' /> <Skeleton className='w-full h-10' /> </div>
+        <div> <Skeleton className='w-32 h-6' /> <Skeleton className='w-full h-10' /> </div>
+        <div className='row-start-3'> <Skeleton className='w-24 h-6 ' /> <Skeleton className='w-full h-10' /> </div>
+        <div className='row-start-3'> <Skeleton className='w-24 h-6 ' /> <Skeleton className='w-full h-10' /> </div>
+        <div className='row-start-4'> <Skeleton className='w-24 h-6 row-start-5' /> <Skeleton className='w-full h-10' /> </div>
+        <div className='row-start-4'> <Skeleton className='w-32 h-6 row-start-5' /> <Skeleton className='w-full h-10' /> </div>
+        <div className='row-start-5 col-span-full'> <Skeleton className=' w-24 h-6' /> <Skeleton className='w-full h-32' /> </div>
+      </CardContent >
+    </Card>
+    <Separator />
+    <Card>
+      <CardHeader className='flex items-between'>
+          <Skeleton className='w-48 h-8' />
+      </CardHeader>
+      <CardContent className='space-y-4 [&>div]:pt-4 [&>div]:flex [&>div]:gap-2 [&>div]:flex-row [&>div>*:last-child]:ms-auto divide-y-2' >
+        { Array.from( { length: 10 } )?.map( () => (
+            <div> <Skeleton className='w-8 h-6' /> <Skeleton className='w-44 h-6' /> <Skeleton className='w-8 h-6' /> </div>
+        ))}
+      </CardContent >
+    </Card>
+  </div>
+}
+
+/* eslint-disable-next-line */
+export function Error() {
+  const { history } = useRouter()
+  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    history.back()
+  }
+  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
+      <Annoyed  className='animate-bounce' />
+      <div className='space-y-2'>
+        <h1 className='font-bold'>{text.error}</h1>
+        <p className='italic'>{text.errorDescription}</p>
+        <Separator />
+        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+      </div>
+    </div>
+}
+
 UpdateCreditById.dispalyname = 'UpdateCreditById'
+Error.dispalyname = 'UpdateCreditByIdError'
+Pending.dispalyname = 'UpdateCreditByIdPending'
 
 const text = {
   title: 'Editar prestamos:',
+  error: 'Ups!!! ha ocurrido un error',
+  errorDescription: 'Los detalles del prestamo ha fallado.',
+  back: 'Intente volver a la pestaña anterior',
   button: {
     update: "Actualizar",
     close: "Cancelar",

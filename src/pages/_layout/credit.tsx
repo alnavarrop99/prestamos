@@ -11,12 +11,13 @@ import {
 import { Label } from '@/components/ui/label'
 import { Dialog, DialogTrigger } from '@radix-ui/react-dialog'
 import { Separator } from '@/components/ui/separator'
-import { Link, Outlet, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Link, Outlet, createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
 import clsx from 'clsx'
 import {
   AlertCircle,
   Printer,
   CircleDollarSign as Pay,
+  Annoyed,
 } from 'lucide-react'
 import { createContext, forwardRef, useEffect, useState } from 'react'
 import { getCreditById, getCreditsFilter, getCreditsList, type TCREDIT_GET_FILTER, type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
@@ -26,14 +27,22 @@ import styles from "@/styles/global.module.css";
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { getClientById } from '@/api/clients'
 import brand from '@/assets/menu-brand.avif'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } from '@/components/ui/pagination'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import { Select, SelectContent, SelectItem, SelectValue,  SelectTrigger  } from '@/components/ui/select'
+import { queryClient } from '@/pages/__root'
+import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query'
+import { deletePaymentByIdOpt, updateCreditByIdOpt } from './credit_/$creditId_/update.confirm'
+import { postCreditOpt } from './credit/new'
+import { deleteCreditByIdOpt } from './credit_/$creditId/delete'
 
-export const Route = createFileRoute('/_layout/credit')({
-  component: Credits,
-  loader: async () => {
+const getFilterCredit = async () => {
     // TODO: this is a temporal function to getFilter
     if(!!+import.meta.env.VITE_MSW && import.meta.env.DEV) return (await getCreditsFilter()());
     const list = await getCreditsList()
-    const data: TCREDIT_GET_FILTER_ALL = await Promise.all( list?.map<Promise<TCREDIT_GET_FILTER>>( async ({ id: creditId, owner_id, frecuencia_del_credito_id }) => {
+    const data: TCREDIT_GET_FILTER_ALL = await Promise.all( list?.map<Promise<TCREDIT_GET_FILTER>>( async ({ id: creditId, owner_id, frecuencia_del_credito_id, cobrador_id }) => {
       const { nombres, apellidos } = await getClientById({ params: { clientId: "" + owner_id } })
       const { cuotas, pagos } = await getCreditById({ params: { creditId: "" + creditId } })
       return ({
@@ -45,10 +54,22 @@ export const Route = createFileRoute('/_layout/credit')({
         numero_de_cuota: pagos?.length,
         valor_de_la_mora: cuotas?.at(-1)?.valor_de_mora,
         nombre_del_cliente: nombres + " " + apellidos,
+        cobrador_id
       }) as TCREDIT_GET_FILTER
     }))
     return data
-  },
+}
+
+export const getCreditsListOpt = {
+  queryKey: ["list-filter-credits"],
+  queryFn: getFilterCredit,
+}
+
+export const Route = createFileRoute('/_layout/credit')({
+  component: Credits,
+  pendingComponent: Pending,
+  errorComponent: Error,
+  loader: () => queryClient.ensureQueryData( queryOptions( getCreditsListOpt ) ),
 })
 
 /* eslint-disable-next-line */
@@ -57,36 +78,95 @@ interface TCreditsProps {
   open?: boolean
 }
 
+/* eslint-disable-next-line */
+type TOrderType =  
+    | "Nombre"
+    | "Fecha de creacion"
+    | "Frecuencia"
+
+const STEP = 3
+const LENGTH = 8
+const ORDER: Record<keyof Omit<TCREDIT_GET_FILTER, "clientId" | "fecha_de_cuota" | "valor_de_cuota" | "numero_de_cuota" | "valor_de_la_mora" | "cobrador_id" >, TOrderType> = {
+  id: "Fecha de creacion",
+  nombre_del_cliente: "Nombre",
+  frecuencia: "Frecuencia"
+}
 export const _creditSelected = createContext<TCREDIT_GET_FILTER | undefined>(undefined)
+const usePagination = create< { start: number, end: number, setPagination: ( params: { start: number, end: number } ) => void } >()( persist( (set) => ({
+  start: 0,
+  end: STEP,
+  setPagination: ({ start, end }) => (set( () => ({ start, end }) ))
+}), { name: "credit-pagination" }) )
+const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof typeof ORDER ) => void } >()( persist((set) => ({
+  order: "id",
+  setOrder: ( order ) => (set( () => ({ order }) ))
+}), { name: "user-order" }) )
+
 
 /* eslint-disable-next-line */
-export function Credits({
-  children,
-  open: _open,
-  credits: _credits = [] as TCREDIT_GET_FILTER_ALL,
-}: React.PropsWithChildren<TCreditsProps>) {
-  const creditsDB = Route.useLoaderData() ?? _credits
-  const [selectedCredit, setSelectedCredit] = useState<TCREDIT_GET_FILTER | undefined>(undefined)
-  const { open = _open, setOpen } = useStatus() 
+export function Credits({}: TCreditsProps) {
+  const { open, setOpen } = useStatus() 
   const navigate = useNavigate()
+  const { setPagination, ...pagination } = usePagination()
+  const { value } = useStatus()
+  const { order, setOrder } = useOrder()
+  
+  const select: ((data: TCREDIT_GET_FILTER_ALL) => TCREDIT_GET_FILTER_ALL) = (data) => {
+    const credits = sortCredit(order, data) 
+    return credits
+  }
+  const { data: creditsRes, refetch } = useSuspenseQuery( queryOptions( { ...getCreditsListOpt,
+    select
+  } ) )
+  const [ credits, setCredits ] = useState(creditsRes)
+
+  const isUpdateCredit = useIsMutating( { status: "success", mutationKey: updateCreditByIdOpt.mutationKey } )
+  const isNewCredit = useIsMutating( { status: "success", mutationKey: postCreditOpt.mutationKey } )
+  const isDeleteCredit = useIsMutating( { status: "success", mutationKey: deleteCreditByIdOpt.mutationKey } )
+  const isNewPayment = useIsMutating( { status: "success", mutationKey: deletePaymentByIdOpt.mutationKey } )
+  const isDeletePayment = useIsMutating( { status: "success", mutationKey: deletePaymentByIdOpt.mutationKey } )
+  const isUpdatePayment = useIsMutating( { status: "success", mutationKey: updateCreditByIdOpt.mutationKey } )
+
+  const onSelectOrder: ( value: string ) => void = ( value ) => {
+    if( order !== "id" && order !== "frecuencia" && order !== "nombre_del_cliente" ) return;
+
+    if( value as keyof typeof ORDER === "frecuencia" ){
+      setCredits( sortCredit(value as keyof typeof ORDER, creditsRes ))
+    }
+
+    setCredits( sortCredit(value as keyof typeof ORDER, creditsRes ))
+    setOrder(value as keyof typeof ORDER)
+  }
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
   }, [] )
 
-  const onClick: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Button>> = (index) => () => {
-    if(!creditsDB || !creditsDB?.[index]) return;
+  const onClick: React.MouseEventHandler<React.ComponentRef<typeof Button>> = () => {
     setOpen({ open: !open })
-    setSelectedCredit(creditsDB?.[index])
   }
 
-  const onLink: (index: number) => React.MouseEventHandler<React.ComponentRef<typeof Link>> = (index) => () => {
-    if(!creditsDB || !creditsDB?.[index]) return;
+  const onPagnation: (params:{ prev?: boolean, next?: boolean, index?: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ next, prev, index }) => () => {
+    if( prev && pagination?.end - pagination?.start >= STEP && pagination?.start > 1 ){
+      setPagination({ ...pagination, start: pagination?.start - 1, end: pagination?.end - STEP })
+    }
+    else if( prev && pagination?.start > 0 && pagination?.start < pagination?.end ){
+      setPagination({ ...pagination, start: pagination?.start - 1 })
+    }
+    else if( next && pagination?.start < pagination?.end - 1 && pagination?.start < credits?.length/LENGTH -1 ){
+      setPagination({ ...pagination, start: pagination?.start + 1 })
+    }
+    else if( next && pagination?.start === pagination?.end - 1 && pagination?.start < credits?.length/LENGTH -1){
+      setPagination({ ...pagination, start: pagination?.start + 1,  end: pagination?.end + STEP })
+    }
+
+    if( typeof index === "undefined" ) return;
+    setPagination( { ...pagination, start: index } )
   }
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
-      !children && navigate({ to: Route.to })
+      navigate({ to: Route.to })
     }
     setOpen({ open })
   }
@@ -95,8 +175,33 @@ export function Credits({
     onOpenChange(!open)
   }
 
+  useEffect(() => {
+    if (value) {
+      setCredits(
+        creditsRes?.filter(({ nombre_del_cliente }) =>
+          nombre_del_cliente.toLowerCase().includes(value?.toLowerCase() ?? '')
+        )
+      )
+      setPagination({ ...pagination, start: 0, end: STEP })
+    }
+    return () => {
+      // setCredits(creditRes)
+    }
+  }, [value])
+
+  useEffect(() => {
+    if( creditsRes ){
+      refetch()?.then( ({ data }) => {
+        if( !data ) return;
+        setCredits( data )
+      } )
+    }
+    return () => {
+    }
+  }, [ isUpdateCredit, isNewCredit, isDeleteCredit, isNewPayment, isDeletePayment, isUpdatePayment ])
+
   return (
-    <_creditSelected.Provider value={selectedCredit}>
+    <>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Label htmlFor="acitve-credits" className="cursor-pointer">
@@ -104,8 +209,8 @@ export function Credits({
               {text.title}
             </h1>
           </Label>
-          {!!creditsDB?.length && <Badge className="px-3 text-xl">
-            {creditsDB?.length}
+          {!!credits?.length && <Badge className="px-3 text-xl">
+            {credits?.length}
           </Badge>}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
@@ -113,16 +218,26 @@ export function Credits({
                 <Button variant="default">{text.button.create}</Button>
               </Link>
             </DialogTrigger>
-            {children ?? <Outlet />}
+            <Outlet />
           </Dialog>
         </div>
         <Separator />
-        { !creditsDB?.length && <p>{text.notfound}</p> }
-        { !!creditsDB?.length && <div
-          className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5', {
-            '[&>*]:basis-1/4': !!creditsDB?.length && creditsDB?.length > 15})}
+        <Select 
+          defaultValue={order}
+          onValueChange={onSelectOrder}
         >
-          {creditsDB?.map( ({
+          <SelectTrigger className="w-48 !border-1 !border-ring ms-auto">
+            <SelectValue placeholder={"Orden"}  />
+          </SelectTrigger>
+          <SelectContent className='[&_*]:cursor-pointer'>
+            { Object.entries(ORDER)?.map( ( [key, value], index ) => <SelectItem key={index} value={key}>{value}</SelectItem> ) }
+          </SelectContent>
+        </Select>
+        { !credits?.length && <p>{text.notfound}</p> }
+        { !!credits?.length && <div
+          className={clsx('flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5')}
+        >
+          { !!credits?.length && credits?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map( ({
             id: creditId,
             clientId,
             frecuencia,
@@ -135,11 +250,10 @@ export function Credits({
                 const status: 'warn' | 'info' | undefined = valor_de_la_mora > 0 ? 'warn' : undefined
                 return (
                   <Link
-                    key={creditId}
+                    key={index}
                     className="group"
                     to="./$creditId"
                     params={{ creditId }}
-                    onClick={onLink(index)}
                   >
                     <Card className={clsx("h-full shadow-lg transition delay-150 duration-500 group-hover:scale-105 group-hover:shadow-xl grid justify-streetch items-end", styles?.["grid__credit--card"])}>
                       <CardHeader>
@@ -189,7 +303,7 @@ export function Credits({
                         </ul>
                       </CardContent>
                       <CardFooter className="flex items-center gap-2">
-                        { isValid(fecha_de_cuota) && <Badge> {format(fecha_de_cuota , "dd-MM-yyyy")} </Badge>}
+                        { isValid(fecha_de_cuota) && <Badge>  {format(fecha_de_cuota , "dd/MM/yyyy")} </Badge>}
                         <Dialog open={open} onOpenChange={onOpenChange}>
                           <DialogTrigger asChild className="ms-auto" >
                             {<Link
@@ -199,7 +313,7 @@ export function Credits({
                             >
                               <Button
                                 variant="ghost"
-                                onClick={onClick(index)}
+                                onClick={onClick}
                                 disabled={numero_de_cuota <= 0}
                                 className={clsx(
                                   'invisible px-3 opacity-0 hover:ring hover:ring-primary  group-hover:opacity-100',
@@ -211,9 +325,12 @@ export function Credits({
                             </Link>}
                           </DialogTrigger>
                           <DialogTrigger asChild>
-                            <Link to={'./pay'} params={{ creditId }}>
+                            <Link to={'./pay'} search={{ 
+                              name: nombre_del_cliente,
+                              pay: valor_de_cuota
+                            }}>
                               <Button
-                                onClick={onClick(index)}
+                                onClick={onClick}
                                 variant="default"
                                 className={clsx(
                                   'invisible opacity-0 group-hover:visible group-hover:opacity-100 bg-success hover:bg-success hover:ring-4 ring-success-foreground'
@@ -232,11 +349,52 @@ export function Credits({
             )}
         </div>}
       </div>
-    </_creditSelected.Provider>
-  )
-}
+        { credits?.length > LENGTH &&
+        <Pagination className='relative v-10'>
+          <PaginationContent>
+            <PaginationItem>
+              <Button
+                disabled={ pagination?.start <= 0 }
+                onClick={onPagnation({ prev: true })}
+                className='delay-0 duration-100'
+                variant={"outline"}
+              >
+                {text.pagination.back}
+              </Button>
+            </PaginationItem>
+            { pagination?.end - STEP > 0 && <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>}
+            {Array.from({ length: STEP })?.map( (_, index) => {
+              if( pagination?.end + index - STEP > (credits?.length - 1)/LENGTH ) return null;
+              return <PaginationItem key={index} >
+                <Button
+                  className='delay-0 duration-100'
+                  variant={ pagination?.start === pagination?.end + index - STEP  ? "secondary" : "ghost"}
+                  onClick={onPagnation({ index: pagination?.end - STEP + index })}
+                >
+                  { pagination?.end - STEP + index + 1 }
+                </Button>
+             </PaginationItem>
+            })}
+           
+            { pagination?.end < (credits?.length)/LENGTH  && <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem> }
 
-Credits.dispalyname = 'CreditsList'
+            <PaginationItem >
+              <Button
+                disabled={pagination?.start >= credits?.length/LENGTH - 1}
+                className='delay-0 duration-100'
+                variant={"outline"} 
+                onClick={onPagnation({ next: true })}> 
+                {text.pagination.next} 
+              </Button>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>}
+      </>)
+}
 
 interface TPrintCredit extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   client: string
@@ -263,11 +421,9 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
       <p>{text.print.telephone + ":"}<span>{telephone + "."}</span> </p>
       <p>{text.print.phone + ":"}<span>{phone + "."}</span> </p>
       <p>{text.print.date + ":"}<span>{date + "."}</span></p>
-    </section>
-    <section>
       <p>{text.print.cuoteNumber + ":"}<span>{cuoteNumber + "."}</span></p>
       <p>{text.print.pay + ":"}<span> $ {pay + "."} </span></p>
-      {  mora &&  <p>{text.print.mora + ":"}<span>{mora + "."}</span></p> }
+      {  mora &&  <p>{text.print.mora + ":"}<span> $ {mora + "."}</span></p> }
     </section>
     <section>
       <p>{text.print.pending + ""} <span>$ {pending + "."}</span></p>
@@ -282,10 +438,92 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>( function ({
   </main>
 }  )  
 
+/* eslint-disable-next-line */
+export function Pending() {
+  return <>
+    <div className="space-y-4">
+    <div className="flex items-center gap-2">
+      <Skeleton className='w-48 h-8' />
+      <Skeleton className='w-8 h-8 rounded-full' />
+      <Skeleton className='ms-auto w-24 h-10' />
+    </div>
+    <Separator />
+    <div className='flex flex-wrap'>
+      {Array.from( { length: LENGTH } )?.map( (_, index) => 
+        <div className='basis-1/2  p-4' key={index} >
+        <Card className={clsx("h-full shadow-lg grid justify-streetch items-end")}>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <CardTitle className="flex-row items-center">
+                <Skeleton className='w-48 h-8' />
+              </CardTitle>
+              <Skeleton className='ms-auto w-8 h-8 rounded-full' />
+            </div>
+        </CardHeader>
+          <CardContent>
+            <div className="space-y-2 px-4">
+              <Skeleton className='w-48 h-6' /> 
+              <Skeleton className='w-48 h-6' />
+              <Skeleton className='w-48 h-6' />
+            </div>
+          </CardContent>
+          <CardFooter className="flex items-center gap-2">
+              <Skeleton className='w-32 h-6' /> 
+            <Skeleton className='ms-auto w-11 h-10' />
+            <Skeleton className='w-11 h-10' />
+          </CardFooter>
+        </Card>
+        </div>
+        )}
+    </div>
+  </div>
+    <Skeleton className='w-80 h-10 mx-auto' />
+    </>
+}
+
+/* eslint-disable-next-line */
+export function Error() {
+  const { history } = useRouter()
+  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    history.back()
+  }
+  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
+      <Annoyed  className='animate-bounce' />
+      <div className='space-y-2'>
+        <h1 className='font-bold'>{text.error}</h1>
+        <p className='italic'>{text.errorDescription}</p>
+        <Separator />
+        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+      </div>
+    </div>
+}
+
+const sortCredit = (order: keyof typeof ORDER ,users: TCREDIT_GET_FILTER_ALL) => {
+  return users?.sort( (a, b) => {
+    const valueA = a?.[order]
+    const valueB = b?.[order]
+    if( typeof valueA === "string" && typeof valueB === "string" ) return (valueA.charCodeAt(0) - valueB.charCodeAt(0) ) 
+    else if( typeof valueA === "number" && typeof valueB === "number" ) return (valueA - valueB) 
+    else if(  typeof valueA === "object" && typeof valueB === "object" ) return( valueA.nombre?.charCodeAt(0) - valueB.nombre?.charCodeAt(0) )
+    return 0
+  })
+}
+
+Credits.dispalyname = 'CreditsList'
+Error.dispalyname = 'CreditsListError'
+Pending.dispalyname = 'CreditsListPending'
+
 const text = {
   title: 'Prestamos:',
+  error: 'Ups!!! ha ocurrido un error',
+  errorDescription: 'El listado de prestamos ha fallado.',
+  back: 'Intente volver a la pestaña anterior',
   browser: 'Prestamos',
   notfound: 'No existen prestamos activos.',
+  pagination: {
+    back: "Anterior",
+    next: "Siguiente",
+  },
   alert: {
     info: {
       title: 'Fecha limite',

@@ -1,7 +1,7 @@
 import { type TUSER_GET_ALL, getUsersList } from '@/api/users'
 import { type TROLES } from "@/lib/type/rol";
 import { type TUSER_GET } from "@/api/users";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Link,
   Outlet,
@@ -29,14 +29,33 @@ import {
   UserCog as UserUpdate,
   UserX as UserDelete,
   Users as UsersList,
+  Annoyed,
 } from 'lucide-react'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { useStatus } from '@/lib/context/layout'
 import { Separator } from '@/components/ui/separator'
+import { Skeleton } from '@/components/ui/skeleton';
+import { useRouter } from '@tanstack/react-router';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query';
+import { queryClient } from '../__root';
+import { updateUserByIdOpt } from './user/$userId/update';
+import { postUserOpt } from './user/new';
+import { useToken } from '@/lib/context/login';
+
+export const getUsersListOpt = {
+  queryKey: ["list-users"],
+  queryFn: getUsersList,
+}
 
 export const Route = createFileRoute('/_layout/user')({
+  pendingComponent: Pending,
+  errorComponent: Error,
   component: Users,
-  loader: getUsersList,
+  loader: () => queryClient.ensureQueryData( queryOptions( getUsersListOpt )),
 })
 
 /* eslint-disable-next-line */
@@ -52,22 +71,61 @@ export interface TUsersState extends TUSER_GET {
   active?: boolean
 }
 
-export const _selectUsers = createContext<TUsersState[] | undefined>(undefined)
-export const _usersContext = createContext<[TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>] | undefined>(undefined)
+/* eslint-disable-next-line */
+type TOrderType = "Nombre" | "Fecha de creacion" | "Rol"
+
+const STEP = 3
+const LENGTH = 9
+const ORDER: Record<keyof Omit<TUSER_GET, "clientes" >, TOrderType> = {id: "Fecha de creacion", nombre: "Nombre", rol: "Rol"}
+export const _selectUsers = createContext<TUsersState[]>([])
+const usePagination = create< { start: number, end: number, setPagination: ( params: { start: number, end: number } ) => void } >()( persist( (set) => ({
+  start: 0,
+  end: STEP,
+  setPagination: ({ start, end }) => (set( () => ({ start, end }) ))
+}), { name: "users-pagination" } ) )
+const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof typeof ORDER ) => void } >()( persist( (set) => ({
+  order: "id",
+  setOrder: ( order ) => (set( () => ({ order }) ))
+}), {  name: "user-order"} ) )
+
 
 /* eslint-disable-next-line */
-export function Users({
-  children,
-  open: _open,
-  users: _users = [] as TUSER_GET_ALL,
-}: React.PropsWithChildren<TUsersProps>) {
-  const usersDB = (Route.useLoaderData() ?? _users)?.map<TUsersState>(
-    (items) => ({ ...items, selected: false, menu: false })
-  )
-  const [users, setUsers] = useState<TUsersState[]>(usersDB)
+export function Users({}: React.PropsWithChildren<TUsersProps>) {
+  const { order, setOrder } = useOrder()
+  const { userId } = useToken()
+  const select: ((data: TUSER_GET_ALL) => TUsersState[]) = ( data ) => ( sortUsers( order, data?.map<TUsersState>( (items) => ({ ...items, selected: false, menu: false }))?.filter( ( { id } ) => ( userId !== id ) ) ) )
+  const { data: usersRes, refetch } = useSuspenseQuery( queryOptions( { ...getUsersListOpt, select }) )
+  const [users, setUsers] = useState<TUsersState[]>(usersRes)
   const navigate = useNavigate()
   const { value } = useStatus()
-  const { open = _open, setOpen } = useStatus()
+  const { open, setOpen } = useStatus()
+  const { setPagination, ...pagination } = usePagination()
+  const isUpdateUser = useIsMutating( { status: "success", mutationKey: updateUserByIdOpt.mutationKey } )
+  const isNewUser = useIsMutating( { status: "success", mutationKey: postUserOpt.mutationKey } )
+
+  const onSelectOrder: ( value: string ) => void = ( value ) => {
+    if( order !== "rol" && order !== "nombre" && order !== "id" ) return;
+    setOrder(value as keyof typeof ORDER)
+    setUsers( sortUsers(value as keyof typeof ORDER, usersRes ))
+  }
+
+  const onPagnation: (params:{ prev?: boolean, next?: boolean, index?: number }) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ({ next, prev, index }) => () => {
+    if( prev && pagination?.end - pagination?.start >= STEP && pagination?.start > 1 ){
+      setPagination({ ...pagination, start: pagination?.start - 1, end: pagination?.end - STEP })
+    }
+    else if( prev && pagination?.start > 0 && pagination?.start < pagination?.end ){
+      setPagination({ ...pagination, start: pagination?.start - 1 })
+    }
+    else if( next && pagination?.start < pagination?.end - 1 && pagination?.start < users?.length/LENGTH -1 ){
+      setPagination({ ...pagination, start: pagination?.start + 1 })
+    }
+    else if( next && pagination?.start === pagination?.end - 1 && pagination?.start < users?.length/LENGTH -1){
+      setPagination({ ...pagination, start: pagination?.start + 1,  end: pagination?.end + STEP })
+    }
+
+    if( typeof index === "undefined" ) return;
+    setPagination( { ...pagination, start: index } )
+  }
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
@@ -93,7 +151,7 @@ export function Users({
 
       const { selected } = user
       onCheckChanged(index,'selected')(!selected)
-    }
+  }
 
   const onClickStop: React.MouseEventHandler = (ev) => {
     ev.stopPropagation()
@@ -101,7 +159,7 @@ export function Users({
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
-      !children && navigate({ to: Route.to })
+      navigate({ to: Route.to })
     }
     setOpen({ open })
   }
@@ -115,23 +173,33 @@ export function Users({
       onCheckChanged(index, 'menu')(!menu)
 
       ev.stopPropagation()
+  }
+
+  useEffect(() => {
+    if( usersRes ){
+      refetch()?.then( ({ data }) => {
+        if( !data ) return;
+        setUsers(data )
+      } )
     }
+    return () => {
+      // setUsers( usersRes )
+    }
+  }, [isUpdateUser, isNewUser])
 
   useEffect(() => {
     if (value) {
-      setUsers(
-        usersDB?.filter(({ nombre }) =>
+        usersRes?.filter(({ nombre }) =>
           nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
         )
-      )
+      setPagination({ ...pagination, start: 0, end: STEP })
     }
     return () => {
-      setUsers(usersDB)
+      // setUsers( usersRes )
     }
   }, [value])
 
   return (
-    <_usersContext.Provider value={ [ users, setUsers ] }>
     <_selectUsers.Provider value={users?.filter(({ selected }) => selected)}>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
@@ -162,27 +230,41 @@ export function Users({
                 </Button>
               </Link>
             </DialogTrigger>
-            {children ?? <Outlet />}
+            <Outlet />
           </Dialog>
         </div>
         <Separator />
+      <div className='flex items-between'>
+        <p className='text-muted-foreground'>  { users?.filter( ({ selected }) => (selected) )?.length } de { usersRes?.length } usuario(s) seleccionados. </p>
+        <Select 
+          required
+          defaultValue={order}
+          onValueChange={onSelectOrder}
+        >
+          <SelectTrigger className="w-48 !border-1 !border-ring ms-auto">
+            <SelectValue placeholder={"Orden"}  />
+          </SelectTrigger>
+          <SelectContent className='[&_*]:cursor-pointer'>
+            { Object.entries(ORDER)?.map( ( [key, value], index ) => <SelectItem key={index} value={key}>{value}</SelectItem> ) }
+          </SelectContent>
+        </Select>
+      </div>
         { !users?.length && <p>{text.notFound}</p>}
-        <div className="flex flex-wrap gap-4 [&>*]:flex-auto">
-          {!!users?.length &&
-            users?.map(
-              ({ id, rol, nombre, clientes, selected, active, menu }, index) => (
+        <div className={clsx("flex flex-wrap gap-4 [&>*]:flex-auto  content-start min-w-80 [&>*]:min-w-1/4 [&>*]:shrink [&>*]:max-w-[24rem] justify-center", { "!justify-start": users?.length - pagination?.start * LENGTH < 3 })}>
+          {!!users?.length && users?.slice( pagination?.start * LENGTH, (pagination?.start + 1) * LENGTH )?.map(
+              ({ id: userId, rol, nombre, clientes, selected, active, menu }, index) => (
                 <Card
-                  key={id}
+                  key={userId}
                   className={clsx(
-                    'group max-w-sm cursor-pointer py-4 shadow-lg transition delay-150 duration-500 hover:scale-105'
+                    'group cursor-pointer py-4 shadow-lg transition delay-150 duration-500 hover:scale-105'
                   )}
-                  onClick={onClick(index)}
+                  onClick={onClick(index + pagination?.start * LENGTH)}
                 >
                   <div className="flex items-center justify-end gap-2 px-4">
                     <Dialog open={open} onOpenChange={onOpenChange}>
                       <DropdownMenu
                         open={menu}
-                        onOpenChange={onCheckChanged( index,'menu')}
+                        onOpenChange={onCheckChanged( index + pagination?.start * LENGTH,'menu')}
                       >
                         <DropdownMenuTrigger asChild onClick={onClickStop}>
                           <Button
@@ -217,12 +299,12 @@ export function Users({
                           </DropdownMenuItem>
                           <DialogTrigger asChild>
                             <DropdownMenuItem
-                              onClick={onOpenChangeById(index)}
+                              onClick={onOpenChangeById(index + pagination?.start * LENGTH)}
                             >
                               <Link
                                 className="flex h-full w-full items-center justify-between gap-2"
                                 to={'./$userId/update'}
-                                params={{ userId: id }}
+                                params={{ userId }}
                               >
                                 {text.menu.update} <UserUpdate />
                               </Link>
@@ -230,12 +312,13 @@ export function Users({
                           </DialogTrigger>
                           <DialogTrigger asChild>
                             <DropdownMenuItem
-                              onClick={onOpenChangeById(index)}
+                              onClick={onOpenChangeById(index + pagination?.start * LENGTH)}
                             >
                               <Link
                                 className="flex h-full w-full items-center justify-between gap-2"
                                 to={'./$userId/delete'}
-                                params={{ userId: id }}
+                                params={{ userId: userId }}
+                                search={{ name: nombre }}
                               >
                                 {text.menu.delete} <UserDelete />
                               </Link>
@@ -245,9 +328,9 @@ export function Users({
                       </DropdownMenu>
                     </Dialog>
                     <Checkbox
-                      name={'selected' as keyof typeof users[0]}
+                      name={'selected' as keyof TUsersState}
                       checked={selected}
-                      onCheckedChange={onCheckChanged(index, 'selected')}
+                      onCheckedChange={onCheckChanged(index + pagination?.start * LENGTH, 'selected')}
                     />
                   </div>
                   <CardHeader>
@@ -276,7 +359,7 @@ export function Users({
                     {active && (
                       <Switch
                         checked={active}
-                        onCheckedChange={onCheckChanged(index, 'active')}
+                        onCheckedChange={onCheckChanged(index + pagination?.start * LENGTH, 'active')}
                         onClick={onClickStop}
                       >
                         
@@ -288,15 +371,135 @@ export function Users({
             )}
         </div>
       </div>
+        { users?.length > LENGTH && 
+          <Pagination className='z-10 relative'>
+            <PaginationContent>
+              <PaginationItem>
+                <Button
+                  disabled={ pagination?.start <= 0 }
+                  onClick={onPagnation({ prev: true })}
+                  className='delay-0 duration-100'
+                  variant={"outline"}
+                >
+                  {text.pagination.back}
+                </Button>
+              </PaginationItem>
+              { pagination?.end - STEP > 0 && <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem>}
+              {Array.from({ length: STEP })?.map( (_, index) => {
+                if( pagination?.end + index - STEP > (users?.length - 1)/LENGTH ) return null;
+                return <PaginationItem key={index} >
+                  <Button
+                    className='delay-0 duration-100'
+                    variant={ pagination?.start === pagination?.end + index - STEP  ? "secondary" : "ghost"}
+                    onClick={onPagnation({ index: pagination?.end - STEP + index })}
+                  >
+                    { pagination?.end - STEP + index + 1 }
+                  </Button>
+               </PaginationItem>
+              })}
+             
+              { pagination?.end < (users?.length)/LENGTH && <PaginationItem>
+                <PaginationEllipsis />
+              </PaginationItem> }
+
+              <PaginationItem >
+                <Button
+                  disabled={pagination?.start >= users?.length/LENGTH - 1}
+                  className='delay-0 duration-100'
+                  variant={"outline"} 
+                  onClick={onPagnation({ next: true })}>
+                  {text.pagination.next}
+                </Button>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>}
     </_selectUsers.Provider>
-    </_usersContext.Provider>
   )
 }
 
+/* eslint-disable-next-line */
+export function Pending() {
+  return <>
+    <div className="space-y-4">
+    <div className="flex items-center gap-2">
+      <Skeleton className='w-48 h-8' />
+      <Skeleton className='w-8 h-8 rounded-full' />
+      <Skeleton className='ms-auto w-24 h-10' />
+      <Skeleton className='w-24 h-10' />
+    </div>
+    <Separator />
+    <div className='flex items-center'>
+      <Skeleton className='w-56 h-6' />
+      <Skeleton className='w-40 h-8 ms-auto' />
+    </div>
+    <div className='flex flex-wrap gap-4 px-2'>
+      {Array.from( { length: LENGTH } )?.map( (_, index) => 
+        <Card key={index} className={clsx("h-full shadow-lg grid justify-streetch items-end")}>
+          <CardHeader>
+            <Skeleton className='ms-auto w-8 h-8 rounded-md' />
+        </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-4">
+              <Skeleton className='w-20 h-20 rounded-full' /> 
+              <div className='space-y-2'>
+                <Skeleton className='w-48 h-6' />
+                <Skeleton className='w-32 h-6' />
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex items-center gap-2">
+            <Skeleton className='w-32 h-6' /> 
+          </CardFooter>
+        </Card>
+        )}
+      </div>
+  </div>
+    <Skeleton className='w-80 h-10 mx-auto' />
+    </>
+}
+
+/* eslint-disable-next-line */
+export function Error() {
+  const { history } = useRouter()
+  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    history.back()
+  }
+  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
+      <Annoyed  className='animate-bounce' />
+      <div className='space-y-2'>
+        <h1 className='font-bold'>{text.error}</h1>
+        <p className='italic'>{text.errorDescription}</p>
+        <Separator />
+        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+      </div>
+    </div>
+}
+
+const sortUsers = (order: keyof typeof ORDER ,users: TUsersState[]) => {
+  return users?.sort( (a, b) => {
+    const valueA = a?.[order]
+    const valueB = b?.[order]
+    if( typeof valueA === "string" && typeof valueB === "string" ) return (valueA.charCodeAt(0) - valueB.charCodeAt(0) ) 
+    else if( typeof valueA === "number" && typeof valueB === "number" ) return (valueA - valueB) 
+    return 0
+  })
+}
+
 Users.dispalyname = 'UsersList'
+Error.dispalyname = 'UserListError'
+Pending.dispalyname = 'UserListPending'
 
 const text = {
   title: 'Usuarios:',
+  error: 'Ups!!! ha ocurrido un error',
+  errorDescription: 'El listado de usuarios ha fallado.',
+  back: 'Intente volver a la pestaña anterior',
+  pagination: {
+    back: "Anterior",
+    next: "Siguiente",
+  },
   browser: 'Usuarios',
   notFound: 'No se encontraron usuarios',
   button: {

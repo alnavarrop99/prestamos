@@ -1,5 +1,6 @@
 import {
   createFileRoute,
+  defer,
   Outlet,
   redirect,
   useChildMatches,
@@ -17,14 +18,15 @@ import {
   Network,
   NotepadText,
   Sun,
+  X as ErrorIcon,
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
-import React, { useEffect, useReducer, useState } from 'react'
+import React, { memo, useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,7 +36,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useStatus } from '@/lib/context/layout'
-import { getClientsList, type TCLIENT_GET_ALL } from '@/api/clients'
+import { type TCLIENT_GET_ALL } from '@/api/clients'
 import { Theme, useTheme } from '@/components/theme-provider'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -51,14 +53,39 @@ import {
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
-import { useIsFetching, useIsMutating, useQuery } from '@tanstack/react-query'
-import { SpinLoader } from '@/components/ui/loader'
+import { queryOptions, useIsFetching, useIsMutating, useQuery  } from '@tanstack/react-query'
+import { SpinLoader as Loader, BoundleLoader } from '@/components/ui/loader'
 import brand from "@/assets/menu-brand.avif"
 import brandOff from "@/assets/menu-off-brand.avif"
+import { Skeleton } from '@/components/ui/skeleton'
+import { getUsersListOpt } from '@/pages/_layout/user'
+import { getUserByIdOpt, updateUserByIdOpt } from './_layout/user/$userId/update'
+import { postUserOpt } from '@/pages/_layout/user/new'
+import { getClientListOpt } from '@/pages/_layout/client'
+import { getClientByIdOpt, updateClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+import { postClientOpt } from '@/pages/_layout/client/new'
+import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
+import { getCreditsListOpt } from '@/pages/_layout/credit'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
+import { deletePaymentByIdOpt, updateCreditByIdOpt, updatePaymentByIdOpt } from '@/pages/_layout/credit_/$creditId_/update.confirm'
+import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
+import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
+import { postCreditOpt } from '@/pages/_layout/credit/new'
+import { queryClient } from '@/pages/__root'
+import { getReportsOpt, postReportOpt } from './_layout/report'
+import { getRolByName, TROLES } from '@/lib/type/rol'
 
-export const Route = createFileRoute('/_layout')({
+export const getCurrentUserOpt = {
+  queryKey: ["login-user", { userId: useToken.getState().userId }],
+  queryFn: getCurrentUser
+}
+
+ export const Route = createFileRoute('/_layout')({
   component: Layout,
-  loader: getCurrentUser,
+  loader: async () => ({ 
+    user: defer( queryClient.ensureQueryData( queryOptions( getCurrentUserOpt ) ) ), 
+    clients: defer( queryClient.ensureQueryData( queryOptions( getClientListOpt ) )) 
+  }),
   beforeLoad: async (  ) => {
     const { token } = useToken.getState()
     if( !token ){
@@ -72,7 +99,7 @@ export const Route = createFileRoute('/_layout')({
 /* eslint-disable-next-line */
 interface TStatus {
   offline?: boolean
-  open?: boolean
+  menu?: boolean
   calendar?: boolean
   search?: boolean
 }
@@ -90,36 +117,48 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 }
 
 /* eslint-disable-next-line */
-export function Layout({
-  children,
-  theme: _theme,
-  clients: _clients = [] as TCLIENT_GET_ALL,
-  open: _open = false,
-  user: _user = {} as TUSER_GET,
-}: React.PropsWithChildren<TNavigationProps>) {
-  const { data: clientsDB, isSuccess } = useQuery({
-    queryKey: [getClientsList.name],
-    queryFn: getClientsList,
-  })
-  const [{ offline, open, calendar }, setStatus] = useReducer(reducer, {
-    offline: navigator.onLine,
-    open: _open
-  })
+export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
+  const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, menu: false })
+  const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()
-  const  userDB = Route.useLoaderData() ?? { clients: _clients, user: _user, }
-  const [clients, setClients] = useState(clientsDB)
-  const [user] = useState(userDB)
+  const  { data: currentUserRes, isSuccess: okCurrentUser, isError: errorCurrentUser, isPending: pendingCurrentUser  , refetch } = useQuery( queryOptions( getCurrentUserOpt ) )
+  const  { data: clientsRes, isSuccess: okClients, error: errorClients, isPending: _pendingClients } = useQuery( queryOptions( getClientListOpt ) )
+  const [clients, setClients] = useState<TCLIENT_GET_ALL | undefined>(undefined)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
-  const { deleteToken } = useToken()
-  const isFetching = useIsFetching()
-  const isMutating = useIsMutating()
+  const { deleteToken, setUserId, userId, name, setRol } = useToken()
   const { history } = useRouter()
+  const [ pendingClients, setPendingClients  ] = useState<boolean>(_pendingClients)
+
+  useEffect( () => {
+    refetch( {
+      cancelRefetch: !userId
+    } )?.then( ( { data, isPending} ) => {
+        if( !data ) return;
+        const { nombre, id } = getRolByName( { rolName: data.rol as TROLES } )
+        setRol( { rolId: id, rolName: nombre } )
+
+        setUserId( data.id )
+        setPendingClients( _pendingClients || isPending )
+      } ) 
+  }, [ userId ] )
+
+  useEffect( () => {
+    if( !!userId  ) {
+       return () => { setUserId( undefined ) }
+    }
+    if( !currentUserRes || !okCurrentUser || errorCurrentUser) return; 
+
+    setUserId( currentUserRes.id )
+
+    const { nombre, id } = getRolByName( { rolName: currentUserRes.rol as TROLES } )
+    setRol( { rolId: id, rolName: nombre } )
+  }, [ currentUserRes, okCurrentUser, errorCurrentUser ] )
 
   useEffect(() => {
-    setClients(clientsDB) 
-  }, [isSuccess])
-
+    if( !clientsRes || !okClients || errorClients ) return;
+    setClients(clientsRes)
+  }, [ clientsRes, okClients, errorClients ])
 
   useEffect(() => {
     const onNotwork = () => {
@@ -145,11 +184,10 @@ export function Layout({
     const { value } = ev.currentTarget
     setValue({ value })
 
-    const query = clientsDB?.filter(({ ...props }) =>
-      Object.values(props).join(' ').toLowerCase().includes(value.toLowerCase())
-    )
-
-    setClients(query)
+    if(clientsRes){ 
+      const query = clients?.filter((props) => Object.values(props).join(' ').toLowerCase().includes(value.toLowerCase()))
+      setClients(query)
+    }
   }
 
   const onKeyDown: React.KeyboardEventHandler<
@@ -165,14 +203,12 @@ export function Layout({
     }
   }
 
-  const onSelect: ( { clientId }: {clientId: number} ) =>  React.MouseEventHandler< HTMLLIElement > = ({ clientId }) => () => {
-    const client = clients?.find( ({ id }) => id === clientId )
+  const onSelect: ( index: number ) =>  React.MouseEventHandler< HTMLLIElement > = ( index ) => () => {
+    const client = clients?.[index]
     if(!client) return;
 
-    const { nombres, apellidos } = client
-    setValue({value: nombres + " " + apellidos})
-    setSearch({ search: !search })
-    setClients([client])
+    // setValue({value: client?.nombres + " " + client?.apellidos})
+    setOpen({ open: !open })
   }
 
   const onSearchChange = () => {
@@ -181,8 +217,6 @@ export function Layout({
   }
 
   const onSwitch = (checked: boolean) => {
-    if (_theme) return
-
     if (checked) {
       setTheme('dark')
       return
@@ -200,6 +234,10 @@ export function Layout({
     deleteToken() 
   }
 
+  const onClick: React.MouseEventHandler< HTMLLIElement > = () => {
+    setOpen({ open: !open })
+  }
+
   return (
     <div
       className={clsx(
@@ -211,13 +249,13 @@ export function Layout({
         className={clsx(
           'row-span-full h-[100dvh] rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl',
           {
-            [styles?.['menu-animation']]: !open,
-            [styles?.['menu-animation-reverse']]: open,
+            [styles?.['menu-animation']]: !menu,
+            [styles?.['menu-animation-reverse']]: menu,
           }
         )}
       >
         <Link to={"/"}>
-          <img alt='brand' src={ !open ? brand : brandOff} className='aspect-contain min-h-24' />
+          <img alt='brand' src={ !menu ? brand : brandOff} className='aspect-contain min-h-24' />
         </Link>
         <Separator className="my-4" />
         <div className="p-4 px-6 text-xl">
@@ -231,10 +269,10 @@ export function Layout({
                         <Button
                           variant={!isActive ? 'link' : 'default'}
                           className={clsx('delay-50 font-bold duration-300', {
-                            'p-2': open,
+                            'p-2': menu,
                           })}
                         >
-                          {!open ? title : <Icon />}
+                          {!menu ? title : <Icon />}
                         </Button>
                       )}
                     </Link>
@@ -246,13 +284,13 @@ export function Layout({
         </div>
         <Separator className="my-4" />
         <div className="grid place-items-center">
-          {!open ? (
+          {!menu ? (
             <Calendar key={'calendar'} className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold" />
           ) : (
             <Popover onOpenChange={onclick(setStatus, { calendar: !calendar })}>
               <PopoverTrigger>
                 <Button
-                  className={clsx({ 'p-2': open })}
+                  className={clsx({ 'p-2': menu })}
                   variant={!calendar ? 'outline' : 'default'}
                 >
                   <CalendarIcon />
@@ -269,8 +307,8 @@ export function Layout({
         <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg">
           <div className="[&>button]:px-2">
             <Button
-              variant={!open ? 'default' : 'outline'}
-              onClick={onclick(setStatus, { open: !open })}
+              variant={!menu ? 'default' : 'outline'}
+              onClick={onclick(setStatus, { menu: !menu })}
             >
               <MenuSquare />
             </Button>
@@ -284,7 +322,7 @@ export function Layout({
                 </Button>
               )}
             </Link>
-            { (!!isFetching || !!isMutating) && <SpinLoader />}
+            <SpinLoader />
           </div>
           <div>
             <Label className="flex cursor-pointer items-center gap-2">
@@ -292,72 +330,67 @@ export function Layout({
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
-              { !!clients?.length && <Popover
-                open={search}
-                onOpenChange={onSearchChange}
-              >
-                <PopoverTrigger>
-                  <Button
-                    className={clsx('rounded-br-none rounded-tr-none p-2')}
-                    variant={ !search ? 'ghost' : 'default' }
-                  >
-                    <User />
-                    <Badge
-                      className={clsx(
-                        {
-                          '!hidden': search,
-                        },
-                        styles?.['search-badge-animation']
-                      )}
-                      variant={!search ? 'default' : 'secondary'}
+                <Popover
+                  open={search}
+                  onOpenChange={onSearchChange}
+                >
+                  <PopoverTrigger>
+                    <Button
+                      className={clsx('rounded-br-none rounded-tr-none p-2')}
+                      variant={ !search ? 'ghost' : 'default' }
                     >
-                      {clients?.length}
-                    </Badge>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="absolute -start-16 top-2 w-80">
-                  <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
-                    <h3 className="text-xl [&>span]:underline">
-                      <span>{text.search.title}</span>
-                      <Badge variant="default"> {clients?.length} </Badge>
-                    </h3>
-                    <Separator />
-                    <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
-                      {clients?.map(
-                        ({
-                          apellidos,
-                          nombres,
-                          id: clientId,
-                          numero_de_identificacion,
-                        }) => clientId &&
-                          <li key={clientId} className="group cursor-pointer" onClick={onSelect({ clientId })}>
-                            <Link to={'/client'}>
-                              <Avatar>
-                                <AvatarFallback>
-                                  {nombres?.at(0) ??
-                                    'N' + apellidos?.at(0) ??
-                                    'A'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p
-                                  className={clsx("font-bold group-hover:after:content-['#']")}
-                                >
-                                  {nombres + ' ' + apellidos}
-                                </p>
-                                <p className="italic">
-                                  {numero_de_identificacion.slice(0, 4) +
-                                    '...' +
-                                    numero_de_identificacion.slice(-4, numero_de_identificacion.length)}
-                                </p>
-                              </div>
-                            </Link>
-                          </li>
-                      )}
-                    </ul>
-                  </div>
-                </PopoverContent>
-              </Popover>}
+                      <User />
+                        {errorClients && <Error searchList /> }
+                        {pendingClients && <BoundleLoader /> }
+                        { okClients && <Badge
+                            className={clsx( { '!hidden': search, }, styles?.['search-badge-animation'])}
+                            variant={!search ? 'default' : 'secondary'}
+                          >
+                            {clients?.length}
+                        </Badge> } 
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="absolute -start-16 top-2 w-80" hidden={!clients?.length}>
+                    <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
+                      <h3 className="text-xl [&>span]:underline">
+                        <span>{text.search.title}</span>
+                        <Badge variant="default"> {clients?.length} </Badge>
+                      </h3>
+                      <Separator />
+                      <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
+                        {clients?.map(
+                          ({
+                            apellidos,
+                            nombres,
+                            id: clientId,
+                            numero_de_identificacion,
+                          }, index) => clientId &&
+                            <li key={index} className="group cursor-pointer" onClick={onSelect(index)}>
+                              <Link to={'/client/$clientId/update'} params={{clientId}}>
+                                <Avatar>
+                                  <AvatarFallback className='!ring-2 ring-ring'>
+                                    {nombres?.[0] + apellidos?.[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div>
+                                  <p
+                                    className={clsx("font-bold group-hover:after:content-['#']")}
+                                  >
+                                    {nombres + ' ' + apellidos}
+                                  </p>
+                                  <p className="italic">
+                                    {numero_de_identificacion.slice(0, 4) +
+                                      '...' +
+                                      numero_de_identificacion.slice(-4, numero_de_identificacion.length)}
+                                  </p>
+                                </div>
+                              </Link>
+                            </li>
+                        )}
+                      </ul>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               <Input
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
@@ -367,30 +400,40 @@ export function Layout({
                 value={value}
               />
             </Label>
-              <HoverCard>
+               <HoverCard>
                 <HoverCardTrigger>
                   <Badge className="cursor-pointer text-sm" variant="outline">
-                    {user.nombre
+                    {(name ?? "User")
                       .split(' ')
                       .map((char) => char.at(0))
                       .join('')}
                   </Badge>
                 </HoverCardTrigger>
                 <HoverCardContent>
-                  <Avatar className="border border-primary">
-                    <AvatarImage src={text.avatar.src} alt="user-img" />
-                    <AvatarFallback>{text.avatar.name}</AvatarFallback>
-                  </Avatar>
-                  <ul className="space-y-2 [&>li]:w-fit">
-                    <li>
-                      <span className="font-bold">{user.nombre}</span>
-                    </li>
-                    <li>
-                      
-                      <Badge> {user?.rol} </Badge>
-                    </li>
-                  </ul>
-                </HoverCardContent>
+                  { errorCurrentUser && <Error currentUser /> }
+                  { pendingCurrentUser && <div className='p-2'>
+                      <Skeleton className='ring-1 ring-ring w-10 h-10 rounded-full'/>
+                      <ul className="space-y-2 [&>li]:w-fit">
+                        <li> <Skeleton className="w-32 h-5" /> </li>
+                        <li> <Skeleton className="w-16 h-4" /> </li>
+                      </ul>
+                    </div> } 
+                  { okCurrentUser && <div className='p-2'>
+                      <Avatar className='ring-1 ring-ring'>
+                         <AvatarFallback>{name?.split(" ")?.map( (items) => (items?.[0]) )}</AvatarFallback>
+                      </Avatar>
+                      <ul className="space-y-2 [&>li]:w-fit">
+                        <li onClick={onClick}>
+                          <Link 
+                            title='Modificar mi usuario'
+                            className="font-bold hover:after:content-['#'] hover:after:opacity-100 after:opacity-0 after:transition after:transition after:delay-150 after:duration-300"
+                            to={"/user/$userId/update"}
+                            params={{ userId }}
+                        >{currentUserRes.nombre}</Link> </li>
+                        <li> <Badge> {currentUserRes?.rol} </Badge> </li>
+                      </ul>
+                    </div> }
+              </HoverCardContent>
               </HoverCard>
             <Link to={"/"}>
               <Button
@@ -453,7 +496,7 @@ export function Layout({
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="px-8">{children ?? <Outlet />}</div>
+        <div className="px-8 h-full flex flex-col justify-between py-4"><Outlet /></div>
       </main>
       <footer className="py-4">
         <Separator className="my-4" />
@@ -466,10 +509,222 @@ export function Layout({
   )
 }
 
+/* eslint-disable-next-line */
+const SpinLoader = memo(function () {
+   const getUser = useIsFetching({
+    fetchStatus: "fetching",
+    type: "inactive",
+    stale: true,
+    queryKey: ([] as string[]).concat( getUsersListOpt.queryKey ),
+  })
+
+  const userId = useIsFetching({
+    fetchStatus: "fetching",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( getUserByIdOpt({ userId: "" }).queryKey[0] as string ),
+  })
+
+  const postUser = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( postUserOpt.mutationKey ),
+  })
+
+  const updateUser = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( updateUserByIdOpt?.mutationKey ),
+  })
+
+  const getClient = useIsFetching({
+    fetchStatus: "fetching",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( getClientListOpt.queryKey ),
+  })
+
+  const clientId = useIsFetching({
+    fetchStatus: "fetching",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( getClientByIdOpt({ clientId: "" }).queryKey[0] as string ),
+  })
+
+  const postClient = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( postClientOpt.mutationKey ),
+  })
+
+  const updateClient = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( updateClientByIdOpt?.mutationKey ),
+  })
+
+  const deleteClient = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( deleteClientByIdOpt?.mutationKey ),
+  })
+
+  const getCredit = useIsFetching({
+    fetchStatus: "fetching",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( getCreditsListOpt.queryKey ),
+  })
+
+  const creditId = useIsFetching({
+    fetchStatus: "fetching",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( getCreditByIdOpt({ creditId: "" }).queryKey[0] as string ),
+  })
+
+  const postCredit = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( postCreditOpt.mutationKey ),
+  })
+
+  const updateCredit = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( updateCreditByIdOpt?.mutationKey ),
+  })
+
+  const deleteCredit = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( deleteCreditByIdOpt?.mutationKey ),
+  })
+
+  const postPayment = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( postPaymentOpt.mutationKey ),
+  })
+
+  const updatePayment = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( updatePaymentByIdOpt?.mutationKey ),
+  })
+
+  const deletePayment = useIsMutating({
+    status: "pending",
+    mutationKey: ([] as string[]).concat( deletePaymentByIdOpt?.mutationKey ),
+  })
+
+  const getReports = useIsFetching({
+    fetchStatus: "fetching",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( getReportsOpt.queryKey ),
+  })
+
+  const postReport = useIsFetching({
+    fetchStatus: "fetching",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( postReportOpt.mutationKey ),
+  })
+
+  const className = 'text-muted-foreground italic text-xs flex items-center gap-2'
+
+  if( getUser || userId ) {
+    return <span className={className}><Loader /> {text.loader.user.get}</span>
+  }
+  else if( postUser ) {
+    return <span className={className}><Loader /> {text.loader.user.new} </span>
+  }
+  else if( updateUser ) {
+    return <span className={className}><Loader /> {text.loader.user.update} </span>
+  }
+  
+  if( getClient || clientId ) {
+    return <span className={className}><Loader /> {text.loader.client.get}</span>
+  }
+  else if( postClient ) {
+    return <span className={className}><Loader /> {text.loader.client.new} </span>
+  }
+  else if( updateClient ) {
+    return <span className={className}><Loader /> {text.loader.client.update} </span>
+  }
+  else if( deleteClient ) {
+    return <span className={className}><Loader /> {text.loader.client.delete} </span>
+  }
+
+  if( getCredit || creditId ) {
+    return <span className={className}><Loader /> {text.loader.credit.get}</span>
+  }
+  else if( postCredit ) {
+    return <span className={className}><Loader /> {text.loader.credit.new} </span>
+  }
+  else if( updateCredit ) {
+    return <span className={className}><Loader /> {text.loader.credit.update} </span>
+  }
+  else if( deleteCredit ) {
+    return <span className={className}><Loader /> {text.loader.credit.delete} </span>
+  }
+
+  if( postPayment ) {
+    return <span className={className}><Loader /> {text.loader.payment.new} </span>
+  }
+  else if( updatePayment ) {
+    return <span className={className}><Loader /> {text.loader.payment.update} </span>
+  }
+  else if( deletePayment ) {
+    return <span className={className}><Loader /> {text.loader.payment.delete} </span>
+  }
+
+  if( getReports ) {
+    return <span className={className}><Loader /> {text.loader.report.get} </span>
+  }
+  else if( postReport ) {
+    return <span className={className}><Loader /> {text.loader.report.post} </span>
+  }
+})
+
+/* eslint-disable-next-line */
+export const Error = ({ searchList }:{ currentUser?: boolean, searchList?: boolean }) => {
+  if( searchList ) {
+    return <ErrorIcon className='p-1 stroke-destructive' />
+  }
+  return <div className='!flex-row'>
+      <h2 className='font-bold text-destructive text-2xl'>:&nbsp;(</h2>
+      <p className='italic text-sm'>  {text.error} </p> 
+    </div>
+} 
+
 Layout.dispalyname = 'Layout'
+Error.dispalyname = 'LayoutError'
 
 const text = {
   title: 'Matcor',
+  error: 'Ups!!! ha ocurrido un error inesperado',
+  loader: {
+    user: {
+      new: "Creando usuario",
+      update: "Actualizando usuario",
+      delete: "Eliminando usuario(s)",
+      get: "Cargando usuario(s)"
+    },
+    client: {
+      new: "Creando cliente",
+      update: "Actualizando cliente",
+      delete: "Eliminando cliente(s)",
+      get: "Cargando cliente(s)"
+    },
+    credit: {
+      new: "Creando prestamo",
+      update: "Actualizando prestamo",
+      delete: "Eliminando prestamo(s)",
+      get: "Cargando prestamo(s)"
+    },
+    payment: {
+      new: "Creando pago",
+      update: "Actualizando pago",
+      delete: "Eliminando pago(s)",
+      get: "Cargando pago(s)"
+    },
+    report: {
+      get: "Cargando reporte(s)",
+      post: "Creando reporte(s)"
+    }
+  },
   navegation: {
     credit: { title: 'Prestamos', url: '/credit', Icon: icons?.CreditCard },
     client: { title: 'Clientes', url: '/client', Icon: icons?.Award },
@@ -482,10 +737,9 @@ const text = {
     description: ({ username }: { username: string }) => username,
   },
   search: {
-    placeholder: ({ pathname }: { pathname?: string }) =>
-      'Buscar ' + getSearch({ pathname }),
+    placeholder: ({ pathname }: { pathname?: string }) => 'Buscar ' + getSearch({ pathname }),
     title: 'Clientes:',
-    current: 'actual',
+    current: 'actual', 
   },
   footer: {
     copyright: 'Todos los derechos reservados',

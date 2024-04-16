@@ -12,15 +12,30 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@radix-ui/react-label'
 import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
-import { Download } from 'lucide-react'
+import { Annoyed, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useEffect, useRef } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { queryOptions, useMutation } from '@tanstack/react-query'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { useRouter } from '@tanstack/react-router'
+import { queryClient } from '../__root'
 
+export const getReportsOpt = {
+  queryKey: [ "get-reports" ],
+  queryFn: getAllReport
+}
+
+export const postReportOpt = {
+  mutationKey: [ "post-report" ],
+  mutationFn: postReportById
+}
 
 export const Route = createFileRoute('/_layout/report')({
   component: Report,
-  loader: getAllReport,
+  errorComponent: Error,
+  pendingComponent: Pending,
+  loader: () => queryClient.ensureQueryData( queryOptions( getReportsOpt ) ),
 })
 
 /* eslint-disable-next-line */
@@ -28,14 +43,13 @@ interface TReportProps {
   reports?: TREPORT_GET_ALL
 }
 
+const LENGTH = 5
+
 /* eslint-disable-next-line */
 export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportProps) {
   const reports = Route.useLoaderData() ?? _reports
   const form = reports?.map( () => useRef<HTMLFormElement>(null) ) 
-  const { mutate: reportById } = useMutation({
-    mutationKey: ["post-reports-by-id"],
-    mutationFn: postReportById
-  })
+  const { mutate: reportById } = useMutation( postReportOpt )
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
@@ -124,7 +138,11 @@ function FormElement({
   required?: boolean
 }) {
   if (type === 'date')
-    return <DatePicker required={required} label="Seleccione una fecha" name={name} />
+    return <DatePicker
+    required={required}
+    label="Seleccione una fecha"
+    name={name} 
+  />
   return (
     <Input
       type={typeDataByName(type)}
@@ -135,11 +153,59 @@ function FormElement({
   )
 }
 
+/* eslint-disable-next-line */
+export function Pending() {
+  return <>
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Skeleton className='w-48 h-8' />
+        </div>
+        <Separator />
+        <div className='flex flex-col flex-wrap gap-4 px-2'>
+        {Array.from( { length: LENGTH } )?.map( (_, index) => 
+          <Card key={index} className='shadow-lg' >
+            <CardHeader> <Skeleton className='w-1/4 h-6' /> </CardHeader>
+            <CardContent>
+              <div className="flex flex-col items-start gap-4">
+                <Skeleton className='w-full h-6' /> 
+                <Skeleton className='w-full h-6' /> 
+                <Skeleton className='w-1/4 h-6' /> 
+              </div>
+            </CardContent>
+          </Card>
+          )}
+        </div>
+    </div>
+  </>
+}
+
+/* eslint-disable-next-line */
+export function Error() {
+  const { history } = useRouter()
+  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+    history.back()
+  }
+  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
+      <Annoyed  className='animate-bounce' />
+      <div className='space-y-2'>
+        <h1 className='font-bold'>{text.error}</h1>
+        <p className='italic'>{text.errorDescription}</p>
+        <Separator />
+        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+      </div>
+    </div>
+}
+
 Report.dispalyname = 'Report'
+Error.dispalyname = 'ReportError'
+Pending.dispalyname = 'ReportPending'
 
 const text = {
   title: 'Reportes:',
   browser: 'Reportes',
+  error: 'Ups!!! ha ocurrido un error',
+  errorDescription: 'El listado de reportes ha fallado.',
+  back: 'Intente volver a la pestaña anterior',
   comment: {
     label: 'Comentario:',
     placeholder: 'Escriba un comentario',

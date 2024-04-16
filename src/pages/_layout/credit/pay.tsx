@@ -6,23 +6,30 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
-import { useContext, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import styles from "@/styles/global.module.css"
 import { Checkbox } from '@/components/ui/checkbox'
-import { postPaymentId, type TPAYMENT_POST_BODY } from "@/api/payment";
-import { type TCREDIT_GET_FILTER, type TCREDIT_GET } from '@/api/credit'
+import { type TPAYMENT_POST, type TPAYMENT_POST_BODY } from "@/api/payment";
+import { type TCREDIT_GET } from '@/api/credit'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
-import { _creditSelected } from "@/pages/_layout/credit";
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { useMutation } from '@tanstack/react-query'
 import { formatISO } from 'date-fns'
+import { postPaymentOpt } from "@/pages/_layout/credit_/$creditId/pay"
+
+type TSearch = {
+  name: string
+  pay: number
+  creditId: number
+}
 
 export const Route = createFileRoute('/_layout/credit/pay')({
   component: PaySelectedCredit,
+  validateSearch: (search: TSearch) => (search)
 })
 
 /* eslint-disable-next-line */
@@ -34,15 +41,54 @@ interface TPaySelectedCreditProps {
 type TFormName = keyof Omit<TPAYMENT_POST_BODY, "credito_id">
 
 /* eslint-disable-next-line */
-export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPaySelectedCreditProps ) {
+export function PaySelectedCredit( {}: TPaySelectedCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const credit = useContext(_creditSelected) ?? {} as TCREDIT_GET_FILTER
   const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
-  const { mutate: createPayment } = useMutation({
-    mutationKey: ["create-pay"],
-    mutationFn: postPaymentId,
+  const { pay, name, creditId } = Route.useSearch()
+
+const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = ( _, items ) => {
+    const description = text.notification.decription({
+      username: name,
+      number: +items?.valor_del_pago,
+    })
+
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+    })
+
+    pushNotification({
+      date: new Date(),
+      action: "POST",
+      description,
+    })
+  }
+
+  const onError: ((error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = ( ) => {
+    const description = text.notification.error({
+      username: name,
+    })
+
+    const onClick = () => {}
+
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'destructive',
+      action: (
+        <ToastAction altText="action from new user" onClick={onClick}>
+            {text.notification.retry}
+        </ToastAction>
+      ),
+    })
+  }
+
+  const { mutate: createPayment } = useMutation({ ...postPaymentOpt,
+    onSuccess,
+    onError
   })
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -58,46 +104,14 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
       return [ key, value ]
     })) as Record<TFormName, string>
 
-    const description = text.notification.decription({
-      username: credit.nombre_del_cliente,
-      number: +items?.valor_del_pago,
+    createPayment({
+        valor_del_pago: +items?.valor_del_pago,
+        comentario: items?.comentario ?? "",
+        credito_id: creditId,
+        fecha_de_pago: formatISO( items?.fecha_de_pago ?? new Date() ) 
     })
 
-    const action =
-      ({ ...items }: Record<TFormName, string>) =>
-      () => {
-      createPayment({
-          valor_del_pago: +items?.valor_del_pago,
-          comentario: items?.comentario ?? "",
-          credito_id: credit?.id,
-          fecha_de_pago: formatISO(items?.fecha_de_pago ?? new Date())
-      })
-      pushNotification({
-          date: new Date(),
-          action: "POST",
-          description,
-        })
-      }
-
-    const timer = setTimeout(action(items), 6 * 1000)
     setOpen({ open: !open })
-
-    const onClick = () => {
-      clearTimeout(timer)
-    }
-
-    toast({
-      title: text.notification.titile,
-      description,
-      variant: 'default',
-      action: (
-        <ToastAction altText="action from new user">
-          <Button variant="default" onClick={onClick}>
-            {text.notification.undo}
-          </Button>
-        </ToastAction>
-      ),
-    })
 
     form.current.reset()
     ev.preventDefault()
@@ -127,17 +141,18 @@ export function PaySelectedCredit( { credit: _credit = {} as TCREDIT_GET }: TPay
           <Input
             required
             min={0}
+            step={1}
             name={'valor_del_pago' as TFormName}
             type="number"
             placeholder={text.form.amount.placeholder}
-            defaultValue={ credit?.valor_de_cuota }
+            defaultValue={ pay }
           />
         </Label>
         <Label className='!col-span-1'>
           <span>{text.form.date.label} </span>
           <DatePicker name={"fecha_de_pago" as TFormName}
             label={text.form.date.placeholder}
-            className='border border-primary'
+            className='!border-1 !border-ring'
           />
         </Label>
         <Label className='cols-span-full'>
@@ -210,8 +225,8 @@ const text = {
     titile: 'Ejecucion de un pago',
     decription: ({ username, number }: { username: string, number: number }) =>
       'Se ha pagado la cuota con un monto de $' + number + " del usuario " + username + ' con exito.',
-    error: 'Error: en el pago de la cuota',
-    undo: 'Deshacer',
+    error: ({username}:{username: string}) => 'Ha fallado el pago de la cuota del usuario ' + username,
+    retry: 'Reintentar',
   },
   form: {
     amount: {

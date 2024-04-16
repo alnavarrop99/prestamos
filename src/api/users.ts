@@ -54,11 +54,14 @@ export const loginUser: TGetUserLogin = async ( params ) => {
     formData?.set(name, value)
   }
 
-  const data = await fetch(import.meta.env.VITE_API + '/users/login', {
+  const res = await fetch(import.meta.env.VITE_API + '/users/login', {
     method: "POST",
     body: formData
   })
-  return data.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const getUserById: TGetUserById = async ( { params: { userId } } ) => {
@@ -69,11 +72,14 @@ export const getUserById: TGetUserById = async ( { params: { userId } } ) => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const data = await fetch(import.meta.env.VITE_API + '/users/by_id/' + userId, {
+  const res = await fetch(import.meta.env.VITE_API + '/users/by_id/' + userId, {
     method: "GET",
     headers
   })
-  return data.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const getUsersList: TGetUsersList = async () => {
@@ -84,11 +90,14 @@ export const getUsersList: TGetUsersList = async () => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const data = await fetch(import.meta.env.VITE_API + '/users/list', {
+  const res = await fetch(import.meta.env.VITE_API + '/users/list', {
     method: "GET",
     headers
   })
-  return data.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const postUser: TPostUser = async ( params ) => {
@@ -99,12 +108,15 @@ export const postUser: TPostUser = async ( params ) => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const data = await fetch(import.meta.env.VITE_API + '/users/create', { 
+  const res = await fetch(import.meta.env.VITE_API + '/users/create', { 
     method: "POST",
     body: JSON.stringify(params),
     headers
   })
-  return data.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const pathUserById: TPathUserById = async ( { userId , params } ) => {
@@ -115,12 +127,15 @@ export const pathUserById: TPathUserById = async ( { userId , params } ) => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const data = await fetch(import.meta.env.VITE_API + '/users/' + userId, { 
+  const res = await fetch(import.meta.env.VITE_API + '/users/' + userId, { 
     method: "PATCH",
     body: JSON.stringify(params),
     headers
   })
-  return data.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const getCurrentUser: TGetCurrentUser = async () => {
@@ -131,11 +146,14 @@ export const getCurrentUser: TGetCurrentUser = async () => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const data = await fetch(import.meta.env.VITE_API + '/users/get_current', {
+  const res = await fetch(import.meta.env.VITE_API + '/users/get_current', {
     method: "GET",
     headers
   })
-  return data.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 // TODO: Not Backend definition
@@ -145,9 +163,12 @@ export const getCurrentUser: TGetCurrentUser = async () => {
 //   const headers = new Headers()
 //   headers.append("Authorization","Bearer " +  token)
 //
-//   const data = await fetch(import.meta.env.VITE_API + '/users/get_current', {
+//   const res = await fetch(import.meta.env.VITE_API + '/users/get_current', {
 //     method: "GET",
 //     headers
 //   })
-//   return data.json()
+//
+//   if( !res.ok ) throw Error()
+//
+//   return res.json()
 // }

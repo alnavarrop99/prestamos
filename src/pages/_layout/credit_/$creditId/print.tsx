@@ -17,15 +17,15 @@ import { type TCREDIT_GET } from '@/api/credit'
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { Navigate } from '@tanstack/react-router'
-import { PrintCredit, _creditSelected } from '../../credit'
+import { PrintCredit } from '../../credit'
 import { useReactToPrint } from 'react-to-print'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { _clientContext, _selectedCredit } from '../$creditId'
-import { TCLIENT_GET } from '@/api/clients'
-import { Input } from '@/components/ui/input'
+import { _client, _credit } from '../$creditId'
+import { format } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
   component: PrintCreditById,
+  validateSearch: ( search ) => ( search as { index: number } )
 })
 
 /* eslint-disable-next-line */
@@ -39,24 +39,28 @@ type TOptState = keyof typeof options
   
 
 /* eslint-disable-next-line */
-export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPaymentCreditByIdProps ) {
+export function PrintCreditById( {}: TPaymentCreditByIdProps ) {
   const form = useRef<HTMLFormElement>(null)
-  const [ { opt, payIndex }, setOpt ] = useState<{ payIndex?: number, opt?: TOptState }>({})
-  const [ credit ] = useContext(_selectedCredit) ?? [ {} as TCREDIT_GET ]
-  const [ client ] = useContext(_clientContext) ?? [ {} as TCLIENT_GET ]
+  const credit = useContext(_credit)
+  const client = useContext(_client)
   const { open, setOpen } = useStatus()
   const ref = useRef< React.ComponentRef< typeof PrintCredit > >(null)
+  const search = Route.useSearch()
+  const [ { opt, payIndex }, setOpt ] = useState<{ payIndex?: number, opt?: TOptState }>({
+    opt: !!Object?.values(search)?.length ? "especific" : undefined,
+    payIndex: search?.index,
+  })
 
   const handlePrint = useReactToPrint({
     content: () => ref?.current,
     documentTitle: "Pago-" + new Date(),
   })
 
-  const onChange: React.ChangeEventHandler< React.ComponentRef< typeof Input > > = ( ev ) => {
-    const value = +ev.target.value - 1
-    if( value < 0 && value >= credit?.pagos?.length) return; 
-    setOpt( { opt, payIndex: value })
-
+  const onChange = ( value: string ) => {
+     if( !credit?.pagos?.length ) return;
+     const pay = +value 
+     if( pay < 0 && pay >= credit?.pagos?.length) return; 
+     setOpt({ opt, payIndex: pay })
   }
 
   const onValueChange = ( value: string ) => {
@@ -99,7 +103,13 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
       >
         <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500'>
           <span>{text.form.options.label} </span>
-          <Select required name={'options'} value={opt} onValueChange={onValueChange}>
+          <Select 
+              required
+              name={'options'}
+              value={opt}
+              onValueChange={onValueChange}
+              defaultValue={opt}
+            >
             <SelectTrigger className="w-full">
               <SelectValue placeholder={text.form.options.placeholder} />
             </SelectTrigger>
@@ -111,14 +121,19 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
         { opt === "especific" &&
         <Label>
           <span>{text.form.pay.label}</span>
-          <Input 
+            <Select 
               required
-              onChange={onChange}
-              type='number'
-              min={1}
-              max={credit?.pagos?.length}
-              placeholder={text.form.pay.placeholder} 
-           />
+              name={'payment'} 
+              onValueChange={onChange}
+              defaultValue={typeof payIndex !== "undefined" ? ""+payIndex : undefined}
+            >
+            <SelectTrigger className="w-full !border-ring !border-1">
+              <SelectValue placeholder={text.form.pay.placeholder} />
+            </SelectTrigger>
+            <SelectContent className='[&_*]:cursor-pointer'>
+              { credit?.pagos?.map( (_, index ) => ( <SelectItem value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
+            </SelectContent>
+          </Select>
         </Label> }
       </form>
       <DialogFooter >
@@ -141,15 +156,15 @@ export function PrintCreditById( { credit: _credit = {} as TCREDIT_GET }: TPayme
                   {text.button.print}
               </Button>
             </HoverCardTrigger>
-          { opt && <HoverCardContent side='right' className='bg-secondary-foreground rounded-md'>
+          { opt && client && credit && <HoverCardContent side='right' className='bg-secondary-foreground rounded-md'>
               <PrintCredit
                 {...{
                   client: client?.nombres + " " + client?.apellidos,
                   ssn: client?.numero_de_identificacion,
                   telephone: client?.telefono,
                   phone: client?.celular,
-                  // TODO: date: format( pay?.fecha_de_pago ?? "",  "dd-MM-yyyy / hh:mm aaaa" ),
-                  date: pay?.fecha_de_pago ?? "",
+                  date: format( pay?.fecha_de_pago ?? "",  "dd/MM/yyyy - hh:mm aaaa" ),
+                  // date: pay?.fecha_de_pago ?? "",
                   pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
                   mora: mora ? +mora.toFixed(2) : undefined,
                   cuoteNumber: (payIndex ?? credit?.pagos?.length - 1) + 1,
@@ -191,7 +206,7 @@ const text = {
   form: {
     pay: {
       label: 'Numero del pago:',
-      placeholder: 'Escriba el numero del pago',
+      placeholder: 'Seleccione el pago',
     },
     options: {
       label: 'Opciones:',

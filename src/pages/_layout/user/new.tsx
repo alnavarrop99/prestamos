@@ -9,14 +9,18 @@ import { toast } from '@/components/ui/use-toast'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
 import styles from '@/styles/global.module.css'
-import { useContext, useRef, useState } from 'react'
-import { Eye, EyeOff } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { Eye as PassOn, EyeOff as PassOff } from 'lucide-react'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { type TUSER_POST, postUser } from '@/api/users'
-import { getRolById, getRolByName, listRols } from "@/lib/type/rol";
-import { type TUsersState, _usersContext } from '@/pages/_layout/user'
+import { type TUSER_GET, type TUSER_POST_BODY, postUser } from '@/api/users'
+import { getRolByName, listRols } from "@/lib/type/rol";
 import { useStatus } from '@/lib/context/layout'
+
+export const postUserOpt = {
+  mutationKey: ["create-user"],
+  mutationFn: postUser,
+}
 
 export const Route = createFileRoute('/_layout/user/new')({
   component: NewUser,
@@ -36,24 +40,55 @@ type TFormName = "firstName" | "lastName" | "rol" | "password" | "confirmation"
 
 /* eslint-disable-next-line */
 export function NewUser({}: TNewUserProps) {
-  const [ users, setUsers ] = useContext(_usersContext) ?? [ [], () => {} ] as [TUsersState[], React.Dispatch<React.SetStateAction<TUsersState[]>>]
-  const [ passItems, setPassword ] = useState<TPassoword>({  })
+  const [ password, setPassword ] = useState<TPassoword>({  })
   const form = useRef<HTMLFormElement>(null)
   const { pushNotification } = useNotifications()
   const { open } = useStatus()
 
-  const onSuccess: (data: TUSER_POST) => unknown = (newUser) => {
-    setUsers( [ ...users?.slice(0, -1), { ...(users?.at(-1) ?? {} as TUsersState), ...newUser } ]  )
+  const onSuccess: ((data: TUSER_GET, variables: TUSER_POST_BODY, context: unknown) => unknown) = ( _, items ) => {
+    const description = text.notification.decription({
+      username: items?.nombre,
+    })
+
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'default',
+    })
+
+    pushNotification({
+      date: new Date(),
+      action: "POST",
+      description,
+    })
   }
 
-  const { mutate: createUser } = useMutation( {
-    mutationKey: ["create-user"],
-    mutationFn: postUser,
+  const onError: ((error: Error, variables: TUSER_POST_BODY, context: unknown) => unknown) = ( _, items ) => {
+    const description = text.notification.error({
+      username: items?.nombre,
+    })
+
+    const onClick = () => {}
+
+    toast({
+      title: text.notification.titile,
+      description,
+      variant: 'destructive',
+      action: (
+        <ToastAction altText="action from new user" onClick={onClick}>
+            {text.notification.retry}
+        </ToastAction>
+      ),
+    })
+  }
+
+  const { mutate: createUser } = useMutation( { ...postUserOpt,
     onSuccess,
+    onError
   })
 
-  const onClick: ( prop:{ prop: keyof TPassoword } ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( { prop } ) => () => {
-    setPassword( { ...passItems, [ prop ]: !passItems?.[prop]  } )
+  const onClick: ( prop: keyof TPassoword ) => React.MouseEventHandler< React.ComponentRef< typeof Button > > = ( prop ) => () => {
+    setPassword( { ...password, [ prop ]: !password?.[prop]  } )
   }
 
   const onSubmit: React.FormEventHandler< HTMLFormElement > = (ev) => {
@@ -65,60 +100,15 @@ export function NewUser({}: TNewUserProps) {
       return [ key, value ]
     })) as Record<TFormName, string>
 
-    const description = text.notification.decription({
-      username: items?.firstName + ' ' + items?.lastName,
+    createUser({
+      nombre: items?.firstName + " " + items?.lastName,
+      password: items?.password,
+      rol_id: +items?.rol
     })
-
-    const action =
-      ({ ...items }: Record<TFormName, string>) =>
-      () => {
-        createUser({
-          nombre: items?.firstName + " " + items?.lastName,
-          password: items?.password,
-          rol_id: +items?.rol
-        })
-        pushNotification({
-          date: new Date(),
-          action: "POST",
-          description,
-        })
-      }
-
-    const timer = setTimeout(action(items), 6 * 1000)
-    setUsers( [...users, { 
-      nombre: items?.firstName + " " +items?.lastName,
-      rol: getRolById( { rolId: +items?.rol } )?.nombre,
-      id: users?.at(-1)?.id ?? 0 + 1,
-      menu: false,
-      active: false,
-      selected: false,
-      clientes: []
-    }] )
-
-    const onClick = () => {
-      clearTimeout(timer)
-    }
-
-    if ( password === confirmation ) {
-      toast({
-        title: text.notification.titile,
-        description,
-        variant: 'default',
-        action: (
-          <ToastAction altText="action from new user">
-            <Button variant="default" onClick={onClick}>
-              {text.notification.undo}
-            </Button>
-          </ToastAction>
-        ),
-      })
-    }
-
+     
     form.current.reset()
     ev.preventDefault()
   }
-
-  const { password, confirmation } = passItems
 
   return (
     <>
@@ -163,7 +153,7 @@ export function NewUser({}: TNewUserProps) {
               required
               name={'rol' as TFormName} 
               defaultValue={""+getRolByName({ rolName: "Administrador" })?.id}>
-            <SelectTrigger className="w-full ring-ring ring-1">
+            <SelectTrigger className="w-full !border-ring !border-1">
               <SelectValue placeholder={text.form.rol.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
@@ -181,16 +171,16 @@ export function NewUser({}: TNewUserProps) {
             <Button
               type="button"
               className="w-fit p-1.5"
-              onClick={onClick({ prop: "password" })}
-              variant={!password ? 'outline' : 'default'}
+              onClick={onClick("password")}
+              variant={!password.password ? 'outline' : 'default'}
             >
-              {!password ? <Eye /> : <EyeOff />}
+              {!password.password ? <PassOn /> : <PassOff />}
             </Button>
             <Input
               id='user-password'
               required
               name={'password' as TFormName}
-              type={!password ? "password" : "text"}
+              type={!password.password ? "password" : "text"}
               placeholder={text.form.password.current.placeholder}
             />
           </div>
@@ -203,16 +193,16 @@ export function NewUser({}: TNewUserProps) {
             <Button
               type="button"
               className="w-fit p-1.5"
-              onClick={onClick({ prop: "confirmation" })}
-              variant={!confirmation ? 'outline' : 'default'}
+              onClick={onClick("confirmation")}
+              variant={!password?.confirmation ? 'outline' : 'default'}
             >
-              {!confirmation ? <Eye /> : <EyeOff />}
+              {!password?.confirmation ? <PassOn /> : <PassOff />}
             </Button>
             <Input
               id='user-confirmation'
               required
               name={'confirmation' as TFormName}
-              type={!confirmation ? "password" : "text"}
+              type={!password?.confirmation ? "password" : "text"}
               placeholder={text.form.password.confirmation.placeholder}
             />
           </div>
@@ -251,8 +241,9 @@ const text = {
     titile: 'Creacion de un nuevos usuario',
     decription: ({ username }: { username: string }) =>
       'Se ha creado el usuario ' + username + ' con exito.',
-    error: 'Error: la creacion de usuario ha fallado',
-    undo: 'Deshacer',
+    error: ({ username }: { username: string }) =>
+    'La creacion del usuario' + username + 'ha fallado',
+    retry: 'Deshacer',
   },
   form: {
     firstName: {

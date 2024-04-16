@@ -1,13 +1,19 @@
 import { HttpResponse, http } from 'msw'
-import { getRolById } from "@/lib/type/rol"
+import { TROLES, getRolById } from "@/lib/type/rol"
 import type { TUSER_LOGIN, TUSER_LOGIN_BODY, TUSER_GET, TUSER_POST_BODY } from '@/api/users'
 import { users, token } from '@/mocks/data'
+
+export let current = users?.get(1)
 
 const loginUser = http.post(import.meta.env.VITE_API + '/users/login', async ({ request }) => {
   const { username, password } =  Object.fromEntries( (await request.formData())?.entries() ) as TUSER_LOGIN_BODY
 
   if( !username || !password ) throw new Error("Fail request params")
-  if( username !== "admin" || password !== "app2002" ) throw new Error("username and password are be incorrect")
+  if( ( username !== "admin" && username !== "user" && username !== "cobrador") || password !== "app2002" ) throw new Error("username and password are be incorrect")
+
+  if( username === "admin" ) current = [...users?.values()]?.find( ({ rol }) => ( rol === "Administrador" as TROLES ) )
+  else if( username === "user" ) current = [...users?.values()]?.find( ({ rol }) => ( rol === "Usuario" as TROLES ) )
+  else if( username === "cobrador" ) current = [...users?.values()]?.find( ({ rol }) => ( rol === "Cobrador" as TROLES ) )
 
   return HttpResponse.json<TUSER_LOGIN>({
     access_token: token
@@ -17,7 +23,6 @@ const loginUser = http.post(import.meta.env.VITE_API + '/users/login', async ({ 
 const listUsers = http.all(import.meta.env.VITE_API + '/users/list', async ( { request } ) => {
   const auth = request.headers.get("Authorization")
   if( !auth || !auth.includes(token) ) throw new Error("not auth")
-
   return HttpResponse.json<TUSER_GET[]>( Array.from(users?.values()))
 })
 
@@ -72,7 +77,7 @@ const currentUser = http.get( import.meta.env.VITE_API + '/users/get_current', a
   const auth = request.headers.get("Authorization")
   if( !auth || !auth.includes(token) ) throw new Error("not auth")
 
-  const user = Array.from(users?.values())?.[0]
+  const user = current
 
   if(!user) throw new Error("User not found")
 
