@@ -175,7 +175,7 @@ export function PrintSelectedCredit() {
                   <SelectValue placeholder={text.form.pay.placeholder} />
                 </SelectTrigger>
                 <SelectContent className='[&_*]:cursor-pointer'>
-                  { credit?.pagos?.map( ( _, index ) => ( <SelectItem key={key} value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
+                  { credit?.pagos?.map( ( _, index ) => ( <SelectItem key={index} value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
                 </SelectContent>
               </Select>
             }
