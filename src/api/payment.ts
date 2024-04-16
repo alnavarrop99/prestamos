@@ -69,11 +69,14 @@ export const getPaymentById: TGetPaymentById = async ({ params: { paymentId } })
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const payment = await fetch(import.meta.env.VITE_API + "/pagos/by_id/" + paymentId, {
+  const res = await fetch(import.meta.env.VITE_API + "/pagos/by_id/" + paymentId, {
     method: "GET",
     headers
   })
-  return payment.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const listPayments: TListPayments = async () => {
@@ -84,11 +87,14 @@ export const listPayments: TListPayments = async () => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const payment = await fetch("/pagos/list", {
+  const res = await fetch("/pagos/list", {
     method: "GET",
     headers,
   })
-  return payment.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const postPaymentId: TPostPaymentById = async (newPayment) => {
@@ -99,12 +105,15 @@ export const postPaymentId: TPostPaymentById = async (newPayment) => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const payment = await fetch(import.meta.env.VITE_API + "/pagos/create", {
+  const res = await fetch(import.meta.env.VITE_API + "/pagos/create", {
     method: "POST",
     body: JSON.stringify(newPayment),
     headers
   })
-  return payment.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const patchPaymentById: TPatchPaymentById = async ( { paymentId, updatePayment }) => {
@@ -115,12 +124,15 @@ export const patchPaymentById: TPatchPaymentById = async ( { paymentId, updatePa
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const payment = await fetch(import.meta.env.VITE_API + "/pagos/" + paymentId, {
+  const res = await fetch(import.meta.env.VITE_API + "/pagos/" + paymentId, {
     method: "PATCH",
     body: JSON.stringify(updatePayment),
     headers
   })
-  return payment.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const deletePaymentById: TDeletePaymentById = async ( { paymentId }) => {
@@ -131,9 +143,12 @@ export const deletePaymentById: TDeletePaymentById = async ( { paymentId }) => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const payment = await fetch(import.meta.env.VITE_API + "/pagos/delete/" + paymentId, {
+  const res = await fetch(import.meta.env.VITE_API + "/pagos/delete/" + paymentId, {
     method: "DELETE",
     headers
   })
-  return payment.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }

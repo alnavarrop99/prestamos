@@ -54,11 +54,15 @@ export function UpdateClientById({ }: TUpdateClientByIdProps) {
   const { clientId } = Route.useParams()
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const { data: clientRes, isSuccess } = useQuery( queryOptions( getClientByIdOpt({ clientId }) ) ) 
+  const { data: clientRes, isSuccess, isError } = useQuery( queryOptions( getClientByIdOpt({ clientId }) ) ) 
   const [ client, setClient ] = useState<TCLIENT_GET | undefined>(undefined) 
   const { open, setOpen } = useStatus()
   const { pushNotification } = useNotifications()
   const init = useRef(client)
+
+  useEffect( () => {
+    if( !clientRes ) throw Error()
+  }, [ isError ] )
 
   const onSuccess = ( data: TCLIENT_POST ) => {
     if( !init?.current?.nombres || !init?.current?.apellidos ) return;

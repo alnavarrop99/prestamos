@@ -17,7 +17,6 @@ const loginUser = http.post(import.meta.env.VITE_API + '/users/login', async ({ 
 const listUsers = http.all(import.meta.env.VITE_API + '/users/list', async ( { request } ) => {
   const auth = request.headers.get("Authorization")
   if( !auth || !auth.includes(token) ) throw new Error("not auth")
-
   return HttpResponse.json<TUSER_GET[]>( Array.from(users?.values()))
 })
 

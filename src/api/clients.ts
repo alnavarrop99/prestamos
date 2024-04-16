@@ -78,7 +78,6 @@ export type TCLIENT_PATCH_BODY = {
 // DELETE
 export type TCLIENT_DELETE = TCLIENT_GET_BASE
 
-
 type TGetClientById = (params: { params: { clientId: string } }) => Promise<TCLIENT_GET>
 type TGetClientsList = () => Promise<TCLIENT_GET_ALL>
 type TPostClient = ( params: TCLIENT_POST_BODY ) => Promise<TCLIENT_POST> 
@@ -97,6 +96,9 @@ export const getClientById: TGetClientById = async ({params: {clientId} }) =>{
     method: "GET",
     headers
   })
+
+  if( !res.ok ) throw Error()
+
   return await res.json()
 } 
 
@@ -112,6 +114,8 @@ export const getClientsList: TGetClientsList =  async () => {
     method: "GET",
     headers
   })
+
+  if( !res.ok ) throw Error()
 
   return await res.json()
 }
@@ -130,6 +134,8 @@ export const postClient: TPostClient =  async ( params ) => {
     headers
   })
 
+  if( !res.ok ) throw Error()
+
   return await res.json()
 }
 
@@ -145,6 +151,9 @@ export const deleteClientsById: TDeleteClientById =  async ( { clientId } ) => {
     method: "DELETE",
     headers,
   })
+
+  if( !res.ok ) throw Error()
+
   return res.json()
 }
 
@@ -161,5 +170,8 @@ export const pathClientById: TPatchClientById =  async ( { clientId, params } ) 
     body: JSON.stringify(params),
     headers
   })
+
+  if( !res.ok ) throw Error()
+
   return res.json()
 }

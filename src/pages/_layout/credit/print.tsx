@@ -70,6 +70,10 @@ export function PrintSelectedCredit( { credit: _credit = {} as TCREDIT_GET_FILTE
   } ) )
 
   useEffect( () => {
+    if( !creditRes ) throw Error()
+  }, [ isError ] )
+
+  useEffect( () => {
     if(!credit){
       creditRes?.then( ( data ) => {
         setCredit(data)

@@ -72,8 +72,8 @@ type TFormName = keyof (Omit<TCREDIT_POST_BODY, "cobrador_id" | "owner_id" | "ga
 /* eslint-disable-next-line */
 export function NewCredit( {}: TNewCreditProps ) {
   const form = useRef<HTMLFormElement>(null)
-  const { data: usersRes, isSuccess: isSuccessUsers } = useQuery( queryOptions( getUsersListOpt ) )
-  const { data: clientsRes, isSuccess: isSuccessClients } = useQuery( queryOptions( getClientListOpt ) )
+  const { data: usersRes, isSuccess: okUsers, isError: errorUsers } = useQuery( queryOptions( getUsersListOpt ) )
+  const { data: clientsRes, isSuccess: okClients, isError: errorClients } = useQuery( queryOptions( getClientListOpt ) )
   const [ installmants, setInstallmants ] = useState< TCuotesState>(initialCuotes)
   const [ { coute, interest, amount }, setCuote ] = useState<{ coute?: number, interest?: number, amount?: number }>({ })
   const { pushNotification } = useNotifications()
@@ -83,6 +83,10 @@ export function NewCredit( {}: TNewCreditProps ) {
   const [ user, setUser ] = useState<  TUSER_GET | undefined >()
   const [ client, setClient ] = useState< TCLIENT_GET_BASE | undefined >()
   const [ ref, setRef ] = useState< TCLIENT_GET_BASE | undefined >()
+
+  useEffect( () => {
+    if( !clientsRes || !usersRes ) throw Error()
+  }, [ errorClients, errorUsers ] )
 
   useEffect(() => {
       if(clientsRes) {
@@ -224,7 +228,7 @@ export function NewCredit( {}: TNewCreditProps ) {
       >
         <Label className='!col-span-1'>
           <span>{text.form.cliente.label} </span>
-          { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
+          { !okUsers && !okClients ? <Skeleton className='w-full h-10' /> :
            <> <Input
             required
             name={'client' as TFormName}
@@ -239,7 +243,7 @@ export function NewCredit( {}: TNewCreditProps ) {
         </Label>
         <Label>
           <span>{text.form.date.label} </span>
-            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
+            { !okUsers && !okClients ? <Skeleton className='w-full h-10' /> :
               <DatePicker
                 name={"fecha_de_aprobacion" as TFormName}
                 label={text.form.date.placeholder}
@@ -248,7 +252,7 @@ export function NewCredit( {}: TNewCreditProps ) {
         </Label>
         <Label>
           <span>{text.form.ref.label} </span>
-            {!isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
+            {!okUsers && !okClients ? <Skeleton className='w-full h-10' /> :
               <Input
                 name={'ref' as TFormName}
                 list='credit-clients'
@@ -260,10 +264,10 @@ export function NewCredit( {}: TNewCreditProps ) {
         <Label className='row-start-2'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
             <span className='after:content-["_*_"] after:text-red-500'>{text.form.amount.label} </span>
-              { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-8 rounded-full h-6' /> : 
+              { !okUsers && !okClients ? <Skeleton className='w-8 rounded-full h-6' /> : 
               <Badge>$</Badge> }
           </div>
-            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
+            { !okUsers && !okClients ? <Skeleton className='w-full h-10' /> :
               <Input
                 required
                 min={1}
@@ -278,11 +282,11 @@ export function NewCredit( {}: TNewCreditProps ) {
         <Label htmlFor='credit-cuote' className='row-start-2'>
            <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
             <span className='after:content-["_*_"] after:text-red-500'>{text.form.interest.label} </span>
-              { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-8 rounded-full h-6' /> :
+              { !okUsers && !okClients ? <Skeleton className='w-8 rounded-full h-6' /> :
               <Badge>%</Badge>
               }
             </div>
-            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
+            { !okUsers && !okClients ? <Skeleton className='w-full h-10' /> :
               <Input
                 id='credit-cuote'
                 required
@@ -299,11 +303,11 @@ export function NewCredit( {}: TNewCreditProps ) {
         <Label htmlFor='credit-pay' className='row-start-2'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
             <span className='after:content-["_*_"] after:text-red-500'>{text.form.cuote.label} </span>
-              { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-8 rounded-full h-6' /> :
+              { !okUsers && !okClients ? <Skeleton className='w-8 rounded-full h-6' /> :
                 <Badge>#</Badge>
               }
            </div>
-            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
+            { !okUsers && !okClients ? <Skeleton className='w-full h-10' /> :
               <Input
                 id='credit-pay'
                 required
@@ -320,7 +324,7 @@ export function NewCredit( {}: TNewCreditProps ) {
         </Label>
         <Label className='[&>span]:after:content-["_*_"] [&>span]:after:text-red-500 row-start-3'>
           <span>{text.form.frecuency.label} </span>
-            { !isSuccessUsers && !isSuccessClients ?  <Skeleton className='w-full h-10' /> :
+            { !okUsers && !okClients ?  <Skeleton className='w-full h-10' /> :
               <Select 
                 required
                 name={'frecuencia_del_credito_id' as TFormName}
@@ -337,7 +341,7 @@ export function NewCredit( {}: TNewCreditProps ) {
           </Label>
         <Label className='row-start-3'>
           <span>{text.form.user.label} </span>
-            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> : <>
+            { !okUsers && !okClients ? <Skeleton className='w-full h-10' /> : <>
               <Input
                 required
                 name={'user' as TFormName}
@@ -353,7 +357,7 @@ export function NewCredit( {}: TNewCreditProps ) {
         <Label htmlFor='credit-installments' className='row-start-4'>
           <div className='flex gap-2 items-center justify-between [&>div]:flex [&>div]:gap-2 [&>div]:items-center [&_label]:flex [&_label]:gap-2 [&_label]:items-center [&_label]:cursor-pointer'>
           <span className='after:content-["_*_"] after:text-red-500'>{text.form.installments.label} </span>
-              { !isSuccessUsers && !isSuccessClients ?
+              { !okUsers && !okClients ?
               <div>
                 <Skeleton className='w-8 rounded-full h-6' />
                 <Skeleton className='w-8 rounded-full h-6' />
@@ -364,7 +368,7 @@ export function NewCredit( {}: TNewCreditProps ) {
               </RadioGroup>
               }
           </div>
-             { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
+             { !okUsers && !okClients ? <Skeleton className='w-full h-10' /> :
             <Input
               id='credit-installments'
               required
@@ -379,7 +383,7 @@ export function NewCredit( {}: TNewCreditProps ) {
         </Label>
         <Label className='row-start-4'>
           <span>{text.form.aditionalDays.label} </span>
-            { !isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-10' /> :
+            { !okUsers && !okClients ? <Skeleton className='w-full h-10' /> :
             <Input
               min={1}
               max={10}
@@ -390,7 +394,7 @@ export function NewCredit( {}: TNewCreditProps ) {
         </Label>
         <Label>
           <span>{text.form.comment.label}</span>
-           {!isSuccessUsers && !isSuccessClients ? <Skeleton className='w-full h-32' /> :
+           {!okUsers && !okClients ? <Skeleton className='w-full h-32' /> :
             <Textarea
               rows={5}
               name={'comentario' as TFormName}
@@ -408,7 +412,7 @@ export function NewCredit( {}: TNewCreditProps ) {
           <li><span>Monto por cuota</span>: {"$" + getAmountCuote({ interest, amount, coute })}. </li>
         </ul>
         <div className='space-x-2'>
-        { !isSuccessUsers && !isSuccessClients ?  <>
+        { !okUsers && !okClients ?  <>
           <Skeleton className='w-24 h-12 inline-block' />
           <Skeleton className='w-24 h-12 inline-block' />
         </> : <>

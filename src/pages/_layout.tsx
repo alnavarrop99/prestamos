@@ -85,7 +85,7 @@ export const getCurrentUserOpt = {
     clients: defer( queryClient.ensureQueryData( queryOptions( getClientListOpt ) )) 
   }),
   beforeLoad: async (  ) => {
-    const { token, userId } = useToken.getState()
+    const { token } = useToken.getState()
     if( !token ){
       throw redirect({
         to: "/login",
@@ -119,20 +119,22 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
   const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, menu: false })
   const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()
-  const  { data: currentUserRes, isSuccess: isCurrentUser, isError: errorCurrentUser, refetch } = useQuery( queryOptions( getCurrentUserOpt ) )
-  const  { data: clientsRes, isSuccess: isClients, error: errorClients } = useQuery( queryOptions( getClientListOpt ) )
+  const  { data: currentUserRes, isSuccess: okCurrentUser, isError: errorCurrentUser, isPending: pendingCurrentUser  , refetch } = useQuery( queryOptions( getCurrentUserOpt ) )
+  const  { data: clientsRes, isSuccess: okClients, error: errorClients, isPending: _pendingClients } = useQuery( queryOptions( getClientListOpt ) )
   const [clients, setClients] = useState<TCLIENT_GET_ALL | undefined>(undefined)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
   const { deleteToken, setUserId, userId, name } = useToken()
   const { history } = useRouter()
+  const [ pendingClients, setPendingClients  ] = useState<boolean>(_pendingClients)
 
   useEffect( () => {
     refetch( {
       cancelRefetch: !userId
-    } )?.then( ( { data } ) => {
+    } )?.then( ( { data, isPending} ) => {
         if( !data ) return;
         setUserId( data.id )
+        setPendingClients( _pendingClients || isPending )
       } ) 
   }, [ userId ] )
 
@@ -140,14 +142,14 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
     if( !!userId  ) {
        return () => { setUserId( undefined ) }
     }
-    if( !currentUserRes || !isCurrentUser || errorCurrentUser) return; 
+    if( !currentUserRes || !okCurrentUser || errorCurrentUser) return; 
     setUserId( currentUserRes.id )
-  }, [ currentUserRes, isCurrentUser, errorCurrentUser ] )
+  }, [ currentUserRes, okCurrentUser, errorCurrentUser ] )
 
   useEffect(() => {
-    if( !clientsRes || !isClients || errorClients ) return;
+    if( !clientsRes || !okClients || errorClients ) return;
     setClients(clientsRes)
-  }, [ clientsRes, isClients, errorClients ])
+  }, [ clientsRes, okClients, errorClients ])
 
   useEffect(() => {
     const onNotwork = () => {
@@ -329,14 +331,14 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
                       variant={ !search ? 'ghost' : 'default' }
                     >
                       <User />
-                        { !isClients ? <BoundleLoader /> : errorClients ? <Error searchList /> :
-                          <Badge
+                        {errorClients && <Error searchList /> }
+                        {pendingClients && <BoundleLoader /> }
+                        { okClients && <Badge
                             className={clsx( { '!hidden': search, }, styles?.['search-badge-animation'])}
                             variant={!search ? 'default' : 'secondary'}
                           >
                             {clients?.length}
-                          </Badge>
-                        }
+                        </Badge> } 
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="absolute -start-16 top-2 w-80" hidden={!clients?.length}>
@@ -399,14 +401,15 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
                   </Badge>
                 </HoverCardTrigger>
                 <HoverCardContent>
-                  { !isCurrentUser || !userId ? <div className='p-2'>
+                  { errorCurrentUser && <Error currentUser /> }
+                  { pendingCurrentUser && <div className='p-2'>
                       <Skeleton className='ring-1 ring-ring w-10 h-10 rounded-full'/>
                       <ul className="space-y-2 [&>li]:w-fit">
                         <li> <Skeleton className="w-32 h-5" /> </li>
                         <li> <Skeleton className="w-16 h-4" /> </li>
                       </ul>
-                    </div> : errorCurrentUser ? <Error currentUser /> : 
-                    <div className='p-2'>
+                    </div> } 
+                  { okCurrentUser && <div className='p-2'>
                       <Avatar className='ring-1 ring-ring'>
                          <AvatarFallback>{name?.split(" ")?.map( (items) => (items?.[0]) )}</AvatarFallback>
                       </Avatar>
@@ -420,8 +423,7 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
                         >{currentUserRes.nombre}</Link> </li>
                         <li> <Badge> {currentUserRes?.rol} </Badge> </li>
                       </ul>
-                    </div>
-                  }
+                    </div> }
               </HoverCardContent>
               </HoverCard>
             <Link to={"/"}>

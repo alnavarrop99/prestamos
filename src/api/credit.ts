@@ -147,12 +147,14 @@ export const getCreditById: TGetCreditById = async ({ params: { creditId} }) => 
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/by_id/" + creditId,{
+  const res = await fetch(import.meta.env.VITE_API + "/creditos/by_id/" + creditId,{
     method: "GET",
     headers
   })
 
-  return creditById.json()
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const getCreditsList: TGetCreditsList =  async () => {
@@ -163,11 +165,14 @@ export const getCreditsList: TGetCreditsList =  async () => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/list",{
+  const res = await fetch(import.meta.env.VITE_API + "/creditos/list",{
     method: "GET",
     headers
   })
-  return creditById.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const getCreditsFilter: TGetCreditsFilter = ( filter = { cliente: null, fecha_de_pago: format( new Date(2020,1,1), "yyyy-MM-dd" ), saldo_en_mora: null, saldo_por_pagar: null } ) => async () => {
@@ -178,13 +183,15 @@ export const getCreditsFilter: TGetCreditsFilter = ( filter = { cliente: null, f
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/filtrar_prestamos",{
+  const res = await fetch(import.meta.env.VITE_API + "/creditos/filtrar_prestamos",{
     method: "POST",
     body: JSON.stringify(filter),
     headers
   })
 
-  return creditById.json()
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const postCredit: TPostCredit =  async ( newCredit ) => {
@@ -195,12 +202,15 @@ export const postCredit: TPostCredit =  async ( newCredit ) => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/create",{
+  const res = await fetch(import.meta.env.VITE_API + "/creditos/create",{
     method: "POST",
     body: JSON.stringify(newCredit),
     headers
   })
-  return creditById.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const deleteCreditById: TDeleteCreditById =  async ({ creditId }) => {
@@ -211,11 +221,14 @@ export const deleteCreditById: TDeleteCreditById =  async ({ creditId }) => {
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/delete/" + creditId,{
+  const res = await fetch(import.meta.env.VITE_API + "/creditos/delete/" + creditId,{
     method: "DELETE",
     headers
   })
-  return creditById.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
 
 export const patchCreditsById: TPatchCreditById =  async ({ creditId, updateCredit }) => {
@@ -226,10 +239,13 @@ export const patchCreditsById: TPatchCreditById =  async ({ creditId, updateCred
   headers.append("accept", "application/json")
   headers.append("Content-Type", "application/json")
 
-  const creditById = await fetch(import.meta.env.VITE_API + "/creditos/" + creditId,{
+  const res = await fetch(import.meta.env.VITE_API + "/creditos/" + creditId,{
     method: "PATCH",
     body: JSON.stringify(updateCredit),
     headers
   })
-  return creditById.json()
+
+  if( !res.ok ) throw Error()
+
+  return res.json()
 }
