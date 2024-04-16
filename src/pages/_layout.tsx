@@ -74,7 +74,7 @@ import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { queryClient } from '@/pages/__root'
 
 export const getCurrentUserOpt = {
-  queryKey: ["login-user", useToken.getState()],
+  queryKey: ["login-user", { userId: useToken.getState().userId }],
   queryFn: getCurrentUser
 }
 
@@ -85,7 +85,7 @@ export const getCurrentUserOpt = {
     clients: defer( queryClient.ensureQueryData( queryOptions( getClientListOpt ) )) 
   }),
   beforeLoad: async (  ) => {
-    const { token } = useToken.getState()
+    const { token, userId } = useToken.getState()
     if( !token ){
       throw redirect({
         to: "/login",
@@ -119,13 +119,22 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
   const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, menu: false })
   const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()
-  const  { data: currentUserRes, isSuccess: isCurrentUser, isError: errorCurrentUser } = useQuery( queryOptions( getCurrentUserOpt ) )
+  const  { data: currentUserRes, isSuccess: isCurrentUser, isError: errorCurrentUser, refetch } = useQuery( queryOptions( getCurrentUserOpt ) )
   const  { data: clientsRes, isSuccess: isClients, error: errorClients } = useQuery( queryOptions( getClientListOpt ) )
   const [clients, setClients] = useState<TCLIENT_GET_ALL | undefined>(undefined)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
   const { deleteToken, setUserId, userId, name } = useToken()
   const { history } = useRouter()
+
+  useEffect( () => {
+    refetch( {
+      cancelRefetch: !userId
+    } )?.then( ( { data } ) => {
+        if( !data ) return;
+        setUserId( data.id )
+      } ) 
+  }, [ userId ] )
 
   useEffect( () => {
     if( !!userId  ) {
@@ -212,6 +221,10 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
 
   const onLogut: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
     deleteToken() 
+  }
+
+  const onClick: React.MouseEventHandler< HTMLLIElement > = () => {
+    setOpen({ open: !open })
   }
 
   return (
@@ -386,7 +399,7 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
                   </Badge>
                 </HoverCardTrigger>
                 <HoverCardContent>
-                  { !isCurrentUser ? <div className='p-2'>
+                  { !isCurrentUser || !userId ? <div className='p-2'>
                       <Skeleton className='ring-1 ring-ring w-10 h-10 rounded-full'/>
                       <ul className="space-y-2 [&>li]:w-fit">
                         <li> <Skeleton className="w-32 h-5" /> </li>
@@ -398,7 +411,13 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
                          <AvatarFallback>{name?.split(" ")?.map( (items) => (items?.[0]) )}</AvatarFallback>
                       </Avatar>
                       <ul className="space-y-2 [&>li]:w-fit">
-                        <li> <span className="font-bold">{currentUserRes.nombre}</span> </li>
+                        <li onClick={onClick}>
+                          <Link 
+                            title='Modificar mi usuario'
+                            className="font-bold hover:after:content-['#'] hover:after:opacity-100 after:opacity-0 after:transition after:transition after:delay-150 after:duration-300"
+                            to={"/user/$userId/update"}
+                            params={{ userId }}
+                        >{currentUserRes.nombre}</Link> </li>
                         <li> <Badge> {currentUserRes?.rol} </Badge> </li>
                       </ul>
                     </div>
@@ -482,14 +501,14 @@ export function Layout({}: React.PropsWithChildren<TNavigationProps>) {
 /* eslint-disable-next-line */
 const SpinLoader = memo(function () {
    const getUser = useIsFetching({
-    fetchStatus: "idle",
+    fetchStatus: "fetching",
     type: "inactive",
     stale: true,
     queryKey: ([] as string[]).concat( getUsersListOpt.queryKey ),
   })
 
   const userId = useIsFetching({
-    fetchStatus: "idle",
+    fetchStatus: "fetching",
     stale: true,
     type: "inactive",
     queryKey: ([] as string[]).concat( getUserByIdOpt({ userId: "" }).queryKey[0] as string ),
@@ -506,14 +525,14 @@ const SpinLoader = memo(function () {
   })
 
   const getClient = useIsFetching({
-    fetchStatus: "idle",
+    fetchStatus: "fetching",
     stale: true,
     type: "inactive",
     queryKey: ([] as string[]).concat( getClientListOpt.queryKey ),
   })
 
   const clientId = useIsFetching({
-    fetchStatus: "idle",
+    fetchStatus: "fetching",
     stale: true,
     type: "inactive",
     queryKey: ([] as string[]).concat( getClientByIdOpt({ clientId: "" }).queryKey[0] as string ),
@@ -535,14 +554,14 @@ const SpinLoader = memo(function () {
   })
 
   const getCredit = useIsFetching({
-    fetchStatus: "idle",
+    fetchStatus: "fetching",
     stale: true,
     type: "inactive",
     queryKey: ([] as string[]).concat( getCreditsListOpt.queryKey ),
   })
 
   const creditId = useIsFetching({
-    fetchStatus: "idle",
+    fetchStatus: "fetching",
     stale: true,
     type: "inactive",
     queryKey: ([] as string[]).concat( getCreditByIdOpt({ creditId: "" }).queryKey[0] as string ),

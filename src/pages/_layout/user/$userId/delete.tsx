@@ -1,4 +1,4 @@
-import { Navigate, createFileRoute } from '@tanstack/react-router'
+import { Navigate, createFileRoute, redirect } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
@@ -13,6 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { type TUsersState } from '@/pages/_layout/user'
+import { useToken } from '@/lib/context/login'
 
 type TSearch = {
   name: string
@@ -35,6 +36,7 @@ export function DeleteUserById({}: TDeleteByUser) {
   const { userId } = Route.useParams()
   const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
+  const { userId: currentUserId, deleteToken } = useToken()
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -60,6 +62,11 @@ export function DeleteUserById({}: TDeleteByUser) {
       description,
       variant: 'default',
     })
+
+    if( +userId === currentUserId ){
+      deleteToken()
+      throw redirect({ to: "/" })
+    }
 
     ev.preventDefault()
   }

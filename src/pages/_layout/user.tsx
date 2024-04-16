@@ -44,6 +44,7 @@ import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-q
 import { queryClient } from '../__root';
 import { updateUserByIdOpt } from './user/$userId/update';
 import { postUserOpt } from './user/new';
+import { useToken } from '@/lib/context/login';
 
 export const getUsersListOpt = {
   queryKey: ["list-users"],
@@ -91,7 +92,8 @@ const useOrder = create< { order: keyof typeof ORDER, setOrder: ( value: keyof t
 /* eslint-disable-next-line */
 export function Users({}: React.PropsWithChildren<TUsersProps>) {
   const { order, setOrder } = useOrder()
-  const select: ((data: TUSER_GET_ALL) => TUsersState[]) = ( data ) => ( sortUsers( order, data?.map<TUsersState>( (items) => ({ ...items, selected: false, menu: false })) ) )
+  const { userId } = useToken()
+  const select: ((data: TUSER_GET_ALL) => TUsersState[]) = ( data ) => ( sortUsers( order, data?.map<TUsersState>( (items) => ({ ...items, selected: false, menu: false }))?.filter( ( { id } ) => ( userId !== id ) ) ) )
   const { data: usersRes, refetch } = useSuspenseQuery( queryOptions( { ...getUsersListOpt, select }) )
   const [users, setUsers] = useState<TUsersState[]>(usersRes)
   const navigate = useNavigate()
@@ -302,7 +304,7 @@ export function Users({}: React.PropsWithChildren<TUsersProps>) {
                               <Link
                                 className="flex h-full w-full items-center justify-between gap-2"
                                 to={'./$userId/update'}
-                                params={{ userId: userId }}
+                                params={{ userId }}
                               >
                                 {text.menu.update} <UserUpdate />
                               </Link>

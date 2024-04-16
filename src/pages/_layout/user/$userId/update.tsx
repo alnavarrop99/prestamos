@@ -19,6 +19,8 @@ import { type TUsersState } from '@/pages/_layout/user'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SpinLoader } from '@/components/ui/loader'
 import { queryClient } from '@/pages/__root'
+import { useToken } from '@/lib/context/login'
+import { Link } from "@tanstack/react-router";
 
 export const updateUserByIdOpt = {
   mutationKey: ["update-user-by-id"],
@@ -68,6 +70,7 @@ export function UpdateUserById({}: TUpdateUserById) {
   const { data: userRes, isSuccess } = useQuery( queryOptions( getUserByIdOpt({ userId }) ) )
   const [ user, setUser ] = useState< (TUSER_GET & { password: string }) | undefined >(undefined)
   const init = useRef(user)
+  const { userId: currentUserId } = useToken()
 
   const onSuccess = ( data: TUSER_PATCH ) => {
     if( !init?.current?.nombre ) return;
@@ -317,12 +320,26 @@ export function UpdateUserById({}: TUpdateUserById) {
           </div>
         </div>
       </form>
-      <DialogFooter className="justify-end gap-2">
+      <DialogFooter className="justify-start gap-2">
         { !isSuccess ? <>
+          { currentUserId === +userId && <Skeleton className='me-auto w-40 h-12' /> }
           <Skeleton className='w-24 h-12' />
           <Skeleton className='w-24 h-12' />
-        </> :
-                <>
+        </> : <>
+            { currentUserId === +userId && 
+                <Link 
+                  to={"../delete"} 
+                  search={{ name: userRes.nombre }}
+                  className='me-auto'
+                >
+                  <Button
+                    variant="destructive"
+                    form="delete-user"
+                    type="submit"
+                  >
+                      {text.button.delete}
+                  </Button>
+                </Link> }
             <Button 
               disabled={ active || isPending }
               variant="default" 
@@ -376,6 +393,7 @@ const text = {
   button: {
     close: 'Cerrar',
     update: 'Actualizar',
+    delete: 'Si, eliminar mi usuario.',
   },
   notification: {
     titile: 'Actualizacion de usuario',
