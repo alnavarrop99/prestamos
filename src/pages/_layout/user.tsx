@@ -291,7 +291,7 @@ export function Users() {
       setPagination({ ...pagination, start: 0, end: STEP })
     }
     return () => {
-      // setUsers( usersRes )
+      setUsers( usersRes )
     }
   }, [value])
 
