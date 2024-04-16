@@ -72,6 +72,7 @@ import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
 import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { queryClient } from '@/pages/__root'
+import { getReportsOpt, postReportOpt } from './_layout/report'
 
 export const getCurrentUserOpt = {
   queryKey: ["login-user", { userId: useToken.getState().userId }],
@@ -599,6 +600,19 @@ const SpinLoader = memo(function () {
     mutationKey: ([] as string[]).concat( deletePaymentByIdOpt?.mutationKey ),
   })
 
+  const getReports = useIsFetching({
+    fetchStatus: "fetching",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( getReportsOpt.queryKey ),
+  })
+
+  const postReport = useIsFetching({
+    fetchStatus: "fetching",
+    stale: true,
+    type: "inactive",
+    queryKey: ([] as string[]).concat( postReportOpt.mutationKey ),
+  })
 
   const className = 'text-muted-foreground italic text-xs flex items-center gap-2'
 
@@ -647,6 +661,13 @@ const SpinLoader = memo(function () {
   else if( deletePayment ) {
     return <span className={className}><Loader /> {text.loader.payment.delete} </span>
   }
+
+  if( getReports ) {
+    return <span className={className}><Loader /> {text.loader.report.get} </span>
+  }
+  else if( postReport ) {
+    return <span className={className}><Loader /> {text.loader.report.post} </span>
+  }
 })
 
 /* eslint-disable-next-line */
@@ -690,6 +711,10 @@ const text = {
       update: "Actualizando pago",
       delete: "Eliminando pago(s)",
       get: "Cargando pago(s)"
+    },
+    report: {
+      get: "Cargando reporte(s)",
+      post: "Creando reporte(s)"
     }
   },
   navegation: {

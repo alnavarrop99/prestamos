@@ -15,16 +15,27 @@ import clsx from 'clsx'
 import { Annoyed, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useEffect, useRef } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { queryOptions, useMutation } from '@tanstack/react-query'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useRouter } from '@tanstack/react-router'
+import { queryClient } from '../__root'
+
+export const getReportsOpt = {
+  queryKey: [ "get-reports" ],
+  queryFn: getAllReport
+}
+
+export const postReportOpt = {
+  mutationKey: [ "post-report" ],
+  mutationFn: postReportById
+}
 
 export const Route = createFileRoute('/_layout/report')({
   component: Report,
   errorComponent: Error,
   pendingComponent: Pending,
-  loader: getAllReport,
+  loader: () => queryClient.ensureQueryData( queryOptions( getReportsOpt ) ),
 })
 
 /* eslint-disable-next-line */
@@ -38,10 +49,7 @@ const LENGTH = 5
 export function Report({ reports: _reports = [] as TREPORT_GET_ALL }: TReportProps) {
   const reports = Route.useLoaderData() ?? _reports
   const form = reports?.map( () => useRef<HTMLFormElement>(null) ) 
-  const { mutate: reportById } = useMutation({
-    mutationKey: ["post-reports-by-id"],
-    mutationFn: postReportById
-  })
+  const { mutate: reportById } = useMutation( postReportOpt )
 
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
