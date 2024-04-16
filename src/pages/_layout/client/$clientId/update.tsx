@@ -1,5 +1,11 @@
 import { Button } from '@/components/ui/button'
-import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import {
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -11,8 +17,20 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { getClientById, pathClientById, type TCLIENT_POST, type TCLIENT_GET, type TCLIENT_PATCH_BODY } from '@/api/clients'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  getClientById,
+  pathClientById,
+  type TCLIENT_POST,
+  type TCLIENT_GET,
+  type TCLIENT_PATCH_BODY,
+} from '@/api/clients'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
@@ -21,49 +39,63 @@ import { _clientContext } from '@/pages/_layout/client'
 import { Textarea } from '@/components/ui/textarea'
 import { queryClient } from '@/pages/__root'
 import { Skeleton } from '@/components/ui/skeleton'
-import styles from "@/styles/global.module.css";
+import styles from '@/styles/global.module.css'
+import { useToken } from '@/lib/context/login'
+import { redirect } from '@tanstack/react-router'
 
 export const updateClientByIdOpt = {
-  mutationKey: ["update-client-by-id"],
+  mutationKey: ['update-client-by-id'],
   mutationFn: pathClientById,
 }
 
-export const getClientByIdOpt = ( { clientId }: { clientId: string }  ) => ({
-  queryKey: ["get-client-by-id", { clientId }],
+export const getClientByIdOpt = ({ clientId }: { clientId: string }) => ({
+  queryKey: ['get-client-by-id', { clientId }],
   queryFn: () => getClientById({ params: { clientId } }),
 })
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
-  loader: async ( { params } ) =>{
-    const data = queryClient.ensureQueryData( queryOptions( getClientByIdOpt(params) ) )
-    return ( { client: defer( data ) } )
-  }
+  loader: async ({ params }) => {
+    const data = queryClient.ensureQueryData(
+      queryOptions(getClientByIdOpt(params))
+    )
+    return { client: defer(data) }
+  },
+  beforeLoad: () => {
+    const { rol, userId } = useToken.getState()
+    if (!userId || rol?.rolName === 'Cobrador')
+      throw redirect({ to: '/client' })
+  },
 })
 
 /* eslint-disable-next-line */
-type TFormName = keyof ( Omit<TCLIENT_PATCH_BODY, "referencia_id"> & Record<"referencia", string> )
+type TFormName = keyof (Omit<TCLIENT_PATCH_BODY, 'referencia_id'> &
+  Record<'referencia', string>)
 
 /* eslint-disable-next-line */
 export function UpdateClientById() {
   const { clientId } = Route.useParams()
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
-  const { data: clientRes, isSuccess, isError } = useQuery( queryOptions( getClientByIdOpt({ clientId }) ) ) 
-  const [ client, setClient ] = useState<TCLIENT_GET | undefined>(undefined) 
+  const {
+    data: clientRes,
+    isSuccess,
+    isError,
+  } = useQuery(queryOptions(getClientByIdOpt({ clientId })))
+  const [client, setClient] = useState<TCLIENT_GET | undefined>(undefined)
   const { open, setOpen } = useStatus()
   const { pushNotification } = useNotifications()
   const init = useRef(client)
 
-  useEffect( () => {
-    if( !clientRes ) throw Error()
-  }, [ isError ] )
+  useEffect(() => {
+    if (!clientRes) throw Error()
+  }, [isError])
 
-  const onSuccess = ( data: TCLIENT_POST ) => {
-    if( !init?.current?.nombres || !init?.current?.apellidos ) return;
+  const onSuccess = (data: TCLIENT_POST) => {
+    if (!init?.current?.nombres || !init?.current?.apellidos) return
 
     const description = text.notification.decription({
-      username: init?.current?.nombres + " " + init.current.apellidos
+      username: init?.current?.nombres + ' ' + init.current.apellidos,
     })
 
     toast({
@@ -74,7 +106,7 @@ export function UpdateClientById() {
 
     pushNotification({
       date: new Date(),
-      action: "PATH",
+      action: 'PATH',
       description,
     })
 
@@ -83,18 +115,21 @@ export function UpdateClientById() {
       description,
       variant: 'default',
     })
-    
-    queryClient.setQueriesData( { queryKey: getClientByIdOpt({ clientId }).queryKey }, data )
+
+    queryClient.setQueriesData(
+      { queryKey: getClientByIdOpt({ clientId }).queryKey },
+      data
+    )
 
     // TODO: not update user with exec a path update
     // setUser( { ...data, password: "" } )
   }
 
   const onError = () => {
-    if( !init?.current?.nombres || !init?.current?.apellidos ) return;
+    if (!init?.current?.nombres || !init?.current?.apellidos) return
 
     const description = text.notification.error({
-      username: init?.current?.nombres + " " + init.current.apellidos
+      username: init?.current?.nombres + ' ' + init.current.apellidos,
     })
 
     const onClick = () => {}
@@ -105,7 +140,7 @@ export function UpdateClientById() {
       variant: 'destructive',
       action: (
         <ToastAction altText="action from new user" onClick={onClick}>
-            {text.notification.retry}
+          {text.notification.retry}
         </ToastAction>
       ),
     })
@@ -116,25 +151,45 @@ export function UpdateClientById() {
       variant: 'destructive',
     })
   }
-  const { mutate: updateClient } = useMutation({ ...updateClientByIdOpt,
+  const { mutate: updateClient } = useMutation({
+    ...updateClientByIdOpt,
     onSuccess,
-    onError
+    onError,
   })
 
-  useEffect( () => {
-    if(!clientRes) return;
+  useEffect(() => {
+    if (!clientRes) return
     init.current = clientRes
     setClient(clientRes)
     return () => {
       // setUser()
     }
-  }, [clientRes] )
+  }, [clientRes])
 
   const clientsList = useContext(_clientContext)
 
-  const active = useMemo(() => Object.values({ ...init.current, referencia_id: init.current?.referencia_id ?? "" }).flat().every( ( value, i ) => value === Object.values({ ...client, referencia_id: client?.referencia_id ?? "" }).flat()?.[i] ), [client])
+  const active = useMemo(
+    () =>
+      Object.values({
+        ...init.current,
+        referencia_id: init.current?.referencia_id ?? '',
+      })
+        .flat()
+        .every(
+          (value, i) =>
+            value ===
+            Object.values({
+              ...client,
+              referencia_id: client?.referencia_id ?? '',
+            }).flat()?.[i]
+        ),
+    [client]
+  )
 
-  const ref = useMemo( () => clientsList?.find( ({ id: refId }) => ( refId === client?.referencia_id ) ), [client])
+  const ref = useMemo(
+    () => clientsList?.find(({ id: refId }) => refId === client?.referencia_id),
+    [client]
+  )
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
@@ -143,26 +198,34 @@ export function UpdateClientById() {
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     const clientId = init.current?.id
     const client = init.current
-    if (!form.current || !clientId || !client) return;
+    if (!form.current || !clientId || !client) return
 
     const items = Object.fromEntries(
-      Array.from( new FormData(form.current).entries())?.map( ([ key, value ]) => {
-      if( value === "" || (value === Object?.entries(client)?.find( ([keyO]) => keyO === key )?.[1] ) ) return [ key, undefined ];
-      return [ key, value ];
-    })) as Record<TFormName, string>
+      Array.from(new FormData(form.current).entries())?.map(([key, value]) => {
+        if (
+          value === '' ||
+          value === Object?.entries(client)?.find(([keyO]) => keyO === key)?.[1]
+        )
+          return [key, undefined]
+        return [key, value]
+      })
+    ) as Record<TFormName, string>
 
     const refId = ref?.id
-    updateClient({ clientId, params: {
-      celular: items?.celular,
-      nombres: items?.nombres,
-      telefono: items?.telefono,
-      apellidos: items?.apellidos,
-      direccion: items?.direccion,
-      comentarios: items?.comentarios,
-      numero_de_identificacion: items?.numero_de_identificacion,
-      tipo_de_identificacion: +items?.tipo_de_identificacion,
-      referencia_id: refId ? refId : null,
-    }})
+    updateClient({
+      clientId,
+      params: {
+        celular: items?.celular,
+        nombres: items?.nombres,
+        telefono: items?.telefono,
+        apellidos: items?.apellidos,
+        direccion: items?.direccion,
+        comentarios: items?.comentarios,
+        numero_de_identificacion: items?.numero_de_identificacion,
+        tipo_de_identificacion: +items?.tipo_de_identificacion,
+        referencia_id: refId ? refId : null,
+      },
+    })
 
     setOpen({ open: !open })
     ev.preventDefault()
@@ -170,70 +233,82 @@ export function UpdateClientById() {
 
   const onChange: React.ChangeEventHandler<HTMLFormElement> = (ev) => {
     const { name, value } = ev.target
-    if(!name || !value || !client) return;
+    if (!name || !value || !client) return
 
-    if( name === "referencia" as TFormName ) {
-      const refId = clientsList?.find( ({ fullName }) => ( value === fullName ) )?.id
-      setClient( { ...client, referencia_id: refId } ) 
-      return;
+    if (name === ('referencia' as TFormName)) {
+      const refId = clientsList?.find(({ fullName }) => value === fullName)?.id
+      setClient({ ...client, referencia_id: refId })
+      return
     }
 
-    setClient( { ...client, [name]: value } );
+    setClient({ ...client, [name]: value })
   }
 
   return (
     <>
-    { !open && <Navigate to={"../../"} replace /> }
-    <DialogContent className="max-w-2xl">
-      <DialogHeader>
-        <DialogTitle className="text-2xl">
-          {text.title({ state: !checked })}
-        </DialogTitle>
-        <Separator />
-        <DialogDescription className='text-muted-foreground'>
-          {text.description({ state: !checked })}
-        </DialogDescription>
-      </DialogHeader>
-      <form
-        autoComplete="off"
-        ref={form}
-        onSubmit={onSubmit}
-        onChange={onChange}
-        id="update-client"
-        className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2 [&>label:last-child]:col-span-full [&_*:disabled]:opacity-100 [&_*:disabled]:cursor-text',
-          {
-            "[&>label>span]:font-bold": checked,
-          }
-        )}
-      >
-        <Label>
-          <span>{text.form.firstName.label}</span>
-            { !isSuccess ? <Skeleton className='w-full h-10' /> :
+      {!open && <Navigate to={'../../'} replace />}
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">
+            {text.title({ state: !checked })}
+          </DialogTitle>
+          <Separator />
+          <DialogDescription className="text-muted-foreground">
+            {text.description({ state: !checked })}
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          autoComplete="off"
+          ref={form}
+          onSubmit={onSubmit}
+          onChange={onChange}
+          id="update-client"
+          className={clsx(
+            'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label:last-child]:col-span-full [&>label]:space-y-2 [&_*:disabled]:cursor-text [&_*:disabled]:opacity-100',
+            {
+              '[&>label>span]:font-bold': checked,
+            }
+          )}
+        >
+          <Label>
+            <span>{text.form.firstName.label}</span>
+            {!isSuccess ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
               <Input
                 required
                 disabled={!checked}
                 name={'nombres' as TFormName}
                 type="text"
                 defaultValue={clientRes?.nombres}
-                placeholder={checked ? text.form.firstName.placeholder : undefined}
-              /> }
-        </Label>
-        <Label>
-          <span>{text.form.lastName.label} </span>
-            { !isSuccess ? <Skeleton className='w-full h-10' /> :
+                placeholder={
+                  checked ? text.form.firstName.placeholder : undefined
+                }
+              />
+            )}
+          </Label>
+          <Label>
+            <span>{text.form.lastName.label} </span>
+            {!isSuccess ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
               <Input
                 required
                 disabled={!checked}
                 name={'apellidos' as TFormName}
                 type="text"
                 defaultValue={clientRes?.apellidos}
-                placeholder={checked ? text.form.lastName.placeholder : undefined}
-              /> }
-        </Label>
-        <Label>
-          <span>{text.form.id.label} </span>
-            { !isSuccess ? <Skeleton className='w-full h-10' /> :
+                placeholder={
+                  checked ? text.form.lastName.placeholder : undefined
+                }
+              />
+            )}
+          </Label>
+          <Label>
+            <span>{text.form.id.label} </span>
+            {!isSuccess ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
               <Input
                 required
                 disabled={!checked}
@@ -241,30 +316,40 @@ export function UpdateClientById() {
                 type="text"
                 defaultValue={clientRes?.numero_de_identificacion}
                 placeholder={checked ? text.form.id.placeholder : undefined}
-              /> }
-        </Label>
-        <Label>
-          <span>{text.form.typeId.label} </span>
-            { !isSuccess || !clientRes ? <Skeleton className='w-full h-10' /> :
-              <Select 
-                defaultValue={""+getIdById({ id: clientRes?.tipo_de_identificacion })?.id}
+              />
+            )}
+          </Label>
+          <Label>
+            <span>{text.form.typeId.label} </span>
+            {!isSuccess || !clientRes ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <Select
+                defaultValue={
+                  '' + getIdById({ id: clientRes?.tipo_de_identificacion })?.id
+                }
                 disabled={!checked}
                 required
                 name={'tipo_de_identificacion' as TFormName}
               >
-                <SelectTrigger className={clsx("w-full")}>
+                <SelectTrigger className={clsx('w-full')}>
                   <SelectValue placeholder={text.form.typeId.placeholder} />
                 </SelectTrigger>
-                <SelectContent className='[&_*]:cursor-pointer'>
-                  {listIds()?.map( ({ id, nombre }, index) => 
-                    <SelectItem key={index} value={""+id}>{nombre}</SelectItem>
-                  )}
+                <SelectContent className="[&_*]:cursor-pointer">
+                  {listIds()?.map(({ id, nombre }, index) => (
+                    <SelectItem key={index} value={'' + id}>
+                      {nombre}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
-              </Select> }
-        </Label>
-        <Label>
-          <span>{text.form.phone.label} </span>
-            { !isSuccess ? <Skeleton className='w-full h-10' /> :
+              </Select>
+            )}
+          </Label>
+          <Label>
+            <span>{text.form.phone.label} </span>
+            {!isSuccess ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
               <Input
                 required
                 disabled={!checked}
@@ -272,129 +357,154 @@ export function UpdateClientById() {
                 type="tel"
                 defaultValue={clientRes?.celular}
                 placeholder={checked ? text.form.phone.placeholder : undefined}
-              /> }
-        </Label>
-        <Label>
-          <span>{text.form.telephone.label} </span>
-            { !isSuccess ? <Skeleton className='w-full h-10' /> :
+              />
+            )}
+          </Label>
+          <Label>
+            <span>{text.form.telephone.label} </span>
+            {!isSuccess ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
               <Input
                 required
                 disabled={!checked}
                 name={'telefono' as TFormName}
                 type="tel"
                 defaultValue={clientRes?.telefono}
-                placeholder={checked ? text.form.telephone.placeholder : undefined}
-              /> }
-        </Label>
-        <Label>
-          <span>{text.form.direction.label}</span>
-            { !isSuccess ? <Skeleton className='w-full h-10' /> :
+                placeholder={
+                  checked ? text.form.telephone.placeholder : undefined
+                }
+              />
+            )}
+          </Label>
+          <Label>
+            <span>{text.form.direction.label}</span>
+            {!isSuccess ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
               <Input
                 required
                 disabled={!checked}
                 name={'direccion' as TFormName}
                 type="text"
                 defaultValue={clientRes?.direccion}
-                placeholder={checked ? text.form.direction.placeholder : undefined}
-              /> }
-        </Label>
-        <Label>
-          <span>{text.form.ref.label}</span>
-            { !isSuccess ? <Skeleton className='w-full h-10' /> :
-                <>
+                placeholder={
+                  checked ? text.form.direction.placeholder : undefined
+                }
+              />
+            )}
+          </Label>
+          <Label>
+            <span>{text.form.ref.label}</span>
+            {!isSuccess ? (
+              <Skeleton className="h-10 w-full" />
+            ) : (
+              <>
                 <Input
                   disabled={!checked}
                   name={'referencia' as TFormName}
-                  list='client-referent'
+                  list="client-referent"
                   type="text"
                   defaultValue={ref?.fullName}
                   placeholder={checked ? text.form.ref.placeholder : undefined}
                 />
-                <datalist id='client-referent' >
-                  { clientsList?.map( ( { fullName }, index ) => <option key={index} value={fullName} />) }
+                <datalist id="client-referent">
+                  {clientsList?.map(({ fullName }, index) => (
+                    <option key={index} value={fullName} />
+                  ))}
                 </datalist>
-           </> }
-        </Label>
-        <Label>
-          <span>{text.form.comment.label}</span>
-            { !isSuccess ? <Skeleton className='w-full h-28' /> :
+              </>
+            )}
+          </Label>
+          <Label>
+            <span>{text.form.comment.label}</span>
+            {!isSuccess ? (
+              <Skeleton className="h-28 w-full" />
+            ) : (
               <Textarea
                 rows={5}
                 name={'comentarios' as TFormName}
                 placeholder={text.form.comment.placeholder}
                 defaultValue={clientRes?.comentarios}
                 disabled={!checked}
-              /> }
-        </Label>
-      </form>
-      <DialogFooter className="!justify-between">
-        <div className="flex items-center gap-2 font-bold italic">
-        { !isSuccess ? <>
-          <Skeleton className='w-12 h-10' />
-          <Skeleton className='w-16 h-10' />
-        </> : 
-                  <>
-            <Switch
-              id="edit"
-              checked={checked}
-              onCheckedChange={onCheckedChange}
-            />
-            <Label
-              htmlFor="edit"
-              className={clsx('cursor-pointer')}
-            >
-              <Badge>{text.button.mode}</Badge>
-            </Label>
-          </> }
-        </div>
-        <div className="space-x-2">
-        { !isSuccess ? <>
-          <Skeleton className='w-24 h-12 inline-block' />
-          <Skeleton className='w-24 h-12 inline-block' />
-        </> : <>
-            <Button
-              variant="default"
-              form="update-client"
-              type="submit"
-              disabled={!checked || active }
-              className={clsx({
-                'invisible': !checked,
-                'visible': checked,
-                [styles?.["search-badge-animation"]]: checked,
-              })}
-            >
-              {text.button.update}
-            </Button>
-            <DialogClose asChild>
-              <Button
-                type="button"
-                variant="outline"
-                className="font-bold hover:ring hover:ring-primary"
-              >
-                {text.button.close}
-              </Button>
-            </DialogClose>
-          </> }
-        </div>
-      </DialogFooter>
-    </DialogContent>
+              />
+            )}
+          </Label>
+        </form>
+        <DialogFooter className="!justify-between">
+          <div className="flex items-center gap-2 font-bold italic">
+            {!isSuccess ? (
+              <>
+                <Skeleton className="h-10 w-12" />
+                <Skeleton className="h-10 w-16" />
+              </>
+            ) : (
+              <>
+                <Switch
+                  id="edit"
+                  checked={checked}
+                  onCheckedChange={onCheckedChange}
+                />
+                <Label htmlFor="edit" className={clsx('cursor-pointer')}>
+                  <Badge>{text.button.mode}</Badge>
+                </Label>
+              </>
+            )}
+          </div>
+          <div className="space-x-2">
+            {!isSuccess ? (
+              <>
+                <Skeleton className="inline-block h-12 w-24" />
+                <Skeleton className="inline-block h-12 w-24" />
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="default"
+                  form="update-client"
+                  type="submit"
+                  disabled={!checked || active}
+                  className={clsx({
+                    invisible: !checked,
+                    visible: checked,
+                    [styles?.['search-badge-animation']]: checked,
+                  })}
+                >
+                  {text.button.update}
+                </Button>
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="font-bold hover:ring hover:ring-primary"
+                  >
+                    {text.button.close}
+                  </Button>
+                </DialogClose>
+              </>
+            )}
+          </div>
+        </DialogFooter>
+      </DialogContent>
     </>
   )
 }
 
 /* eslint-disable-next-line */
 export function Error() {
-  useEffect( () => {
+  useEffect(() => {
     toast({
       title: text.error.title,
-      description: <div className='flex flex-row gap-2 items-center'>
-      <h2 className='font-bold text-2xl'>:&nbsp;(</h2>
-      <p className='text-md'>  {text.error.descriiption} </p> 
-    </div>,
+      description: (
+        <div className="flex flex-row items-center gap-2">
+          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
+          <p className="text-md"> {text.error.descriiption} </p>
+        </div>
+      ),
       variant: 'destructive',
     })
-  }, [] )
-  return ;
+  }, [])
+  return
 }
 
 UpdateClientById.dispalyname = 'UpdateClientById'
@@ -407,8 +517,8 @@ const text = {
     (state ? 'Datos' : 'Actualizacion de los datos') +
     ' del cliente en la plataforma.',
   error: {
-    title: "Obtencion de datos de usuario",
-    descriiption: "Ha ocurrido un error inesperado"
+    title: 'Obtencion de datos de usuario',
+    descriiption: 'Ha ocurrido un error inesperado',
   },
   button: {
     close: 'Cerrar',
@@ -420,7 +530,7 @@ const text = {
     decription: ({ username }: { username: string }) =>
       'Se ha actualizado el cliente ' + username + ' con exito.',
     error: ({ username }: { username: string }) =>
-      "La actualizacion del cliente" + username + "ha fallado",
+      'La actualizacion del cliente' + username + 'ha fallado',
     retry: 'Reintentar',
   },
   form: {
@@ -456,10 +566,10 @@ const text = {
       label: 'Tipo de identificacion:',
       placeholder: 'Seleccione una opcion',
       items: {
-        passport: "Passaporte",
-        id: "I.D.",
-        driverId: "Carnet de Conducir"
-      }
+        passport: 'Passaporte',
+        id: 'I.D.',
+        driverId: 'Carnet de Conducir',
+      },
     },
     ref: {
       label: 'Referencia:',
@@ -468,6 +578,6 @@ const text = {
     status: {
       label: 'Estado:',
       placeholder: 'Seleccione el estado',
-    }
+    },
   },
 }

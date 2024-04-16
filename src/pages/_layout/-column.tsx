@@ -22,8 +22,12 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { useStatus } from '@/lib/context/layout'
 import { type TCLIENT_GET_BASE } from '@/api/clients'
 import { getIdById } from '@/lib/type/id'
+import { useToken } from '@/lib/context/login'
 
-export type TClientTable = Omit<TCLIENT_GET_BASE, 'nombres' | 'apellidos' | 'referencia_id'> &
+export type TClientTable = Omit<
+  TCLIENT_GET_BASE,
+  'nombres' | 'apellidos' | 'referencia_id'
+> &
   Record<'fullName' | 'referencia', string>
 export const columns: ColumnDef<TClientTable>[] = [
   {
@@ -133,112 +137,112 @@ export const columns: ColumnDef<TClientTable>[] = [
       )
     },
     cell: ({ row }) => (
-      <p className="w-32">
-        {row.getValue('referencia' as keyof TClientTable)}
-      </p>
+      <p className="w-32">{row.getValue('referencia' as keyof TClientTable)}</p>
     ),
   },
   {
     id: 'actions',
     enableHiding: false,
-    cell: ({ row }) => <ClientActions row={row} />
+    cell: ({ row }) => <ClientActions row={row} />,
   },
 ]
 
-function ClientActions( {row} : { row: Row<TClientTable>} ) {
-      const { id, celular, fullName, numero_de_identificacion } = row.original
+function ClientActions({ row }: { row: Row<TClientTable> }) {
+  const { id, celular, fullName, numero_de_identificacion } = row.original
+  const { open, setOpen } = useStatus()
+  const [{ menu }, setMenu] = useState<{ menu?: boolean }>({ menu: false })
+  const navigate = useNavigate()
+  const { userId, rol } = useToken()
 
-      const { open, setOpen } = useStatus()
+  const onClickCopy: React.MouseEventHandler<
+    React.ComponentRef<typeof DropdownMenuItem>
+  > = () => {
+    navigator.clipboard.writeText(
+      [fullName, celular, numero_de_identificacion].join(' ')
+    )
+  }
 
-      const [{ menu }, setMenu] = useState<{ menu?: boolean }>({ menu: false })
+  const onClick: React.MouseEventHandler<
+    React.ComponentRef<typeof DropdownMenuItem>
+  > = () => {
+    const _open = !open
+    const _menu = !menu
+    if (!_open) {
+      navigate({ to: '/client' })
+    }
+    setOpen({ open: _open })
+    setMenu({ menu: _menu })
+  }
 
-      const navigate = useNavigate()
+  const onClickPay: React.MouseEventHandler<
+    React.ComponentRef<typeof DropdownMenuItem>
+  > = () => {
+    const _open = !open
+    const _menu = !menu
+    setOpen({ open: _open })
+    setMenu({ menu: _menu })
+  }
 
-      const onClickCopy: React.MouseEventHandler<
-        React.ComponentRef<typeof DropdownMenuItem>
-      > = () => {
-        navigator.clipboard.writeText(
-          [fullName, celular, numero_de_identificacion].join(' ')
-        )
-      }
+  const onMenuChange = (menu: boolean) => {
+    setMenu({ menu })
+  }
 
-      const onClick: React.MouseEventHandler<
-        React.ComponentRef<typeof DropdownMenuItem>
-      > = () => {
-        const _open = !open
-        const _menu = !menu
-        if (!_open) {
-          navigate({ to: '/client' })
-        }
-        setOpen({ open: _open })
-        setMenu({ menu: _menu })
-      }
-
-      const onClickPay: React.MouseEventHandler<
-        React.ComponentRef<typeof DropdownMenuItem>
-      > = () => {
-        const _open = !open
-        const _menu = !menu
-        setOpen({ open: _open })
-        setMenu({ menu: _menu })
-      }
-
-      const onMenuChange = (menu: boolean) => {
-        setMenu({ menu })
-      }
-
-      return (
-        <DropdownMenu open={menu} onOpenChange={onMenuChange}>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">{text.menu.aria}</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            align="end"
-            className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
+  return (
+    <DropdownMenu open={menu} onOpenChange={onMenuChange}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">{text.menu.aria}</span>
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
+      >
+        <DropdownMenuLabel className="text-lg">
+          {text.menu.title}
+        </DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onClickCopy}>
+          {text.menu.copy} <Copy />
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={onClickPay}>
+          <Link
+            className="flex h-full w-full items-center justify-between gap-2"
+            to={'/credit/new'}
+            search={{ clientId: id }}
           >
-            <DropdownMenuLabel className="text-lg">
-              {text.menu.title}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={onClickCopy}>
-              {text.menu.copy} <Copy />
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onClickPay}>
-              <Link
-                className="flex h-full w-full items-center justify-between gap-2"
-                to={'/credit/new'}
-                search={{ clientId: id }}
-              >
-                {text.menu.pay} <UserPay />
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onClick}>
-              <Link
-                className="flex h-full w-full items-center justify-between gap-2"
-                to={'./$clientId/update'}
-                params={{ clientId: id }}
-              >
-                {text.menu.update} <UserUpdate />
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={onClick}>
-              <Link
-                className="flex h-full w-full items-center justify-between gap-2"
-                to={'./$clientId/delete'}
-                params={{ clientId: id }}
-                search={{
-                  name: fullName
-                }}
-              >
-                {text.menu.delete} <UserDelete />
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      )
+            {text.menu.pay} <UserPay />
+          </Link>
+        </DropdownMenuItem>
+        {!!userId && rol?.rolName !== 'Cobrador' && (
+          <DropdownMenuItem onClick={onClick}>
+            <Link
+              className="flex h-full w-full items-center justify-between gap-2"
+              to={'./$clientId/update'}
+              params={{ clientId: id }}
+            >
+              {text.menu.update} <UserUpdate />
+            </Link>
+          </DropdownMenuItem>
+        )}
+        {!!userId && rol?.rolName !== 'Cobrador' && (
+          <DropdownMenuItem onClick={onClick}>
+            <Link
+              className="flex h-full w-full items-center justify-between gap-2"
+              to={'./$clientId/delete'}
+              params={{ clientId: id }}
+              search={{
+                name: fullName,
+              }}
+            >
+              {text.menu.delete} <UserDelete />
+            </Link>
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
 }
 
 const text = {

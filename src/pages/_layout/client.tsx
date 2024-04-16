@@ -50,15 +50,20 @@ import { Separator } from '@/components/ui/separator'
 import { useClientByUsers } from '@/lib/context/client'
 import { Skeleton } from '@/components/ui/skeleton'
 import { queryClient } from '@/pages/__root'
-import { queryOptions, useIsMutating, useSuspenseQuery } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useIsMutating,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import { postClientOpt } from '@/pages/_layout/client/new'
 import { updateClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { useToken } from '@/lib/context/login'
 
 export const getClientListOpt = {
-  queryKey: ["list-clients"],
+  queryKey: ['list-clients'],
   queryFn: getClientsList,
 }
 
@@ -66,7 +71,7 @@ export const Route = createFileRoute('/_layout/client')({
   component: Clients,
   pendingComponent: Pending,
   errorComponent: Error,
-  loader: () => queryClient.ensureQueryData( queryOptions( getClientListOpt ) ),
+  loader: () => queryClient.ensureQueryData(queryOptions(getClientListOpt)),
   validateSearch: (search: { clients?: number[] }) => {
     if (!search?.clients?.length) return { clients: [] }
     return search
@@ -75,58 +80,89 @@ export const Route = createFileRoute('/_layout/client')({
 
 const ROW = 14
 const COL = 7
-export const _clientContext = createContext< TClientTable[] | undefined>( undefined)
-export const _rowSelected = createContext< (() => void) | undefined >( undefined)
-const useFilter = create< { filter: keyof TClientTable, setFilter: ( value: keyof TClientTable ) => void } >()( persist((set) => ({
-  filter: "fullName",
-  setFilter: ( filter ) => (set( () => ({ filter }) ))
-}), { name: "client-filter" }) )
+export const _clientContext = createContext<TClientTable[] | undefined>(
+  undefined
+)
+export const _rowSelected = createContext<(() => void) | undefined>(undefined)
+const useFilter = create<{
+  filter: keyof TClientTable
+  setFilter: (value: keyof TClientTable) => void
+}>()(
+  persist(
+    (set) => ({
+      filter: 'fullName',
+      setFilter: (filter) => set(() => ({ filter })),
+    }),
+    { name: 'client-filter' }
+  )
+)
 
 /* eslint-disable-next-line */
 export function Clients() {
+  const { rol, userId } = useToken()
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
   const { open, setOpen, value } = useStatus()
   const navigate = useNavigate()
-  const {filter, setFilter} = useFilter()
+  const { filter, setFilter } = useFilter()
   const search = Route.useSearch()
-  const isUpdateClient = useIsMutating( { status: "success", mutationKey: updateClientByIdOpt.mutationKey } )
-  const isNewClient = useIsMutating( { status: "success", mutationKey: postClientOpt.mutationKey } )
-  const isDeleteClient = useIsMutating( { status: "success", mutationKey: deleteClientByIdOpt.mutationKey } )
-  
-  const select: ((data: TCLIENT_GET_ALL) => TClientTable[]) = ( data ) => {
-    const clients = data?.map<TClientTable>(({ nombres, apellidos, referencia_id, ...props }, _, list) => {
-      const ref = list?.find( ({ id: referenciaId }) => ( referenciaId === referencia_id ) )
-      if( !ref || !referencia_id ){
-        return ({
+  const isUpdateClient = useIsMutating({
+    status: 'success',
+    mutationKey: updateClientByIdOpt.mutationKey,
+  })
+  const isNewClient = useIsMutating({
+    status: 'success',
+    mutationKey: postClientOpt.mutationKey,
+  })
+  const isDeleteClient = useIsMutating({
+    status: 'success',
+    mutationKey: deleteClientByIdOpt.mutationKey,
+  })
+
+  const select: (data: TCLIENT_GET_ALL) => TClientTable[] = (data) => {
+    const clients = data?.map<TClientTable>(
+      ({ nombres, apellidos, referencia_id, ...props }, _, list) => {
+        const ref = list?.find(
+          ({ id: referenciaId }) => referenciaId === referencia_id
+        )
+        if (!ref || !referencia_id) {
+          return {
+            ...props,
+            fullName: nombres + ' ' + apellidos,
+            referencia: '',
+          }
+        }
+        return {
           ...props,
           fullName: nombres + ' ' + apellidos,
-          referencia: ""
-        })
+          referencia: ref.nombres + ' ' + ref.apellidos,
+        }
       }
-      return ({
-        ...props,
-        fullName: nombres + ' ' + apellidos,
-        referencia: ref.nombres + " " + ref.apellidos,
-      })
-    })
+    )
+    if (userId && rol?.rolName === 'Cobrador')
+      return clients?.filter(({ owner_id }) => owner_id === userId)
     return clients
   }
-  const { data: clientsRes, refetch } = useSuspenseQuery( queryOptions( { ...getClientListOpt, select } ) )
+  const { data: clientsRes, refetch } = useSuspenseQuery(
+    queryOptions({ ...getClientListOpt, select })
+  )
 
-  const { clients, setClient } = useClientByUsers(({ clients, ...items }) => ({ clients: clients ?? clientsRes, ...items }))
+  const { clients, setClient } = useClientByUsers(({ clients, ...items }) => ({
+    clients: clients ?? clientsRes,
+    ...items,
+  }))
   const data = useMemo(() => {
-    if (!search?.clients?.length) return clients;
+    if (!search?.clients?.length) return clients
     return clients?.filter(
       ({ id: userId }) => userId && search?.clients?.includes(userId)
     )
   }, [clients])
 
-  useEffect( () => {
-    document.title = import.meta.env.VITE_NAME + " | " + text.browser
-  }, [] )
+  useEffect(() => {
+    document.title = import.meta.env.VITE_NAME + ' | ' + text.browser
+  }, [])
 
   const table = useReactTable({
     data,
@@ -164,11 +200,11 @@ export function Clients() {
   }
 
   useEffect(() => {
-    if( clientsRes ){
-      refetch()?.then( ({ data }) => {
-        if( !data ) return;
-        setClient({ clients: data } )
-      } )
+    if (clientsRes) {
+      refetch()?.then(({ data }) => {
+        if (!data) return
+        setClient({ clients: data })
+      })
     }
     return () => {
       // setClients( clientsRes )
@@ -178,197 +214,214 @@ export function Clients() {
   return (
     <_clientContext.Provider value={clients}>
       <_rowSelected.Provider value={table.resetRowSelection}>
-      <div className="space-y-2">
-        <div className="flex items-center gap-2">
-          <h1 className="text-3xl font-bold">{text.title}</h1>
-          { !!data?.length && <Badge className="px-3 text-xl">
-            {table.getFilteredRowModel().rows.length}
-          </Badge>}
-        </div>
-        <Separator />
-        <div>
-          <div className="flex items-center gap-2 py-4">
-            <Dialog open={open} onOpenChange={onOpenChange}>
-              <DialogTrigger asChild>
-                <Link to={'./new'}>
-                  <Button variant="default">{text.buttons.new}</Button>
-                </Link>
-              </DialogTrigger>
-              <DialogTrigger asChild>
-                <Link
-                  disabled={!table.getFilteredSelectedRowModel().rows?.length}
-                  to={'./delete'}
-                  search={{
-                    clients: table .getFilteredSelectedRowModel() ?.rows?.map(({ original }) => original.id) 
-                  }}
-                >
-                  <Button
-                    className={clsx({
-                      'bg-destructive hover:bg-destructive':
-                        table.getFilteredSelectedRowModel().rows?.length,
-                    })}
-                    disabled={!table.getFilteredSelectedRowModel().rows?.length}
-                  >
-                    {text.buttons.delete}
-                  </Button>
-                </Link>
-              </DialogTrigger>
-              <Outlet />
-            </Dialog>
-            <Select value={filter} onValueChange={onValueChange}>
-              <SelectTrigger title='Filtro de busqueda' className="ms-auto w-auto">
-                <SelectValue placeholder={text.select.placeholder} />
-              </SelectTrigger>
-              <SelectContent className="[&>div]:cursor-pointer">
-                <SelectItem
-                  value={'fullName' as keyof TClientTable}
-                  className="cursor-pointer"
-                >
-                  {text.select.items.fullName}
-                </SelectItem>
-                <SelectItem
-                  value={'numero_de_identificacion' as keyof TClientTable}
-                  className="cursor-pointer"
-                >
-                  {text.select.items.id}
-                </SelectItem>
-                <SelectItem
-                  value={'direccion' as keyof TClientTable}
-                  className="cursor-pointer"
-                >
-                  {text.select.items.direction}
-                </SelectItem>
-                <SelectItem
-                  value={'celular' as keyof TClientTable}
-                  className="cursor-pointer"
-                >
-                  {text.select.items.phone}
-                </SelectItem>
-                <SelectItem
-                  value={'telefono' as keyof TClientTable}
-                  className="cursor-pointer"
-                >
-                  {text.select.items.telephone}
-                </SelectItem>
-                <SelectItem value={'referencia' as keyof TClientTable} className="cursor-pointer">
-                  {text.select.items.ref}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  {text.dropdown.title} <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                {table
-                  .getAllColumns()
-                  .filter((column) => column.getCanHide())
-                  .map((column) => (
-                    <DropdownMenuCheckboxItem
-                      className="cursor-pointer capitalize"
-                      key={column.id}
-                      checked={column.getIsVisible()}
-                      onCheckedChange={(value) =>
-                        column.toggleVisibility(!!value)
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <h1 className="text-3xl font-bold">{text.title}</h1>
+            {!!data?.length && (
+              <Badge className="px-3 text-xl">
+                {table.getFilteredRowModel().rows.length}
+              </Badge>
+            )}
+          </div>
+          <Separator />
+          <div>
+            <div className="flex items-center gap-2 py-4">
+              <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogTrigger asChild>
+                  <Link to={'./new'}>
+                    <Button variant="default">{text.buttons.new}</Button>
+                  </Link>
+                </DialogTrigger>
+                {!!userId && rol?.rolName !== 'Cobrador' && (
+                  <DialogTrigger asChild>
+                    <Link
+                      disabled={
+                        !table.getFilteredSelectedRowModel().rows?.length
                       }
+                      to={'./delete'}
+                      search={{
+                        clients: table
+                          .getFilteredSelectedRowModel()
+                          ?.rows?.map(({ original }) => original.id),
+                      }}
                     >
-                      {getMenuItem(column.id)}
-                    </DropdownMenuCheckboxItem>
-                  ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-          <div className="overflow-x-auto rounded-md border">
-            <Table>
-              <TableHeader className="bg-muted">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <TableHead
-                          key={header.id}
-                          className={clsx(
-                            'first:sticky first:left-0 last:sticky last:right-0'
-                          )}
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </TableHead>
-                      )
-                    })}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && 'selected'}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell
-                          key={cell.id}
-                          className={clsx(
-                            'first:sticky first:left-0 last:sticky last:right-0'
-                          )}
-                        >
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="h-24 text-center"
-                    >
-                      {text.search[404]}
-                    </TableCell>
-                  </TableRow>
+                      <Button
+                        className={clsx({
+                          'bg-destructive hover:bg-destructive':
+                            table.getFilteredSelectedRowModel().rows?.length,
+                        })}
+                        disabled={
+                          !table.getFilteredSelectedRowModel().rows?.length
+                        }
+                      >
+                        {text.buttons.delete}
+                      </Button>
+                    </Link>
+                  </DialogTrigger>
                 )}
-              </TableBody>
-            </Table>
-          </div>
-          <div className="flex items-center justify-end space-x-2 py-4">
-            <div className="flex-1 text-sm text-muted-foreground">
-              {text.search.selected({
-                selected: table.getFilteredSelectedRowModel().rows.length,
-                total: table.getFilteredRowModel().rows.length,
-              })}
+                <Outlet />
+              </Dialog>
+              <Select value={filter} onValueChange={onValueChange}>
+                <SelectTrigger
+                  title="Filtro de busqueda"
+                  className="ms-auto w-auto"
+                >
+                  <SelectValue placeholder={text.select.placeholder} />
+                </SelectTrigger>
+                <SelectContent className="[&>div]:cursor-pointer">
+                  <SelectItem
+                    value={'fullName' as keyof TClientTable}
+                    className="cursor-pointer"
+                  >
+                    {text.select.items.fullName}
+                  </SelectItem>
+                  <SelectItem
+                    value={'numero_de_identificacion' as keyof TClientTable}
+                    className="cursor-pointer"
+                  >
+                    {text.select.items.id}
+                  </SelectItem>
+                  <SelectItem
+                    value={'direccion' as keyof TClientTable}
+                    className="cursor-pointer"
+                  >
+                    {text.select.items.direction}
+                  </SelectItem>
+                  <SelectItem
+                    value={'celular' as keyof TClientTable}
+                    className="cursor-pointer"
+                  >
+                    {text.select.items.phone}
+                  </SelectItem>
+                  <SelectItem
+                    value={'telefono' as keyof TClientTable}
+                    className="cursor-pointer"
+                  >
+                    {text.select.items.telephone}
+                  </SelectItem>
+                  <SelectItem
+                    value={'referencia' as keyof TClientTable}
+                    className="cursor-pointer"
+                  >
+                    {text.select.items.ref}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline">
+                    {text.dropdown.title}{' '}
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {table
+                    .getAllColumns()
+                    .filter((column) => column.getCanHide())
+                    .map((column) => (
+                      <DropdownMenuCheckboxItem
+                        className="cursor-pointer capitalize"
+                        key={column.id}
+                        checked={column.getIsVisible()}
+                        onCheckedChange={(value) =>
+                          column.toggleVisibility(!!value)
+                        }
+                      >
+                        {getMenuItem(column.id)}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
-            <div className="space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.previousPage()}
-                disabled={!table.getCanPreviousPage()}
-                className="hover:ring hover:ring-primary"
-              >
-                {text.buttons.prev}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => table.nextPage()}
-                disabled={!table.getCanNextPage()}
-              >
-                {text.buttons.next}
-              </Button>
+            <div className="overflow-x-auto rounded-md border">
+              <Table>
+                <TableHeader className="bg-muted">
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => {
+                        return (
+                          <TableHead
+                            key={header.id}
+                            className={clsx(
+                              'first:sticky first:left-0 last:sticky last:right-0'
+                            )}
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                          </TableHead>
+                        )
+                      })}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        data-state={row.getIsSelected() && 'selected'}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell
+                            key={cell.id}
+                            className={clsx(
+                              'first:sticky first:left-0 last:sticky last:right-0'
+                            )}
+                          >
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell
+                        colSpan={columns.length}
+                        className="h-24 text-center"
+                      >
+                        {text.search[404]}
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+            <div className="flex items-center justify-end space-x-2 py-4">
+              <div className="flex-1 text-sm text-muted-foreground">
+                {text.search.selected({
+                  selected: table.getFilteredSelectedRowModel().rows.length,
+                  total: table.getFilteredRowModel().rows.length,
+                })}
+              </div>
+              <div className="space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => table.previousPage()}
+                  disabled={!table.getCanPreviousPage()}
+                  className="hover:ring hover:ring-primary"
+                >
+                  {text.buttons.prev}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => table.nextPage()}
+                  disabled={!table.getCanNextPage()}
+                >
+                  {text.buttons.next}
+                </Button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       </_rowSelected.Provider>
     </_clientContext.Provider>
   )
@@ -376,54 +429,65 @@ export function Clients() {
 
 /* eslint-disable-next-line */
 export function Pending() {
-  return <div className="space-y-4">
-    <div className="flex items-center gap-2">
-      <Skeleton className='w-36 h-8' />
-      <Skeleton className='w-8 h-8 rounded-full' />
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-8 w-36" />
+        <Skeleton className="h-8 w-8 rounded-full" />
+      </div>
+      <Separator />
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-10 w-24" />
+        <Skeleton className="h-10 w-24" />
+        <Skeleton className="ms-auto h-8 w-32" />
+        <Skeleton className="h-8 w-32" />
+      </div>
+      <div className="px-4">
+        <table className="w-full border-separate border-spacing-2 rounded-md ring-4 ring-transparent">
+          {Array.from({ length: ROW })?.map((_, index) => (
+            <tr key={index}>
+              {Array.from({ length: COL })?.map((_, index) => (
+                <td key={index} className="first:w-12 last:w-16">
+                  {' '}
+                  <Skeleton className="h-9 w-full" />{' '}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </table>
+      </div>
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="ms-auto h-10 w-24" />
+        <Skeleton className="h-10 w-24" />
+      </div>
     </div>
-    <Separator />
-    <div className='flex items-center gap-2'>
-      <Skeleton className='w-24 h-10' />
-      <Skeleton className='w-24 h-10' />
-      <Skeleton className='ms-auto w-32 h-8' />
-      <Skeleton className='w-32 h-8' />
-    </div>
-    <div className='px-4'>
-      <table className='ring-4 ring-transparent rounded-md w-full border-separate border-spacing-2'>
-      {Array.from( { length: ROW } )?.map( (_, index) => 
-        <tr key={index}>
-          {Array.from( { length: COL } )?.map( (_, index) => 
-            <td key={index} className='first:w-12 last:w-16'> <Skeleton className='w-full h-9' /> </td>
-          )}
-        </tr>
-        )}
-      </table>
-    </div>
-    <div className='flex items-center gap-2'>
-      <Skeleton className='w-48 h-8' />
-      <Skeleton className='ms-auto w-24 h-10' />
-      <Skeleton className='w-24 h-10' />
-    </div>
-  </div>
+  )
 }
 
 /* eslint-disable-next-line */
 export function Error() {
   const { history } = useRouter()
-  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+  const onClick: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
     history.back()
   }
-  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
-      <Annoyed  className='animate-bounce' />
-      <div className='space-y-2'>
-        <h1 className='font-bold'>{text.error}</h1>
-        <p className='italic'>{text.errorDescription}</p>
+  return (
+    <div className="flex h-full items-center items-center justify-center gap-4 [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+      <Annoyed className="animate-bounce" />
+      <div className="space-y-2">
+        <h1 className="font-bold">{text.error}</h1>
+        <p className="italic">{text.errorDescription}</p>
         <Separator />
-        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+        <Button variant="ghost" onClick={onClick} className="text-sm">
+          {' '}
+          {text.back + '.'}{' '}
+        </Button>
       </div>
     </div>
+  )
 }
-
 
 Clients.displayname = 'ClientsList'
 Error.displayname = 'ClientsListError'
