@@ -25,7 +25,6 @@ export const currents = new Map<TROLES, TUSER_GET>(
         id,
         rol: nombre,
         nombre: faker.person.fullName(),
-        clientes: [],
       },
     ]
   })
@@ -44,7 +43,6 @@ export const users = new Map<number, TUSER_GET>(
           list?.[index]?.rol ??
           faker.helpers.arrayElement(listRols()?.map(({ nombre }) => nombre)),
         nombre: list?.[index]?.nombre ?? faker.person.fullName(),
-        clientes: [],
       },
     ]
   })

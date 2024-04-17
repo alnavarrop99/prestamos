@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
-import React, { createContext, useEffect, useMemo, useState } from 'react'
+import React, { createContext, useEffect, useState } from 'react'
 import {
   Outlet,
   createFileRoute,
@@ -62,6 +62,10 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useToken } from '@/lib/context/login'
 
+type TSearch = {
+  userId: number
+}
+
 export const getClientListOpt = {
   queryKey: ['list-clients'],
   queryFn: getClientsList,
@@ -72,10 +76,7 @@ export const Route = createFileRoute('/_layout/client')({
   pendingComponent: Pending,
   errorComponent: Error,
   loader: () => queryClient.ensureQueryData(queryOptions(getClientListOpt)),
-  validateSearch: (search: { clients?: number[] }) => {
-    if (!search?.clients?.length) return { clients: [] }
-    return search
-  },
+  validateSearch: (search: TSearch) => search,
 })
 
 const ROW = 14
@@ -107,7 +108,7 @@ export function Clients() {
   const { open, setOpen, value } = useStatus()
   const navigate = useNavigate()
   const { filter, setFilter } = useFilter()
-  const search = Route.useSearch()
+  const { userId: ownerId } = Route.useSearch()
   const isUpdateClient = useIsMutating({
     status: 'success',
     mutationKey: updateClientByIdOpt.mutationKey,
@@ -141,7 +142,8 @@ export function Clients() {
         }
       }
     )
-    if (userId && rol?.rolName === 'Cobrador')
+    if (ownerId) return clients?.filter(({ owner_id }) => owner_id === ownerId)
+    if (userId && rol?.rolName !== 'Administrador')
       return clients?.filter(({ owner_id }) => owner_id === userId)
     return clients
   }
@@ -153,19 +155,13 @@ export function Clients() {
     clients: clients ?? clientsRes,
     ...items,
   }))
-  const data = useMemo(() => {
-    if (!search?.clients?.length) return clients
-    return clients?.filter(
-      ({ id: userId }) => userId && search?.clients?.includes(userId)
-    )
-  }, [clients])
 
   useEffect(() => {
     document.title = import.meta.env.VITE_NAME + ' | ' + text.browser
   }, [])
 
   const table = useReactTable({
-    data,
+    data: clientsRes,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
@@ -217,7 +213,7 @@ export function Clients() {
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <h1 className="text-3xl font-bold">{text.title}</h1>
-            {!!data?.length && (
+            {!!clientsRes?.length && (
               <Badge className="px-3 text-xl">
                 {table.getFilteredRowModel().rows.length}
               </Badge>

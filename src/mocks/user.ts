@@ -62,7 +62,6 @@ const createUser = http.post(
       ...items,
       rol: getRolById({ rolId: rol_id })?.nombre,
       id: (users.get(users?.size)?.id ?? 0) + 1,
-      clientes: [],
     })
     return HttpResponse.json<TUSER_GET>(users?.get(users?.size), {
       status: 201,

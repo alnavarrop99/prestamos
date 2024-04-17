@@ -291,7 +291,7 @@ export function Users() {
       setPagination({ ...pagination, start: 0, end: STEP })
     }
     return () => {
-      setUsers( usersRes )
+      setUsers(usersRes)
     }
   }, [value])
 
@@ -366,7 +366,7 @@ export function Users() {
               )
               ?.map(
                 (
-                  { id: userId, rol, nombre, clientes, selected, active, menu },
+                  { id: userId, rol, nombre, selected, active, menu },
                   index
                 ) => (
                   <Card
@@ -403,15 +403,11 @@ export function Users() {
                               {text.menu.title}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              disabled={!clientes || !clientes.length}
-                            >
+                            <DropdownMenuItem>
                               <Link
                                 className="flex h-full w-full items-center justify-between gap-2"
                                 to={'/client'}
-                                search={{
-                                  clients: clientes,
-                                }}
+                                search={{ userId }}
                               >
                                 {text.menu.client} <UsersList />
                               </Link>
