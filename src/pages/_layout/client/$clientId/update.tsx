@@ -63,7 +63,7 @@ export const Route = createFileRoute('/_layout/client/$clientId/update')({
   },
   beforeLoad: () => {
     const { rol, userId } = useToken.getState()
-    if (!userId || rol?.rolName === 'Cobrador')
+    if (!userId || rol?.rolName !== 'Administrador')
       throw redirect({ to: '/client' })
   },
 })

@@ -80,7 +80,7 @@ export const Route = createFileRoute('/_layout/user')({
   loader: () => queryClient.ensureQueryData(queryOptions(getUsersListOpt)),
   beforeLoad: () => {
     const { rol, userId } = useToken.getState()
-    if (!userId || rol?.rolName === 'Cobrador') throw redirect({ to: '/' })
+    if (!userId || rol?.rolName !== 'Administrador') throw redirect({ to: '/' })
   },
 })
 

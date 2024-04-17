@@ -215,7 +215,7 @@ function ClientActions({ row }: { row: Row<TClientTable> }) {
             {text.menu.pay} <UserPay />
           </Link>
         </DropdownMenuItem>
-        {!!userId && rol?.rolName !== 'Cobrador' && (
+        {!!userId && rol?.rolName === 'Administrador' && (
           <DropdownMenuItem onClick={onClick}>
             <Link
               className="flex h-full w-full items-center justify-between gap-2"
@@ -226,7 +226,7 @@ function ClientActions({ row }: { row: Row<TClientTable> }) {
             </Link>
           </DropdownMenuItem>
         )}
-        {!!userId && rol?.rolName !== 'Cobrador' && (
+        {!!userId && rol?.rolName === 'Administrador' && (
           <DropdownMenuItem onClick={onClick}>
             <Link
               className="flex h-full w-full items-center justify-between gap-2"

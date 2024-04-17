@@ -184,7 +184,7 @@ export function Credits() {
     data
   ) => {
     const credits = sortCredit(order, data)
-    if (userId && rol?.rolName === 'Cobrador')
+    if (userId && rol?.rolName !== 'Administrador')
       return credits?.filter(({ cobrador_id }) => userId === cobrador_id)
     return credits
   }

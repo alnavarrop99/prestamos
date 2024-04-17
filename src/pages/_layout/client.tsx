@@ -228,7 +228,7 @@ export function Clients() {
                     <Button variant="default">{text.buttons.new}</Button>
                   </Link>
                 </DialogTrigger>
-                {!!userId && rol?.rolName !== 'Cobrador' && (
+                {!!userId && rol?.rolName === 'Administrador' && (
                   <DialogTrigger asChild>
                     <Link
                       disabled={

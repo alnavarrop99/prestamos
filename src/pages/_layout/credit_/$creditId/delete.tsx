@@ -41,7 +41,7 @@ export const Route = createFileRoute('/_layout/credit/$creditId/delete')({
   component: DeleteCreditById,
   beforeLoad: () => {
     const { rol, userId } = useToken.getState()
-    if (!userId || rol?.rolName === 'Cobrador')
+    if (!userId || rol?.rolName !== 'Administrador')
       throw redirect({ to: '/credit' })
   },
 })
