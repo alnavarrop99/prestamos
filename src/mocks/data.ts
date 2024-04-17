@@ -6,10 +6,10 @@ import { listStatus } from '@/lib/type/status'
 import { listIds } from '@/lib/type/id'
 import { listMoraTypes } from '@/lib/type/moraType'
 import { listFrecuencys } from '@/lib/type/frecuency'
-import { TROLES, listRols } from '@/lib/type/rol'
-import { formatISO } from 'date-fns'
+import { type TROLES, listRols } from '@/lib/type/rol'
+import { add } from 'date-fns'
 import { faker } from '@faker-js/faker/locale/en'
-import { TPAYMENT_GET_BASE } from '@/api/payment'
+import { type TPAYMENT_GET_BASE } from '@/api/payment'
 
 const CLIENTS_LENGTH = 20
 const USERS_LENGTH = 10
@@ -102,7 +102,7 @@ export const credits = new Map<number, TCREDIT_GET>(
         multipleOf: 5.25,
       })
       const aprobeDate = faker.date.between({
-        from: new Date('2020-01-01'),
+        from: new Date('2020'),
         to: new Date(),
       })
       const aditionalDays = faker.number.int(10)
@@ -120,9 +120,10 @@ export const credits = new Map<number, TCREDIT_GET>(
               refDate: aprobeDate,
               days: index + 1 + index + 1 * faker.number.int(index + 1),
             })
-            const moraDate = new Date(payDate)
-            moraDate.setDate(payDate.getDate() + aditionalDays)
+
+            const moraDate = add(new Date(payDate), { days: aditionalDays })
             const cuoteAmmount = Math.ceil(ammount / cuotesLength)
+
             const payMora = faker.helpers.maybe(
               () =>
                 mora.nombre === 'Valor fijo'
@@ -140,10 +141,10 @@ export const credits = new Map<number, TCREDIT_GET>(
                 id: index + 1,
                 numero_de_cuota: _id,
                 credito_id: id,
-                fecha_de_pago: formatISO(payDate),
+                fecha_de_pago: payDate.toISOString(),
                 valor_de_cuota: cuoteAmmount,
                 valor_pagado: pay,
-                fecha_de_aplicacion_de_mora: formatISO(moraDate),
+                fecha_de_aplicacion_de_mora: moraDate.toISOString(),
                 valor_de_mora:
                   !!payMora && index < paymentsLength ? payMora : 0,
                 pagada: index <= paymentsLength ? true : false,
@@ -186,7 +187,7 @@ export const credits = new Map<number, TCREDIT_GET>(
       return [
         id,
         {
-          fecha_de_aprobacion: formatISO(aprobeDate),
+          fecha_de_aprobacion: aprobeDate.toISOString(),
           id,
           owner_id: faker.helpers.arrayElement([...clients?.values()])?.id ?? 1,
           monto: ammount,
