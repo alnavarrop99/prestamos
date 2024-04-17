@@ -1,5 +1,11 @@
-import { Button } from '@/components/ui/button' 
-import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import {
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast, useToast } from '@/components/ui/use-toast'
@@ -12,11 +18,13 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { type TCLIENT_DELETE  } from "@/api/clients"
-import { _rowSelected } from "@/pages/_layout/client";
+import { type TCLIENT_DELETE } from '@/api/clients'
+import { _rowSelected } from '@/pages/_layout/client'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
-import { deleteClientByIdOpt } from "@/pages/_layout/client/$clientId/delete"
+import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
+import { useToken } from '@/lib/context/login'
+import { redirect } from '@tanstack/react-router'
 
 type TSearch = {
   clients: number[]
@@ -25,7 +33,12 @@ type TSearch = {
 export const Route = createFileRoute('/_layout/client/delete')({
   component: DeleteSelectedClients,
   errorComponent: Error,
-  validateSearch: ( search: TSearch ) => search
+  validateSearch: (search: TSearch) => search,
+  beforeLoad: () => {
+    const { rol, userId } = useToken.getState()
+    if (!userId || rol?.rolName !== 'Administrador')
+      throw redirect({ to: '/client' })
+  },
 })
 
 /* eslint-disable-next-line */
@@ -37,7 +50,7 @@ export function DeleteSelectedClients() {
   const { clients } = Route.useSearch()
   const rowSelected = useContext(_rowSelected)
 
-  const onSuccess = ( data: TCLIENT_DELETE ) => {
+  const onSuccess = (data: TCLIENT_DELETE) => {
     const description = text.notification.decription({
       username: data.nombres + ' ' + data.apellidos,
     })
@@ -50,11 +63,11 @@ export function DeleteSelectedClients() {
 
     pushNotification({
       date: new Date(),
-      action: "DELETE",
+      action: 'DELETE',
       description,
     })
 
-    if( !rowSelected ) return;
+    if (!rowSelected) return
     rowSelected()
   }
 
@@ -68,7 +81,7 @@ export function DeleteSelectedClients() {
       variant: 'destructive',
       action: (
         <ToastAction altText="action from new user" onClick={onClick}>
-            {text.notification.retry}
+          {text.notification.retry}
         </ToastAction>
       ),
     })
@@ -77,108 +90,114 @@ export function DeleteSelectedClients() {
   const { mutate: deleteClient } = useMutation({
     ...deleteClientByIdOpt,
     onSuccess,
-    onError
+    onError,
   })
 
   const onCheckedChange: (checked: boolean) => void = () => {
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
-    if(!clients?.length) return;
+  const onSubmit: React.FormEventHandler<React.ComponentRef<typeof Button>> = (
+    ev
+  ) => {
+    if (!clients?.length) return
 
-    for ( const clientId of clients ){
-      if(!clientId) continue;
+    for (const clientId of clients) {
+      if (!clientId) continue
       alert(clientId)
       deleteClient({ clientId })
     }
 
-    setOpen({open: !open})
+    setOpen({ open: !open })
 
     ev.preventDefault()
   }
 
-  if(!clients?.length) return;
+  if (!clients?.length) return
   return (
     <>
-    {!open && <Navigate to={"../"} replace />}
-    <DialogContent className="max-w-xl">
-      <DialogHeader>
-        <DialogTitle className="text-2xl">{text.title}</DialogTitle>
-        <Separator />
-        <DialogDescription>
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>{text.alert.title}</AlertTitle>
-            <AlertDescription>
-              {text.alert.description({ length: clients?.length })}
-            </AlertDescription>
-          </Alert>
-        </DialogDescription>
-      </DialogHeader>
-      <DialogFooter className="!justify-between">
-        <div className="flex items-center gap-2 font-bold italic">
-          <Checkbox
-            id="switch-updates-client"
-            checked={checked}
-            onCheckedChange={onCheckedChange}
-          />
-          <Label
-            htmlFor="switch-updates-client"
-            className={clsx('cursor-pointer')}
-          >
-            {text.button.checkbox}
-          </Label>
-        </div>
-        <div
-          className={clsx(
-            'flex flex-col items-end gap-2 space-x-2 [&>*]:w-fit',
-            {
-              'flex-col-reverse': !checked,
-              'flex-col': checked,
-              '[&>*:last-child]:animate-pulse': !checked,
-            }
-          )}
-        >
-          <Button
-            className={clsx({ "hover:bg-destructive bg-destructive": checked })}
-            variant="default"
-            form="delete-client"
-            type="submit"
-            disabled={!checked}
-            onClick={onSubmit}
-          >
-            {text.button.delete}
-          </Button>
-          <DialogClose asChild>
-            <Button
-              type="button"
-              variant="outline"
-              className="font-bold hover:ring hover:ring-primary"
+      {!open && <Navigate to={'../'} replace />}
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+          <Separator />
+          <DialogDescription>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>{text.alert.title}</AlertTitle>
+              <AlertDescription>
+                {text.alert.description({ length: clients?.length })}
+              </AlertDescription>
+            </Alert>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="!justify-between">
+          <div className="flex items-center gap-2 font-bold italic">
+            <Checkbox
+              id="switch-updates-client"
+              checked={checked}
+              onCheckedChange={onCheckedChange}
+            />
+            <Label
+              htmlFor="switch-updates-client"
+              className={clsx('cursor-pointer')}
             >
-              {text.button.close}
+              {text.button.checkbox}
+            </Label>
+          </div>
+          <div
+            className={clsx(
+              'flex flex-col items-end gap-2 space-x-2 [&>*]:w-fit',
+              {
+                'flex-col-reverse': !checked,
+                'flex-col': checked,
+                '[&>*:last-child]:animate-pulse': !checked,
+              }
+            )}
+          >
+            <Button
+              className={clsx({
+                'bg-destructive hover:bg-destructive': checked,
+              })}
+              variant="default"
+              form="delete-client"
+              type="submit"
+              disabled={!checked}
+              onClick={onSubmit}
+            >
+              {text.button.delete}
             </Button>
-          </DialogClose>
-        </div>
-      </DialogFooter>
-    </DialogContent>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="font-bold hover:ring hover:ring-primary"
+              >
+                {text.button.close}
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogFooter>
+      </DialogContent>
     </>
   )
 }
 
 /* eslint-disable-next-line */
 export function Error() {
-  useEffect( () => {
+  useEffect(() => {
     toast({
       title: text.error.title,
-      description: <div className='flex flex-row gap-2 items-center'>
-      <h2 className='font-bold text-2xl'>:&nbsp;(</h2>
-      <p className='text-md'>  {text.error.descriiption} </p> 
-    </div>,
+      description: (
+        <div className="flex flex-row items-center gap-2">
+          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
+          <p className="text-md"> {text.error.descriiption} </p>
+        </div>
+      ),
       variant: 'destructive',
     })
-  }, [] )
-  return ;
+  }, [])
+  return
 }
 
 DeleteSelectedClients.dispalyname = 'DeleteSelectedClients'
@@ -187,8 +206,8 @@ Error.dispalyname = 'DeleteSelectedClientsError'
 const text = {
   title: 'Eliminacion de clientes',
   error: {
-    title: "Obtencion de datos de usuario",
-    descriiption: "Ha ocurrido un error inesperado"
+    title: 'Obtencion de datos de usuario',
+    descriiption: 'Ha ocurrido un error inesperado',
   },
   alert: {
     title: 'Se eiminara multiples clientes de la base de datos',
