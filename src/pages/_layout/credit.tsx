@@ -67,6 +67,7 @@ import {
 } from '@/pages/_layout/credit_/$creditId_/update.confirm'
 import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
+import { useToken } from '@/lib/context/login'
 
 const getFilterCredit = async () => {
   // TODO: this is a temporal function to getFilter
@@ -177,11 +178,14 @@ export function Credits() {
   const { setPagination, ...pagination } = usePagination()
   const { value } = useStatus()
   const { order, setOrder } = useOrder()
+  const { userId, rol } = useToken()
 
   const select: (data: TCREDIT_GET_FILTER_ALL) => TCREDIT_GET_FILTER_ALL = (
     data
   ) => {
     const credits = sortCredit(order, data)
+    if (userId && rol?.rolName === 'Cobrador')
+      return credits?.filter(({ cobrador_id }) => userId === cobrador_id)
     return credits
   }
   const { data: creditsRes, refetch } = useSuspenseQuery(
@@ -308,7 +312,7 @@ export function Credits() {
       setPagination({ ...pagination, start: 0, end: STEP })
     }
     return () => {
-      // setCredits(creditRes)
+      setCredits(creditsRes)
     }
   }, [value])
 
