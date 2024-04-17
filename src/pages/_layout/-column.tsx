@@ -23,6 +23,7 @@ import { useStatus } from '@/lib/context/layout'
 import { type TCLIENT_GET_BASE } from '@/api/clients'
 import { getIdById } from '@/lib/type/id'
 import { useToken } from '@/lib/context/login'
+import { TROLES } from '@/lib/type/rol'
 
 export type TClientTable = Omit<
   TCLIENT_GET_BASE,
@@ -215,17 +216,15 @@ function ClientActions({ row }: { row: Row<TClientTable> }) {
             {text.menu.pay} <UserPay />
           </Link>
         </DropdownMenuItem>
-        {!!userId && rol?.rolName === 'Administrador' && (
-          <DropdownMenuItem onClick={onClick}>
-            <Link
-              className="flex h-full w-full items-center justify-between gap-2"
-              to={'./$clientId/update'}
-              params={{ clientId: id }}
-            >
-              {text.menu.update} <UserUpdate />
-            </Link>
-          </DropdownMenuItem>
-        )}
+        <DropdownMenuItem onClick={onClick}>
+          <Link
+            className="flex h-full w-full items-center justify-between gap-2"
+            to={'./$clientId/update'}
+            params={{ clientId: id }}
+          >
+            {text.menu.update({ rolName: rol?.rolName })} <UserUpdate />
+          </Link>
+        </DropdownMenuItem>
         {!!userId && rol?.rolName === 'Administrador' && (
           <DropdownMenuItem onClick={onClick}>
             <Link
@@ -250,7 +249,8 @@ const text = {
     aria: 'Mas Opciones',
     title: 'Acciones:',
     copy: 'Copiar datos del cliente',
-    update: 'Ver | Actualizar cliente',
+    update: ({ rolName }: { rolName?: TROLES }) =>
+      rolName === 'Administrador' ? 'Ver | Actualizar' : 'Ver' + ' cliente',
     pay: 'Asignar prestamo al cliente',
     delete: 'Eliminar cliente',
   },

@@ -55,7 +55,7 @@ export const Route = createFileRoute('/_layout/credit/$creditId')({
   pendingComponent: Pending,
   errorComponent: Error,
   loader: async ({ params }) => {
-    const { userId } = useToken.getState()
+    const { userId, rol } = useToken.getState()
     const credit = queryClient.ensureQueryData(
       queryOptions(getCreditByIdOpt(params))
     )
@@ -65,8 +65,8 @@ export const Route = createFileRoute('/_layout/credit/$creditId')({
       )
     )
 
-    const cobradorId = (await credit)?.cobrador_id
-    if (cobradorId !== userId) {
+    const ownerId = (await credit)?.cobrador_id
+    if (ownerId !== userId && rol?.rolName !== 'Administrador') {
       throw redirect({ to: '/credit' })
     }
 

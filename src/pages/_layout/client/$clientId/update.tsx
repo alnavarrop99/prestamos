@@ -56,15 +56,15 @@ export const getClientByIdOpt = ({ clientId }: { clientId: string }) => ({
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
   loader: async ({ params }) => {
+    const { rol, userId } = useToken.getState()
     const data = queryClient.ensureQueryData(
       queryOptions(getClientByIdOpt(params))
     )
-    return { client: defer(data) }
-  },
-  beforeLoad: () => {
-    const { rol, userId } = useToken.getState()
-    if (!userId || rol?.rolName !== 'Administrador')
+    const ownerId = (await data)?.owner.id
+    if (ownerId !== userId && rol?.rolName !== 'Administrador')
       throw redirect({ to: '/client' })
+
+    return { client: defer(data) }
   },
 })
 
@@ -74,6 +74,7 @@ type TFormName = keyof (Omit<TCLIENT_PATCH_BODY, 'referencia_id'> &
 
 /* eslint-disable-next-line */
 export function UpdateClientById() {
+  const { userId, rol } = useToken()
   const { clientId } = Route.useParams()
   const form = useRef<HTMLFormElement>(null)
   const [checked, setChecked] = useState(false)
@@ -432,7 +433,11 @@ export function UpdateClientById() {
           </Label>
         </form>
         <DialogFooter className="!justify-between">
-          <div className="flex items-center gap-2 font-bold italic">
+          <div
+            className={clsx('flex items-center gap-2 font-bold italic', {
+              invisible: !userId || rol?.rolName !== 'Administrador',
+            })}
+          >
             {!isSuccess ? (
               <>
                 <Skeleton className="h-10 w-12" />

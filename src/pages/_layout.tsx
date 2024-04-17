@@ -129,6 +129,7 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 
 /* eslint-disable-next-line */
 export function Layout() {
+  const { deleteToken, setUserId, userId, name, setRol, rol } = useToken()
   const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, {
     offline: navigator.onLine,
     menu: false,
@@ -142,16 +143,24 @@ export function Layout() {
     isPending: pendingCurrentUser,
     refetch,
   } = useSuspenseQuery(queryOptions(getCurrentUserOpt))
+
+  const select: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
+    const clients = data
+    if (userId && rol?.rolName !== 'Administrador')
+      return clients?.filter(({ owner_id }) => owner_id === userId)
+    return clients
+  }
+
   const {
     data: clientsRes,
     isSuccess: okClients,
     error: errorClients,
     isPending: _pendingClients,
-  } = useQuery(queryOptions(getClientListOpt))
+  } = useQuery(queryOptions({ ...getClientListOpt, select }))
+
   const [clients, setClients] = useState<TCLIENT_GET_ALL | undefined>(undefined)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
-  const { deleteToken, setUserId, userId, name, setRol } = useToken()
   const { history } = useRouter()
   const [pendingClients, setPendingClients] = useState<boolean>(_pendingClients)
 
