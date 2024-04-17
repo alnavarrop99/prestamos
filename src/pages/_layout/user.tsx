@@ -496,7 +496,7 @@ export function Users() {
       </div>
       {users?.length > LENGTH && (
         <Pagination className="relative z-10">
-          <PaginationContent>
+          <PaginationContent className='ring-1 ring-border bg-background rounded-md'>
             <PaginationItem>
               <Button
                 disabled={pagination?.start <= 0}

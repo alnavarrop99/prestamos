@@ -529,7 +529,7 @@ export function Credits() {
       </div>
       {credits?.length > LENGTH && (
         <Pagination className="v-10 relative">
-          <PaginationContent>
+          <PaginationContent className='ring-1 ring-border bg-background rounded-md'>
             <PaginationItem>
               <Button
                 disabled={pagination?.start <= 0}
