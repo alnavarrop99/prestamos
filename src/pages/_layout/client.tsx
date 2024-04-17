@@ -85,7 +85,7 @@ export const _clientContext = createContext<TClientTable[] | undefined>(
   undefined
 )
 export const _rowSelected = createContext<(() => void) | undefined>(undefined)
-const useFilter = create<{
+export const useFilter = create<{
   filter: keyof TClientTable
   setFilter: (value: keyof TClientTable) => void
 }>()(
@@ -329,7 +329,7 @@ export function Clients() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="overflow-x-auto rounded-md border">
+            <div className="overflow-x-auto rounded-md bg-background ring-1 ring-border">
               <Table>
                 <TableHeader className="bg-muted">
                   {table.getHeaderGroups().map((headerGroup) => (

@@ -102,7 +102,7 @@ const ORDER: Record<keyof Omit<TUSER_GET, 'clientes'>, TOrderType> = {
   rol: 'Rol',
 }
 export const _selectUsers = createContext<TUsersState[]>([])
-const usePagination = create<{
+export const usePagination = create<{
   start: number
   end: number
   setPagination: (params: { start: number; end: number }) => void
@@ -116,7 +116,7 @@ const usePagination = create<{
     { name: 'users-pagination' }
   )
 )
-const useOrder = create<{
+export const useOrder = create<{
   order: keyof typeof ORDER
   setOrder: (value: keyof typeof ORDER) => void
 }>()(
@@ -496,7 +496,7 @@ export function Users() {
       </div>
       {users?.length > LENGTH && (
         <Pagination className="relative z-10">
-          <PaginationContent>
+          <PaginationContent className="rounded-md bg-background ring-1 ring-border">
             <PaginationItem>
               <Button
                 disabled={pagination?.start <= 0}

@@ -144,7 +144,7 @@ const ORDER: Record<
 export const _creditSelected = createContext<TCREDIT_GET_FILTER | undefined>(
   undefined
 )
-const usePagination = create<{
+export const usePagination = create<{
   start: number
   end: number
   setPagination: (params: { start: number; end: number }) => void
@@ -158,7 +158,7 @@ const usePagination = create<{
     { name: 'credit-pagination' }
   )
 )
-const useOrder = create<{
+export const useOrder = create<{
   order: keyof typeof ORDER
   setOrder: (value: keyof typeof ORDER) => void
 }>()(
@@ -529,7 +529,7 @@ export function Credits() {
       </div>
       {credits?.length > LENGTH && (
         <Pagination className="v-10 relative">
-          <PaginationContent>
+          <PaginationContent className="rounded-md bg-background ring-1 ring-border">
             <PaginationItem>
               <Button
                 disabled={pagination?.start <= 0}
