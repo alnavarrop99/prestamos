@@ -16,7 +16,7 @@ export type TData = {
   type: TType
   creditId: number
   client: string
-  ammount: number
+  cuete: number
 }
 
 /* eslint-disable-next-line */
@@ -133,7 +133,7 @@ function HoverDate({ date, credit }: THoverDate) {
           </li>
           <li>
             {' '}
-            <b>{text.list.ammount + ':'}</b> ${credit.ammount}{' '}
+            <b>{text.list.ammount + ':'}</b> {credit.cuete}{' '}
           </li>
         </ul>
       </HoverCardContent>
@@ -149,7 +149,7 @@ const text = {
   title: ({ type }: { type: TType }) =>
     'Credito ' + (type === 'warning' ? 'Pendiente' : 'en Mora'),
   list: {
-    client: 'Nombre del cliente',
+    client: 'Cliente',
     ammount: 'Numero de cuota',
   },
 }

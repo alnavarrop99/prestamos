@@ -209,7 +209,7 @@ export function Layout() {
             type: valor_de_la_mora > 0 ? 'mora' : 'warning',
             creditId,
             client: nombre_del_cliente,
-            ammount: numero_de_cuota,
+            cuete: numero_de_cuota,
           },
         ]
       )
@@ -406,7 +406,7 @@ export function Layout() {
           {!menu ? (
             <Calendar
               key={'calendar'}
-              className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold"
+              className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary"
               days={creditssRes}
             />
           ) : (

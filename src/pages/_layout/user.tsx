@@ -332,7 +332,7 @@ export function Users() {
           </Dialog>
         </div>
         <Separator />
-        {users?.length && (
+        {!!users?.length && (
           <div className="items-between flex">
             <p className="text-muted-foreground">
               {text.select({
@@ -521,7 +521,10 @@ export function Users() {
               return (
                 <PaginationItem key={index}>
                   <Button
-                    className="delay-0 duration-100"
+                    className={clsx('delay-0 duration-100 hover:text-muted', {
+                      'text-muted-foreground hover:text-muted-foreground':
+                        pagination?.start === pagination?.end + index - STEP,
+                    })}
                     variant={
                       pagination?.start === pagination?.end + index - STEP
                         ? 'secondary'

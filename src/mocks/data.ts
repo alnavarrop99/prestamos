@@ -102,7 +102,7 @@ export const credits = new Map<number, TCREDIT_GET>(
         multipleOf: 5.25,
       })
       const aprobeDate = faker.date.between({
-        from: new Date('2020'),
+        from: new Date('2024'),
         to: new Date(),
       })
       const aditionalDays = faker.number.int(10)
