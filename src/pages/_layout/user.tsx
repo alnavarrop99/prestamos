@@ -332,25 +332,28 @@ export function Users() {
           </Dialog>
         </div>
         <Separator />
-        <div className="items-between flex">
-          <p className="text-muted-foreground">
-            {' '}
-            {users?.filter(({ selected }) => selected)?.length} de{' '}
-            {usersRes?.length} usuario(s) seleccionados.{' '}
-          </p>
-          <Select required defaultValue={order} onValueChange={onSelectOrder}>
-            <SelectTrigger className="!border-1 ms-auto w-48 !border-ring">
-              <SelectValue placeholder={'Orden'} />
-            </SelectTrigger>
-            <SelectContent className="[&_*]:cursor-pointer">
-              {Object.entries(ORDER)?.map(([key, value], index) => (
-                <SelectItem key={index} value={key}>
-                  {value}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {!!users?.length && (
+          <div className="items-between flex">
+            <p className="text-muted-foreground">
+              {text.select({
+                select: users?.filter(({ selected }) => selected)?.length,
+                total: usersRes?.length,
+              })}
+            </p>
+            <Select required defaultValue={order} onValueChange={onSelectOrder}>
+              <SelectTrigger className="!border-1 ms-auto w-48 !border-ring">
+                <SelectValue placeholder={'Orden'} />
+              </SelectTrigger>
+              <SelectContent className="[&_*]:cursor-pointer">
+                {Object.entries(ORDER)?.map(([key, value], index) => (
+                  <SelectItem key={index} value={key}>
+                    {value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         {!users?.length && <p>{text.notFound}</p>}
         <div
           className={clsx(
@@ -518,7 +521,10 @@ export function Users() {
               return (
                 <PaginationItem key={index}>
                   <Button
-                    className="delay-0 duration-100"
+                    className={clsx('delay-0 duration-100 hover:text-muted', {
+                      'text-muted-foreground hover:text-muted-foreground':
+                        pagination?.start === pagination?.end + index - STEP,
+                    })}
                     variant={
                       pagination?.start === pagination?.end + index - STEP
                         ? 'secondary'
@@ -648,6 +654,8 @@ Pending.dispalyname = 'UserListPending'
 const text = {
   title: 'Usuarios:',
   error: 'Ups!!! ha ocurrido un error',
+  select: ({ select, total }: { select: number; total: number }) =>
+    `${select} de ${total} usuario(s) seleccionados.`,
   errorDescription: 'El listado de usuarios ha fallado.',
   back: 'Intente volver a la pestaña anterior',
   pagination: {

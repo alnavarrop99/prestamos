@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button'
 import { Annoyed, Printer } from 'lucide-react'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { CircleDollarSign as Pay } from 'lucide-react'
-import { format, isValid } from 'date-fns'
+import { format } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { createContext, useEffect, useMemo, useState } from 'react'
@@ -239,14 +239,13 @@ export function CreditById() {
               <b>{text.details.name + ':'}</b>{' '}
               <span>{client?.nombres + ' ' + client?.apellidos + '.'}</span>
             </li>
-            {isValid(credit?.fecha_de_aprobacion) && (
-              <li>
-                <b>{text.details.date + ':'}</b>{' '}
-                <span>
-                  {format(credit?.fecha_de_aprobacion, 'dd-MM-yyyy') + '.'}
-                </span>
-              </li>
-            )}
+            <li>
+              <b>{text.details.date + ':'}</b>{' '}
+              <span>
+                {format(new Date(credit?.fecha_de_aprobacion), 'dd/MM/yyyy') +
+                  '.'}
+              </span>
+            </li>
             <li>
               <b>{text.details.aditionalsDays + ':'}</b>{' '}
               <span>{credit?.dias_adicionales + '.'}</span>
@@ -319,7 +318,7 @@ export function CreditById() {
             <h2 className="text-2xl font-bold"> {text.cuotes.title} </h2>
           )}
           {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
-            <Table className="px-4 py-2">
+            <Table className="rounded-xl bg-background">
               <TableHeader className="bg-muted [&_th]:text-center">
                 <TableRow>
                   <TableHead></TableHead>
@@ -353,18 +352,17 @@ export function CreditById() {
                       </Link>
                     </TableCell>
                     <TableCell>
-                      {/* fix this date because returt a invalid date time */}
-                      {isValid(cuote?.fecha_de_pago) &&
-                        isValid(payment?.fecha_de_pago) && (
-                          <ul>
-                            <li className='before:font-bold before:text-destructive before:content-["_-_"]'>
-                              {format(cuote?.fecha_de_pago, 'dd/MM/yyyy')}
-                            </li>
-                            <li className='before:font-bold before:text-success before:content-["_+_"]'>
-                              {format(payment?.fecha_de_pago, 'dd/MM/yyyy')}
-                            </li>
-                          </ul>
-                        )}
+                      <ul>
+                        <li className='before:font-bold before:text-destructive before:content-["_-_"]'>
+                          {format(new Date(cuote?.fecha_de_pago), 'dd/MM/yyyy')}
+                        </li>
+                        <li className='before:font-bold before:text-success before:content-["_+_"]'>
+                          {format(
+                            new Date(payment?.fecha_de_pago),
+                            'dd/MM/yyyy'
+                          )}
+                        </li>
+                      </ul>
                     </TableCell>
                     <TableCell>
                       <p>
@@ -373,16 +371,14 @@ export function CreditById() {
                       </p>
                     </TableCell>
                     <TableCell>
-                      {isValid(cuote?.fecha_de_aplicacion_de_mora) && (
-                        <p>
-                          {cuote?.valor_de_mora > 0
-                            ? format(
-                                cuote?.fecha_de_aplicacion_de_mora ?? '',
-                                'dd-MM-yyyy'
-                              )
-                            : '-'}
-                        </p>
-                      )}
+                      <p>
+                        {cuote?.valor_de_mora > 0
+                          ? format(
+                              new Date(cuote?.fecha_de_aplicacion_de_mora),
+                              'dd/MM/yyyy'
+                            )
+                          : '-'}
+                      </p>
                     </TableCell>
                     <TableCell>
                       <p>

@@ -34,7 +34,7 @@ import {
   type TCREDIT_GET_FILTER_ALL,
 } from '@/api/credit'
 import { useStatus } from '@/lib/context/layout'
-import { format, isValid } from 'date-fns'
+import { format } from 'date-fns'
 import styles from '@/styles/global.module.css'
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { getClientById } from '@/api/clients'
@@ -117,7 +117,9 @@ export const Route = createFileRoute('/_layout/credit')({
   component: Credits,
   pendingComponent: Pending,
   errorComponent: Error,
-  loader: () => queryClient.ensureQueryData(queryOptions(getCreditsListOpt)),
+  loader: () => ({
+    credits: queryClient.ensureQueryData(queryOptions(getCreditsListOpt)),
+  }),
 })
 
 /* eslint-disable-next-line */
@@ -353,18 +355,27 @@ export function Credits() {
           </Dialog>
         </div>
         <Separator />
-        <Select defaultValue={order} onValueChange={onSelectOrder}>
-          <SelectTrigger className="!border-1 ms-auto w-48 !border-ring">
-            <SelectValue placeholder={'Orden'} />
-          </SelectTrigger>
-          <SelectContent className="[&_*]:cursor-pointer">
-            {Object.entries(ORDER)?.map(([key, value], index) => (
-              <SelectItem key={index} value={key}>
-                {value}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        {!!credits?.length && (
+          <div className="items-between flex">
+            <p className="text-muted-foreground">
+              {text.select({
+                total: credits?.length,
+              })}
+            </p>
+            <Select defaultValue={order} onValueChange={onSelectOrder}>
+              <SelectTrigger className="!border-1 ms-auto w-48 !border-ring">
+                <SelectValue placeholder={'Orden'} />
+              </SelectTrigger>
+              <SelectContent className="[&_*]:cursor-pointer">
+                {Object.entries(ORDER)?.map(([key, value], index) => (
+                  <SelectItem key={index} value={key}>
+                    {value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
         {!credits?.length && <p>{text.notfound}</p>}
         {!!credits?.length && (
           <div
@@ -467,12 +478,9 @@ export function Credits() {
                             </ul>
                           </CardContent>
                           <CardFooter className="flex items-center gap-2">
-                            {isValid(fecha_de_cuota) && (
-                              <Badge>
-                                {' '}
-                                {format(fecha_de_cuota, 'dd/MM/yyyy')}{' '}
-                              </Badge>
-                            )}
+                            <Badge>
+                              {format(new Date(fecha_de_cuota), 'dd-MM-yyyy')}{' '}
+                            </Badge>
                             <Dialog open={open} onOpenChange={onOpenChange}>
                               <DialogTrigger asChild className="ms-auto">
                                 {
@@ -554,7 +562,10 @@ export function Credits() {
               return (
                 <PaginationItem key={index}>
                   <Button
-                    className="delay-0 duration-100"
+                    className={clsx('delay-0 duration-100 hover:text-muted', {
+                      'text-muted-foreground hover:text-muted-foreground':
+                        pagination?.start === pagination?.end + index - STEP,
+                    })}
                     variant={
                       pagination?.start === pagination?.end + index - STEP
                         ? 'secondary'
@@ -800,6 +811,7 @@ const text = {
   back: 'Intente volver a la pestaña anterior',
   browser: 'Prestamos',
   notfound: 'No existen prestamos activos.',
+  select: ({ total }: { total: number }) => `${total} credito(s) activos.`,
   pagination: {
     back: 'Anterior',
     next: 'Siguiente',

@@ -16,8 +16,18 @@ import { useContext, useRef } from 'react'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
-import { postClient, type TCLIENT_POST, type TCLIENT_POST_BODY } from "@/api/clients";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  postClient,
+  type TCLIENT_POST,
+  type TCLIENT_POST_BODY,
+} from '@/api/clients'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { listIds, getIdByName } from '@/lib/type/id'
@@ -27,7 +37,7 @@ import { getStatusByName } from '@/lib/type/status'
 import { Textarea } from '@/components/ui/textarea'
 
 export const postClientOpt = {
-  mutationKey: ["create-client"],
+  mutationKey: ['create-client'],
   mutationFn: postClient,
 }
 
@@ -36,7 +46,8 @@ export const Route = createFileRoute('/_layout/client/new')({
 })
 
 /* eslint-disable-next-line */
-type TFormName = keyof (Omit<TCLIENT_POST_BODY, "referencia_id"> & Record<"referencia", string>)
+type TFormName = keyof (Omit<TCLIENT_POST_BODY, 'referencia_id'> &
+  Record<'referencia', string>)
 
 /* eslint-disable-next-line */
 export function NewClient() {
@@ -44,7 +55,10 @@ export function NewClient() {
   const { pushNotification } = useNotifications()
   const { open } = useStatus()
 
-  const onSuccess: (data: TCLIENT_POST, variables: TCLIENT_POST_BODY) => unknown = (_, items) => {
+  const onSuccess: (
+    data: TCLIENT_POST,
+    variables: TCLIENT_POST_BODY
+  ) => unknown = (_, items) => {
     const description = text.notification.decription({
       username: items?.nombres + items?.apellidos,
     })
@@ -57,12 +71,15 @@ export function NewClient() {
 
     pushNotification({
       date: new Date(),
-      action: "POST",
+      action: 'POST',
       description,
     })
   }
 
-  const onError: (data: TCLIENT_POST, variables: TCLIENT_POST_BODY) => unknown = (_, items) => {
+  const onError: (
+    data: TCLIENT_POST,
+    variables: TCLIENT_POST_BODY
+  ) => unknown = (_, items) => {
     const description = text.notification.error({
       username: items?.nombres + items?.apellidos,
     })
@@ -75,28 +92,31 @@ export function NewClient() {
       variant: 'destructive',
       action: (
         <ToastAction altText="action from new user" onClick={onClick}>
-            {text.notification.retry}
+          {text.notification.retry}
         </ToastAction>
       ),
     })
-
   }
-  const {mutate: createClient} = useMutation( { ...postClientOpt,
+  const { mutate: createClient } = useMutation({
+    ...postClientOpt,
     onSuccess,
-    onError
-  } )
+    onError,
+  })
   const clients = useContext(_clientContext)
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (ev) => {
     if (!form.current) return
 
     const items = Object.fromEntries(
-      Array.from(new FormData(form.current).entries())?.map( ([ key, value ]) => {
-      if( value === "" ) return [ key, undefined ]
-      return [ key, value ]
-    })) as Record<TFormName , string>
+      Array.from(new FormData(form.current).entries())?.map(([key, value]) => {
+        if (value === '') return [key, undefined]
+        return [key, value]
+      })
+    ) as Record<TFormName, string>
 
-    const refId = clients?.find( ({ fullName }) => ( items?.referencia === fullName ) )?.id
+    const refId = clients?.find(
+      ({ fullName }) => items?.referencia === fullName
+    )?.id
     createClient({
       nombres: items?.nombres,
       apellidos: items?.apellidos,
@@ -105,11 +125,11 @@ export function NewClient() {
       celular: items?.celular,
       numero_de_identificacion: items?.numero_de_identificacion,
       tipo_de_identificacion: +items?.tipo_de_identificacion,
-      estado: getStatusByName({ statusName: "Activo" })?.id,
+      estado: getStatusByName({ statusName: 'Activo' })?.id,
       referencia_id: refId ?? null,
-      comentarios: items?.comentarios ?? "",
+      comentarios: items?.comentarios ?? '',
       // TODO: this field be "" that not's necessary
-      email: items?.email ?? "",
+      email: items?.email ?? '',
     })
 
     form.current.reset()
@@ -118,127 +138,144 @@ export function NewClient() {
 
   return (
     <>
-    { !open && <Navigate to={"../"} replace /> }
-    <DialogContent className="max-w-2xl">
-      <DialogHeader>
-        <DialogTitle className="text-2xl">{text.title}</DialogTitle>
-        <Separator />
-        <DialogDescription className='text-muted-foreground'>{text.descriiption}</DialogDescription>
-      </DialogHeader>
-      <form
-        autoComplete="off"
-        ref={form}
-        onSubmit={onSubmit}
-        id="new-client"
-        className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
-          styles?.['custom-form']
-        )}
-      >
-        <Label>
-          <span>{text.form.firstName.label}</span>
-          <Input
-            required
-            name={'nombres' as TFormName}
-            type="text"
-            placeholder={text.form.firstName.placeholder}
-          />
-        </Label>
-        <Label>
-          <span>{text.form.lastName.label} </span>
-          <Input
-            required
-            name={'apellidos' as TFormName}
-            type="text"
-            placeholder={text.form.lastName.placeholder}
-          />
-        </Label>
-        <Label>
-          <span>{text.form.id.label} </span>
-          <Input
-            required
-            name={'numero_de_identificacion' as TFormName}
-            type="text"
-            placeholder={text.form.id.placeholder}
-          />
-        </Label>
-        <Label>
-          <span>{text.form.typeId.label} </span>
-          <Select required name={'tipo_de_identificacion' as TFormName} defaultValue={""+getIdByName({ idName: "Cédula" })?.id}>
-            <SelectTrigger className="w-full !border-ring !border-1">
-              <SelectValue placeholder={text.form.typeId.placeholder} />
-            </SelectTrigger>
-            <SelectContent>
-              { listIds()?.map( ({ id, nombre }, index) => 
-                <SelectItem key={index} value={""+id}>{nombre}</SelectItem>
-              ) }
-            </SelectContent>
-          </Select>
-        </Label>
-        <Label>
-          <span>{text.form.phone.label} </span>
-          <Input
-            required
-            name={'celular' as TFormName}
-            type="tel"
-            placeholder={text.form.phone.placeholder}
-          />
-        </Label>
-        <Label>
-          <span>{text.form.telephone.label} </span>
-          <Input
-            required
-            name={'telefono' as TFormName}
-            type="tel"
-            placeholder={text.form.telephone.placeholder}
-          />
-        </Label>
-        <Label>
-          <span>{text.form.direction.label}</span>
-          <Input
-            required
-            name={'direccion' as TFormName}
-            type="text"
-            placeholder={text.form.direction.placeholder}
-          />
-        </Label>
-        <Label>
-          <span>{text.form.ref.label}</span>
-          <Input
-            list='client-referent'
-            name={'referencia' as TFormName}
-            type="text"
-            placeholder={text.form.ref.placeholder}
-          />
-          <datalist id='client-referent' >
-            { clients?.map( ( { fullName }, index ) => <option key={index} value={fullName} />) }
-          </datalist>
-        </Label>
-        <Label>
-        <span>{text.form.comment.label}</span>
-        <Textarea
-          rows={5}
-          name={'comentarios' as TFormName}
-          placeholder={text.form.comment.placeholder}
-        />
-      </Label>
-      </form>
-      <DialogFooter className="justify-end">
-        <Button variant="default" form="new-client" type="submit">
-          {text.button.update}
-        </Button>
-        <DialogClose asChild>
-          <Button
-            type="button"
-            variant="outline"
-            className="font-bold hover:ring hover:ring-primary"
-          >
-            
-            {text.button.close}
+      {!open && <Navigate to={'../'} replace />}
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+          <Separator />
+          <DialogDescription className="text-muted-foreground">
+            {text.descriiption}
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          autoComplete="off"
+          ref={form}
+          onSubmit={onSubmit}
+          id="new-client"
+          className={clsx(
+            'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
+            styles?.['custom-form']
+          )}
+        >
+          <Label>
+            <span>{text.form.firstName.label}</span>
+            <Input
+              required
+              name={'nombres' as TFormName}
+              type="text"
+              placeholder={text.form.firstName.placeholder}
+              pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
+            />
+          </Label>
+          <Label>
+            <span>{text.form.lastName.label} </span>
+            <Input
+              required
+              name={'apellidos' as TFormName}
+              type="text"
+              placeholder={text.form.lastName.placeholder}
+              pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
+            />
+          </Label>
+          <Label>
+            <span>{text.form.id.label} </span>
+            <Input
+              required
+              name={'numero_de_identificacion' as TFormName}
+              type="text"
+              placeholder={text.form.id.placeholder}
+              pattern="[A-Za-z0-9]{6,12}"
+            />
+          </Label>
+          <Label>
+            <span>{text.form.typeId.label} </span>
+            <Select
+              required
+              name={'tipo_de_identificacion' as TFormName}
+              defaultValue={'' + getIdByName({ idName: 'Cédula' })?.id}
+            >
+              <SelectTrigger className="!border-1 w-full !border-ring">
+                <SelectValue placeholder={text.form.typeId.placeholder} />
+              </SelectTrigger>
+              <SelectContent>
+                {listIds()?.map(({ id, nombre }, index) => (
+                  <SelectItem key={index} value={'' + id}>
+                    {nombre}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Label>
+          <Label>
+            <span>{text.form.phone.label} </span>
+            <Input
+              required
+              name={'celular' as TFormName}
+              type="tel"
+              placeholder={text.form.phone.placeholder}
+              pattern="(?:\+57|0)[0-9]{8}"
+            />
+          </Label>
+          <Label>
+            <span>{text.form.telephone.label} </span>
+            <Input
+              required
+              name={'telefono' as TFormName}
+              type="tel"
+              placeholder={text.form.telephone.placeholder}
+              pattern="(?:\+57|0)[0-9]{6,7}"
+            />
+          </Label>
+          <Label>
+            <span>{text.form.direction.label}</span>
+            <Input
+              required
+              name={'direccion' as TFormName}
+              type="text"
+              placeholder={text.form.direction.placeholder}
+            />
+          </Label>
+          <Label>
+            <span>{text.form.ref.label}</span>
+            <Input
+              list="client-referent"
+              name={'referencia' as TFormName}
+              type="text"
+              placeholder={text.form.ref.placeholder}
+              pattern={`(${clients
+                ?.map(({ fullName }) => fullName?.replace(/\s+/g, '\\s+'))
+                ?.join('|')})`}
+            />
+            <datalist id="client-referent">
+              {clients?.map(({ fullName }, index) => (
+                <option key={index} value={fullName} />
+              ))}
+            </datalist>
+          </Label>
+          <Label>
+            <span>{text.form.comment.label}</span>
+            <Textarea
+              rows={5}
+              name={'comentarios' as TFormName}
+              placeholder={text.form.comment.placeholder}
+            />
+          </Label>
+        </form>
+        <DialogFooter className="justify-end">
+          <Button variant="default" form="new-client" type="submit">
+            {text.button.update}
           </Button>
-        </DialogClose>
-      </DialogFooter>
-    </DialogContent>
+          <DialogClose asChild>
+            <Button
+              type="button"
+              variant="outline"
+              className="font-bold hover:ring hover:ring-primary"
+            >
+              {text.button.close}
+            </Button>
+          </DialogClose>
+        </DialogFooter>
+      </DialogContent>
     </>
   )
 }
@@ -258,7 +295,7 @@ const text = {
     decription: ({ username }: { username: string }) =>
       'Se ha creado el cliente ' + username + ' con exito.',
     error: ({ username }: { username: string }) =>
-    'La creacion del cliente' + username + 'ha fallado',
+      'La creacion del cliente' + username + 'ha fallado',
     retry: 'Deshacer',
   },
   form: {
@@ -298,10 +335,10 @@ const text = {
       label: 'Tipo de identificacion:',
       placeholder: 'Seleccione una opcion',
       items: {
-        passport: "Passaporte",
-        id: "Cedula",
-        driverId: "Carnet de Conducir"
-      }
+        passport: 'Passaporte',
+        id: 'Cedula',
+        driverId: 'Carnet de Conducir',
+      },
     },
     ref: {
       label: 'Referencia:',
@@ -310,6 +347,6 @@ const text = {
     status: {
       label: 'Estado:',
       placeholder: 'Seleccione el estado del cliente',
-    }
+    },
   },
 }

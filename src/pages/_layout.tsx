@@ -23,7 +23,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
+import { Calendar, TData, TDaysProps } from '@/components/ui/calendar'
 import React, { memo, useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -104,6 +104,8 @@ import { getRolByName, TROLES } from '@/lib/type/rol'
 import { translate } from '@/lib/route'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { MyUserInfo } from '@/pages/-info'
+import { format } from 'date-fns'
+import { TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 
 export const getCurrentUserOpt = {
   queryKey: ['login-user', { userId: useToken.getState().userId }],
@@ -116,6 +118,9 @@ export const Route = createFileRoute('/_layout')({
   loader: async () => ({
     user: queryClient.ensureQueryData(queryOptions(getCurrentUserOpt)),
     clients: defer(queryClient.ensureQueryData(queryOptions(getClientListOpt))),
+    credits: defer(
+      queryClient.ensureQueryData(queryOptions(getCreditsListOpt))
+    ),
   }),
   onLeave: () => {
     useToken.setState({
@@ -169,7 +174,7 @@ export function Layout() {
     refetch,
   } = useSuspenseQuery(queryOptions(getCurrentUserOpt))
 
-  const select: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
+  const selectClients: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
     const clients = data
     if (userId && rol?.rolName !== 'Administrador')
       return clients?.filter(({ owner_id }) => owner_id === userId)
@@ -181,7 +186,39 @@ export function Layout() {
     isSuccess: okClients,
     error: errorClients,
     isPending: _pendingClients,
-  } = useQuery(queryOptions({ ...getClientListOpt, select }))
+  } = useQuery(queryOptions({ ...getClientListOpt, select: selectClients }))
+
+  const selectCredits: (data: TCREDIT_GET_FILTER_ALL) => TDaysProps = (
+    data
+  ) => {
+    let credits: TCREDIT_GET_FILTER_ALL = data
+    if (userId && rol?.rolName !== 'Administrador')
+      credits = data?.filter(({ cobrador_id }) => cobrador_id === userId)
+
+    return Object.fromEntries(
+      credits?.map<[string, TData]>(
+        ({
+          fecha_de_cuota,
+          id: creditId,
+          nombre_del_cliente,
+          valor_de_la_mora,
+          numero_de_cuota,
+        }) => [
+          format(fecha_de_cuota, 'dd-MM-yyyy'),
+          {
+            type: valor_de_la_mora > 0 ? 'mora' : 'warning',
+            creditId,
+            client: nombre_del_cliente,
+            cuete: numero_de_cuota,
+          },
+        ]
+      )
+    )
+  }
+
+  const { data: creditssRes } = useQuery(
+    queryOptions({ ...getCreditsListOpt, select: selectCredits })
+  )
 
   const [clients, setClients] = useState<TCLIENT_GET_ALL | undefined>(undefined)
   const { theme, setTheme } = useTheme()
@@ -369,7 +406,8 @@ export function Layout() {
           {!menu ? (
             <Calendar
               key={'calendar'}
-              className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold"
+              className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary"
+              days={creditssRes}
             />
           ) : (
             <Popover onOpenChange={onclick(setStatus, { calendar: !calendar })}>
@@ -385,6 +423,7 @@ export function Layout() {
                 <Calendar
                   key={'calendar'}
                   className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold"
+                  days={creditssRes}
                 />
               </PopoverContent>
             </Popover>
