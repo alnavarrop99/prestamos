@@ -121,7 +121,7 @@ function HoverDate({ date, credit }: THoverDate) {
             params={{ creditId: credit?.creditId }}
           >
             {' '}
-            {text.title({ type: credit.type })}
+            <b>{text.title({ type: credit.type })}</b>
           </Link>
           <Badge>{credit.creditId}</Badge>
         </div>

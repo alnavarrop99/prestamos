@@ -69,7 +69,7 @@ export function Report() {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
       <h1 className="text-3xl font-bold">{text.title}</h1>
       <Separator />
       <Accordion className="my-2 space-y-2" type="multiple">
