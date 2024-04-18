@@ -12,7 +12,7 @@ import { faker } from '@faker-js/faker/locale/en'
 import { type TPAYMENT_GET_BASE } from '@/api/payment'
 
 const CLIENTS_LENGTH = 20
-const USERS_LENGTH = 10
+const USERS_LENGTH = 12
 const CREDITS_LENGTH = 20
 const REPORTS_LENGTH = 5
 

@@ -310,6 +310,7 @@ export function NewCredit() {
                       ? client?.nombres + ' ' + client?.apellidos
                       : undefined
                   }
+                  pattern={`(${clientsRes?.map(({ nombres, apellidos }) => ( nombres + " " + apellidos )?.replace(/\s+/g, '\\s+'))?.join('|')})`}
                 />
                 <datalist id="credit-clients">
                   {clientsRes?.map(({ nombres, apellidos }, index) => (
@@ -342,6 +343,7 @@ export function NewCredit() {
                 type="text"
                 placeholder={text.form.ref.placeholder}
                 defaultValue={ref ? ref?.nombres + ref?.apellidos : undefined}
+                pattern={`(${clientsRes?.map(({ nombres, apellidos }) => ( nombres + " " + apellidos )?.replace(/\s+/g, '\\s+'))?.join('|')})`}
               />
             )}
           </Label>
@@ -416,7 +418,7 @@ export function NewCredit() {
               <Input
                 id="credit-pay"
                 required
-                min={0}
+                min={1}
                 max={25}
                 step={1}
                 name={'numero_de_cuotas' as TFormName}
@@ -466,6 +468,7 @@ export function NewCredit() {
                   list="credit-user"
                   defaultValue={user ? user?.nombre : undefined}
                   disabled={!!curruntUserId && rol?.rolName !== 'Administrador'}
+                  pattern={`(${usersRes?.map(({ nombre }) => nombre?.replace(/\s+/g, '\\s+'))?.join('|')})`}
                 />
                 <datalist id="credit-user">
                   {usersRes?.map(({ nombre, id }) => (
@@ -519,9 +522,9 @@ export function NewCredit() {
               <Input
                 id="credit-installments"
                 required
-                min={0}
+                min={1}
                 max={installmants?.type === 'Porciento' ? 100 : undefined}
-                step={installmants?.type === 'Porciento' ? 1 : 50}
+                step={installmants?.type === 'Porciento' ? 1 : 1}
                 name={'valor_de_mora' as TFormName}
                 type="number"
                 defaultValue={installmants.value}
@@ -537,8 +540,8 @@ export function NewCredit() {
               <Skeleton className="h-10 w-full" />
             ) : (
               <Input
-                min={1}
-                max={10}
+                min={0}
+                max={25}
                 name={'dias_adicionales' as TFormName}
                 type="number"
                 placeholder={text.form.aditionalDays.placeholder}

@@ -4,7 +4,7 @@ import { DayPicker } from 'react-day-picker'
 
 import { cn } from '@/lib/utils'
 import { buttonVariants } from '@/components/ui/button'
-import { format } from 'date-fns'
+import { format, isSameDay } from 'date-fns'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card'
 import clsx from 'clsx'
 import { Link } from '@tanstack/react-router'
@@ -25,6 +25,7 @@ export type TDaysProps = { [date: string]: TData }
 export type CalendarProps = React.ComponentProps<typeof DayPicker> & {
   days?: TDaysProps
 }
+
 type TType = 'mora' | 'warning'
 
 function Calendar({
@@ -34,6 +35,7 @@ function Calendar({
   days,
   ...props
 }: CalendarProps) {
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -75,9 +77,9 @@ function Calendar({
       components={{
         IconLeft: (props) => <ChevronLeft {...props} className="h-4 w-4" />,
         IconRight: (props) => <ChevronRight {...props} className="h-4 w-4" />,
-        Day: ({ date }) => (
+        Day: !days ? undefined : (({ date }) => (
           <HoverDate credit={days?.[format(date, 'dd-MM-yyyy')]} date={date} />
-        ),
+        )),
       }}
       {...props}
     />
@@ -93,7 +95,9 @@ interface THoverDate {
 /* eslint-disable-next-line */
 function HoverDate({ date, credit }: THoverDate) {
   if (!credit)
-    return <span className="!font-normal"> {format(date, 'dd')} </span>
+    return <span className={clsx("!font-normal", {
+      "text-foreground": isSameDay( date, new Date() )
+    })}> {format(date, 'dd')} </span>
   return (
     <HoverCard>
       <HoverCardTrigger

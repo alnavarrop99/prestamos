@@ -330,6 +330,7 @@ export function UpdateCreditById() {
                             ? client?.nombres + ' ' + client?.apellidos
                             : undefined
                         }
+                        pattern={`(${clients?.map(({ nombres, apellidos }) => ( nombres + " " + apellidos )?.replace(/\s+/g, '\\s+'))?.join('|')})`}
                       />
                       <datalist id="credit-clients">
                         {clients?.map(({ nombres, apellidos }, index) => (
@@ -361,6 +362,7 @@ export function UpdateCreditById() {
                             : undefined
                         }
                         placeholder={text.form.details.ref.placeholder}
+                        pattern={`(${clients?.map(({ nombres, apellidos }) => ( nombres + " " + apellidos )?.replace(/\s+/g, '\\s+'))?.join('|')})`}
                       />
                     </Label>
                     <Label>
@@ -370,7 +372,7 @@ export function UpdateCreditById() {
                       </div>
                       <Input
                         required
-                        min={0}
+                        min={1}
                         step={1}
                         name={'monto' as TFormName}
                         type="number"
@@ -385,7 +387,7 @@ export function UpdateCreditById() {
                       </div>
                       <Input
                         required
-                        min={0}
+                        min={1}
                         max={100}
                         step={1}
                         name={'tasa_de_interes' as TFormName}
@@ -401,7 +403,7 @@ export function UpdateCreditById() {
                       </div>
                       <Input
                         required
-                        min={0}
+                        min={1}
                         max={25}
                         step={1}
                         name={'numero_de_cuotas' as TFormName}
@@ -446,6 +448,7 @@ export function UpdateCreditById() {
                         defaultValue={
                           creditChange?.cobrador_id ? user?.nombre : undefined
                         }
+                        pattern={`(${users?.map(({ nombre }) => nombre?.replace(/\s+/g, '\\s+'))?.join('|')})`}
                       />
                       <datalist id="credit-user">
                         {users?.map(({ nombre }, index) => (
@@ -493,7 +496,7 @@ export function UpdateCreditById() {
                       <Input
                         id="credit-installments"
                         required
-                        min={0}
+                        min={1}
                         max={
                           installmants?.type === 'Porciento' ? 100 : undefined
                         }
@@ -609,9 +612,6 @@ export function UpdateCreditById() {
                                       date={new Date(payment?.fecha_de_pago)}
                                       label={text.form.pay.payDate.placeholder}
                                       defaultValue={payment?.fecha_de_pago}
-                                      value={
-                                        paymentDelete?.[index] ? '' : undefined
-                                      }
                                     />
                                   </Label>
                                   <Label>
