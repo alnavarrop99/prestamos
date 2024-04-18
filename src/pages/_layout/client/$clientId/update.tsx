@@ -167,7 +167,7 @@ export function UpdateClientById() {
     }
   }, [clientRes])
 
-  const clientsList = useContext(_clientContext)
+  const clients = useContext(_clientContext)
 
   const active = useMemo(
     () =>
@@ -188,7 +188,7 @@ export function UpdateClientById() {
   )
 
   const ref = useMemo(
-    () => clientsList?.find(({ id: refId }) => refId === client?.referencia_id),
+    () => clients?.find(({ id: refId }) => refId === client?.referencia_id),
     [client]
   )
 
@@ -237,7 +237,7 @@ export function UpdateClientById() {
     if (!name || !value || !client) return
 
     if (name === ('referencia' as TFormName)) {
-      const refId = clientsList?.find(({ fullName }) => value === fullName)?.id
+      const refId = clients?.find(({ fullName }) => value === fullName)?.id
       setClient({ ...client, referencia_id: refId })
       return
     }
@@ -282,6 +282,7 @@ export function UpdateClientById() {
                 name={'nombres' as TFormName}
                 type="text"
                 defaultValue={clientRes?.nombres}
+                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
                 placeholder={
                   checked ? text.form.firstName.placeholder : undefined
                 }
@@ -299,6 +300,7 @@ export function UpdateClientById() {
                 name={'apellidos' as TFormName}
                 type="text"
                 defaultValue={clientRes?.apellidos}
+                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
                 placeholder={
                   checked ? text.form.lastName.placeholder : undefined
                 }
@@ -317,6 +319,7 @@ export function UpdateClientById() {
                 type="text"
                 defaultValue={clientRes?.numero_de_identificacion}
                 placeholder={checked ? text.form.id.placeholder : undefined}
+                pattern="[A-Za-z0-9]{6,12}"
               />
             )}
           </Label>
@@ -357,6 +360,7 @@ export function UpdateClientById() {
                 name={'celular' as TFormName}
                 type="tel"
                 defaultValue={clientRes?.celular}
+                pattern="(?:\+57|0)[0-9]{8}"
                 placeholder={checked ? text.form.phone.placeholder : undefined}
               />
             )}
@@ -372,6 +376,7 @@ export function UpdateClientById() {
                 name={'telefono' as TFormName}
                 type="tel"
                 defaultValue={clientRes?.telefono}
+                pattern="(?:\+57|0)[0-9]{6,7}"
                 placeholder={
                   checked ? text.form.telephone.placeholder : undefined
                 }
@@ -408,9 +413,12 @@ export function UpdateClientById() {
                   type="text"
                   defaultValue={ref?.fullName}
                   placeholder={checked ? text.form.ref.placeholder : undefined}
+                  pattern={`(${clients
+                    ?.map(({ fullName }) => fullName?.replace(/\s+/g, '\\s+'))
+                    ?.join('|')})`}
                 />
                 <datalist id="client-referent">
-                  {clientsList?.map(({ fullName }, index) => (
+                  {clients?.map(({ fullName }, index) => (
                     <option key={index} value={fullName} />
                   ))}
                 </datalist>
