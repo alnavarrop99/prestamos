@@ -284,6 +284,7 @@ export function UpdateUserById() {
                 placeholder={text.form.firstName.placeholder}
                 defaultValue={userRes?.nombre.split(' ')?.at(0)}
                 onChange={onChangeName('firstName')}
+                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
               />
             )}
           </Label>
@@ -299,6 +300,7 @@ export function UpdateUserById() {
                 placeholder={text.form.lastName.placeholder}
                 defaultValue={userRes?.nombre.split(' ')?.at(1)}
                 onChange={onChangeName('lastName')}
+                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
               />
             )}
           </Label>
@@ -354,6 +356,7 @@ export function UpdateUserById() {
                     placeholder={text.form.password.current.placeholder}
                     defaultValue={password?.password}
                     onChange={onChangePassword}
+                    pattern="^.{6,}$"
                   />
                 </>
               )}
@@ -387,6 +390,7 @@ export function UpdateUserById() {
                     placeholder={text.form.password.new.placeholder}
                     defaultValue={password?.confirmation}
                     onChange={onChangePassword}
+                    pattern={password?.password}
                   />
                 </>
               )}

@@ -246,6 +246,7 @@ export const MyUserInfo = memo(function () {
               defaultValue={userRes?.nombre.split(' ')?.at(0)}
               onChange={onChangeName('firstName')}
               disabled={!!userId && rol?.rolName !== 'Administrador'}
+              pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
             />
           )}
         </Label>
@@ -262,6 +263,7 @@ export const MyUserInfo = memo(function () {
               defaultValue={userRes?.nombre.split(' ')?.at(1)}
               onChange={onChangeName('lastName')}
               disabled={!!userId && rol?.rolName !== 'Administrador'}
+              pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
             />
           )}
         </Label>
@@ -318,6 +320,7 @@ export const MyUserInfo = memo(function () {
                   placeholder={text.form.password.current.placeholder}
                   defaultValue={password?.password}
                   onChange={onChangePassword}
+                  pattern="^.{6,}$"
                 />
               </>
             )}
@@ -351,6 +354,7 @@ export const MyUserInfo = memo(function () {
                   placeholder={text.form.password.new.placeholder}
                   defaultValue={password?.confirmation}
                   onChange={onChangePassword}
+                  pattern={password?.password}
                 />
               </>
             )}
