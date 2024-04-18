@@ -242,7 +242,7 @@ export function CreditById() {
             <li>
               <b>{text.details.date + ':'}</b>{' '}
               <span>
-                {format(new Date(credit?.fecha_de_aprobacion), 'dd-MM-yyyy') +
+                {format(new Date(credit?.fecha_de_aprobacion), 'dd/MM/yyyy') +
                   '.'}
               </span>
             </li>
