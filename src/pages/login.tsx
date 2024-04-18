@@ -1,4 +1,11 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@radix-ui/react-label'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
@@ -13,7 +20,7 @@ import { BoundleLoader } from '@/components/ui/loader'
 import { ToastAction } from '@radix-ui/react-toast'
 
 export const postCurrentUser = {
-  mutationKey: ["login-user"],
+  mutationKey: ['login-user'],
   mutationFn: loginUser,
 }
 
@@ -23,7 +30,7 @@ export const Route = createFileRoute('/login')({
 
 /* eslint-disable-next-line */
 interface TStatus {
-  password?: boolean; 
+  password?: boolean
   error?: boolean
 }
 
@@ -42,11 +49,14 @@ export function Login() {
   const [{ error, password }, setStatus] = useReducer(reducer, initUser)
   const { token, setToken } = useToken()
 
-  useEffect( () => {
-    document.title = import.meta.env.VITE_NAME + " | " + text.browser
-  }, [] )
+  useEffect(() => {
+    document.title = import.meta.env.VITE_NAME + ' | ' + text.browser
+  }, [])
 
-  const onSuccess: (data: TUSER_LOGIN, variables: TUSER_LOGIN_BODY) => unknown = ( user, { username } ) => {
+  const onSuccess: (
+    data: TUSER_LOGIN,
+    variables: TUSER_LOGIN_BODY
+  ) => unknown = (user, { username }) => {
     toast({
       title: text.notification?.title,
       description: text.notification?.description({ username }),
@@ -56,7 +66,11 @@ export function Login() {
     setToken(user.access_token)
   }
 
-  const onError: ((error: Error, variables: TUSER_LOGIN_BODY, context: unknown) => unknown) = (_, { username }) => {
+  const onError: (
+    error: Error,
+    variables: TUSER_LOGIN_BODY,
+    context: unknown
+  ) => unknown = (_, { username }) => {
     if (!ref.current) return
     const onClick = () => {}
 
@@ -76,7 +90,7 @@ export function Login() {
   const { mutate: login, isPending } = useMutation({
     ...postCurrentUser,
     onSuccess,
-    onError
+    onError,
   })
 
   const onSubmit: React.FormEventHandler = (ev) => {
@@ -84,7 +98,7 @@ export function Login() {
 
     const { username, password } = Object.fromEntries(
       new FormData(ref.current).entries()
-    ) as Record<keyof (TUSER_LOGIN_BODY & {remember: string}), string>
+    ) as Record<keyof (TUSER_LOGIN_BODY & { remember: string }), string>
 
     if (!!username && !!password) {
       login({ username, password })
@@ -99,64 +113,66 @@ export function Login() {
 
   return (
     <>
-    { token && <Navigate to={"/"} />}
-    <section className="grid min-h-screen place-content-center place-items-center">
-      <Card className="inline-block shadow-lg">
-        <CardHeader>
-          <CardTitle>{text.title}</CardTitle>
-          <CardDescription>
-            <p className="text-lg font-bold">{text?.description?.[0]}</p>
-            <p>{text?.description?.[1]}</p>
-          </CardDescription>
-        </CardHeader>
-        <CardContent >
-          <form
-            id="login"
-            className="flex flex-col gap-4 [&>label>span]:font-bold"
-            {...{ ref, onSubmit }}
-          >
-            <Label>
-              <span>{text.username.label}</span>
-              <Input
-                name={"username" as keyof TUSER_LOGIN_BODY}
-                type="text"
-                placeholder={text.username.placeholder}
-              />
-            </Label>
-            <Label>
-              {' '}
-              <span>{text.password.label}</span>
-              <div className="flex items-center gap-x-2">
+      {token && <Navigate to={'/'} />}
+      <section className="grid min-h-screen place-content-center place-items-center">
+        <Card className="inline-block shadow-lg">
+          <CardHeader>
+            <CardTitle>{text.title}</CardTitle>
+            <CardDescription>
+              <p className="text-lg font-bold">{text?.description?.[0]}</p>
+              <p>{text?.description?.[1]}</p>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form
+              id="login"
+              className="flex flex-col gap-4 [&>label>span]:font-bold"
+              {...{ ref, onSubmit }}
+            >
+              <Label>
+                <span>{text.username.label}</span>
                 <Input
-                  type={!password ? 'password' : 'text'}
-                  name={"password" as keyof TUSER_LOGIN_BODY}
-                  placeholder={text.password.placeholder}
+                  required
+                  name={'username' as keyof TUSER_LOGIN_BODY}
+                  type="text"
+                  placeholder={text.username.placeholder}
                 />
-                <Button
-                  type="button"
-                  className="w-fit p-1.5"
-                  variant={!password ? 'outline' : 'default'}
-                  {...{ onClick }}
-                >
-                  {!password ? <Eye /> : <EyeOff />}
-                </Button>
-              </div>
-            </Label>
-          </form>
-        </CardContent>
-        <CardFooter>
-          <Button
-            type="submit"
-            form="login"
-            variant="default"
-            className="ms-auto"
-          >
-            {text.login} 
-            { isPending && <BoundleLoader /> }
-          </Button>
-        </CardFooter>
-      </Card>
-    </section>
+              </Label>
+              <Label>
+                {' '}
+                <span>{text.password.label}</span>
+                <div className="flex items-center gap-x-2">
+                  <Input
+                    required
+                    type={!password ? 'password' : 'text'}
+                    name={'password' as keyof TUSER_LOGIN_BODY}
+                    placeholder={text.password.placeholder}
+                  />
+                  <Button
+                    type="button"
+                    className="w-fit p-1.5"
+                    variant={!password ? 'outline' : 'default'}
+                    {...{ onClick }}
+                  >
+                    {!password ? <Eye /> : <EyeOff />}
+                  </Button>
+                </div>
+              </Label>
+            </form>
+          </CardContent>
+          <CardFooter>
+            <Button
+              type="submit"
+              form="login"
+              variant="default"
+              className="ms-auto"
+            >
+              {text.login}
+              {isPending && <BoundleLoader />}
+            </Button>
+          </CardFooter>
+        </Card>
+      </section>
     </>
   )
 }
@@ -183,7 +199,7 @@ const text = {
     description: ({ username }: { username: string }) =>
       'Bienvenido ' + username,
     error: ({ username }: { username: string }) =>
-    "El inicio de sesion del usuario" + username + "ha fallado",
+      'El inicio de sesion del usuario' + username + 'ha fallado',
     retry: 'Reintentar',
   },
   login: 'Login',

@@ -23,7 +23,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
-import { Calendar } from '@/components/ui/calendar'
+import { Calendar, TData, TDaysProps } from '@/components/ui/calendar'
 import React, { memo, useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -53,47 +53,96 @@ import {
 } from '@/components/ui/breadcrumb'
 import { getRoute, getSearch, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
-import { queryOptions, useIsFetching, useIsMutating, useQuery  } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useIsFetching,
+  useIsMutating,
+  useQuery,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import { SpinLoader as Loader, BoundleLoader } from '@/components/ui/loader'
-import brand from "@/assets/menu-brand.avif"
-import brandOff from "@/assets/menu-off-brand.avif"
+import brand from '@/assets/menu-brand.avif'
+import brandOff from '@/assets/menu-off-brand.avif'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getUsersListOpt } from '@/pages/_layout/user'
-import { getUserByIdOpt, updateUserByIdOpt } from '@/pages/_layout/user/$userId/update'
+import {
+  getUsersListOpt,
+  usePagination as userPagination,
+  useOrder as userOrder,
+} from '@/pages/_layout/user'
+import {
+  getUserByIdOpt,
+  updateUserByIdOpt,
+} from '@/pages/_layout/user/$userId/update'
 import { postUserOpt } from '@/pages/_layout/user/new'
-import { getClientListOpt } from '@/pages/_layout/client'
-import { getClientByIdOpt, updateClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+import {
+  getClientListOpt,
+  useFilter as clientFilter,
+} from '@/pages/_layout/client'
+import {
+  getClientByIdOpt,
+  updateClientByIdOpt,
+} from '@/pages/_layout/client/$clientId/update'
 import { postClientOpt } from '@/pages/_layout/client/new'
 import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
-import { getCreditsListOpt } from '@/pages/_layout/credit'
+import {
+  getCreditsListOpt,
+  useOrder as creditOrder,
+  usePagination as creditPagination,
+} from '@/pages/_layout/credit'
 import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
-import { deletePaymentByIdOpt, updateCreditByIdOpt, updatePaymentByIdOpt } from '@/pages/_layout/credit_/$creditId_/update.confirm'
+import {
+  deletePaymentByIdOpt,
+  updateCreditByIdOpt,
+  updatePaymentByIdOpt,
+} from '@/pages/_layout/credit_/$creditId_/update.confirm'
 import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
 import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { queryClient } from '@/pages/__root'
 import { getReportsOpt, postReportOpt } from '@/pages/_layout/report'
 import { getRolByName, TROLES } from '@/lib/type/rol'
+import { translate } from '@/lib/route'
+import { Dialog, DialogTrigger } from '@/components/ui/dialog'
+import { MyUserInfo } from '@/pages/-info'
+import { format } from 'date-fns'
+import { TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 
 export const getCurrentUserOpt = {
-  queryKey: ["login-user", { userId: useToken.getState().userId }],
-  queryFn: getCurrentUser
+  queryKey: ['login-user', { userId: useToken.getState().userId }],
+  queryFn: getCurrentUser,
 }
 
- export const Route = createFileRoute('/_layout')({
+export const Route = createFileRoute('/_layout')({
   component: Layout,
-  loader: async () => ({ 
-    user: defer( queryClient.ensureQueryData( queryOptions( getCurrentUserOpt ) ) ), 
-    clients: defer( queryClient.ensureQueryData( queryOptions( getClientListOpt ) )) 
+  pendingComponent: () => <></>,
+  loader: async () => ({
+    user: queryClient.ensureQueryData(queryOptions(getCurrentUserOpt)),
+    clients: defer(queryClient.ensureQueryData(queryOptions(getClientListOpt))),
+    credits: defer(
+      queryClient.ensureQueryData(queryOptions(getCreditsListOpt))
+    ),
   }),
-  beforeLoad: async (  ) => {
+  onLeave: () => {
+    useToken.setState({
+      token: undefined,
+      rol: undefined,
+      name: undefined,
+      userId: undefined,
+    })
+    userOrder.setState({ order: 'id' })
+    creditOrder.setState({ order: 'id' })
+    userPagination.setState({ start: 0, end: 3 })
+    creditPagination.setState({ start: 0, end: 3 })
+    clientFilter.setState({ filter: 'fullName' })
+  },
+  beforeLoad: async () => {
     const { token } = useToken.getState()
-    if( !token ){
+    if (!token) {
       throw redirect({
-        to: "/login",
+        to: '/login',
       })
     }
-  }
+  },
 })
 
 /* eslint-disable-next-line */
@@ -110,47 +159,106 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 
 /* eslint-disable-next-line */
 export function Layout() {
-  const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, { offline: navigator.onLine, menu: false })
+  const { deleteToken, setUserId, userId, name, setRol, rol } = useToken()
+  const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, {
+    offline: navigator.onLine,
+    menu: false,
+  })
   const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()
-  const  { data: currentUserRes, isSuccess: okCurrentUser, isError: errorCurrentUser, isPending: pendingCurrentUser  , refetch } = useQuery( queryOptions( getCurrentUserOpt ) )
-  const  { data: clientsRes, isSuccess: okClients, error: errorClients, isPending: _pendingClients } = useQuery( queryOptions( getClientListOpt ) )
+  const {
+    data: currentUserRes,
+    isSuccess: okCurrentUser,
+    isError: errorCurrentUser,
+    isPending: pendingCurrentUser,
+    refetch,
+  } = useSuspenseQuery(queryOptions(getCurrentUserOpt))
+
+  const selectClients: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
+    const clients = data
+    if (userId && rol?.rolName !== 'Administrador')
+      return clients?.filter(({ owner_id }) => owner_id === userId)
+    return clients
+  }
+
+  const {
+    data: clientsRes,
+    isSuccess: okClients,
+    error: errorClients,
+    isPending: _pendingClients,
+  } = useQuery(queryOptions({ ...getClientListOpt, select: selectClients }))
+
+  const selectCredits: (data: TCREDIT_GET_FILTER_ALL) => TDaysProps = (
+    data
+  ) => {
+    let credits: TCREDIT_GET_FILTER_ALL = data
+    if (userId && rol?.rolName !== 'Administrador')
+      credits = data?.filter(({ cobrador_id }) => cobrador_id === userId)
+
+    return Object.fromEntries(
+      credits?.map<[string, TData]>(
+        ({
+          fecha_de_cuota,
+          id: creditId,
+          nombre_del_cliente,
+          valor_de_la_mora,
+          numero_de_cuota,
+        }) => [
+          format(fecha_de_cuota, 'dd-MM-yyyy'),
+          {
+            type: valor_de_la_mora > 0 ? 'mora' : 'warning',
+            creditId,
+            client: nombre_del_cliente,
+            cuete: numero_de_cuota,
+          },
+        ]
+      )
+    )
+  }
+
+  const { data: creditssRes } = useQuery(
+    queryOptions({ ...getCreditsListOpt, select: selectCredits })
+  )
+
   const [clients, setClients] = useState<TCLIENT_GET_ALL | undefined>(undefined)
   const { theme, setTheme } = useTheme()
   const rchild = useChildMatches()
-  const { deleteToken, setUserId, userId, name, setRol } = useToken()
   const { history } = useRouter()
-  const [ pendingClients, setPendingClients  ] = useState<boolean>(_pendingClients)
-
-  useEffect( () => {
-    refetch( {
-      cancelRefetch: !userId
-    } )?.then( ( { data, isPending} ) => {
-        if( !data ) return;
-        const { nombre, id } = getRolByName( { rolName: data.rol as TROLES } )
-        setRol( { rolId: id, rolName: nombre } )
-
-        setUserId( data.id )
-        setPendingClients( _pendingClients || isPending )
-      } ) 
-  }, [ userId ] )
-
-  useEffect( () => {
-    if( userId  ) {
-       return () => { setUserId( undefined ) }
-    }
-    if( !currentUserRes || !okCurrentUser || errorCurrentUser) return; 
-
-    setUserId( currentUserRes.id )
-
-    const { nombre, id } = getRolByName( { rolName: currentUserRes.rol as TROLES } )
-    setRol( { rolId: id, rolName: nombre } )
-  }, [ currentUserRes, okCurrentUser, errorCurrentUser ] )
+  const [pendingClients, setPendingClients] = useState<boolean>(_pendingClients)
 
   useEffect(() => {
-    if( !clientsRes || !okClients || errorClients ) return;
+    refetch({
+      cancelRefetch: !userId,
+    })?.then(({ data, isPending }) => {
+      if (!data) return
+      const { nombre, id } = getRolByName({ rolName: data.rol as TROLES })
+      setRol({ rolId: id, rolName: nombre })
+
+      setUserId(data.id)
+      setPendingClients(_pendingClients || isPending)
+    })
+  }, [userId])
+
+  useEffect(() => {
+    if (userId) {
+      return () => {
+        setUserId(undefined)
+      }
+    }
+    if (!currentUserRes || !okCurrentUser || errorCurrentUser) return
+
+    setUserId(currentUserRes.id)
+
+    const { nombre, id } = getRolByName({
+      rolName: currentUserRes.rol as TROLES,
+    })
+    setRol({ rolId: id, rolName: nombre })
+  }, [currentUserRes, okCurrentUser, errorCurrentUser, userId])
+
+  useEffect(() => {
+    if (!clientsRes || !okClients || errorClients) return
     setClients(clientsRes)
-  }, [ clientsRes, okClients, errorClients ])
+  }, [clientsRes, okClients, errorClients])
 
   useEffect(() => {
     const onNotwork = () => {
@@ -170,14 +278,19 @@ export function Layout() {
       setStatus(props)
     }
 
-  const onChange: React.ChangeEventHandler<
-    React.ComponentRef<typeof Input>
-  > = (ev) => {
+  const onChange: React.ChangeEventHandler<React.ComponentRef<typeof Input>> = (
+    ev
+  ) => {
     const { value } = ev.currentTarget
     setValue({ value })
 
-    if(clientsRes){ 
-      const query = clients?.filter((props) => Object.values(props).join(' ').toLowerCase().includes(value.toLowerCase()))
+    if (clientsRes) {
+      const query = clients?.filter((props) =>
+        Object.values(props)
+          .join(' ')
+          .toLowerCase()
+          .includes(value.toLowerCase())
+      )
       setClients(query)
     }
   }
@@ -187,25 +300,32 @@ export function Layout() {
   > = (ev) => {
     const { key } = ev
 
-    if (!clients || !clients?.length) return;
-    if (!rchild?.[0]) return;
-    const { pathname } = rchild?.[0]
+    if (!clients || !clients?.length) return
 
-    if (key === 'Enter' && pathname !== "/user" as TSearch && pathname !== "/client" as TSearch) {
+    const child = rchild?.[0]
+    if (!child) return
+    const { pathname } = child
+
+    if (
+      key === 'Enter' &&
+      pathname !== ('/user' as TSearch) &&
+      pathname !== ('/client' as TSearch)
+    ) {
       setSearch({ search: !search })
     }
   }
 
-  const onSelect: ( index: number ) =>  React.MouseEventHandler< HTMLLIElement > = ( index ) => () => {
-    const client = clients?.[index]
-    if(!client) return;
+  const onSelect: (index: number) => React.MouseEventHandler<HTMLLIElement> =
+    (index) => () => {
+      const client = clients?.[index]
+      if (!client) return
 
-    // setValue({value: client?.nombres + " " + client?.apellidos})
-    setOpen({ open: !open })
-  }
+      // setValue({value: client?.nombres + " " + client?.apellidos})
+      setOpen({ open: !open })
+    }
 
   const onSearchChange = () => {
-    if (!clients || !clients?.length) return;
+    if (!clients || !clients?.length) return
     setSearch({ search: !search })
   }
 
@@ -223,12 +343,14 @@ export function Layout() {
     history.back()
   }
 
-  const onLogut: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
-    deleteToken() 
+  const onLogut: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
+    deleteToken()
   }
 
-  const onClick: React.MouseEventHandler< HTMLLIElement > = () => {
-    setOpen({ open: !open })
+  const onOpenChange: (open: boolean) => void = (open) => {
+    setOpen({ open })
   }
 
   return (
@@ -247,16 +369,21 @@ export function Layout() {
           }
         )}
       >
-        <Link to={"/"}>
-          <img alt='brand' src={ !menu ? brand : brandOff} className='aspect-contain min-h-24' />
+        <Link to={'/'}>
+          <img
+            alt="brand"
+            src={!menu ? brand : brandOff}
+            className="aspect-contain min-h-24"
+          />
         </Link>
         <Separator className="my-4" />
         <div className="p-4 px-6 text-xl">
           <ul className="space-y-3 [&_button]:w-full">
-            {Object.entries(text.navegation).map(
-              ([name, { url, title, Icon }]) => {
+            {Object.entries(translate())
+              ?.filter(([, { validation }]) => validation)
+              ?.map(([url, { name: title, icon: Icon }], index) => {
                 return (
-                  <li key={name}>
+                  <li key={index}>
                     <Link to={url}>
                       {({ isActive }) => (
                         <Button
@@ -271,14 +398,17 @@ export function Layout() {
                     </Link>
                   </li>
                 )
-              }
-            )}
+              })}
           </ul>
         </div>
         <Separator className="my-4" />
         <div className="grid place-items-center">
           {!menu ? (
-            <Calendar key={'calendar'} className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold" />
+            <Calendar
+              key={'calendar'}
+              className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary"
+              days={creditssRes}
+            />
           ) : (
             <Popover onOpenChange={onclick(setStatus, { calendar: !calendar })}>
               <PopoverTrigger>
@@ -290,7 +420,11 @@ export function Layout() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-76 rounded-xl">
-                <Calendar key={'calendar'} className='rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold' />
+                <Calendar
+                  key={'calendar'}
+                  className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold"
+                  days={creditssRes}
+                />
               </PopoverContent>
             </Popover>
           )}
@@ -323,130 +457,175 @@ export function Layout() {
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
             <Label className="flex items-center justify-center rounded-lg border border-border">
-                <Popover
-                  open={search}
-                  onOpenChange={onSearchChange}
+              <Popover open={search} onOpenChange={onSearchChange}>
+                <PopoverTrigger>
+                  <Button
+                    className={clsx('rounded-br-none rounded-tr-none p-2')}
+                    variant={!search ? 'ghost' : 'default'}
+                  >
+                    <User />
+                    {errorClients && <Error searchList />}
+                    {pendingClients && <BoundleLoader />}
+                    {okClients && (
+                      <Badge
+                        className={clsx(
+                          { '!hidden': search },
+                          styles?.['search-badge-animation']
+                        )}
+                        variant={!search ? 'default' : 'secondary'}
+                      >
+                        {clients?.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="absolute -start-16 top-2 w-80"
+                  hidden={!clients?.length}
                 >
-                  <PopoverTrigger>
-                    <Button
-                      className={clsx('rounded-br-none rounded-tr-none p-2')}
-                      variant={ !search ? 'ghost' : 'default' }
-                    >
-                      <User />
-                        {errorClients && <Error searchList /> }
-                        {pendingClients && <BoundleLoader /> }
-                        { okClients && <Badge
-                            className={clsx( { '!hidden': search, }, styles?.['search-badge-animation'])}
-                            variant={!search ? 'default' : 'secondary'}
-                          >
-                            {clients?.length}
-                        </Badge> } 
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="absolute -start-16 top-2 w-80" hidden={!clients?.length}>
-                    <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
-                      <h3 className="text-xl [&>span]:underline">
-                        <span>{text.search.title}</span>
-                        <Badge variant="default"> {clients?.length} </Badge>
-                      </h3>
-                      <Separator />
-                      <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
-                        {clients?.map(
-                          ({
+                  <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
+                    <h3 className="text-xl [&>span]:underline">
+                      <span>{text.search.title}</span>
+                      <Badge variant="default"> {clients?.length} </Badge>
+                    </h3>
+                    <Separator />
+                    <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
+                      {clients?.map(
+                        (
+                          {
                             apellidos,
                             nombres,
                             id: clientId,
                             numero_de_identificacion,
-                          }, index) => clientId &&
-                            <li key={index} className="group cursor-pointer" onClick={onSelect(index)}>
-                              <Link to={'/client/$clientId/update'} params={{clientId}}>
+                          },
+                          index
+                        ) =>
+                          clientId && (
+                            <li
+                              key={index}
+                              className="group cursor-pointer"
+                              onClick={onSelect(index)}
+                            >
+                              <Link
+                                to={'/client/$clientId/update'}
+                                params={{ clientId }}
+                              >
                                 <Avatar>
-                                  <AvatarFallback className='!ring-2 ring-ring'>
+                                  <AvatarFallback className="!ring-2 ring-ring">
                                     {nombres?.[0] + apellidos?.[0]}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div>
                                   <p
-                                    className={clsx("font-bold group-hover:after:content-['#']")}
+                                    className={clsx(
+                                      "font-bold group-hover:after:content-['#']"
+                                    )}
                                   >
                                     {nombres + ' ' + apellidos}
                                   </p>
                                   <p className="italic">
                                     {numero_de_identificacion.slice(0, 4) +
                                       '...' +
-                                      numero_de_identificacion.slice(-4, numero_de_identificacion.length)}
+                                      numero_de_identificacion.slice(
+                                        -4,
+                                        numero_de_identificacion.length
+                                      )}
                                   </p>
                                 </div>
                               </Link>
                             </li>
-                        )}
-                      </ul>
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                          )
+                      )}
+                    </ul>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <Input
                 className="rounded-bl-none rounded-tl-none border-none"
                 type="search"
-                placeholder={text.search.placeholder({ pathname: rchild?.at(0)?.pathname })}
+                placeholder={text.search.placeholder({
+                  pathname: rchild?.at(0)?.pathname,
+                })}
                 onChange={onChange}
                 onKeyDown={onKeyDown}
                 value={value}
               />
             </Label>
-               <HoverCard>
-                <HoverCardTrigger>
-                  <Badge className="cursor-pointer text-sm" variant="outline">
-                    {(name ?? "User")
-                      .split(' ')
-                      .map((char) => char.at(0))
-                      .join('')}
-                  </Badge>
-                </HoverCardTrigger>
-                <HoverCardContent>
-                  { errorCurrentUser && <Error currentUser /> }
-                  { pendingCurrentUser && <div className='p-2'>
-                      <Skeleton className='ring-1 ring-ring w-10 h-10 rounded-full'/>
-                      <ul className="space-y-2 [&>li]:w-fit">
-                        <li> <Skeleton className="w-32 h-5" /> </li>
-                        <li> <Skeleton className="w-16 h-4" /> </li>
-                      </ul>
-                    </div> } 
-                  { okCurrentUser && <div className='p-2'>
-                      <Avatar className='ring-1 ring-ring'>
-                         <AvatarFallback>{name?.split(" ")?.map( (items) => (items?.[0]) )}</AvatarFallback>
-                      </Avatar>
-                      <ul className="space-y-2 [&>li]:w-fit">
-                        <li onClick={onClick}>
-                          <Link 
-                            title='Modificar mi usuario'
-                            className="font-bold hover:after:content-['#'] hover:after:opacity-100 after:opacity-0 after:transition after:transition after:delay-150 after:duration-300"
-                            to={"/user/$userId/update"}
-                            params={{ userId }}
-                        >{currentUserRes.nombre}</Link> </li>
-                        <li> <Badge> {currentUserRes?.rol} </Badge> </li>
-                      </ul>
-                    </div> }
+            <HoverCard>
+              <HoverCardTrigger>
+                <Badge className="cursor-pointer text-sm" variant="outline">
+                  {(name ?? 'User')
+                    .split(' ')
+                    .map((char) => char.at(0))
+                    .join('')}
+                </Badge>
+              </HoverCardTrigger>
+              <HoverCardContent>
+                {errorCurrentUser && <Error currentUser />}
+                {pendingCurrentUser && (
+                  <div className="p-2">
+                    <Skeleton className="h-10 w-10 rounded-full ring-1 ring-ring" />
+                    <ul className="space-y-2 [&>li]:w-fit">
+                      <li>
+                        {' '}
+                        <Skeleton className="h-5 w-32" />{' '}
+                      </li>
+                      <li>
+                        {' '}
+                        <Skeleton className="h-4 w-16" />{' '}
+                      </li>
+                    </ul>
+                  </div>
+                )}
+                {okCurrentUser && (
+                  <div className="p-2">
+                    <Avatar className="ring-1 ring-ring">
+                      <AvatarFallback>
+                        {name?.split(' ')?.map((items) => items?.[0])}
+                      </AvatarFallback>
+                    </Avatar>
+                    <ul className="space-y-2 [&>li]:w-fit">
+                      <li>
+                        <Dialog open={open} onOpenChange={onOpenChange}>
+                          <DialogTrigger asChild>
+                            <span
+                              title="Modificar mi usuario"
+                              className="cursor-pointer font-bold after:opacity-0 after:transition after:transition after:delay-150 after:duration-300 hover:after:opacity-100 hover:after:content-['#']"
+                            >
+                              {currentUserRes?.nombre}
+                            </span>
+                          </DialogTrigger>
+                          <MyUserInfo />
+                        </Dialog>
+                      </li>
+                      <li>
+                        {' '}
+                        <Badge> {currentUserRes?.rol} </Badge>{' '}
+                      </li>
+                    </ul>
+                  </div>
+                )}
               </HoverCardContent>
-              </HoverCard>
-            <Link to={"/"}>
+            </HoverCard>
+            <Link to={'/'}>
               <Button
-                variant={"ghost"} 
-                className='p-2 [&>svg]:p-1 [&>svg]:transition [&>svg]:delay-150 [&>svg]:duration-300 group'
+                variant={'ghost'}
+                className="group p-2 [&>svg]:p-1 [&>svg]:transition [&>svg]:delay-150 [&>svg]:duration-300"
                 onClick={onLogut}
               >
-                <LogOut className='group-hover:stroke-destructive' />
+                <LogOut className="group-hover:stroke-destructive" />
               </Button>
             </Link>
-              {!offline && (
-                <Network
-                  className={clsx('ms-auto animate-bounce', {
-                    'stroke-success': offline,
-                    'stroke-destructive': !offline,
-                  })}
-                />
-              )}
-            </div>
+            {!offline && (
+              <Network
+                className={clsx('ms-auto animate-bounce', {
+                  'stroke-success': offline,
+                  'stroke-destructive': !offline,
+                })}
+              />
+            )}
           </div>
+        </div>
       </header>
       <main className="space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
         <div>
@@ -476,7 +655,6 @@ export function Layout() {
                       <BreadcrumbItem>
                         <Link to={route}>
                           <span className={'font-bold hover:underline'}>
-                            
                             {name}
                           </span>
                         </Link>
@@ -489,14 +667,16 @@ export function Layout() {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="px-8 h-full flex flex-col justify-between py-4"><Outlet /></div>
+        <div className="flex h-full flex-col justify-between px-8 py-4">
+          <Outlet />
+        </div>
       </main>
       <footer className="py-4">
         <Separator className="my-4" />
-          <h3 className='ms-auto w-fit space-x-2'>
-            <span className="italic">{text.footer.copyright}</span>
-            <Badge> &copy; {new Date().getFullYear()} </Badge>
-          </h3>
+        <h3 className="ms-auto w-fit space-x-2">
+          <span className="italic">{text.footer.copyright}</span>
+          <Badge> &copy; {new Date().getFullYear()} </Badge>
+        </h3>
       </footer>
     </div>
   )
@@ -504,183 +684,250 @@ export function Layout() {
 
 /* eslint-disable-next-line */
 const SpinLoader = memo(function () {
-   const getUser = useIsFetching({
-    fetchStatus: "fetching",
-    type: "inactive",
+  const getUser = useIsFetching({
+    fetchStatus: 'fetching',
+    type: 'inactive',
     stale: true,
-    queryKey: ([] as string[]).concat( getUsersListOpt.queryKey ),
+    queryKey: ([] as string[]).concat(getUsersListOpt.queryKey),
   })
 
   const userId = useIsFetching({
-    fetchStatus: "fetching",
+    fetchStatus: 'fetching',
     stale: true,
-    type: "inactive",
-    queryKey: ([] as string[]).concat( getUserByIdOpt({ userId: "" }).queryKey[0] as string ),
+    type: 'inactive',
+    queryKey: ([] as string[]).concat(
+      getUserByIdOpt({ userId: '' }).queryKey[0] as string
+    ),
   })
 
   const postUser = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( postUserOpt.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(postUserOpt.mutationKey),
   })
 
   const updateUser = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( updateUserByIdOpt?.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(updateUserByIdOpt?.mutationKey),
   })
 
   const getClient = useIsFetching({
-    fetchStatus: "fetching",
+    fetchStatus: 'fetching',
     stale: true,
-    type: "inactive",
-    queryKey: ([] as string[]).concat( getClientListOpt.queryKey ),
+    type: 'inactive',
+    queryKey: ([] as string[]).concat(getClientListOpt.queryKey),
   })
 
   const clientId = useIsFetching({
-    fetchStatus: "fetching",
+    fetchStatus: 'fetching',
     stale: true,
-    type: "inactive",
-    queryKey: ([] as string[]).concat( getClientByIdOpt({ clientId: "" }).queryKey[0] as string ),
+    type: 'inactive',
+    queryKey: ([] as string[]).concat(
+      getClientByIdOpt({ clientId: '' }).queryKey[0] as string
+    ),
   })
 
   const postClient = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( postClientOpt.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(postClientOpt.mutationKey),
   })
 
   const updateClient = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( updateClientByIdOpt?.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(updateClientByIdOpt?.mutationKey),
   })
 
   const deleteClient = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( deleteClientByIdOpt?.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(deleteClientByIdOpt?.mutationKey),
   })
 
   const getCredit = useIsFetching({
-    fetchStatus: "fetching",
+    fetchStatus: 'fetching',
     stale: true,
-    type: "inactive",
-    queryKey: ([] as string[]).concat( getCreditsListOpt.queryKey ),
+    type: 'inactive',
+    queryKey: ([] as string[]).concat(getCreditsListOpt.queryKey),
   })
 
   const creditId = useIsFetching({
-    fetchStatus: "fetching",
+    fetchStatus: 'fetching',
     stale: true,
-    type: "inactive",
-    queryKey: ([] as string[]).concat( getCreditByIdOpt({ creditId: "" }).queryKey[0] as string ),
+    type: 'inactive',
+    queryKey: ([] as string[]).concat(
+      getCreditByIdOpt({ creditId: '' }).queryKey[0] as string
+    ),
   })
 
   const postCredit = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( postCreditOpt.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(postCreditOpt.mutationKey),
   })
 
   const updateCredit = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( updateCreditByIdOpt?.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(updateCreditByIdOpt?.mutationKey),
   })
 
   const deleteCredit = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( deleteCreditByIdOpt?.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(deleteCreditByIdOpt?.mutationKey),
   })
 
   const postPayment = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( postPaymentOpt.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(postPaymentOpt.mutationKey),
   })
 
   const updatePayment = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( updatePaymentByIdOpt?.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(updatePaymentByIdOpt?.mutationKey),
   })
 
   const deletePayment = useIsMutating({
-    status: "pending",
-    mutationKey: ([] as string[]).concat( deletePaymentByIdOpt?.mutationKey ),
+    status: 'pending',
+    mutationKey: ([] as string[]).concat(deletePaymentByIdOpt?.mutationKey),
   })
 
   const getReports = useIsFetching({
-    fetchStatus: "fetching",
+    fetchStatus: 'fetching',
     stale: true,
-    type: "inactive",
-    queryKey: ([] as string[]).concat( getReportsOpt.queryKey ),
+    type: 'inactive',
+    queryKey: ([] as string[]).concat(getReportsOpt.queryKey),
   })
 
   const postReport = useIsFetching({
-    fetchStatus: "fetching",
+    fetchStatus: 'fetching',
     stale: true,
-    type: "inactive",
-    queryKey: ([] as string[]).concat( postReportOpt.mutationKey ),
+    type: 'inactive',
+    queryKey: ([] as string[]).concat(postReportOpt.mutationKey),
   })
 
-  const className = 'text-muted-foreground italic text-xs flex items-center gap-2'
+  const className =
+    'text-muted-foreground italic text-xs flex items-center gap-2'
 
-  if( getUser || userId ) {
-    return <span className={className}><Loader /> {text.loader.user.get}</span>
-  }
-  else if( postUser ) {
-    return <span className={className}><Loader /> {text.loader.user.new} </span>
-  }
-  else if( updateUser ) {
-    return <span className={className}><Loader /> {text.loader.user.update} </span>
-  }
-  
-  if( getClient || clientId ) {
-    return <span className={className}><Loader /> {text.loader.client.get}</span>
-  }
-  else if( postClient ) {
-    return <span className={className}><Loader /> {text.loader.client.new} </span>
-  }
-  else if( updateClient ) {
-    return <span className={className}><Loader /> {text.loader.client.update} </span>
-  }
-  else if( deleteClient ) {
-    return <span className={className}><Loader /> {text.loader.client.delete} </span>
+  if (getUser || userId) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.user.get}
+      </span>
+    )
+  } else if (postUser) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.user.new}{' '}
+      </span>
+    )
+  } else if (updateUser) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.user.update}{' '}
+      </span>
+    )
   }
 
-  if( getCredit || creditId ) {
-    return <span className={className}><Loader /> {text.loader.credit.get}</span>
-  }
-  else if( postCredit ) {
-    return <span className={className}><Loader /> {text.loader.credit.new} </span>
-  }
-  else if( updateCredit ) {
-    return <span className={className}><Loader /> {text.loader.credit.update} </span>
-  }
-  else if( deleteCredit ) {
-    return <span className={className}><Loader /> {text.loader.credit.delete} </span>
+  if (getClient || clientId) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.client.get}
+      </span>
+    )
+  } else if (postClient) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.client.new}{' '}
+      </span>
+    )
+  } else if (updateClient) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.client.update}{' '}
+      </span>
+    )
+  } else if (deleteClient) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.client.delete}{' '}
+      </span>
+    )
   }
 
-  if( postPayment ) {
-    return <span className={className}><Loader /> {text.loader.payment.new} </span>
-  }
-  else if( updatePayment ) {
-    return <span className={className}><Loader /> {text.loader.payment.update} </span>
-  }
-  else if( deletePayment ) {
-    return <span className={className}><Loader /> {text.loader.payment.delete} </span>
+  if (getCredit || creditId) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.credit.get}
+      </span>
+    )
+  } else if (postCredit) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.credit.new}{' '}
+      </span>
+    )
+  } else if (updateCredit) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.credit.update}{' '}
+      </span>
+    )
+  } else if (deleteCredit) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.credit.delete}{' '}
+      </span>
+    )
   }
 
-  if( getReports ) {
-    return <span className={className}><Loader /> {text.loader.report.get} </span>
+  if (postPayment) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.payment.new}{' '}
+      </span>
+    )
+  } else if (updatePayment) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.payment.update}{' '}
+      </span>
+    )
+  } else if (deletePayment) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.payment.delete}{' '}
+      </span>
+    )
   }
-  else if( postReport ) {
-    return <span className={className}><Loader /> {text.loader.report.post} </span>
+
+  if (getReports) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.report.get}{' '}
+      </span>
+    )
+  } else if (postReport) {
+    return (
+      <span className={className}>
+        <Loader /> {text.loader.report.post}{' '}
+      </span>
+    )
   }
 })
 
 /* eslint-disable-next-line */
-export const Error = ({ searchList }:{ currentUser?: boolean, searchList?: boolean }) => {
-  if( searchList ) {
-    return <ErrorIcon className='p-1 stroke-destructive' />
+export const Error = ({
+  searchList,
+}: {
+  currentUser?: boolean
+  searchList?: boolean
+}) => {
+  if (searchList) {
+    return <ErrorIcon className="stroke-destructive p-1" />
   }
-  return <div className='!flex-row'>
-      <h2 className='font-bold text-destructive text-2xl'>:&nbsp;(</h2>
-      <p className='italic text-sm'>  {text.error} </p> 
+  return (
+    <div className="!flex-row">
+      <h2 className="text-2xl font-bold text-destructive">:&nbsp;(</h2>
+      <p className="text-sm italic"> {text.error} </p>
     </div>
-} 
+  )
+}
 
 Layout.dispalyname = 'Layout'
 Error.dispalyname = 'LayoutError'
@@ -690,33 +937,33 @@ const text = {
   error: 'Ups!!! ha ocurrido un error inesperado',
   loader: {
     user: {
-      new: "Creando usuario",
-      update: "Actualizando usuario",
-      delete: "Eliminando usuario(s)",
-      get: "Cargando usuario(s)"
+      new: 'Creando usuario',
+      update: 'Actualizando usuario',
+      delete: 'Eliminando usuario(s)',
+      get: 'Cargando usuario(s)',
     },
     client: {
-      new: "Creando cliente",
-      update: "Actualizando cliente",
-      delete: "Eliminando cliente(s)",
-      get: "Cargando cliente(s)"
+      new: 'Creando cliente',
+      update: 'Actualizando cliente',
+      delete: 'Eliminando cliente(s)',
+      get: 'Cargando cliente(s)',
     },
     credit: {
-      new: "Creando prestamo",
-      update: "Actualizando prestamo",
-      delete: "Eliminando prestamo(s)",
-      get: "Cargando prestamo(s)"
+      new: 'Creando prestamo',
+      update: 'Actualizando prestamo',
+      delete: 'Eliminando prestamo(s)',
+      get: 'Cargando prestamo(s)',
     },
     payment: {
-      new: "Creando pago",
-      update: "Actualizando pago",
-      delete: "Eliminando pago(s)",
-      get: "Cargando pago(s)"
+      new: 'Creando pago',
+      update: 'Actualizando pago',
+      delete: 'Eliminando pago(s)',
+      get: 'Cargando pago(s)',
     },
     report: {
-      get: "Cargando reporte(s)",
-      post: "Creando reporte(s)"
-    }
+      get: 'Cargando reporte(s)',
+      post: 'Creando reporte(s)',
+    },
   },
   navegation: {
     credit: { title: 'Prestamos', url: '/credit', Icon: icons?.CreditCard },
@@ -730,9 +977,10 @@ const text = {
     description: ({ username }: { username: string }) => username,
   },
   search: {
-    placeholder: ({ pathname }: { pathname?: string }) => 'Buscar ' + getSearch({ pathname }),
+    placeholder: ({ pathname }: { pathname?: string }) =>
+      'Buscar ' + getSearch({ pathname }),
     title: 'Clientes:',
-    current: 'actual', 
+    current: 'actual',
   },
   footer: {
     copyright: 'Todos los derechos reservados',

@@ -1,10 +1,16 @@
 import { Button } from '@/components/ui/button'
-import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog'
+import {
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { Navigate, createFileRoute } from '@tanstack/react-router'
+import { Navigate, createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
@@ -15,20 +21,26 @@ import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { deleteClientsById } from '@/api/clients'
+import { useToken } from '@/lib/context/login'
 
 type TSearch = {
   name: string
 }
 
 export const deleteClientByIdOpt = {
-  mutationKey: ["delete-client-by-id"],
+  mutationKey: ['delete-client-by-id'],
   mutationFn: deleteClientsById,
 }
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteClientById,
   errorComponent: Error,
-  validateSearch: ( search: TSearch ) => search,
+  validateSearch: (search: TSearch) => search,
+  beforeLoad: () => {
+    const { rol, userId } = useToken.getState()
+    if (!userId || rol?.rolName !== 'Administrador')
+      throw redirect({ to: '/client' })
+  },
 })
 
 /* eslint-disable-next-line */
@@ -52,7 +64,7 @@ export function DeleteClientById() {
 
     pushNotification({
       date: new Date(),
-      action: "POST",
+      action: 'POST',
       description,
     })
   }
@@ -70,7 +82,7 @@ export function DeleteClientById() {
       variant: 'destructive',
       action: (
         <ToastAction altText="action from new user" onClick={onClick}>
-            {text.notification.retry}
+          {text.notification.retry}
         </ToastAction>
       ),
     })
@@ -86,96 +98,102 @@ export function DeleteClientById() {
     setChecked(!checked)
   }
 
-  const onSubmit: React.FormEventHandler<React.ComponentRef< typeof Button >> = (ev) => {
-    if(!name || !clientId || !checked) return;
+  const onSubmit: React.FormEventHandler<React.ComponentRef<typeof Button>> = (
+    ev
+  ) => {
+    if (!name || !clientId || !checked) return
 
     deleteClient({ clientId: +clientId })
 
-    setOpen({ open: !open, })
+    setOpen({ open: !open })
 
     ev.preventDefault()
   }
 
   return (
-  <>
-    { !open && <Navigate to={"../../"} replace /> }
-    <DialogContent className="max-w-xl">
-      <DialogHeader>
-        <DialogTitle className="text-2xl">{text.title}</DialogTitle>
-        <Separator />
-        <DialogDescription>
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>{text.alert.title}</AlertTitle>
-            <AlertDescription>
-              {text.alert.description({ username: name })}
-            </AlertDescription>
-          </Alert>
-        </DialogDescription>
-      </DialogHeader>
-      <DialogFooter className="!justify-between">
-        <div className="flex items-center gap-2 font-bold italic">
-          <Checkbox
-            id="switch-updates-client"
-            checked={checked}
-            onCheckedChange={onCheckedChange}
-          />
-          <Label
-            htmlFor="switch-updates-client"
-            className={clsx('cursor-pointer')}
-          >
-            {text.button.checkbox}
-          </Label>
-        </div>
-        <div
-          className={clsx(
-            'flex flex-col items-end gap-2 space-x-2 [&>*]:w-fit',
-            {
-              'flex-col-reverse': !checked,
-              'flex-col': checked,
-              '[&>*:last-child]:animate-pulse': !checked,
-            }
-          )}
-        >
-          <Button
-            className={clsx({'hover:bg-destructive bg-destructive': checked})}
-            variant="default"
-            form="delete-client"
-            type="submit"
-            disabled={!checked}
-            onClick={onSubmit}
-          >
-            {text.button.delete}
-          </Button>
-          <DialogClose asChild>
-            <Button
-              type="button"
-              variant="outline"
-              className="font-bold hover:ring hover:ring-primary"
+    <>
+      {!open && <Navigate to={'../../'} replace />}
+      <DialogContent className="max-w-xl">
+        <DialogHeader>
+          <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+          <Separator />
+          <DialogDescription>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>{text.alert.title}</AlertTitle>
+              <AlertDescription>
+                {text.alert.description({ username: name })}
+              </AlertDescription>
+            </Alert>
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="!justify-between">
+          <div className="flex items-center gap-2 font-bold italic">
+            <Checkbox
+              id="switch-updates-client"
+              checked={checked}
+              onCheckedChange={onCheckedChange}
+            />
+            <Label
+              htmlFor="switch-updates-client"
+              className={clsx('cursor-pointer')}
             >
-              {text.button.close}
+              {text.button.checkbox}
+            </Label>
+          </div>
+          <div
+            className={clsx(
+              'flex flex-col items-end gap-2 space-x-2 [&>*]:w-fit',
+              {
+                'flex-col-reverse': !checked,
+                'flex-col': checked,
+                '[&>*:last-child]:animate-pulse': !checked,
+              }
+            )}
+          >
+            <Button
+              className={clsx({
+                'bg-destructive hover:bg-destructive': checked,
+              })}
+              variant="default"
+              form="delete-client"
+              type="submit"
+              disabled={!checked}
+              onClick={onSubmit}
+            >
+              {text.button.delete}
             </Button>
-          </DialogClose>
-        </div>
-      </DialogFooter>
-    </DialogContent>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className="font-bold hover:ring hover:ring-primary"
+              >
+                {text.button.close}
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogFooter>
+      </DialogContent>
     </>
   )
 }
 
 /* eslint-disable-next-line */
 export function Error() {
-  useEffect( () => {
+  useEffect(() => {
     toast({
       title: text.error.title,
-      description: <div className='flex flex-row gap-2 items-center'>
-      <h2 className='font-bold text-2xl'>:&nbsp;(</h2>
-      <p className='text-md'>  {text.error.descriiption} </p> 
-    </div>,
+      description: (
+        <div className="flex flex-row items-center gap-2">
+          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
+          <p className="text-md"> {text.error.descriiption} </p>
+        </div>
+      ),
       variant: 'destructive',
     })
-  }, [] )
-  return ;
+  }, [])
+  return
 }
 
 DeleteClientById.dispalyname = 'DeleteClientById'
@@ -184,8 +202,8 @@ Error.dispalyname = 'DeleteClientByIdError'
 const text = {
   title: 'Eliminacion del cliente',
   error: {
-    title: "Obtencion de datos de usuario",
-    descriiption: "Ha ocurrido un error inesperado"
+    title: 'Obtencion de datos de usuario',
+    descriiption: 'Ha ocurrido un error inesperado',
   },
   alert: {
     title: 'Se eiminara el cliente de la base de datos',
@@ -204,7 +222,7 @@ const text = {
     decription: ({ username }: { username: string }) =>
       'Se ha eliminado el cliente ' + username + ' con exito.',
     error: ({ username }: { username: string }) =>
-      "La eliminacion del cliente" + username + "ha fallado",
+      'La eliminacion del cliente' + username + 'ha fallado',
     retry: 'Reintentar',
   },
 }
