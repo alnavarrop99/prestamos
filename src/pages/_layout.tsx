@@ -356,7 +356,7 @@ export function Layout() {
   return (
     <div
       className={clsx(
-        'grid auto-rows-min auto-rows-min gap-2 space-y-4 md:container xl:grid-cols-2 xl:grid-rows-3',
+        'grid auto-rows-min auto-rows-min gap-2 space-y-4 md:landscape:container xl:grid-cols-2 xl:grid-rows-3',
         styles?.['grid-layout']
       )}
     >
@@ -433,8 +433,8 @@ export function Layout() {
           )}
         </div>
       </nav>
-      <header className="sticky top-0 z-20 !my-0 hidden xl:block [&_div]:flex [&_div]:items-center [&_div]:gap-4">
-        <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg">
+      <header className="px-0 md:px-2 sticky top-0 z-20 !my-0 xl:block [&_div]:flex [&_div]:items-center [&_div]:gap-4">
+        <div className="px-2 py-2 md:px-4 md:px-4 h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg max-sm:rounded-t-none">
           <div className="[&>button]:px-2">
             <Button
               variant={!menu ? 'default' : 'outline'}
@@ -455,11 +455,11 @@ export function Layout() {
             <SpinLoader />
           </div>
           <div>
-            <Label className="flex cursor-pointer items-center gap-2">
+            <Label className="!hidden md:!flex flex-row cursor-pointer items-center gap-2">
               {theme === 'dark' ? <Moon /> : <Sun />}
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
-            <Label className="flex items-center justify-center rounded-lg border border-border">
+            <Label className="items-center justify-center rounded-lg border border-border hidden md:flex">
               <Popover open={search} onOpenChange={onSearchChange}>
                 <PopoverTrigger>
                   <Button
@@ -563,7 +563,7 @@ export function Layout() {
                     .join('')}
                 </Badge>
               </HoverCardTrigger>
-              <HoverCardContent>
+              <HoverCardContent className='mx-4 xl:mx-0'>
                 {errorCurrentUser && <Error currentUser />}
                 {pendingCurrentUser && (
                   <div className="p-2">
@@ -581,13 +581,14 @@ export function Layout() {
                   </div>
                 )}
                 {okCurrentUser && (
-                  <div className="p-2">
-                    <Avatar className="ring-1 ring-ring">
+                  <div className="flex flex-col [&>*]:w-full w=full">
+                    <div className=''>
+                      <Avatar className="ring-1 ring-ring">
                       <AvatarFallback>
                         {name?.split(' ')?.map((items) => items?.[0])}
                       </AvatarFallback>
                     </Avatar>
-                    <ul className="space-y-2 [&>li]:w-fit">
+                    <ul className="p-2 space-y-2 [&>li]:w-fit w-full">
                       <li>
                         <Dialog open={open} onOpenChange={onOpenChange}>
                           <DialogTrigger asChild>
@@ -606,6 +607,13 @@ export function Layout() {
                         <Badge> {currentUserRes?.rol} </Badge>{' '}
                       </li>
                     </ul>
+                    </div>
+                    <div>
+                      <Label className="md:hidden flex cursor-pointer items-center gap-2">
+                        {theme === 'dark' ? <Moon /> : <Sun />}
+                        <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
+                      </Label>
+                    </div>
                   </div>
                 )}
               </HoverCardContent>
@@ -630,7 +638,7 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <main className="space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
+      <main className=" px-4 space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
         <div className="!hidden xl:block">
           <Button
             onClick={onBack}
