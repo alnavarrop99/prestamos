@@ -182,11 +182,11 @@ export function CreditById() {
     <_client.Provider value={client}>
       <_credit.Provider value={credit}>
         <div className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap justify-end">
             <h1 className="text-3xl font-bold">{text.title}</h1>
             <Dialog open={open} onOpenChange={onOpenChange}>
-              <DialogTrigger className="ms-auto" asChild>
-                <Link to={'./print'} disabled={credit?.pagos?.length <= 0}>
+              <DialogTrigger  asChild>
+                <Link to={'./print'} disabled={credit?.pagos?.length <= 0} className='hidden xl:block ms-auto'>
                   <Button
                     variant="outline"
                     className="hover:ring hover:ring-primary"
@@ -318,7 +318,7 @@ export function CreditById() {
             <h2 className="text-2xl font-bold"> {text.cuotes.title} </h2>
           )}
           {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
-            <Table className="rounded-xl bg-background">
+            <Table className="rounded-xl bg-background hidden xl:table">
               <TableHeader className="bg-muted [&_th]:text-center">
                 <TableRow>
                   <TableHead></TableHead>
@@ -339,7 +339,7 @@ export function CreditById() {
                       <Link
                         to={'./print'}
                         search={{ index }}
-                        className="z-index absolute"
+                        className="z-index absolute hidden xl:block"
                       >
                         <Button
                           onClick={onPrint}

@@ -1,12 +1,3 @@
-import { Button } from '@/components/ui/button'
-import {
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -38,6 +29,8 @@ import { SpinLoader } from '@/components/ui/loader'
 import { queryClient } from '@/pages/__root'
 import { useToken } from '@/lib/context/login'
 import { Link } from '@tanstack/react-router'
+import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 export const updateUserByIdOpt = {
   mutationKey: ['update-user-by-id'],
@@ -254,9 +247,9 @@ export function UpdateUserById() {
       {!open && <Navigate to={'../../'} />}
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
           <Separator />
-          <DialogDescription>{text.descriiption}</DialogDescription>
+          <DialogDescription className='text-xs text-start md:text-md text-muted-foreground'>{text.descriiption}</DialogDescription>
         </DialogHeader>
         <form
           autoComplete="off"
@@ -265,7 +258,7 @@ export function UpdateUserById() {
           onChange={onChange}
           id="update-user"
           className={clsx(
-            'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2 [&_label>span]:font-bold',
+            'px-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2 [&_label>span]:font-bold',
             {
               '[&_*:disabled]:opacity-100':
                 !!userId && rol?.rolName !== 'Administrador',
@@ -397,7 +390,7 @@ export function UpdateUserById() {
             </div>
           </div>
         </form>
-        <DialogFooter className="justify-start gap-2">
+        <DialogFooter className="justify-start gap-2 flex-col md:flex-row">
           {!isSuccess ? (
             <>
               {currentUserId === +userId && (

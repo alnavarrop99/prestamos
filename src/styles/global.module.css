@@ -1,5 +1,8 @@
 .grid-layout {
-  grid-template: min-content minmax(0, 1fr) min-content / min-content auto;
+  @apply grid-cols-none;
+  @media screen and screen(xl) {
+    grid-template: min-content minmax(0, 1fr) min-content / min-content auto;
+  } 
 }
 
 .grid__credit--card {

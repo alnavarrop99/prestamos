@@ -35,6 +35,8 @@ import { _clientContext } from '@/pages/_layout/client'
 import { useStatus } from '@/lib/context/layout'
 import { getStatusByName } from '@/lib/type/status'
 import { Textarea } from '@/components/ui/textarea'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { ScrollBar } from '@/components/ui/scroll-area'
 
 export const postClientOpt = {
   mutationKey: ['create-client'],
@@ -136,132 +138,134 @@ export function NewClient() {
     ev.preventDefault()
   }
 
-  return (
-    <>
+  return (<>
       {!open && <Navigate to={'../'} replace />}
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
           <Separator />
-          <DialogDescription className="text-muted-foreground">
+          <DialogDescription className="text-xs text-start md:text-md text-muted-foreground">
             {text.descriiption}
           </DialogDescription>
         </DialogHeader>
-        <form
-          autoComplete="off"
-          ref={form}
-          onSubmit={onSubmit}
-          id="new-client"
-          className={clsx(
-            'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label]:space-y-2',
-            styles?.['custom-form']
-          )}
-        >
-          <Label>
-            <span>{text.form.firstName.label}</span>
-            <Input
-              required
-              name={'nombres' as TFormName}
-              type="text"
-              placeholder={text.form.firstName.placeholder}
-              pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
-            />
-          </Label>
-          <Label>
-            <span>{text.form.lastName.label} </span>
-            <Input
-              required
-              name={'apellidos' as TFormName}
-              type="text"
-              placeholder={text.form.lastName.placeholder}
-              pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
-            />
-          </Label>
-          <Label>
-            <span>{text.form.id.label} </span>
-            <Input
-              required
-              name={'numero_de_identificacion' as TFormName}
-              type="text"
-              placeholder={text.form.id.placeholder}
-              pattern="[A-Za-z0-9]{6,12}"
-            />
-          </Label>
-          <Label>
-            <span>{text.form.typeId.label} </span>
-            <Select
-              required
-              name={'tipo_de_identificacion' as TFormName}
-              defaultValue={'' + getIdByName({ idName: 'Cédula' })?.id}
-            >
-              <SelectTrigger className="!border-1 w-full !border-ring">
-                <SelectValue placeholder={text.form.typeId.placeholder} />
-              </SelectTrigger>
-              <SelectContent>
-                {listIds()?.map(({ id, nombre }, index) => (
-                  <SelectItem key={index} value={'' + id}>
-                    {nombre}
-                  </SelectItem>
+        <ScrollArea className='overflow-y-auto h-[25rem] md:h-full'>
+        <ScrollBar orientation='vertical' />
+          <form
+            autoComplete="off"
+            ref={form}
+            onSubmit={onSubmit}
+            id="new-client"
+            className={clsx(
+              'px-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>label]:space-y-2',
+              styles?.['custom-form']
+            )}
+          >
+            <Label>
+              <span>{text.form.firstName.label}</span>
+              <Input
+                required
+                name={'nombres' as TFormName}
+                type="text"
+                placeholder={text.form.firstName.placeholder}
+                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
+              />
+            </Label>
+            <Label>
+              <span>{text.form.lastName.label} </span>
+              <Input
+                required
+                name={'apellidos' as TFormName}
+                type="text"
+                placeholder={text.form.lastName.placeholder}
+                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
+              />
+            </Label>
+            <Label>
+              <span>{text.form.id.label} </span>
+              <Input
+                required
+                name={'numero_de_identificacion' as TFormName}
+                type="text"
+                placeholder={text.form.id.placeholder}
+                pattern="[A-Za-z0-9]{6,12}"
+              />
+            </Label>
+            <Label>
+              <span>{text.form.typeId.label} </span>
+              <Select
+                required
+                name={'tipo_de_identificacion' as TFormName}
+                defaultValue={'' + getIdByName({ idName: 'Cédula' })?.id}
+              >
+                <SelectTrigger className="!border-1 w-full !border-ring">
+                  <SelectValue placeholder={text.form.typeId.placeholder} />
+                </SelectTrigger>
+                <SelectContent>
+                  {listIds()?.map(({ id, nombre }, index) => (
+                    <SelectItem key={index} value={'' + id}>
+                      {nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Label>
+            <Label>
+              <span>{text.form.phone.label} </span>
+              <Input
+                required
+                name={'celular' as TFormName}
+                type="tel"
+                placeholder={text.form.phone.placeholder}
+                pattern="(?:\+57|0)[0-9]{8}"
+              />
+            </Label>
+            <Label>
+              <span>{text.form.telephone.label} </span>
+              <Input
+                required
+                name={'telefono' as TFormName}
+                type="tel"
+                placeholder={text.form.telephone.placeholder}
+                pattern="(?:\+57|0)[0-9]{6,7}"
+              />
+            </Label>
+            <Label>
+              <span>{text.form.direction.label}</span>
+              <Input
+                required
+                name={'direccion' as TFormName}
+                type="text"
+                placeholder={text.form.direction.placeholder}
+              />
+            </Label>
+            <Label>
+              <span>{text.form.ref.label}</span>
+              <Input
+                list="client-referent"
+                name={'referencia' as TFormName}
+                type="text"
+                placeholder={text.form.ref.placeholder}
+                pattern={`(${clients
+                  ?.map(({ fullName }) => fullName?.replace(/\s+/g, '\\s+'))
+                  ?.join('|')})`}
+              />
+              <datalist id="client-referent">
+                {clients?.map(({ fullName }, index) => (
+                  <option key={index} value={fullName} />
                 ))}
-              </SelectContent>
-            </Select>
-          </Label>
-          <Label>
-            <span>{text.form.phone.label} </span>
-            <Input
-              required
-              name={'celular' as TFormName}
-              type="tel"
-              placeholder={text.form.phone.placeholder}
-              pattern="(?:\+57|0)[0-9]{8}"
-            />
-          </Label>
-          <Label>
-            <span>{text.form.telephone.label} </span>
-            <Input
-              required
-              name={'telefono' as TFormName}
-              type="tel"
-              placeholder={text.form.telephone.placeholder}
-              pattern="(?:\+57|0)[0-9]{6,7}"
-            />
-          </Label>
-          <Label>
-            <span>{text.form.direction.label}</span>
-            <Input
-              required
-              name={'direccion' as TFormName}
-              type="text"
-              placeholder={text.form.direction.placeholder}
-            />
-          </Label>
-          <Label>
-            <span>{text.form.ref.label}</span>
-            <Input
-              list="client-referent"
-              name={'referencia' as TFormName}
-              type="text"
-              placeholder={text.form.ref.placeholder}
-              pattern={`(${clients
-                ?.map(({ fullName }) => fullName?.replace(/\s+/g, '\\s+'))
-                ?.join('|')})`}
-            />
-            <datalist id="client-referent">
-              {clients?.map(({ fullName }, index) => (
-                <option key={index} value={fullName} />
-              ))}
-            </datalist>
-          </Label>
-          <Label>
-            <span>{text.form.comment.label}</span>
-            <Textarea
-              rows={5}
-              name={'comentarios' as TFormName}
-              placeholder={text.form.comment.placeholder}
-            />
-          </Label>
-        </form>
-        <DialogFooter className="justify-end">
+              </datalist>
+            </Label>
+            <Label>
+              <span>{text.form.comment.label}</span>
+              <Textarea
+                rows={5}
+                name={'comentarios' as TFormName}
+                placeholder={text.form.comment.placeholder}
+              />
+            </Label>
+          </form>
+        </ScrollArea>
+        <DialogFooter className="justify-end gap-2 flex-col md:flex-row">
           <Button variant="default" form="new-client" type="submit">
             {text.button.update}
           </Button>
@@ -276,8 +280,7 @@ export function NewClient() {
           </DialogClose>
         </DialogFooter>
       </DialogContent>
-    </>
-  )
+  </>)
 }
 
 NewClient.dispalyname = 'NewClient'

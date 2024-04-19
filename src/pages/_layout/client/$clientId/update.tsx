@@ -42,6 +42,8 @@ import { Skeleton } from '@/components/ui/skeleton'
 import styles from '@/styles/global.module.css'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { ScrollBar } from '@/components/ui/scroll-area'
 
 export const updateClientByIdOpt = {
   mutationKey: ['update-client-by-id'],
@@ -250,14 +252,16 @@ export function UpdateClientById() {
       {!open && <Navigate to={'../../'} replace />}
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">
+          <DialogTitle className="text-start text-xl md:text-2xl">
             {text.title({ state: !checked })}
           </DialogTitle>
           <Separator />
-          <DialogDescription className="text-muted-foreground">
+          <DialogDescription className="text-xs text-start md:text-md text-muted-foreground">
             {text.description({ state: !checked })}
           </DialogDescription>
         </DialogHeader>
+        <ScrollArea className='overflow-y-auto h-[25rem] md:h-full'>
+        <ScrollBar orientation='vertical' />
         <form
           autoComplete="off"
           ref={form}
@@ -265,7 +269,7 @@ export function UpdateClientById() {
           onChange={onChange}
           id="update-client"
           className={clsx(
-            'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label:last-child]:col-span-full [&>label]:space-y-2 [&_*:disabled]:cursor-text [&_*:disabled]:opacity-100',
+            'px-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>label:last-child]:col-span-full [&>label]:space-y-2 [&_*:disabled]:cursor-text [&_*:disabled]:opacity-100',
             {
               '[&>label>span]:font-bold': checked,
             }
@@ -440,7 +444,8 @@ export function UpdateClientById() {
             )}
           </Label>
         </form>
-        <DialogFooter className="!justify-between">
+        </ScrollArea>
+        <DialogFooter className="!justify-between gap-2 flex-row">
           <div
             className={clsx('flex items-center gap-2 font-bold italic', {
               invisible: !userId || rol?.rolName !== 'Administrador',

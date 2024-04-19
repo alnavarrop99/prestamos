@@ -301,7 +301,7 @@ export function Users() {
         <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold">{text.title}</h1>
           {!!users?.length && (
-            <Badge className="px-3 text-xl">{users?.length}</Badge>
+            <Badge className="text-xl">{users?.length}</Badge>
           )}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild className="ms-auto">
@@ -333,15 +333,15 @@ export function Users() {
         </div>
         <Separator />
         {!!users?.length && (
-          <div className="items-between flex">
-            <p className="text-muted-foreground">
+          <div className="items-center flex">
+            <p className="text-muted-foreground hidden xl:block">
               {text.select({
                 select: users?.filter(({ selected }) => selected)?.length,
                 total: usersRes?.length,
               })}
             </p>
             <Select required defaultValue={order} onValueChange={onSelectOrder}>
-              <SelectTrigger className="!border-1 ms-auto w-48 !border-ring">
+              <SelectTrigger className="!border-1 xl:ms-auto w-44 xl:w-48 !border-ring">
                 <SelectValue placeholder={'Orden'} />
               </SelectTrigger>
               <SelectContent className="[&_*]:cursor-pointer">
@@ -357,7 +357,7 @@ export function Users() {
         {!users?.length && <p>{text.notFound}</p>}
         <div
           className={clsx(
-            'min-w-80 [&>*]:min-w-1/4 flex flex-wrap  content-start justify-center gap-4 [&>*]:max-w-[24rem] [&>*]:flex-auto [&>*]:shrink',
+            'min-w-80 xl:[&>*]:min-w-1/4 flex flex-wrap content-start justify-center gap-2 xl:gap-4 [&>*]:max-w-[24rem] [&>*]:flex-auto [&>*]:shrink',
             { '!justify-start': users?.length - pagination?.start * LENGTH < 3 }
           )}
         >
@@ -391,7 +391,7 @@ export function Users() {
                           <DropdownMenuTrigger asChild onClick={onClickStop}>
                             <Button
                               variant="ghost"
-                              className="h-8 w-8 p-0 hover:ring hover:ring-primary"
+                              className="xl:h-8 xl:w-8 h-4 w-8 p-0 hover:ring hover:ring-primary"
                             >
                               <span className="sr-only">{text.menu.aria}</span>
                               <MoreHorizontal className="h-4 w-4" />
@@ -400,7 +400,7 @@ export function Users() {
                           <DropdownMenuContent
                             onClick={onClickStop}
                             align="center"
-                            className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
+                            className="w-56 mx-4 xl:mx-0 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
                           >
                             <DropdownMenuLabel className="text-md">
                               {text.menu.title}

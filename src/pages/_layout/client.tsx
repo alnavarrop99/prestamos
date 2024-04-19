@@ -329,7 +329,7 @@ export function Clients() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="overflow-x-auto rounded-md bg-background ring-1 ring-border">
+            <div className="xl:block overflow-x-auto rounded-md bg-background ring-1 ring-border">
               <Table>
                 <TableHeader className="bg-muted">
                   {table.getHeaderGroups().map((headerGroup) => (

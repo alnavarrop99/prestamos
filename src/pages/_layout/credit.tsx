@@ -356,14 +356,14 @@ export function Credits() {
         </div>
         <Separator />
         {!!credits?.length && (
-          <div className="items-between flex">
-            <p className="text-muted-foreground">
+          <div className="flex xl:items-center">
+            <p className="text-muted-foreground hidden xl:block">
               {text.select({
                 total: credits?.length,
               })}
             </p>
             <Select defaultValue={order} onValueChange={onSelectOrder}>
-              <SelectTrigger className="!border-1 ms-auto w-48 !border-ring">
+              <SelectTrigger className="!border-1 xl:ms-auto w-44 xl:w-48 !border-ring">
                 <SelectValue placeholder={'Orden'} />
               </SelectTrigger>
               <SelectContent className="[&_*]:cursor-pointer">
@@ -380,7 +380,7 @@ export function Credits() {
         {!!credits?.length && (
           <div
             className={clsx(
-              'flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5'
+              'flex flex-wrap gap-2 xl:gap-6 [&>*]:flex-1 xl:[&>*]:basis-2/5'
             )}
           >
             {!!credits?.length &&
@@ -420,7 +420,7 @@ export function Credits() {
                         >
                           <CardHeader>
                             <div className="flex items-center gap-2">
-                              <CardTitle className="flex-row items-center">
+                              <CardTitle className="flex-row items-center line-clamp-1">
                                 <Link
                                   onClick={onOpenUser}
                                   to={'/client/$clientId/update'}

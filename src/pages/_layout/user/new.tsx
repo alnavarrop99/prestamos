@@ -145,9 +145,9 @@ export function NewUser() {
       {!open && <Navigate to={'../'} replace />}
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
           <Separator />
-          <DialogDescription>{text.descriiption}</DialogDescription>
+          <DialogDescription className='text-xs text-start md:text-md text-muted-foreground'>{text.descriiption}</DialogDescription>
         </DialogHeader>
         <form
           autoComplete="off"
@@ -155,7 +155,7 @@ export function NewUser() {
           onSubmit={onSubmit}
           id="new-client-form"
           className={clsx(
-            'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2',
+            'px-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2',
             styles?.['custom-form']
           )}
         >
@@ -248,7 +248,7 @@ export function NewUser() {
             </div>
           </div>
         </form>
-        <DialogFooter className="justify-end">
+        <DialogFooter className="justify-end gap-2 flex-col md:flex-row">
           <Button variant="default" form="new-client-form" type="submit">
             {text.button.update}
           </Button>

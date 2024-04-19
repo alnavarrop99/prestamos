@@ -18,6 +18,7 @@ import { type TUSER_LOGIN, type TUSER_LOGIN_BODY, loginUser } from '@/api/users'
 import { useToken } from '@/lib/context/login'
 import { BoundleLoader } from '@/components/ui/loader'
 import { ToastAction } from '@radix-ui/react-toast'
+import { Separator } from '@radix-ui/react-separator'
 
 export const postCurrentUser = {
   mutationKey: ['login-user'],
@@ -119,10 +120,11 @@ export function Login() {
           <CardHeader>
             <CardTitle>{text.title}</CardTitle>
             <CardDescription>
-              <p className="text-lg font-bold">{text?.description?.[0]}</p>
-              <p>{text?.description?.[1]}</p>
+              <p className="text-md md:text-lg font-bold">{text?.description?.[0]}</p>
+              <p className='text-xs md:text-md md:block'>{text?.description?.[1]}</p>
             </CardDescription>
           </CardHeader>
+          <Separator />
           <CardContent>
             <form
               id="login"

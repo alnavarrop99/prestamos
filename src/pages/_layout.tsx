@@ -356,13 +356,13 @@ export function Layout() {
   return (
     <div
       className={clsx(
-        'container m-auto grid max-w-screen-2xl auto-rows-min grid-cols-2 grid-rows-3 space-y-4 [&>*]:px-2',
+        'md:container gap-2 grid auto-rows-min xl:grid-cols-2 xl:grid-rows-3 auto-rows-min space-y-4',
         styles?.['grid-layout']
       )}
     >
       <nav
         className={clsx(
-          'row-span-full h-[100dvh] rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl',
+          'hidden xl:block row-span-full xl:h-[100dvh] rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl',
           {
             [styles?.['menu-animation']]: !menu,
             [styles?.['menu-animation-reverse']]: menu,
@@ -430,7 +430,7 @@ export function Layout() {
           )}
         </div>
       </nav>
-      <header className="sticky top-0 z-20 !my-0 [&_div]:flex [&_div]:items-center [&_div]:gap-4">
+      <header className="hidden xl:block sticky top-0 z-20 !my-0 [&_div]:flex [&_div]:items-center [&_div]:gap-4">
         <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg">
           <div className="[&>button]:px-2">
             <Button
@@ -628,7 +628,7 @@ export function Layout() {
         </div>
       </header>
       <main className="space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
-        <div>
+        <div className='!hidden xl:block'>
           <Button
             onClick={onBack}
             variant="ghost"
@@ -667,13 +667,13 @@ export function Layout() {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="flex h-full flex-col justify-between px-8 py-4">
+        <div className="flex xl:h-full flex-col justify-between xl:px-8 xl:py-4 space-y-4">
           <Outlet />
         </div>
       </main>
-      <footer className="py-4">
-        <Separator className="my-4" />
-        <h3 className="ms-auto w-fit space-x-2">
+      <footer className="xl:py-4 py-2">
+        <Separator className="my-2 xl:my-4" />
+        <h3 className="m-auto xl:ms-auto w-fit space-x-2">
           <span className="italic">{text.footer.copyright}</span>
           <Badge> &copy; {new Date().getFullYear()} </Badge>
         </h3>
