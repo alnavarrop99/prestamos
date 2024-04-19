@@ -119,19 +119,23 @@ export function DeleteSelectedClients() {
       {!open && <Navigate to={'../'} replace />}
       <DialogContent className="text-start text-xl md:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">
+            {text.title}
+          </DialogTitle>
           <Separator />
           <DialogDescription>
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4 hidden md:block" />
-              <AlertTitle className='text-sm md:text-base text-start max-sm:!px-0'>{text.alert.title}</AlertTitle>
-              <AlertDescription className='text-xs md:text-base text-start max-sm:!px-0'>
+              <AlertCircle className="hidden h-4 w-4 md:block" />
+              <AlertTitle className="text-start text-sm max-sm:!px-0 md:text-base">
+                {text.alert.title}
+              </AlertTitle>
+              <AlertDescription className="text-start text-xs max-sm:!px-0 md:text-base">
                 {text.alert.description({ length: clients?.length })}
               </AlertDescription>
             </Alert>
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="!justify-between flex-col md:flex-row">
+        <DialogFooter className="flex-col !justify-between md:flex-row">
           <div className="flex items-center gap-2 font-bold italic">
             <Checkbox
               id="switch-updates-client"

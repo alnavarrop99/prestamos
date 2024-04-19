@@ -100,12 +100,12 @@ import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { queryClient } from '@/pages/__root'
 import { getReportsOpt, postReportOpt } from '@/pages/_layout/report'
-import { getRolByName, TROLES } from '@/lib/type/rol'
+import { getRolByName, type TROLES } from '@/lib/type/rol'
 import { translate } from '@/lib/route'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { MyUserInfo } from '@/pages/-info'
 import { format } from 'date-fns'
-import { TCREDIT_GET_FILTER_ALL } from '@/api/credit'
+import { type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 
 export const getCurrentUserOpt = {
   queryKey: ['login-user', { userId: useToken.getState().userId }],
@@ -356,13 +356,13 @@ export function Layout() {
   return (
     <div
       className={clsx(
-        'md:container gap-2 grid auto-rows-min xl:grid-cols-2 xl:grid-rows-3 auto-rows-min space-y-4',
+        'grid auto-rows-min auto-rows-min gap-2 space-y-4 md:container xl:grid-cols-2 xl:grid-rows-3',
         styles?.['grid-layout']
       )}
     >
       <nav
         className={clsx(
-          'hidden xl:block row-span-full xl:h-[100dvh] rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl',
+          'row-span-full hidden rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl xl:block xl:h-[100dvh]',
           {
             [styles?.['menu-animation']]: !menu,
             [styles?.['menu-animation-reverse']]: menu,
@@ -373,7 +373,10 @@ export function Layout() {
           <img
             alt="brand"
             src={!menu ? brand : brandOff}
-            className="aspect-contain min-h-24"
+            className={clsx('aspect-contain', {
+              'h-24': !menu,
+              'h-16': menu,
+            })}
           />
         </Link>
         <Separator className="my-4" />
@@ -430,7 +433,7 @@ export function Layout() {
           )}
         </div>
       </nav>
-      <header className="hidden xl:block sticky top-0 z-20 !my-0 [&_div]:flex [&_div]:items-center [&_div]:gap-4">
+      <header className="sticky top-0 z-20 !my-0 hidden xl:block [&_div]:flex [&_div]:items-center [&_div]:gap-4">
         <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg">
           <div className="[&>button]:px-2">
             <Button
@@ -628,7 +631,7 @@ export function Layout() {
         </div>
       </header>
       <main className="space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
-        <div className='!hidden xl:block'>
+        <div className="!hidden xl:block">
           <Button
             onClick={onBack}
             variant="ghost"
@@ -667,13 +670,13 @@ export function Layout() {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="flex xl:h-full flex-col justify-between xl:px-8 xl:py-4 space-y-4">
+        <div className="flex flex-col justify-between space-y-4 xl:h-full xl:px-8 xl:py-4">
           <Outlet />
         </div>
       </main>
-      <footer className="xl:py-4 py-2">
+      <footer className="py-2 xl:py-4">
         <Separator className="my-2 xl:my-4" />
-        <h3 className="m-auto xl:ms-auto w-fit space-x-2">
+        <h3 className="m-auto w-fit space-x-2 xl:ms-auto">
           <span className="italic">{text.footer.copyright}</span>
           <Badge> &copy; {new Date().getFullYear()} </Badge>
         </h3>
