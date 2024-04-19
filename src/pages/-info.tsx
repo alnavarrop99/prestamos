@@ -215,9 +215,13 @@ export const MyUserInfo = memo(function () {
   return (
     <DialogContent className="max-w-lg">
       <DialogHeader>
-        <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+        <DialogTitle className="text-start text-xl md:text-2xl">
+          {text.title}
+        </DialogTitle>
         <Separator />
-        <DialogDescription>{text.descriiption}</DialogDescription>
+        <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
+          {text.descriiption}
+        </DialogDescription>
       </DialogHeader>
       <form
         autoComplete="off"
@@ -226,7 +230,7 @@ export const MyUserInfo = memo(function () {
         onChange={onChange}
         id="user-info"
         className={clsx(
-          'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2 [&_label>span]:font-bold',
+          'grid-rows-subgrid grid grid-cols-none gap-3 gap-y-4 px-1 md:grid-cols-2 [&>*]:col-span-full [&>:is(label,div)]:space-y-2 [&_label>span]:font-bold',
           {
             '[&_*:disabled]:opacity-100':
               !!userId && rol?.rolName !== 'Administrador',
@@ -361,7 +365,7 @@ export const MyUserInfo = memo(function () {
           </div>
         </div>
       </form>
-      <DialogFooter className="justify-start gap-2">
+      <DialogFooter className="flex-col justify-start gap-2 gap-2 md:flex-row">
         {!isSuccess ? (
           <>
             <Skeleton className="me-auto h-12 w-40" />
