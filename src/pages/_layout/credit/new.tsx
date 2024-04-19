@@ -44,9 +44,10 @@ import { formatISO } from 'date-fns'
 import { queryClient } from '@/pages/__root'
 import { getClientListOpt } from '@/pages/_layout/client'
 import { getUsersListOpt } from '@/pages/_layout/user'
-import { TUSER_GET } from '@/api/users'
+import { type TUSER_GET } from '@/api/users'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToken } from '@/lib/context/login'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 type TSearch = {
   clientId: number
@@ -270,29 +271,30 @@ export function NewCredit() {
   return (
     <>
       {!open && <Navigate to={'../'} replace />}
-      <DialogContent className="max-w-4xl">
+      <DialogContent className="md:max-w-4xl max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
           <Separator />
-          <DialogDescription className="text-muted-foreground">
+          <DialogDescription className="text-xs text-start md:text-base text-muted-foreground">
             {text.descriiption}
           </DialogDescription>
         </DialogHeader>
+        <ScrollArea className='h-[25rem] md:h-full'>
+        <ScrollBar orientation='vertical' />
         <form
           autoComplete="off"
           ref={form}
           onSubmit={onSubmit}
           id="new-credit"
           className={clsx(
-            'grid-rows-subgrid grid grid-cols-3 items-end gap-4 [&>label]:space-y-2',
+            'p-1 grid-rows-subgrid grid xl:grid-cols-3 md:grid-cols-2 grid-cols-none md:items-end gap-3 gap-y-4 [&>label]:space-y-2',
             styles?.['custom-form'],
             {
-              '[&_*:disabled]:opacity-100':
-                !!curruntUserId && rol?.rolName !== 'Administrador',
+              '[&_*:disabled]:opacity-100': !!curruntUserId && rol?.rolName !== 'Administrador',
             }
           )}
         >
-          <Label className="!col-span-1">
+          <Label className="xl:!col-span-1">
             <span>{text.form.cliente.label} </span>
             {!okUsers && !okClients ? (
               <Skeleton className="h-10 w-full" />
@@ -347,7 +349,7 @@ export function NewCredit() {
               />
             )}
           </Label>
-          <Label className="row-start-2">
+          <Label className="xl:row-start-2">
             <div className="flex items-center justify-between gap-2 [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&_label]:flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2">
               <span className='after:text-red-500 after:content-["_*_"]'>
                 {text.form.amount.label}{' '}
@@ -373,7 +375,7 @@ export function NewCredit() {
               />
             )}
           </Label>
-          <Label htmlFor="credit-cuote" className="row-start-2">
+          <Label htmlFor="credit-cuote" className="xl:row-start-2">
             <div className="flex items-center justify-between gap-2 [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&_label]:flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2">
               <span className='after:text-red-500 after:content-["_*_"]'>
                 {text.form.interest.label}{' '}
@@ -401,7 +403,7 @@ export function NewCredit() {
               />
             )}
           </Label>
-          <Label htmlFor="credit-pay" className="row-start-2">
+          <Label htmlFor="credit-pay" className="xl:row-start-2">
             <div className="flex items-center justify-between gap-2 [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&_label]:flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2">
               <span className='after:text-red-500 after:content-["_*_"]'>
                 {text.form.cuote.label}{' '}
@@ -429,7 +431,7 @@ export function NewCredit() {
               />
             )}
           </Label>
-          <Label className='row-start-3 [&>span]:after:text-red-500 [&>span]:after:content-["_*_"]'>
+          <Label className='xl:row-start-3 [&>span]:after:text-red-500 [&>span]:after:content-["_*_"]'>
             <span>{text.form.frecuency.label} </span>
             {!okUsers && !okClients ? (
               <Skeleton className="h-10 w-full" />
@@ -454,7 +456,7 @@ export function NewCredit() {
               </Select>
             )}
           </Label>
-          <Label className="row-start-3">
+          <Label className="xl:row-start-3">
             <span>{text.form.user.label} </span>
             {!okUsers && !okClients ? (
               <Skeleton className="h-10 w-full" />
@@ -478,7 +480,7 @@ export function NewCredit() {
               </>
             )}
           </Label>
-          <Label htmlFor="credit-installments" className="row-start-4">
+          <Label htmlFor="credit-installments" className="xl:row-start-4">
             <div className="flex items-center justify-between gap-2 [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&_label]:flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2">
               <span className='after:text-red-500 after:content-["_*_"]'>
                 {text.form.installments.label}{' '}
@@ -534,7 +536,7 @@ export function NewCredit() {
               />
             )}
           </Label>
-          <Label className="row-start-4">
+          <Label className="xl:row-start-4">
             <span>{text.form.aditionalDays.label} </span>
             {!okUsers && !okClients ? (
               <Skeleton className="h-10 w-full" />
@@ -561,7 +563,8 @@ export function NewCredit() {
             )}
           </Label>
         </form>
-        <DialogFooter className="!items-center !justify-between">
+        </ScrollArea>
+        <DialogFooter className="!items-start md:items-center md:!justify-between flex-col gap-2 md:flex-row">
           <ul
             className={clsx(
               'transition delay-150 duration-500 [&>li]:list-inside [&>li]:list-disc [&_span]:font-bold',
@@ -586,7 +589,7 @@ export function NewCredit() {
               {'$' + getAmountCuote({ interest, amount, coute })}.{' '}
             </li>
           </ul>
-          <div className="space-x-2">
+          <div className="md:space-x-2 w-full md:w-fit flex flex-col gap-2 md:flex-row">
             {!okUsers && !okClients ? (
               <>
                 <Skeleton className="inline-block h-12 w-24" />
@@ -598,7 +601,7 @@ export function NewCredit() {
                   variant="default"
                   form="new-credit"
                   type="submit"
-                  className="self-end"
+                  className="md:self-end"
                 >
                   {text.button.update}
                 </Button>
@@ -628,7 +631,7 @@ export function Error() {
       description: (
         <div className="flex flex-row items-center gap-2">
           <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-md"> {text.error.descriiption} </p>
+          <p className="text-base"> {text.error.descriiption} </p>
         </div>
       ),
       variant: 'destructive',

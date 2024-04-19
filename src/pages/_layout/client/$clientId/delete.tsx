@@ -120,8 +120,8 @@ export function DeleteClientById() {
           <DialogDescription>
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4 hidden md:block" />
-              <AlertTitle className='text-sm md:text-md text-start max-sm:!px-0'>{text.alert.title}</AlertTitle>
-              <AlertDescription className='text-xs md:text-md text-start max-sm:!px-0'>
+              <AlertTitle className='text-sm md:text-base text-start max-sm:!px-0'>{text.alert.title}</AlertTitle>
+              <AlertDescription className='text-xs md:text-base text-start max-sm:!px-0'>
                 {text.alert.description({ username: name })}
               </AlertDescription>
             </Alert>
@@ -187,7 +187,7 @@ export function Error() {
       description: (
         <div className="flex flex-row items-center gap-2">
           <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-md"> {text.error.descriiption} </p>
+          <p className="text-base"> {text.error.descriiption} </p>
         </div>
       ),
       variant: 'destructive',

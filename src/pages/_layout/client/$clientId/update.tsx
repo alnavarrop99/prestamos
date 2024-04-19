@@ -256,7 +256,7 @@ export function UpdateClientById() {
             {text.title({ state: !checked })}
           </DialogTitle>
           <Separator />
-          <DialogDescription className="text-xs text-start md:text-md text-muted-foreground">
+          <DialogDescription className="text-xs text-start md:text-base text-muted-foreground">
             {text.description({ state: !checked })}
           </DialogDescription>
         </DialogHeader>
@@ -516,7 +516,7 @@ export function Error() {
       description: (
         <div className="flex flex-row items-center gap-2">
           <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-md"> {text.error.descriiption} </p>
+          <p className="text-base"> {text.error.descriiption} </p>
         </div>
       ),
       variant: 'destructive',

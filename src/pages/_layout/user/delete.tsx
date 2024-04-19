@@ -69,8 +69,8 @@ export function DeleteSelectedUsers() {
         <DialogDescription>
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4 hidden md:block" />
-            <AlertTitle className='text-sm md:text-md text-start max-sm:!px-0'>{text.alert.title}</AlertTitle>
-            <AlertDescription className='text-xs md:text-md text-start max-sm:!px-0'>
+            <AlertTitle className='text-sm md:text-base text-start max-sm:!px-0'>{text.alert.title}</AlertTitle>
+            <AlertDescription className='text-xs md:text-base text-start max-sm:!px-0'>
               {text.alert.description({ length: selectUsers?.length })}
             </AlertDescription>
           </Alert>

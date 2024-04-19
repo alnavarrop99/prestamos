@@ -271,8 +271,8 @@ export function UpdateCreditById() {
           <_client.Provider value={client}>
             <Navigate to={Route.to} />
             <div className="space-y-4">
-              <div className="flex gap-2">
-                <h1 className="text-3xl font-bold">{text.title}</h1>
+              <div className="flex gap-2 items-center">
+                <h1 className="text-2xl md:text-3xl font-bold">{text.title}</h1>
                 <Dialog open={open} onOpenChange={onOpenChange}>
                   <Button
                     className="ms-auto"
@@ -282,7 +282,7 @@ export function UpdateCreditById() {
                   >
                     {text.button.update}
                   </Button>
-                  <Link to={'../'}>
+                  <Link to={'../'} className='hidden md:block'>
                     <Button
                       variant="outline"
                       className="hover:ring hover:ring-primary"
@@ -297,8 +297,8 @@ export function UpdateCreditById() {
               <Separator />
               <Card className="duration-400 shadow-lg transition delay-150 hover:shadow-xl">
                 <CardHeader>
-                  <div className="flex flex-row justify-between">
-                    <CardTitle className="text-2xl font-bold">
+                  <div className="flex flex-row justify-between items-center">
+                    <CardTitle className="text-xl md:text-2xl font-bold">
                       {text.form.details.title}
                     </CardTitle>
                     <Switch
@@ -311,7 +311,7 @@ export function UpdateCreditById() {
                 </CardHeader>
                 <CardContent>
                   <form
-                    className="grid grid-cols-3 gap-4 [&>label:last-child]:col-span-full [&>label>div>span]:font-bold [&>label>span]:font-bold [&>label]:space-y-2"
+                    className="grid grid-cols-none md:grid-cols-2 xl:grid-cols-3 gap-4 [&>label:last-child]:col-span-full [&>label>div>span]:font-bold [&>label>span]:font-bold [&>label]:space-y-2"
                     id={'edit-credit'}
                     onChange={onChangeDetail}
                     onSubmit={onSubmit}
@@ -350,7 +350,7 @@ export function UpdateCreditById() {
                         label={text.form.details.date.placeholder}
                       />
                     </Label>
-                    <Label className="!col-span-1">
+                    <Label className="md:!col-span-1">
                       <span>{text.form.details.ref.label}</span>
                       <Input
                         name={'ref' as TFormName}
@@ -458,7 +458,7 @@ export function UpdateCreditById() {
                     </Label>
                     <Label
                       htmlFor="credit-installments"
-                      className="row-start-4"
+                      className="md:row-start-4"
                     >
                       <div className="flex items-center justify-between gap-2 [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&_label]:flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2">
                         <span>{text.form.details.installmants.label}</span>
@@ -511,7 +511,7 @@ export function UpdateCreditById() {
                         }
                       />
                     </Label>
-                    <Label className="row-start-4">
+                    <Label className="md:row-start-4">
                       <span>{text.form.details.aditionalsDays.label}</span>
                       <Input
                         min={0}
@@ -541,7 +541,7 @@ export function UpdateCreditById() {
                 !!creditChange?.cuotas?.length && (
                   <Card className="duration-400 shadow-lg transition delay-150 hover:shadow-xl">
                     <CardHeader>
-                      <CardTitle className="text-2xl font-bold">
+                      <CardTitle className="text-xl md:text-2xl font-bold">
                         {text.form.pay.title}
                       </CardTitle>
                     </CardHeader>
@@ -596,7 +596,7 @@ export function UpdateCreditById() {
                               </AccordionTrigger>
                               <AccordionContent asChild>
                                 <form
-                                  className="grid grid-cols-2 items-end gap-4 px-4 [&>label:last-child]:col-span-full [&>label>div]:flex [&>label>div]:items-center [&>label>div]:justify-between [&>label>div]:gap-2 [&>label]:space-y-2 [&>label_span]:font-bold"
+                                  className="grid grid-cols-none md:grid-cols-2 items-end gap-4 px-4 [&>label:last-child]:col-span-full [&>label>div]:flex [&>label>div]:items-center [&>label>div]:justify-between [&>label>div]:gap-2 [&>label]:space-y-2 [&>label_span]:font-bold"
                                   id={'edit-pay-' + index}
                                   onChange={onChangePaymentById(index)}
                                   onSubmit={onCuoteSubmit(index)}

@@ -182,11 +182,11 @@ export function CreditById() {
     <_client.Provider value={client}>
       <_credit.Provider value={credit}>
         <div className="space-y-4">
-          <div className="flex gap-2 flex-wrap justify-end">
-            <h1 className="text-3xl font-bold">{text.title}</h1>
+          <div className="flex gap-2">
+            <h1 className="text-2xl md:text-3xl font-bold">{text.title}</h1>
             <Dialog open={open} onOpenChange={onOpenChange}>
               <DialogTrigger  asChild>
-                <Link to={'./print'} disabled={credit?.pagos?.length <= 0} className='hidden xl:block ms-auto'>
+                <Link to={'./print'} disabled={credit?.pagos?.length <= 0} className='hidden xl:block xl:ms-auto'>
                   <Button
                     variant="outline"
                     className="hover:ring hover:ring-primary"
@@ -196,7 +196,7 @@ export function CreditById() {
                   </Button>
                 </Link>
               </DialogTrigger>
-              <DialogTrigger asChild>
+              <DialogTrigger asChild className='ms-auto xl:ms-0'>
                 <Link to={'./pay'}>
                   <Button
                     variant="default"
@@ -226,7 +226,7 @@ export function CreditById() {
             </Dialog>
           </div>
           <Separator />
-          <h2 className="text-2xl font-bold"> {text.details.title} </h2>
+          <h2 className="text-xl md:text-2xl font-bold"> {text.details.title} </h2>
           <ul className="flex flex-col gap-2 px-2 [&>li]:space-x-2">
             <li>
               <b>{text.details.status + ':'}</b>
@@ -315,7 +315,7 @@ export function CreditById() {
           </ul>
           <Separator />
           {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
-            <h2 className="text-2xl font-bold"> {text.cuotes.title} </h2>
+            <h2 className="text-xl md:text-2xl font-bold"> {text.cuotes.title} </h2>
           )}
           {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
             <Table className="rounded-xl bg-background hidden xl:table">

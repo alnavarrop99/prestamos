@@ -117,9 +117,9 @@ export function PayCreditById() {
     {!open && <Navigate to={"../"} replace  />}
     <DialogContent className="max-w-lg">
       <DialogHeader>
-        <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+        <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
         <Separator />
-        <DialogDescription className='text-muted-foreground'><p>{text.descriiption}</p></DialogDescription>
+        <DialogDescription className='text-xs text-start md:text-base text-muted-foreground'><p>{text.descriiption}</p></DialogDescription>
       </DialogHeader>
       <form
         autoComplete="off"
@@ -127,7 +127,7 @@ export function PayCreditById() {
         onSubmit={onSubmit}
         id="pay-credit"
         className={clsx(
-          'grid-rows-subgrid grid gap-3 grid-cols-2 gap-y-4 [&>label]:space-y-2',
+          'px-1 grid-rows-subgrid grid gap-3 grid-cols-none md:grid-cols-2 gap-y-4 [&>label]:space-y-2',
           styles?.["custom-form"]
         )}
       >
@@ -143,14 +143,14 @@ export function PayCreditById() {
               defaultValue={credit?.cuotas?.at(0)?.valor_de_cuota}
           />
         </Label>
-        <Label className='!col-span-1'>
+        <Label className='md:!col-span-1'>
           <span>{text.form.date.label} </span>
           <DatePicker name={"fecha_de_pago" as TFormName}
             label={text.form.date.placeholder}
             className='!border-1 !border-ring'
           />
         </Label>
-        <Label className='cols-span-full'>
+        <Label className='md:cols-span-full'>
           <span>{text.form.comment.label}</span>
           <Textarea
             name={"comentario" as TFormName}
@@ -159,7 +159,7 @@ export function PayCreditById() {
           />
         </Label>
       </form>
-      <DialogFooter className="!justify-between">
+      <DialogFooter className="justify-end gap-2 flex-col md:flex-row">
         <div className="flex items-center gap-2 font-bold italic">
           <Checkbox
             id="checkbox-payment"

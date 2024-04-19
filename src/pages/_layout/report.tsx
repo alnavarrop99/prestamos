@@ -82,7 +82,7 @@ export function Report() {
             <AccordionTrigger className="group !no-underline">
               <div className="place-contents-start flex flex-col place-items-start p-2 text-start">
                 <p className="text-lg font-bold"> {nombre} </p>
-                <p className="text-md text-muted-foreground"> {comentario} </p>
+                <p className="text-base text-muted-foreground"> {comentario} </p>
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-2">

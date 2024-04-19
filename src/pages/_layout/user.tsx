@@ -299,9 +299,9 @@ export function Users() {
     <_selectUsers.Provider value={users?.filter(({ selected }) => selected)}>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-3xl font-bold">{text.title}</h1>
+          <h1 className="text-2xl md:text-3xl font-bold">{text.title}</h1>
           {!!users?.length && (
-            <Badge className="text-xl">{users?.length}</Badge>
+            <Badge className="text-lg md:text-xl">{users?.length}</Badge>
           )}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild className="ms-auto">
@@ -402,7 +402,7 @@ export function Users() {
                             align="center"
                             className="w-56 mx-4 xl:mx-0 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
                           >
-                            <DropdownMenuLabel className="text-md">
+                            <DropdownMenuLabel className="text-base">
                               {text.menu.title}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />

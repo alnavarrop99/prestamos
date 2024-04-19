@@ -147,7 +147,7 @@ export function NewUser() {
         <DialogHeader>
           <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
           <Separator />
-          <DialogDescription className='text-xs text-start md:text-md text-muted-foreground'>{text.descriiption}</DialogDescription>
+          <DialogDescription className='text-xs text-start md:text-base text-muted-foreground'>{text.descriiption}</DialogDescription>
         </DialogHeader>
         <form
           autoComplete="off"

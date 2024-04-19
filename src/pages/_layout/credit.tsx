@@ -340,10 +340,10 @@ export function Credits() {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Label htmlFor="acitve-credits" className="cursor-pointer">
-            <h1 className="text-3xl font-bold">{text.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">{text.title}</h1>
           </Label>
           {!!credits?.length && (
-            <Badge className="px-3 text-xl">{credits?.length}</Badge>
+            <Badge className="px-3 text-lg md:text-xl">{credits?.length}</Badge>
           )}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
@@ -380,7 +380,7 @@ export function Credits() {
         {!!credits?.length && (
           <div
             className={clsx(
-              'flex flex-wrap gap-2 xl:gap-6 [&>*]:flex-1 xl:[&>*]:basis-2/5'
+              'flex flex-wrap gap-4 xl:gap-6 [&>*]:flex-1 xl:[&>*]:basis-2/5'
             )}
           >
             {!!credits?.length &&
@@ -430,7 +430,7 @@ export function Credits() {
                                   {nombre_del_cliente}
                                 </Link>
                               </CardTitle>
-                              <Badge className='text-md after:duration-400 ms-auto after:opacity-0 after:transition after:delay-150 group-hover:after:opacity-100 group-hover:after:content-["_\219D"]'>
+                              <Badge className='text-base after:duration-400 ms-auto after:opacity-0 after:transition after:delay-150 group-hover:after:opacity-100 group-hover:after:content-["_\219D"]'>
                                 {creditId}
                               </Badge>
                             </div>
@@ -483,7 +483,6 @@ export function Credits() {
                             </Badge>
                             <Dialog open={open} onOpenChange={onOpenChange}>
                               <DialogTrigger asChild className="ms-auto">
-                                {
                                   <Link
                                     to={'./print'}
                                     search={{ creditId }}
@@ -494,9 +493,9 @@ export function Credits() {
                                       onClick={onClick}
                                       disabled={numero_de_cuota <= 0}
                                       className={clsx(
-                                        'invisible px-3 opacity-0 hover:ring hover:ring-primary  group-hover:opacity-100',
+                                        'invisible px-3 opacity-0 hover:ring hover:ring-primary group-hover:opacity-100',
                                         {
-                                          'group-hover:visible':
+                                          'xl:group-hover:visible':
                                             numero_de_cuota > 0,
                                         }
                                       )}
@@ -504,7 +503,6 @@ export function Credits() {
                                       <Printer />
                                     </Button>
                                   </Link>
-                                }
                               </DialogTrigger>
                               <DialogTrigger asChild>
                                 <Link

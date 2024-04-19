@@ -212,9 +212,9 @@ export function Clients() {
       <_rowSelected.Provider value={table.resetRowSelection}>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold">{text.title}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold">{text.title}</h1>
             {!!clientsRes?.length && (
-              <Badge className="px-3 text-xl">
+              <Badge className="px-3 text-lg md:text-xl">
                 {table.getFilteredRowModel().rows.length}
               </Badge>
             )}

@@ -120,8 +120,8 @@ export function Login() {
           <CardHeader>
             <CardTitle>{text.title}</CardTitle>
             <CardDescription>
-              <p className="text-md md:text-lg font-bold">{text?.description?.[0]}</p>
-              <p className='text-xs md:text-md md:block'>{text?.description?.[1]}</p>
+              <p className="text-base md:text-lg font-bold">{text?.description?.[0]}</p>
+              <p className='text-xs md:text-base md:block'>{text?.description?.[1]}</p>
             </CardDescription>
           </CardHeader>
           <Separator />
