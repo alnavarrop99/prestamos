@@ -81,15 +81,15 @@ export function Report() {
           >
             <AccordionTrigger className="group !no-underline">
               <div className="place-contents-start flex flex-col place-items-start p-2 text-start">
-                <p className="text-lg font-bold"> {nombre} </p>
-                <p className="text-base text-muted-foreground"> {comentario} </p>
+                <p className="text-base md:text-lg font-bold"> {nombre} </p>
+                <p className="text-sm md:text-base text-muted-foreground"> {comentario} </p>
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-2">
               <form
                 ref={form?.[index]}
                 onSubmit={onSubmit(index)}
-                className="grid grid-cols-none md:grid-cols-2 gap-4 md:px-4 xl:px-4 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
+                className="px-1 grid grid-cols-none md:grid-cols-2 gap-4 md:px-4 xl:px-4 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
                 id={'report' + id}
               >
                 {parametros.map(({ nombre, id, tipo_dato, obligatorio }) => (
