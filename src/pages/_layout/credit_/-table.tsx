@@ -53,7 +53,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
         <TableBody className="divide-y-2">
           {table?.map(({ payment, cuote }, index) => (
             <Table key={index}>
-              <TableHead>
+              <TableHeader>
                 <TableCell className="flex items-stretch justify-between gap-2 [&>*]:flex [&>*]:items-center">
                   <p className='font-bold before:font-bold before:text-destructive before:content-["_-_"]'>
                     {' '}
@@ -67,7 +67,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
                     ></Switch>
                   </div>
                 </TableCell>
-              </TableHead>
+              </TableHeader>
 
               <TableBody>
                 <TableRow>

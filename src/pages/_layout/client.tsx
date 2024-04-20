@@ -1,16 +1,7 @@
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -45,7 +36,7 @@ import {
 } from '@/components/ui/select'
 import { type TCLIENT_GET_ALL, getClientsList } from '@/api/clients'
 import clsx from 'clsx'
-import { columns, type TClientTable } from '@/pages/_layout/-column'
+import { desktop, movile, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
 import { useClientByUsers } from '@/lib/context/client'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -61,6 +52,8 @@ import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useToken } from '@/lib/context/login'
+import { ClientTable } from './-table'
+import { useScreen } from '@/lib/hook/useScreens'
 
 type TSearch = {
   userId: number
@@ -109,6 +102,7 @@ export function Clients() {
   const navigate = useNavigate()
   const { filter, setFilter } = useFilter()
   const { userId: ownerId } = Route.useSearch()
+  const screen = useScreen()
   const isUpdateClient = useIsMutating({
     status: 'success',
     mutationKey: updateClientByIdOpt.mutationKey,
@@ -162,7 +156,7 @@ export function Clients() {
 
   const table = useReactTable({
     data: clientsRes,
-    columns,
+    columns: screen !== 'lg' ? movile : desktop,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -310,7 +304,7 @@ export function Clients() {
                 </SelectContent>
               </Select>
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger asChild className="hidden xl:block">
                   <Button variant="outline">
                     {text.dropdown.title}{' '}
                     <ChevronDown className="ml-2 h-4 w-4" />
@@ -335,65 +329,8 @@ export function Clients() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="overflow-x-auto rounded-md bg-background ring-1 ring-border xl:block">
-              <Table>
-                <TableHeader className="bg-muted">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <TableHead
-                            key={header.id}
-                            className={clsx(
-                              'first:sticky first:left-0 last:sticky last:right-0'
-                            )}
-                          >
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                          </TableHead>
-                        )
-                      })}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && 'selected'}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell
-                            key={cell.id}
-                            className={clsx(
-                              'first:sticky first:left-0 last:sticky last:right-0'
-                            )}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="h-24 text-center"
-                      >
-                        {text.search[404]}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+            <div className="rounded-xl bg-background ring-2 ring-border">
+              <ClientTable table={table} />
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
               <div className="space-x-2">

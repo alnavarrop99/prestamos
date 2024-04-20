@@ -20,17 +20,103 @@ import {
 import { useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { useStatus } from '@/lib/context/layout'
-import { type TCLIENT_GET_BASE } from '@/api/clients'
+import type { TCLIENT_GET_BASE } from '@/api/clients'
 import { getIdById } from '@/lib/type/id'
 import { useToken } from '@/lib/context/login'
-import { TROLES } from '@/lib/type/rol'
+import type { TROLES } from '@/lib/type/rol'
 
 export type TClientTable = Omit<
   TCLIENT_GET_BASE,
   'nombres' | 'apellidos' | 'referencia_id'
 > &
   Record<'fullName' | 'referencia', string>
-export const columns: ColumnDef<TClientTable>[] = [
+
+export const movile: ColumnDef<TClientTable>[] = [
+  {
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={
+          table.getIsAllPageRowsSelected() ||
+          (table.getIsSomePageRowsSelected() && 'indeterminate')
+        }
+        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        id={'select-' + row.index}
+        className="mr-4"
+        checked={row.getIsSelected()}
+        onCheckedChange={(value) => row.toggleSelected(!!value)}
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: 'fullName' as keyof TClientTable,
+    header: () => <p>{text.columns.fullName}</p>,
+    cell: ({ row }) => <p className="copitalize">{row.getValue('fullName')}</p>,
+  },
+  {
+    accessorKey: 'direccion' as keyof TClientTable,
+    header: () => <p>{text.columns.direction}</p>,
+    cell: ({ row }) => (
+      <p>{row.getValue('direccion' as keyof TClientTable) + '.'}</p>
+    ),
+  },
+  {
+    accessorKey: 'celular' as keyof TClientTable,
+    header: () => <p>{text.columns.phone}</p>,
+    cell: ({ row }) => (
+      <p className="lowercase">
+        {row.getValue('celular' as keyof TClientTable)}
+      </p>
+    ),
+  },
+  {
+    accessorKey: 'telefono' as keyof TClientTable,
+    header: () => <p>{text.columns.telephone}</p>,
+    cell: ({ row }) => (
+      <p className="lowercase">
+        {row.getValue('telefono' as keyof TClientTable)}
+      </p>
+    ),
+  },
+  {
+    accessorKey: 'numero_de_identificacion' as keyof TClientTable,
+    header: () => <p>{text.columns.id}</p>,
+    cell: ({ row }) => (
+      <p>{row.getValue('numero_de_identificacion' as keyof TClientTable)}</p>
+    ),
+  },
+  {
+    accessorKey: 'tipo_de_identificacion' as keyof TClientTable,
+    header: () => <p>{text.columns.idType}</p>,
+    cell: ({ row }) => {
+      const id: number = row.getValue(
+        'tipo_de_identificacion' as keyof TClientTable
+      )
+      if (!id) return
+      return <p>{getIdById({ id })?.nombre}</p>
+    },
+  },
+  {
+    accessorKey: 'referencia' as keyof TClientTable,
+    header: () => <p>{text.columns.ref}</p>,
+    cell: ({ row }) => (
+      <p className="">{row.getValue('referencia' as keyof TClientTable)}</p>
+    ),
+  },
+  {
+    id: 'actions',
+    enableHiding: false,
+    cell: ({ row }) => <ClientActions row={row} />,
+  },
+]
+
+export const desktop: ColumnDef<TClientTable>[] = [
   {
     id: 'select',
     header: ({ table }) => (
@@ -258,6 +344,7 @@ const text = {
     firstName: 'Nombre',
     lastName: 'Apellidos',
     id: 'I.D.',
+    idType: 'Tipo de I.D.',
     phone: 'Celular',
     telephone: 'Telefono',
     ref: 'Referencia',
