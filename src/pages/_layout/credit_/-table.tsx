@@ -49,56 +49,67 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
 
   if (screen !== 'lg')
     return (
-      <Table className="rounded-xl bg-background">
-        <TableBody className="[&_td>*]:text-center">
+      <Table className="rounded-xl bg-background ">
+        <TableBody className="divide-y-2">
           {table?.map(({ payment, cuote }, index) => (
-            <TableRow key={index} className="group">
-              <TableCell className="flex flex-col items-stretch gap-2 px-8 [&>*]:flex [&>*]:items-center">
-                <div className=" justify-end gap-2">
-                  <Badge>{index + 1}</Badge>
-                  <Switch
-                    checked={cuote?.pagada}
-                    className={'cursor-not-allowed'}
-                  ></Switch>
-                </div>
-                <ul className="list-outside list-disc flex-col !items-start">
-                  <li className='before:font-bold before:text-destructive before:content-["_-_"]'>
-                    <b>Fecha de cuota:</b>{' '}
+            <Table key={index}>
+              <TableHead>
+                <TableCell className="flex items-stretch justify-between gap-2 [&>*]:flex [&>*]:items-center">
+                  <p className='font-bold before:font-bold before:text-destructive before:content-["_-_"]'>
+                    {' '}
                     {format(new Date(cuote?.fecha_de_pago), 'dd/MM/yyyy') + '.'}
-                  </li>
+                  </p>
+                  <div className="justify-end gap-2">
+                    <Badge>{index + 1}</Badge>
+                    <Switch
+                      checked={cuote?.pagada}
+                      className={'cursor-not-allowed'}
+                    ></Switch>
+                  </div>
+                </TableCell>
+              </TableHead>
 
-                  <li className='before:font-bold before:text-success before:content-["_+_"]'>
-                    <b>Fecha de pago:</b>
-                    {format(new Date(payment?.fecha_de_pago), 'dd/MM/yyyy') +
-                      '.'}
-                  </li>
+              <TableBody>
+                <TableRow>
+                  <TableCell className="flex flex-col items-stretch gap-2 px-8">
+                    <ul className="flex list-outside list-disc flex-col !items-start">
+                      <li className='before:font-bold before:text-success before:content-["_+_"]'>
+                        <b>{text.payDate + ':'}</b>{' '}
+                        {format(
+                          new Date(payment?.fecha_de_pago),
+                          'dd/MM/yyyy'
+                        ) + '.'}
+                      </li>
 
-                  <li>
-                    <b>Valor pagado:</b> <b>$</b>{' '}
-                    {payment?.valor_del_pago?.toFixed(2) + '.'}
-                  </li>
+                      <li>
+                        <b>{text.payValue + ':'}</b> <b>$</b>{' '}
+                        {payment?.valor_del_pago?.toFixed(2) + '.'}
+                      </li>
 
-                  {cuote?.valor_de_mora > 0 && (
-                    <li>
-                      <b>Fecha de Mora:</b>{' '}
-                      {format(
-                        new Date(cuote?.fecha_de_aplicacion_de_mora),
-                        'dd/MM/yyyy'
-                      ) + '.'}
-                    </li>
-                  )}
+                      {cuote?.valor_de_mora > 0 && (
+                        <li>
+                          <b>{text.installmantsDate + ':'}</b>{' '}
+                          {format(
+                            new Date(cuote?.fecha_de_aplicacion_de_mora),
+                            'dd/MM/yyyy'
+                          ) + '.'}
+                        </li>
+                      )}
 
-                  {cuote?.valor_de_mora > 0 && (
-                    <li>
-                      <b>Mora:</b> <b>$</b>{' '}
-                      {cuote?.valor_de_mora?.toFixed(2) + '.'}
-                    </li>
-                  )}
-                </ul>
-              </TableCell>
-            </TableRow>
+                      {cuote?.valor_de_mora > 0 && (
+                        <li>
+                          <b>{text.payInstallmants + ':'}</b> <b>$</b>{' '}
+                          {cuote?.valor_de_mora?.toFixed(2) + '.'}
+                        </li>
+                      )}
+                    </ul>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           ))}
         </TableBody>
+
         <TableFooter>
           <TableRow>
             <TableCell colSpan={5} className="flex justify-between font-bold">
@@ -126,7 +137,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
         {table?.map(({ payment, cuote }, index) => (
           <TableRow key={index} className="group">
             <TableCell className="relative flex w-20 items-center justify-center">
-              <p className="trasition h-full font-bold opacity-100 delay-150 duration-300 group-hover:opacity-0">
+              <p className="trasition h-full font-bold opacity-100 delay-150 duration-300 xl:group-hover:opacity-0">
                 {index + 1}
               </p>
               <Link
