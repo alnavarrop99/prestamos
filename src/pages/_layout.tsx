@@ -19,6 +19,7 @@ import {
   NotepadText,
   Sun,
   X as ErrorIcon,
+  Search,
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
@@ -106,6 +107,7 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { MyUserInfo } from '@/pages/-info'
 import { format } from 'date-fns'
 import { type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 export const getCurrentUserOpt = {
   queryKey: ['login-user', { userId: useToken.getState().userId }],
@@ -293,6 +295,10 @@ export function Layout() {
       )
       setClients(query)
     }
+
+    return () => {
+      setClients(clientsRes)
+    }
   }
 
   const onKeyDown: React.KeyboardEventHandler<
@@ -433,8 +439,8 @@ export function Layout() {
           )}
         </div>
       </nav>
-      <header className="px-0 md:px-2 sticky top-0 z-20 !my-0 xl:block [&_div]:flex [&_div]:items-center [&_div]:gap-4">
-        <div className="px-2 py-2 md:px-4 md:px-4 h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg max-sm:rounded-t-none">
+      <header className="sticky top-0 z-20 !my-0 px-0 md:px-2 xl:block [&_div]:flex [&_div]:items-center [&_div]:gap-4">
+        <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 px-2 py-2 shadow-lg max-sm:rounded-t-none md:px-4 md:px-4">
           <div className="[&>button]:px-2">
             <Button
               variant={!menu ? 'default' : 'outline'}
@@ -455,15 +461,22 @@ export function Layout() {
             <SpinLoader />
           </div>
           <div>
-            <Label className="!hidden md:!flex flex-row cursor-pointer items-center gap-2">
-              {theme === 'dark' ? <Moon /> : <Sun />}
-              <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
-            </Label>
-            <Label className="items-center justify-center rounded-lg border border-border hidden md:flex">
+            <Label className="group relative hidden items-center justify-center gap-1 rounded-lg md:flex xl:flex-row-reverse">
+              <Search className="translate-x-36 opacity-100 transition delay-150 duration-300 group-focus-within:invisible group-focus-within:-translate-x-2 group-focus:opacity-0 xl:hidden" />
+              <Input
+                className="origin-right scale-x-[30%] transition delay-150 duration-300 placeholder:invisible focus-within:scale-x-[100%] focus:placeholder:visible xl:scale-x-[100%] xl:placeholder:visible"
+                type="search"
+                placeholder={text.search.placeholder({
+                  pathname: rchild?.at(0)?.pathname,
+                })}
+                onChange={onChange}
+                onKeyDown={onKeyDown}
+                value={value}
+              />
               <Popover open={search} onOpenChange={onSearchChange}>
                 <PopoverTrigger>
                   <Button
-                    className={clsx('rounded-br-none rounded-tr-none p-2')}
+                    className={clsx('p-2')}
                     variant={!search ? 'ghost' : 'default'}
                   >
                     <User />
@@ -492,67 +505,64 @@ export function Layout() {
                       <Badge variant="default"> {clients?.length} </Badge>
                     </h3>
                     <Separator />
-                    <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
-                      {clients?.map(
-                        (
-                          {
-                            apellidos,
-                            nombres,
-                            id: clientId,
-                            numero_de_identificacion,
-                          },
-                          index
-                        ) =>
-                          clientId && (
-                            <li
-                              key={index}
-                              className="group cursor-pointer"
-                              onClick={onSelect(index)}
-                            >
-                              <Link
-                                to={'/client/$clientId/update'}
-                                params={{ clientId }}
+                    <ScrollArea className="h-56">
+                      <ScrollBar orientation="vertical" />
+                      <ul className="flex flex-col gap-2 [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
+                        {clients?.map(
+                          (
+                            {
+                              apellidos,
+                              nombres,
+                              id: clientId,
+                              numero_de_identificacion,
+                            },
+                            index
+                          ) =>
+                            clientId && (
+                              <li
+                                key={index}
+                                className="group cursor-pointer"
+                                onClick={onSelect(index)}
                               >
-                                <Avatar>
-                                  <AvatarFallback className="!ring-2 ring-ring">
-                                    {nombres?.[0] + apellidos?.[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p
-                                    className={clsx(
-                                      "font-bold group-hover:after:content-['#']"
-                                    )}
-                                  >
-                                    {nombres + ' ' + apellidos}
-                                  </p>
-                                  <p className="italic">
-                                    {numero_de_identificacion.slice(0, 4) +
-                                      '...' +
-                                      numero_de_identificacion.slice(
-                                        -4,
-                                        numero_de_identificacion.length
+                                <Link
+                                  to={'/client/$clientId/update'}
+                                  params={{ clientId }}
+                                >
+                                  <Avatar>
+                                    <AvatarFallback className="!ring-2 ring-ring">
+                                      {nombres?.[0] + apellidos?.[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p
+                                      className={clsx(
+                                        "font-bold group-hover:after:content-['#']"
                                       )}
-                                  </p>
-                                </div>
-                              </Link>
-                            </li>
-                          )
-                      )}
-                    </ul>
+                                    >
+                                      {nombres + ' ' + apellidos}
+                                    </p>
+                                    <p className="italic">
+                                      {numero_de_identificacion.slice(0, 4) +
+                                        '...' +
+                                        numero_de_identificacion.slice(
+                                          -4,
+                                          numero_de_identificacion.length
+                                        )}
+                                    </p>
+                                  </div>
+                                </Link>
+                              </li>
+                            )
+                        )}
+                      </ul>
+                    </ScrollArea>
                   </div>
                 </PopoverContent>
               </Popover>
-              <Input
-                className="rounded-bl-none rounded-tl-none border-none"
-                type="search"
-                placeholder={text.search.placeholder({
-                  pathname: rchild?.at(0)?.pathname,
-                })}
-                onChange={onChange}
-                onKeyDown={onKeyDown}
-                value={value}
-              />
+            </Label>
+            <Label className="!hidden cursor-pointer flex-row items-center gap-2 md:landscape:!flex">
+              {theme === 'dark' ? <Moon /> : <Sun />}
+              <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
             <HoverCard>
               <HoverCardTrigger>
@@ -563,7 +573,7 @@ export function Layout() {
                     .join('')}
                 </Badge>
               </HoverCardTrigger>
-              <HoverCardContent className='mx-4 xl:mx-0'>
+              <HoverCardContent className="mx-4 xl:mx-0">
                 {errorCurrentUser && <Error currentUser />}
                 {pendingCurrentUser && (
                   <div className="p-2">
@@ -581,37 +591,40 @@ export function Layout() {
                   </div>
                 )}
                 {okCurrentUser && (
-                  <div className="flex flex-col [&>*]:w-full w=full">
-                    <div className=''>
+                  <div className="w=full flex flex-col [&>*]:w-full">
+                    <div className="">
                       <Avatar className="ring-1 ring-ring">
-                      <AvatarFallback>
-                        {name?.split(' ')?.map((items) => items?.[0])}
-                      </AvatarFallback>
-                    </Avatar>
-                    <ul className="p-2 space-y-2 [&>li]:w-fit w-full">
-                      <li>
-                        <Dialog open={open} onOpenChange={onOpenChange}>
-                          <DialogTrigger asChild>
-                            <span
-                              title="Modificar mi usuario"
-                              className="cursor-pointer font-bold after:opacity-0 after:transition after:transition after:delay-150 after:duration-300 hover:after:opacity-100 hover:after:content-['#']"
-                            >
-                              {currentUserRes?.nombre}
-                            </span>
-                          </DialogTrigger>
-                          <MyUserInfo />
-                        </Dialog>
-                      </li>
-                      <li>
-                        {' '}
-                        <Badge> {currentUserRes?.rol} </Badge>{' '}
-                      </li>
-                    </ul>
+                        <AvatarFallback>
+                          {name?.split(' ')?.map((items) => items?.[0])}
+                        </AvatarFallback>
+                      </Avatar>
+                      <ul className="w-full space-y-2 p-2 [&>li]:w-fit">
+                        <li>
+                          <Dialog open={open} onOpenChange={onOpenChange}>
+                            <DialogTrigger asChild>
+                              <span
+                                title="Modificar mi usuario"
+                                className="cursor-pointer font-bold after:opacity-0 after:transition after:transition after:delay-150 after:duration-300 hover:after:opacity-100 hover:after:content-['#']"
+                              >
+                                {currentUserRes?.nombre}
+                              </span>
+                            </DialogTrigger>
+                            <MyUserInfo />
+                          </Dialog>
+                        </li>
+                        <li>
+                          {' '}
+                          <Badge> {currentUserRes?.rol} </Badge>{' '}
+                        </li>
+                      </ul>
                     </div>
                     <div>
-                      <Label className="md:hidden flex cursor-pointer items-center gap-2">
+                      <Label className="flex cursor-pointer items-center gap-2 md:landscape:hidden">
                         {theme === 'dark' ? <Moon /> : <Sun />}
-                        <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
+                        <Switch
+                          checked={theme === 'dark'}
+                          onCheckedChange={onSwitch}
+                        />
                       </Label>
                     </div>
                   </div>
@@ -638,7 +651,7 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <main className=" px-4 space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
+      <main className=" space-y-2 px-4 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
         <div className="!hidden xl:block">
           <Button
             onClick={onBack}
@@ -920,6 +933,17 @@ const SpinLoader = memo(function () {
       </span>
     )
   }
+
+  return (
+    <Link to={'/'}>
+      {' '}
+      <img
+        alt="brand"
+        src={brand}
+        className={clsx('aspect-contain h-12 xl:hidden')}
+      />
+    </Link>
+  )
 })
 
 /* eslint-disable-next-line */
