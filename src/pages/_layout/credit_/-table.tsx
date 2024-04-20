@@ -19,6 +19,7 @@ import { Route } from '@/pages/_layout/credit_/$creditId'
 import { Switch } from '@/components/ui/switch'
 import { useScreen } from '@/lib/hook/useScreens'
 import { Badge } from '@/components/ui/badge'
+import clsx from 'clsx'
 
 /* eslint-disable-next-line */
 type TData = {
@@ -49,24 +50,32 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
 
   if (screen !== 'lg')
     return (
-      <Table className="rounded-xl bg-background ">
+      <Table>
         <TableBody className="divide-y-2">
           {table?.map(({ payment, cuote }, index) => (
             <Table key={index}>
               <TableHeader>
-                <TableCell className="flex items-stretch justify-between gap-2 [&>*]:flex [&>*]:items-center">
-                  <p className='font-bold before:font-bold before:text-destructive before:content-["_-_"]'>
-                    {' '}
-                    {format(new Date(cuote?.fecha_de_pago), 'dd/MM/yyyy') + '.'}
-                  </p>
-                  <div className="justify-end gap-2">
-                    <Badge>{index + 1}</Badge>
-                    <Switch
-                      checked={cuote?.pagada}
-                      className={'cursor-not-allowed'}
-                    ></Switch>
-                  </div>
-                </TableCell>
+                <TableRow>
+                  <TableHead
+                    className={clsx(
+                      'flex items-stretch justify-between gap-2 bg-muted [&>*]:flex [&>*]:items-center',
+                      { 'rounded-t-xl': index === 0 }
+                    )}
+                  >
+                    <p className='font-bold before:font-bold before:text-destructive before:content-["_-_"]'>
+                      {' '}
+                      {format(new Date(cuote?.fecha_de_pago), 'dd/MM/yyyy') +
+                        '.'}
+                    </p>
+                    <div className="justify-end gap-2">
+                      <Badge>{index + 1}</Badge>
+                      <Switch
+                        checked={cuote?.pagada}
+                        className={'cursor-not-allowed'}
+                      ></Switch>
+                    </div>
+                  </TableHead>
+                </TableRow>
               </TableHeader>
 
               <TableBody>
@@ -122,8 +131,8 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
     )
 
   return (
-    <Table className="rounded-xl bg-background">
-      <TableHeader className="bg-muted [&_th]:text-center">
+    <Table>
+      <TableHeader className="rounded-t-xl  bg-muted [&_th]:text-center">
         <TableRow>
           <TableHead></TableHead>
           <TableHead>{text.payDate}</TableHead>

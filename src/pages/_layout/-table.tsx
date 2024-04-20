@@ -37,11 +37,13 @@ export function ClientTable({ table }: TPaymentTable) {
             const action = row?.getVisibleCells()?.[8]
             return (
               <Table key={index}>
-                <TableHeader
-                  className={clsx('bg-muted', { 'rounded-t-xl': index === 0 })}
-                >
+                <TableHeader>
                   <TableRow>
-                    <TableHead className="">
+                    <TableHead
+                      className={clsx('bg-muted', {
+                        'rounded-t-xl': index === 0,
+                      })}
+                    >
                       <Label
                         htmlFor={'select-' + row.index}
                         className="items-between flex justify-between gap-2 [&>*]:flex [&>*]:items-center"

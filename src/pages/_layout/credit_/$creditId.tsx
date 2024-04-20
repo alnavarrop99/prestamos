@@ -315,7 +315,9 @@ export function CreditById() {
             </h2>
           )}
           {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
-            <PaymentTable credit={credit} table={table} />
+            <div className="rounded-xl bg-background ring-2 ring-border">
+              <PaymentTable credit={credit} table={table} />
+            </div>
           )}
         </div>
       </_credit.Provider>
