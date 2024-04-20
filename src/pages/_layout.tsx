@@ -324,7 +324,8 @@ export function Layout() {
     if (
       key === 'Enter' &&
       pathname !== ('/user' as TSearch) &&
-      pathname !== ('/client' as TSearch)
+      pathname !== ('/client' as TSearch) &&
+      pathname !== ('/credit' as TSearch)
     ) {
       setSearch({ search: !search })
     }
@@ -477,7 +478,7 @@ export function Layout() {
           <div>
             <Label className="group hidden items-center justify-center gap-2 rounded-lg md:flex md:gap-1 xl:flex-row-reverse">
               <Input
-                className="invisible origin-right scale-x-[0%] transition delay-150 duration-300 placeholder:invisible group-hover:visible group-hover:scale-x-[100%] group-hover:placeholder:visible xl:scale-x-[100%] xl:placeholder:visible"
+                className="origin-right scale-x-[0%] transition delay-150 duration-300 placeholder:invisible group-hover:visible group-hover:scale-x-[100%] group-hover:placeholder:visible xl:scale-x-[100%] xl:placeholder:visible"
                 type="search"
                 placeholder={text.search.placeholder({
                   pathname: rchild?.at(0)?.pathname,

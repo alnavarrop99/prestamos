@@ -336,7 +336,7 @@ export function Users() {
         <Separator />
         {!!users?.length && (
           <div className="flex items-center">
-            <p className="hidden text-muted-foreground xl:block">
+            <p className="hidden text-sm text-muted-foreground xl:block">
               {text.select({
                 select: users?.filter(({ selected }) => selected)?.length,
                 total: usersRes?.length,

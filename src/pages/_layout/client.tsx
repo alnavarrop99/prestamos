@@ -212,51 +212,57 @@ export function Clients() {
       <_rowSelected.Provider value={table.resetRowSelection}>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl md:text-3xl font-bold">{text.title}</h1>
+            <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
             {!!clientsRes?.length && (
               <Badge className="px-3 text-lg md:text-xl">
                 {table.getFilteredRowModel().rows.length}
               </Badge>
             )}
+            <Dialog open={open} onOpenChange={onOpenChange}>
+              <DialogTrigger asChild className="ms-auto">
+                <Link to={'./new'}>
+                  <Button variant="default">{text.buttons.new}</Button>
+                </Link>
+              </DialogTrigger>
+              {!!userId && rol?.rolName === 'Administrador' && (
+                <DialogTrigger asChild>
+                  <Link
+                    disabled={!table.getFilteredSelectedRowModel().rows?.length}
+                    to={'./delete'}
+                    search={{
+                      clients: table
+                        .getFilteredSelectedRowModel()
+                        ?.rows?.map(({ original }) => original.id),
+                    }}
+                  >
+                    <Button
+                      className={clsx({
+                        'bg-destructive hover:bg-destructive':
+                          table.getFilteredSelectedRowModel().rows?.length,
+                      })}
+                      disabled={
+                        !table.getFilteredSelectedRowModel().rows?.length
+                      }
+                    >
+                      {text.buttons.delete}
+                    </Button>
+                  </Link>
+                </DialogTrigger>
+              )}
+              <Outlet />
+            </Dialog>
           </div>
           <Separator />
           <div>
             <div className="flex items-center gap-2 py-4">
-              <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogTrigger asChild>
-                  <Link to={'./new'}>
-                    <Button variant="default">{text.buttons.new}</Button>
-                  </Link>
-                </DialogTrigger>
-                {!!userId && rol?.rolName === 'Administrador' && (
-                  <DialogTrigger asChild>
-                    <Link
-                      disabled={
-                        !table.getFilteredSelectedRowModel().rows?.length
-                      }
-                      to={'./delete'}
-                      search={{
-                        clients: table
-                          .getFilteredSelectedRowModel()
-                          ?.rows?.map(({ original }) => original.id),
-                      }}
-                    >
-                      <Button
-                        className={clsx({
-                          'bg-destructive hover:bg-destructive':
-                            table.getFilteredSelectedRowModel().rows?.length,
-                        })}
-                        disabled={
-                          !table.getFilteredSelectedRowModel().rows?.length
-                        }
-                      >
-                        {text.buttons.delete}
-                      </Button>
-                    </Link>
-                  </DialogTrigger>
-                )}
-                <Outlet />
-              </Dialog>
+              {!!table.getRowCount() && (
+                <p className="hidden text-sm text-muted-foreground xl:block">
+                  {text.search.selected({
+                    selected: table.getFilteredSelectedRowModel().rows.length,
+                    total: table.getFilteredRowModel().rows.length,
+                  })}
+                </p>
+              )}
               <Select value={filter} onValueChange={onValueChange}>
                 <SelectTrigger
                   title="Filtro de busqueda"
@@ -329,7 +335,7 @@ export function Clients() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="xl:block overflow-x-auto rounded-md bg-background ring-1 ring-border">
+            <div className="overflow-x-auto rounded-md bg-background ring-1 ring-border xl:block">
               <Table>
                 <TableHeader className="bg-muted">
                   {table.getHeaderGroups().map((headerGroup) => (
@@ -390,12 +396,6 @@ export function Clients() {
               </Table>
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
-              <div className="flex-1 text-sm text-muted-foreground">
-                {text.search.selected({
-                  selected: table.getFilteredSelectedRowModel().rows.length,
-                  total: table.getFilteredRowModel().rows.length,
-                })}
-              </div>
               <div className="space-x-2">
                 <Button
                   variant="outline"

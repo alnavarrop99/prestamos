@@ -357,7 +357,7 @@ export function Credits() {
         <Separator />
         {!!credits?.length && (
           <div className="flex xl:items-center">
-            <p className="hidden text-muted-foreground xl:block">
+            <p className="hidden text-sm text-muted-foreground xl:block">
               {text.select({
                 total: credits?.length,
               })}
