@@ -25,7 +25,13 @@ import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar, TData, TDaysProps } from '@/components/ui/calendar'
-import React, { memo, useEffect, useReducer, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useReducer,
+  useState,
+} from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -280,22 +286,25 @@ export function Layout() {
       setStatus(props)
     }
 
-  const onChange: React.ChangeEventHandler<React.ComponentRef<typeof Input>> = (
-    ev
-  ) => {
-    const { value } = ev.currentTarget
-    setValue({ value })
+  const onChange = useCallback<
+    React.ChangeEventHandler<React.ComponentRef<typeof Input>>
+  >(
+    (ev) => {
+      const { value } = ev.currentTarget
+      setValue({ value })
 
-    if (clientsRes) {
-      const query = clientsRes?.filter((items) =>
-        Object.values(items)
-          .join(' ')
-          .toLowerCase()
-          .includes(value.toLowerCase())
-      )
-      setClients(query)
-    }
-  }
+      if (clientsRes) {
+        const query = clientsRes?.filter((items) =>
+          Object.values(items)
+            .join(' ')
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        )
+        setClients(query)
+      }
+    },
+    [clientsRes]
+  )
 
   const onKeyDown: React.KeyboardEventHandler<
     React.ComponentRef<typeof Input>
@@ -455,7 +464,11 @@ export function Layout() {
                 </Button>
               )}
             </Link>
-            <SpinLoader />
+            <SpinLoader
+              value={value}
+              onChange={onChange}
+              rchild={rchild?.at(0)?.pathname}
+            />
           </div>
           <div>
             <Label className="group relative hidden items-center justify-center gap-1 rounded-lg md:flex xl:flex-row-reverse">
@@ -704,7 +717,14 @@ export function Layout() {
 }
 
 /* eslint-disable-next-line */
-const SpinLoader = memo(function () {
+type TSpinLoader = {
+  rchild?: string
+  value?: string
+  onChange: React.ChangeEventHandler<React.ComponentRef<typeof Input>>
+}
+
+/* eslint-disable-next-line */
+const SpinLoader = memo<TSpinLoader>(function ({ onChange, rchild, value }) {
   const [menu, setMenu] = useState<boolean>(false)
 
   const onOpenChange = (open: boolean) => {
@@ -715,6 +735,13 @@ const SpinLoader = memo(function () {
     React.ComponentRef<typeof Button>
   > = () => {
     setMenu(!menu)
+  }
+
+  const onKeyDown: React.KeyboardEventHandler<
+    React.ComponentRef<typeof Input>
+  > = (ev) => {
+    const key = ev.key
+    if (key === 'Enter') setMenu(!menu)
   }
 
   const getUser = useIsFetching({
@@ -948,7 +975,20 @@ const SpinLoader = memo(function () {
       <PopoverTrigger asChild className="xl:hidden">
         <img alt="brand" src={brand} className={clsx('aspect-contain h-12')} />
       </PopoverTrigger>
-      <PopoverContent className="min-sm:rounded-t-none w-screen shadow-xl md:mx-4 md:mt-4 md:w-[96dvw]">
+      <PopoverContent className="min-sm:rounded-t-none w-screen space-y-2 shadow-xl md:mx-4 md:mt-4 md:w-[96dvw]">
+        <div className="flex items-center gap-3 px-4 md:hidden">
+          <Search />
+          <Input
+            type="search"
+            placeholder={text.search.placeholder({
+              pathname: rchild,
+            })}
+            onChange={onChange}
+            value={value}
+            onKeyDown={onKeyDown}
+          />
+        </div>
+        <Separator className="my-2" />
         <ul className="space-y-3 px-4 md:px-20 [&_button]:w-full">
           {Object.entries(translate())
             ?.filter(([, { validation }]) => validation)
@@ -961,7 +1001,7 @@ const SpinLoader = memo(function () {
                         onClick={onClick}
                         variant={!isActive ? 'link' : 'default'}
                         className={clsx(
-                          'delay-50 flex gap-2 font-bold duration-300',
+                          'delay-50 flex justify-start gap-2 font-bold  duration-300 md:justify-center',
                           {}
                         )}
                       >
