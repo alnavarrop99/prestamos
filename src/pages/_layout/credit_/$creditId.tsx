@@ -7,15 +7,6 @@ import {
 import { type TCREDIT_GET, getCreditById } from '@/api/credit'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import clsx from 'clsx'
 import { Button } from '@/components/ui/button'
 import { Annoyed, Printer } from 'lucide-react'
@@ -44,6 +35,7 @@ import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
+import { PaymentTable } from './-table'
 
 export const getCreditByIdOpt = ({ creditId }: { creditId: string }) => ({
   queryKey: ['get-credit-by-id', { creditId }],
@@ -126,12 +118,6 @@ export function CreditById() {
     setOpen({ open })
   }
 
-  const onPrint: React.MouseEventHandler<
-    React.ComponentRef<typeof Button>
-  > = () => {
-    onOpenChange(!open)
-  }
-
   const table = useMemo(
     () =>
       credit?.pagos?.map((_, i, list) => ({
@@ -183,10 +169,14 @@ export function CreditById() {
       <_credit.Provider value={credit}>
         <div className="space-y-4">
           <div className="flex gap-2">
-            <h1 className="text-2xl md:text-3xl font-bold">{text.title}</h1>
+            <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
             <Dialog open={open} onOpenChange={onOpenChange}>
-              <DialogTrigger  asChild>
-                <Link to={'./print'} disabled={credit?.pagos?.length <= 0} className='hidden xl:block xl:ms-auto'>
+              <DialogTrigger asChild>
+                <Link
+                  to={'./print'}
+                  disabled={credit?.pagos?.length <= 0}
+                  className="hidden xl:ms-auto xl:block"
+                >
                   <Button
                     variant="outline"
                     className="hover:ring hover:ring-primary"
@@ -196,7 +186,7 @@ export function CreditById() {
                   </Button>
                 </Link>
               </DialogTrigger>
-              <DialogTrigger asChild className='ms-auto xl:ms-0'>
+              <DialogTrigger asChild className="ms-auto xl:ms-0">
                 <Link to={'./pay'}>
                   <Button
                     variant="default"
@@ -226,7 +216,10 @@ export function CreditById() {
             </Dialog>
           </div>
           <Separator />
-          <h2 className="text-xl md:text-2xl font-bold"> {text.details.title} </h2>
+          <h2 className="text-xl font-bold md:text-2xl">
+            {' '}
+            {text.details.title}{' '}
+          </h2>
           <ul className="flex flex-col gap-2 px-2 [&>li]:space-x-2">
             <li>
               <b>{text.details.status + ':'}</b>
@@ -315,102 +308,13 @@ export function CreditById() {
           </ul>
           <Separator />
           {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
-            <h2 className="text-xl md:text-2xl font-bold"> {text.cuotes.title} </h2>
+            <h2 className="text-xl font-bold md:text-2xl">
+              {' '}
+              {text.cuotes.title}{' '}
+            </h2>
           )}
           {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
-            <Table className="rounded-xl bg-background hidden xl:table">
-              <TableHeader className="bg-muted [&_th]:text-center">
-                <TableRow>
-                  <TableHead></TableHead>
-                  <TableHead>{text.cuotes.payDate}</TableHead>
-                  <TableHead>{text.cuotes.payValue}</TableHead>
-                  <TableHead>{text.cuotes.installmantsDate}</TableHead>
-                  <TableHead>{text.cuotes.payInstallmants}</TableHead>
-                  <TableHead>{text.cuotes.payStatus}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="[&_td>*]:text-center">
-                {table?.map(({ payment, cuote }, index) => (
-                  <TableRow key={index} className="group">
-                    <TableCell className="relative flex w-20 items-center justify-center">
-                      <p className="trasition font-bold opacity-100 delay-150 duration-300 group-hover:opacity-0">
-                        {index + 1}
-                      </p>
-                      <Link
-                        to={'./print'}
-                        search={{ index }}
-                        className="z-index absolute hidden xl:block"
-                      >
-                        <Button
-                          onClick={onPrint}
-                          variant="ghost"
-                          className="opacity-0 hover:ring hover:ring-primary group-hover:opacity-100"
-                          disabled={credit?.pagos?.length <= 0}
-                        >
-                          <Printer />
-                        </Button>
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <ul>
-                        <li className='before:font-bold before:text-destructive before:content-["_-_"]'>
-                          {format(new Date(cuote?.fecha_de_pago), 'dd/MM/yyyy')}
-                        </li>
-                        <li className='before:font-bold before:text-success before:content-["_+_"]'>
-                          {format(
-                            new Date(payment?.fecha_de_pago),
-                            'dd/MM/yyyy'
-                          )}
-                        </li>
-                      </ul>
-                    </TableCell>
-                    <TableCell>
-                      <p>
-                        <b>$</b>
-                        {payment?.valor_del_pago?.toFixed(2)}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <p>
-                        {cuote?.valor_de_mora > 0
-                          ? format(
-                              new Date(cuote?.fecha_de_aplicacion_de_mora),
-                              'dd/MM/yyyy'
-                            )
-                          : '-'}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <p>
-                        {cuote?.valor_de_mora > 0 ? (
-                          <>
-                            <b>$</b> {cuote?.valor_de_mora?.toFixed(2)}
-                          </>
-                        ) : (
-                          '-'
-                        )}
-                      </p>
-                    </TableCell>
-                    <TableCell className="flex justify-center">
-                      <Switch
-                        checked={cuote?.pagada}
-                        className={'cursor-not-allowed'}
-                      ></Switch>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={5} className="font-bold">
-                    <p>{text.cuotes.total + ':'}</p>
-                  </TableCell>
-                  <TableCell colSpan={2} className="text-right">
-                    <GetPay credit={credit} />
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
-            </Table>
+            <PaymentTable credit={credit} table={table} />
           )}
         </div>
       </_credit.Provider>
@@ -517,24 +421,6 @@ export function Error() {
         </Button>
       </div>
     </div>
-  )
-}
-
-/* eslint-disable-next-line */
-function GetPay({ credit }: { credit: TCREDIT_GET }) {
-  if (!credit.cuotas || !credit.pagos) return
-
-  return (
-    <p>
-      <b>$</b>
-      {credit.pagos
-        .map(({ valor_del_pago }) => valor_del_pago)
-        .reduce((prev, acc) => (acc += prev))
-        ?.toFixed(2)}
-      <b>&#8193;/&#8193;</b>
-      <b>$</b>
-      {credit?.monto}
-    </p>
   )
 }
 
