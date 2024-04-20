@@ -156,7 +156,8 @@ export const Route = createFileRoute('/_layout')({
 /* eslint-disable-next-line */
 interface TStatus {
   offline?: boolean
-  menu?: boolean
+  navmenu?: boolean
+  usermenu?: boolean
   calendar?: boolean
   search?: boolean
 }
@@ -168,10 +169,13 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 /* eslint-disable-next-line */
 export function Layout() {
   const { deleteToken, setUserId, userId, name, setRol, rol } = useToken()
-  const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, {
-    offline: navigator.onLine,
-    menu: false,
-  })
+  const [{ offline, navmenu, calendar, usermenu }, setStatus] = useReducer(
+    reducer,
+    {
+      offline: navigator.onLine,
+      navmenu: false,
+    }
+  )
   const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()
   const {
@@ -375,18 +379,18 @@ export function Layout() {
         className={clsx(
           'row-span-full hidden rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl xl:block xl:h-[100dvh]',
           {
-            [styles?.['menu-animation']]: !menu,
-            [styles?.['menu-animation-reverse']]: menu,
+            [styles?.['menu-animation']]: !navmenu,
+            [styles?.['menu-animation-reverse']]: navmenu,
           }
         )}
       >
         <Link to={'/'}>
           <img
             alt="brand"
-            src={!menu ? brand : brandOff}
+            src={!navmenu ? brand : brandOff}
             className={clsx('aspect-contain', {
-              'h-24': !menu,
-              'h-16': menu,
+              'h-24': !navmenu,
+              'h-16': navmenu,
             })}
           />
         </Link>
@@ -403,10 +407,10 @@ export function Layout() {
                         <Button
                           variant={!isActive ? 'link' : 'default'}
                           className={clsx('delay-50 font-bold duration-300', {
-                            'p-2': menu,
+                            'p-2': navmenu,
                           })}
                         >
-                          {!menu ? title : <Icon />}
+                          {!navmenu ? title : <Icon />}
                         </Button>
                       )}
                     </Link>
@@ -417,7 +421,7 @@ export function Layout() {
         </div>
         <Separator className="my-4" />
         <div className="grid place-items-center">
-          {!menu ? (
+          {!navmenu ? (
             <Calendar
               key={'calendar'}
               className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary"
@@ -427,7 +431,7 @@ export function Layout() {
             <Popover onOpenChange={onclick(setStatus, { calendar: !calendar })}>
               <PopoverTrigger>
                 <Button
-                  className={clsx({ 'p-2': menu })}
+                  className={clsx({ 'p-2': navmenu })}
                   variant={!calendar ? 'outline' : 'default'}
                 >
                   <CalendarIcon />
@@ -449,8 +453,8 @@ export function Layout() {
           <div className="[&>button]:px-2">
             <Button
               className="hidden xl:block"
-              variant={!menu ? 'default' : 'outline'}
-              onClick={onclick(setStatus, { menu: !menu })}
+              variant={!navmenu ? 'default' : 'outline'}
+              onClick={onclick(setStatus, { navmenu: !navmenu })}
             >
               <MenuSquare />
             </Button>
@@ -471,10 +475,9 @@ export function Layout() {
             />
           </div>
           <div>
-            <Label className="group relative hidden items-center justify-center gap-1 rounded-lg md:flex xl:flex-row-reverse">
-              <Search className="translate-x-36 opacity-100 transition delay-150 duration-300 group-focus-within:invisible group-focus-within:-translate-x-2 group-focus:opacity-0 xl:hidden" />
+            <Label className="group hidden items-center justify-center gap-2 rounded-lg md:flex md:gap-1 xl:flex-row-reverse">
               <Input
-                className="origin-right scale-x-[30%] transition delay-150 duration-300 placeholder:invisible focus-within:scale-x-[100%] focus:placeholder:visible xl:scale-x-[100%] xl:placeholder:visible"
+                className="invisible origin-right scale-x-[0%] transition delay-150 duration-300 placeholder:invisible group-hover:visible group-hover:scale-x-[100%] group-hover:placeholder:visible xl:scale-x-[100%] xl:placeholder:visible"
                 type="search"
                 placeholder={text.search.placeholder({
                   pathname: rchild?.at(0)?.pathname,
@@ -483,6 +486,12 @@ export function Layout() {
                 onKeyDown={onKeyDown}
                 value={value}
               />
+              <Button
+                variant="ghost"
+                className="duration-450 px-2 opacity-100 transition delay-300 group-hover:invisible group-hover:opacity-0 xl:hidden"
+              >
+                <Search />
+              </Button>
               <Popover open={search} onOpenChange={onSearchChange}>
                 <PopoverTrigger>
                   <Button
@@ -574,8 +583,15 @@ export function Layout() {
               {theme === 'dark' ? <Moon /> : <Sun />}
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
-            <HoverCard>
-              <HoverCardTrigger>
+            <HoverCard
+              open={usermenu}
+              onOpenChange={(value) =>
+                onclick(setStatus, { usermenu: value })()
+              }
+            >
+              <HoverCardTrigger
+                onClick={onclick(setStatus, { usermenu: !usermenu })}
+              >
                 <Badge className="cursor-pointer text-sm" variant="outline">
                   {(name ?? 'User')
                     .split(' ')
@@ -734,6 +750,13 @@ const SpinLoader = memo<TSpinLoader>(function ({ onChange, rchild, value }) {
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
   > = () => {
+    setMenu(!menu)
+  }
+
+  const onSearch: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
+    if (!value || value === '') return
     setMenu(!menu)
   }
 
@@ -976,8 +999,7 @@ const SpinLoader = memo<TSpinLoader>(function ({ onChange, rchild, value }) {
         <img alt="brand" src={brand} className={clsx('aspect-contain h-12')} />
       </PopoverTrigger>
       <PopoverContent className="min-sm:rounded-t-none w-screen space-y-2 shadow-xl md:mx-4 md:mt-4 md:w-[96dvw]">
-        <div className="flex items-center gap-3 px-4 md:hidden">
-          <Search />
+        <Label className="flex items-center gap-2 px-4 md:hidden">
           <Input
             type="search"
             placeholder={text.search.placeholder({
@@ -987,7 +1009,14 @@ const SpinLoader = memo<TSpinLoader>(function ({ onChange, rchild, value }) {
             value={value}
             onKeyDown={onKeyDown}
           />
-        </div>
+          <Button
+            variant="outline"
+            className="duration-450 px-2 opacity-100 transition delay-300 group-hover:invisible group-hover:opacity-0 xl:hidden"
+            onClick={onSearch}
+          >
+            <Search />
+          </Button>
+        </Label>
         <Separator className="my-2" />
         <ul className="space-y-3 px-4 md:px-20 [&_button]:w-full">
           {Object.entries(translate())
