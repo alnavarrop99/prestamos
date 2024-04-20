@@ -24,7 +24,7 @@ export const translate = () => {
     '/report': { name: 'Reportes', validation: true, icon: icons.BookA },
     '/notification': {
       name: 'Notificaciones',
-      validation: false,
+      validation: true,
       icon: icons.Notebook,
     },
     '/update': { name: 'Editar', validation: false, icon: icons.Upload },

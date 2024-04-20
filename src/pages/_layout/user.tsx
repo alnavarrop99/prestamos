@@ -285,8 +285,10 @@ export function Users() {
 
   useEffect(() => {
     if (value) {
-      usersRes?.filter(({ nombre }) =>
-        nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
+      setUsers(
+        usersRes?.filter(({ nombre }) =>
+          nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
+        )
       )
       setPagination({ ...pagination, start: 0, end: STEP })
     }
@@ -357,7 +359,7 @@ export function Users() {
         {!users?.length && <p>{text.notFound}</p>}
         <div
           className={clsx(
-            'min-w-80 xl:[&>*]:max-w-1/3 md:[&>*]:max-w-1/2 flex flex-wrap content-start justify-center gap-3 xl:gap-4 [&>*]:max-w-[24rem] [&>*]:flex-auto [&>*]:shrink',
+            'md:[&>*]:baisis-3/5 flex flex-wrap content-start justify-center gap-3 xl:gap-4 [&>*]:flex-auto',
             { '!justify-start': users?.length - pagination?.start * LENGTH < 3 }
           )}
         >

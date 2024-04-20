@@ -340,7 +340,7 @@ export function Credits() {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Label htmlFor="acitve-credits" className="cursor-pointer">
-            <h1 className="text-2xl md:text-3xl font-bold">{text.title}</h1>
+            <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
           </Label>
           {!!credits?.length && (
             <Badge className="px-3 text-lg md:text-xl">{credits?.length}</Badge>
@@ -357,13 +357,13 @@ export function Credits() {
         <Separator />
         {!!credits?.length && (
           <div className="flex xl:items-center">
-            <p className="text-muted-foreground hidden xl:block">
+            <p className="hidden text-muted-foreground xl:block">
               {text.select({
                 total: credits?.length,
               })}
             </p>
             <Select defaultValue={order} onValueChange={onSelectOrder}>
-              <SelectTrigger className="!border-1 xl:ms-auto w-44 xl:w-48 !border-ring">
+              <SelectTrigger className="!border-1 w-44 !border-ring xl:ms-auto xl:w-48">
                 <SelectValue placeholder={'Orden'} />
               </SelectTrigger>
               <SelectContent className="[&_*]:cursor-pointer">
@@ -380,7 +380,7 @@ export function Credits() {
         {!!credits?.length && (
           <div
             className={clsx(
-              'flex flex-wrap gap-4 xl:gap-6 [&>*]:flex-1 xl:[&>*]:basis-2/5'
+              'flex flex-wrap gap-4 xl:gap-6 [&>*]:flex-1 md:[&>*]:basis-2/5'
             )}
           >
             {!!credits?.length &&
@@ -420,7 +420,7 @@ export function Credits() {
                         >
                           <CardHeader>
                             <div className="flex items-center gap-2">
-                              <CardTitle className="flex-row items-center line-clamp-1">
+                              <CardTitle className="line-clamp-1 flex-row items-center">
                                 <Link
                                   onClick={onOpenUser}
                                   to={'/client/$clientId/update'}
@@ -430,7 +430,7 @@ export function Credits() {
                                   {nombre_del_cliente}
                                 </Link>
                               </CardTitle>
-                              <Badge className='text-base after:duration-400 ms-auto after:opacity-0 after:transition after:delay-150 group-hover:after:opacity-100 group-hover:after:content-["_\219D"]'>
+                              <Badge className='after:duration-400 ms-auto text-base after:opacity-0 after:transition after:delay-150 group-hover:after:opacity-100 group-hover:after:content-["_\219D"]'>
                                 {creditId}
                               </Badge>
                             </div>
@@ -483,26 +483,26 @@ export function Credits() {
                             </Badge>
                             <Dialog open={open} onOpenChange={onOpenChange}>
                               <DialogTrigger asChild className="ms-auto">
-                                  <Link
-                                    to={'./print'}
-                                    search={{ creditId }}
+                                <Link
+                                  to={'./print'}
+                                  search={{ creditId }}
+                                  disabled={numero_de_cuota <= 0}
+                                >
+                                  <Button
+                                    variant="ghost"
+                                    onClick={onClick}
                                     disabled={numero_de_cuota <= 0}
+                                    className={clsx(
+                                      'invisible px-3 opacity-0 hover:ring hover:ring-primary group-hover:opacity-100',
+                                      {
+                                        'xl:group-hover:visible':
+                                          numero_de_cuota > 0,
+                                      }
+                                    )}
                                   >
-                                    <Button
-                                      variant="ghost"
-                                      onClick={onClick}
-                                      disabled={numero_de_cuota <= 0}
-                                      className={clsx(
-                                        'invisible px-3 opacity-0 hover:ring hover:ring-primary group-hover:opacity-100',
-                                        {
-                                          'xl:group-hover:visible':
-                                            numero_de_cuota > 0,
-                                        }
-                                      )}
-                                    >
-                                      <Printer />
-                                    </Button>
-                                  </Link>
+                                    <Printer />
+                                  </Button>
+                                </Link>
                               </DialogTrigger>
                               <DialogTrigger asChild>
                                 <Link
