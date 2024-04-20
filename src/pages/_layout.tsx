@@ -492,7 +492,7 @@ export function Layout() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="absolute -start-16 top-2 w-80"
+                  className="absolute -start-48 top-2 w-80 xl:-start-16"
                   hidden={!clients?.length}
                 >
                   <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
