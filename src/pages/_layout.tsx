@@ -439,6 +439,7 @@ export function Layout() {
         <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 px-2 py-2 shadow-lg max-sm:rounded-t-none md:px-4 md:px-4">
           <div className="[&>button]:px-2">
             <Button
+              className="hidden xl:block"
               variant={!menu ? 'default' : 'outline'}
               onClick={onclick(setStatus, { menu: !menu })}
             >
@@ -704,6 +705,18 @@ export function Layout() {
 
 /* eslint-disable-next-line */
 const SpinLoader = memo(function () {
+  const [menu, setMenu] = useState<boolean>(false)
+
+  const onOpenChange = (open: boolean) => {
+    setMenu(open)
+  }
+
+  const onClick: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
+    setMenu(!menu)
+  }
+
   const getUser = useIsFetching({
     fetchStatus: 'fetching',
     type: 'inactive',
@@ -931,14 +944,38 @@ const SpinLoader = memo(function () {
   }
 
   return (
-    <Link to={'/'}>
-      {' '}
-      <img
-        alt="brand"
-        src={brand}
-        className={clsx('aspect-contain h-12 xl:hidden')}
-      />
-    </Link>
+    <Popover open={menu} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild className="xl:hidden">
+        <img alt="brand" src={brand} className={clsx('aspect-contain h-12')} />
+      </PopoverTrigger>
+      <PopoverContent className="min-sm:rounded-t-none w-screen shadow-xl md:mx-4 md:mt-4 md:w-[96dvw]">
+        <ul className="space-y-3 px-4 md:px-20 [&_button]:w-full">
+          {Object.entries(translate())
+            ?.filter(([, { validation }]) => validation)
+            ?.map(([url, { name: title, icon: Icon }], index) => {
+              return (
+                <li key={index}>
+                  <Link to={url}>
+                    {({ isActive }) => (
+                      <Button
+                        onClick={onClick}
+                        variant={!isActive ? 'link' : 'default'}
+                        className={clsx(
+                          'delay-50 flex gap-2 font-bold duration-300',
+                          {}
+                        )}
+                      >
+                        <Icon />
+                        {title}
+                      </Button>
+                    )}
+                  </Link>
+                </li>
+              )
+            })}
+        </ul>
+      </PopoverContent>
+    </Popover>
   )
 })
 
