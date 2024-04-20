@@ -287,17 +287,13 @@ export function Layout() {
     setValue({ value })
 
     if (clientsRes) {
-      const query = clients?.filter((props) =>
-        Object.values(props)
+      const query = clientsRes?.filter((items) =>
+        Object.values(items)
           .join(' ')
           .toLowerCase()
           .includes(value.toLowerCase())
       )
       setClients(query)
-    }
-
-    return () => {
-      setClients(clientsRes)
     }
   }
 
