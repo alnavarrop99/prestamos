@@ -70,9 +70,9 @@ export function Report() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold">{text.title}</h1>
+      <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
       <Separator />
-      <Accordion className="my-2 space-y-2" type="multiple">
+      <Accordion className="my-2 space-y-2" type="single">
         {reports.map(({ nombre, parametros, id, comentario}, index) => (
           <AccordionItem
             key={id}
@@ -89,7 +89,7 @@ export function Report() {
               <form
                 ref={form?.[index]}
                 onSubmit={onSubmit(index)}
-                className="grid grid-cols-2 gap-4 px-6 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
+                className="grid grid-cols-none md:grid-cols-2 gap-4 md:px-4 xl:px-4 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
                 id={'report' + id}
               >
                 {parametros.map(({ nombre, id, tipo_dato, obligatorio }) => (
