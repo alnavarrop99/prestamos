@@ -303,7 +303,8 @@ export function CreditById() {
               </span>
             </li>
             <li>
-              <b>{text.details.comment + ':'}</b> <p>{credit?.comentario}</p>
+              <b>{text.details.comment + ':'}</b>{' '}
+              <p className="text-sm md:text-base">{credit?.comentario}</p>
             </li>
           </ul>
           <Separator />
