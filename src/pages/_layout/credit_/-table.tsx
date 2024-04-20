@@ -16,7 +16,9 @@ import { Link } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { Printer } from 'lucide-react'
 import { Route } from '@/pages/_layout/credit_/$creditId'
-import { Switch } from '@radix-ui/react-switch'
+import { Switch } from '@/components/ui/switch'
+import { useScreen } from '@/lib/hook/useScreens'
+import { Badge } from '@/components/ui/badge'
 
 /* eslint-disable-next-line */
 type TData = {
@@ -34,6 +36,7 @@ type TPaymentTable = {
 export function PaymentTable({ table, credit }: TPaymentTable) {
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
+  const screen = useScreen()
 
   const onPrint: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
@@ -43,8 +46,72 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
     }
     setOpen({ open: !open })
   }
+
+  if (screen !== 'lg')
+    return (
+      <Table className="rounded-xl bg-background">
+        <TableBody className="[&_td>*]:text-center">
+          {table?.map(({ payment, cuote }, index) => (
+            <TableRow key={index} className="group">
+              <TableCell className="flex flex-col items-stretch gap-2 px-8 [&>*]:flex [&>*]:items-center">
+                <div className=" justify-end gap-2">
+                  <Badge>{index + 1}</Badge>
+                  <Switch
+                    checked={cuote?.pagada}
+                    className={'cursor-not-allowed'}
+                  ></Switch>
+                </div>
+                <ul className="list-outside list-disc flex-col !items-start">
+                  <li className='before:font-bold before:text-destructive before:content-["_-_"]'>
+                    <b>Fecha de cuota:</b>{' '}
+                    {format(new Date(cuote?.fecha_de_pago), 'dd/MM/yyyy') + '.'}
+                  </li>
+
+                  <li className='before:font-bold before:text-success before:content-["_+_"]'>
+                    <b>Fecha de pago:</b>
+                    {format(new Date(payment?.fecha_de_pago), 'dd/MM/yyyy') +
+                      '.'}
+                  </li>
+
+                  <li>
+                    <b>Valor pagado:</b> <b>$</b>{' '}
+                    {payment?.valor_del_pago?.toFixed(2) + '.'}
+                  </li>
+
+                  {cuote?.valor_de_mora > 0 && (
+                    <li>
+                      <b>Fecha de Mora:</b>{' '}
+                      {format(
+                        new Date(cuote?.fecha_de_aplicacion_de_mora),
+                        'dd/MM/yyyy'
+                      ) + '.'}
+                    </li>
+                  )}
+
+                  {cuote?.valor_de_mora > 0 && (
+                    <li>
+                      <b>Mora:</b> <b>$</b>{' '}
+                      {cuote?.valor_de_mora?.toFixed(2) + '.'}
+                    </li>
+                  )}
+                </ul>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        <TableFooter>
+          <TableRow>
+            <TableCell colSpan={5} className="flex justify-between font-bold">
+              <p>{text.total + ':'}</p>
+              <GetPay credit={credit} />
+            </TableCell>
+          </TableRow>
+        </TableFooter>
+      </Table>
+    )
+
   return (
-    <Table className="hidden rounded-xl bg-background xl:table">
+    <Table className="rounded-xl bg-background">
       <TableHeader className="bg-muted [&_th]:text-center">
         <TableRow>
           <TableHead></TableHead>
