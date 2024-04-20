@@ -224,6 +224,7 @@ export const MyUserInfo = memo(function () {
         </DialogDescription>
       </DialogHeader>
       <form
+        autoFocus={false}
         autoComplete="off"
         ref={form}
         onSubmit={onSubmit}

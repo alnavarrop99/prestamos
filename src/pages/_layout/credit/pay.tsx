@@ -121,6 +121,7 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
         <DialogDescription className='text-xs text-start md:text-base text-muted-foreground'><p>{text.descriiption}</p></DialogDescription>
       </DialogHeader>
       <form
+        autoFocus={false}
         autoComplete="off"
         ref={form}
         onSubmit={onSubmit}

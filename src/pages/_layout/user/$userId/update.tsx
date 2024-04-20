@@ -252,6 +252,7 @@ export function UpdateUserById() {
           <DialogDescription className='text-xs text-start md:text-base text-muted-foreground'>{text.descriiption}</DialogDescription>
         </DialogHeader>
         <form
+          autoFocus={false}
           autoComplete="off"
           ref={form}
           onSubmit={onSubmit}

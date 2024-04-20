@@ -86,6 +86,7 @@ export function PrintCreditById() {
         <DialogDescription className='text-muted-foreground'>{text.description}</DialogDescription>
       </DialogHeader>
       <form
+        autoFocus={false}
         autoComplete="on"
         ref={form}
         onSubmit={onSubmit}

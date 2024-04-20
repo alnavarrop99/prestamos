@@ -151,6 +151,7 @@ export function NewClient() {
         <ScrollArea className='overflow-y-auto h-[25rem] md:h-full'>
         <ScrollBar orientation='vertical' />
           <form
+            autoFocus={false}
             autoComplete="off"
             ref={form}
             onSubmit={onSubmit}

@@ -158,6 +158,7 @@ export function PrintSelectedCredit() {
           </DialogDescription>
         </DialogHeader>
         <form
+          autoFocus={false}
           autoComplete="on"
           ref={form}
           onSubmit={onSubmit}

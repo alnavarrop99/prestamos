@@ -282,6 +282,7 @@ export function NewCredit() {
         <ScrollArea className='h-[25rem] md:h-full'>
         <ScrollBar orientation='vertical' />
         <form
+          autoFocus={false}
           autoComplete="off"
           ref={form}
           onSubmit={onSubmit}

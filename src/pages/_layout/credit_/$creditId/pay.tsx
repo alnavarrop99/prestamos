@@ -122,6 +122,7 @@ export function PayCreditById() {
         <DialogDescription className='text-xs text-start md:text-base text-muted-foreground'><p>{text.descriiption}</p></DialogDescription>
       </DialogHeader>
       <form
+        autoFocus={false}
         autoComplete="off"
         ref={form}
         onSubmit={onSubmit}

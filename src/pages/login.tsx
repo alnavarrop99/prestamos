@@ -132,9 +132,11 @@ export function Login() {
           <Separator />
           <CardContent>
             <form
+              autoFocus={false}
               id="login"
               className="flex flex-col gap-4 [&>label>span]:font-bold"
-              {...{ ref, onSubmit }}
+              ref={ref}
+              onSubmit={onSubmit}
             >
               <Label>
                 <span>{text.username.label}</span>
