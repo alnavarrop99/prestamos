@@ -117,21 +117,25 @@ export function DeleteSelectedClients() {
   return (
     <>
       {!open && <Navigate to={'../'} replace />}
-      <DialogContent className="max-w-xl">
+      <DialogContent className="text-start text-xl md:max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">
+            {text.title}
+          </DialogTitle>
           <Separator />
           <DialogDescription>
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>{text.alert.title}</AlertTitle>
-              <AlertDescription>
+              <AlertCircle className="hidden h-4 w-4 md:block" />
+              <AlertTitle className="text-start text-sm max-sm:!px-0 md:text-base">
+                {text.alert.title}
+              </AlertTitle>
+              <AlertDescription className="text-start text-xs max-sm:!px-0 md:text-base">
                 {text.alert.description({ length: clients?.length })}
               </AlertDescription>
             </Alert>
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="!justify-between">
+        <DialogFooter className="flex-col !justify-between md:flex-row">
           <div className="flex items-center gap-2 font-bold italic">
             <Checkbox
               id="switch-updates-client"
@@ -191,7 +195,7 @@ export function Error() {
       description: (
         <div className="flex flex-row items-center gap-2">
           <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-md"> {text.error.descriiption} </p>
+          <p className="text-base"> {text.error.descriiption} </p>
         </div>
       ),
       variant: 'destructive',

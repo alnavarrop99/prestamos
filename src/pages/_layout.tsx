@@ -19,12 +19,19 @@ import {
   NotepadText,
   Sun,
   X as ErrorIcon,
+  Search,
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar, TData, TDaysProps } from '@/components/ui/calendar'
-import React, { memo, useEffect, useReducer, useState } from 'react'
+import React, {
+  memo,
+  useCallback,
+  useEffect,
+  useReducer,
+  useState,
+} from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -100,12 +107,13 @@ import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { queryClient } from '@/pages/__root'
 import { getReportsOpt, postReportOpt } from '@/pages/_layout/report'
-import { getRolByName, TROLES } from '@/lib/type/rol'
+import { getRolByName, type TROLES } from '@/lib/type/rol'
 import { translate } from '@/lib/route'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
 import { MyUserInfo } from '@/pages/-info'
 import { format } from 'date-fns'
-import { TCREDIT_GET_FILTER_ALL } from '@/api/credit'
+import { type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 export const getCurrentUserOpt = {
   queryKey: ['login-user', { userId: useToken.getState().userId }],
@@ -148,7 +156,8 @@ export const Route = createFileRoute('/_layout')({
 /* eslint-disable-next-line */
 interface TStatus {
   offline?: boolean
-  menu?: boolean
+  navmenu?: boolean
+  usermenu?: boolean
   calendar?: boolean
   search?: boolean
 }
@@ -160,10 +169,13 @@ const reducer: React.Reducer<TStatus, TStatus> = (prev, state) => {
 /* eslint-disable-next-line */
 export function Layout() {
   const { deleteToken, setUserId, userId, name, setRol, rol } = useToken()
-  const [{ offline, menu, calendar }, setStatus] = useReducer(reducer, {
-    offline: navigator.onLine,
-    menu: false,
-  })
+  const [{ offline, navmenu, calendar, usermenu }, setStatus] = useReducer(
+    reducer,
+    {
+      offline: navigator.onLine,
+      navmenu: false,
+    }
+  )
   const { open, setOpen } = useStatus()
   const { setValue, setSearch, search, value } = useStatus()
   const {
@@ -278,22 +290,25 @@ export function Layout() {
       setStatus(props)
     }
 
-  const onChange: React.ChangeEventHandler<React.ComponentRef<typeof Input>> = (
-    ev
-  ) => {
-    const { value } = ev.currentTarget
-    setValue({ value })
+  const onChange = useCallback<
+    React.ChangeEventHandler<React.ComponentRef<typeof Input>>
+  >(
+    (ev) => {
+      const { value } = ev.currentTarget
+      setValue({ value })
 
-    if (clientsRes) {
-      const query = clients?.filter((props) =>
-        Object.values(props)
-          .join(' ')
-          .toLowerCase()
-          .includes(value.toLowerCase())
-      )
-      setClients(query)
-    }
-  }
+      if (clientsRes) {
+        const query = clientsRes?.filter((items) =>
+          Object.values(items)
+            .join(' ')
+            .toLowerCase()
+            .includes(value.toLowerCase())
+        )
+        setClients(query)
+      }
+    },
+    [clientsRes]
+  )
 
   const onKeyDown: React.KeyboardEventHandler<
     React.ComponentRef<typeof Input>
@@ -309,7 +324,8 @@ export function Layout() {
     if (
       key === 'Enter' &&
       pathname !== ('/user' as TSearch) &&
-      pathname !== ('/client' as TSearch)
+      pathname !== ('/client' as TSearch) &&
+      pathname !== ('/credit' as TSearch)
     ) {
       setSearch({ search: !search })
     }
@@ -356,24 +372,27 @@ export function Layout() {
   return (
     <div
       className={clsx(
-        'container m-auto grid max-w-screen-2xl auto-rows-min grid-cols-2 grid-rows-3 space-y-4 [&>*]:px-2',
+        'grid auto-rows-min auto-rows-min gap-2 space-y-4 md:landscape:container xl:grid-cols-2 xl:grid-rows-3',
         styles?.['grid-layout']
       )}
     >
       <nav
         className={clsx(
-          'row-span-full h-[100dvh] rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl',
+          'row-span-full hidden rounded-lg bg-primary-foreground p-4 text-primary shadow-lg hover:shadow-xl xl:block xl:h-[100dvh]',
           {
-            [styles?.['menu-animation']]: !menu,
-            [styles?.['menu-animation-reverse']]: menu,
+            [styles?.['menu-animation']]: !navmenu,
+            [styles?.['menu-animation-reverse']]: navmenu,
           }
         )}
       >
         <Link to={'/'}>
           <img
             alt="brand"
-            src={!menu ? brand : brandOff}
-            className="aspect-contain min-h-24"
+            src={!navmenu ? brand : brandOff}
+            className={clsx('aspect-contain', {
+              'h-24': !navmenu,
+              'h-16': navmenu,
+            })}
           />
         </Link>
         <Separator className="my-4" />
@@ -389,10 +408,10 @@ export function Layout() {
                         <Button
                           variant={!isActive ? 'link' : 'default'}
                           className={clsx('delay-50 font-bold duration-300', {
-                            'p-2': menu,
+                            'p-2': navmenu,
                           })}
                         >
-                          {!menu ? title : <Icon />}
+                          {!navmenu ? title : <Icon />}
                         </Button>
                       )}
                     </Link>
@@ -403,7 +422,7 @@ export function Layout() {
         </div>
         <Separator className="my-4" />
         <div className="grid place-items-center">
-          {!menu ? (
+          {!navmenu ? (
             <Calendar
               key={'calendar'}
               className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary"
@@ -413,7 +432,7 @@ export function Layout() {
             <Popover onOpenChange={onclick(setStatus, { calendar: !calendar })}>
               <PopoverTrigger>
                 <Button
-                  className={clsx({ 'p-2': menu })}
+                  className={clsx({ 'p-2': navmenu })}
                   variant={!calendar ? 'outline' : 'default'}
                 >
                   <CalendarIcon />
@@ -430,14 +449,18 @@ export function Layout() {
           )}
         </div>
       </nav>
-      <header className="sticky top-0 z-20 !my-0 [&_div]:flex [&_div]:items-center [&_div]:gap-4">
-        <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 shadow-lg">
+      <header className="sticky top-0 z-20 !my-0 px-0 md:px-2 xl:block [&_div]:flex [&_div]:items-center [&_div]:gap-4">
+        <div className="h-16 justify-between rounded-lg bg-primary-foreground px-2 px-2 py-2 shadow-lg max-sm:rounded-t-none md:px-4 md:px-4">
           <div className="[&>button]:px-2">
             <Button
-              variant={!menu ? 'default' : 'outline'}
-              onClick={onclick(setStatus, { menu: !menu })}
+              className="hidden xl:block"
+              variant={!navmenu ? 'default' : 'outline'}
+              onClick={onclick(setStatus, { navmenu: !navmenu })}
             >
               <MenuSquare />
+            </Button>
+            <Button onClick={onBack} variant="ghost" className="p-1 xl:hidden">
+              <ArrowLeftCircle />
             </Button>
             <Link to={'./notification'}>
               {({ isActive }) => (
@@ -449,18 +472,34 @@ export function Layout() {
                 </Button>
               )}
             </Link>
-            <SpinLoader />
+            <SpinLoader
+              value={value}
+              onChange={onChange}
+              rchild={rchild?.at(0)?.pathname}
+            />
           </div>
           <div>
-            <Label className="flex cursor-pointer items-center gap-2">
-              {theme === 'dark' ? <Moon /> : <Sun />}
-              <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
-            </Label>
-            <Label className="flex items-center justify-center rounded-lg border border-border">
+            <Label className="group hidden items-center justify-center gap-2 rounded-lg md:flex md:gap-1 xl:flex-row-reverse">
+              <Input
+                className="origin-right scale-x-[0%] transition delay-150 duration-300 placeholder:invisible group-hover:visible group-hover:scale-x-[100%] group-hover:placeholder:visible xl:scale-x-[100%] xl:placeholder:visible"
+                type="search"
+                placeholder={text.search.placeholder({
+                  pathname: rchild?.at(0)?.pathname,
+                })}
+                onChange={onChange}
+                onKeyDown={onKeyDown}
+                value={value}
+              />
+              <Button
+                variant="ghost"
+                className="duration-450 px-2 opacity-100 transition delay-300 group-hover:invisible group-hover:opacity-0 xl:hidden"
+              >
+                <Search />
+              </Button>
               <Popover open={search} onOpenChange={onSearchChange}>
                 <PopoverTrigger>
                   <Button
-                    className={clsx('rounded-br-none rounded-tr-none p-2')}
+                    className={clsx('p-2')}
                     variant={!search ? 'ghost' : 'default'}
                   >
                     <User />
@@ -480,7 +519,7 @@ export function Layout() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="absolute -start-16 top-2 w-80"
+                  className="absolute -start-48 top-2 w-80 xl:-start-16"
                   hidden={!clients?.length}
                 >
                   <div className="space-y-4 [&>h3]:flex [&>h3]:items-center [&>h3]:gap-2">
@@ -489,70 +528,74 @@ export function Layout() {
                       <Badge variant="default"> {clients?.length} </Badge>
                     </h3>
                     <Separator />
-                    <ul className="flex max-h-56 flex-col gap-2 overflow-y-auto [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
-                      {clients?.map(
-                        (
-                          {
-                            apellidos,
-                            nombres,
-                            id: clientId,
-                            numero_de_identificacion,
-                          },
-                          index
-                        ) =>
-                          clientId && (
-                            <li
-                              key={index}
-                              className="group cursor-pointer"
-                              onClick={onSelect(index)}
-                            >
-                              <Link
-                                to={'/client/$clientId/update'}
-                                params={{ clientId }}
+                    <ScrollArea className="h-56">
+                      <ScrollBar orientation="vertical" />
+                      <ul className="flex flex-col gap-2 [&_a]:flex [&_a]:flex-row [&_a]:items-center [&_a]:gap-4">
+                        {clients?.map(
+                          (
+                            {
+                              apellidos,
+                              nombres,
+                              id: clientId,
+                              numero_de_identificacion,
+                            },
+                            index
+                          ) =>
+                            clientId && (
+                              <li
+                                key={index}
+                                className="group cursor-pointer"
+                                onClick={onSelect(index)}
                               >
-                                <Avatar>
-                                  <AvatarFallback className="!ring-2 ring-ring">
-                                    {nombres?.[0] + apellidos?.[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                  <p
-                                    className={clsx(
-                                      "font-bold group-hover:after:content-['#']"
-                                    )}
-                                  >
-                                    {nombres + ' ' + apellidos}
-                                  </p>
-                                  <p className="italic">
-                                    {numero_de_identificacion.slice(0, 4) +
-                                      '...' +
-                                      numero_de_identificacion.slice(
-                                        -4,
-                                        numero_de_identificacion.length
+                                <Link
+                                  to={'/client/$clientId/update'}
+                                  params={{ clientId }}
+                                >
+                                  <Avatar>
+                                    <AvatarFallback className="!ring-2 ring-ring">
+                                      {nombres?.[0] + apellidos?.[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p
+                                      className={clsx(
+                                        "font-bold group-hover:after:content-['#']"
                                       )}
-                                  </p>
-                                </div>
-                              </Link>
-                            </li>
-                          )
-                      )}
-                    </ul>
+                                    >
+                                      {nombres + ' ' + apellidos}
+                                    </p>
+                                    <p className="italic">
+                                      {numero_de_identificacion.slice(0, 4) +
+                                        '...' +
+                                        numero_de_identificacion.slice(
+                                          -4,
+                                          numero_de_identificacion.length
+                                        )}
+                                    </p>
+                                  </div>
+                                </Link>
+                              </li>
+                            )
+                        )}
+                      </ul>
+                    </ScrollArea>
                   </div>
                 </PopoverContent>
               </Popover>
-              <Input
-                className="rounded-bl-none rounded-tl-none border-none"
-                type="search"
-                placeholder={text.search.placeholder({
-                  pathname: rchild?.at(0)?.pathname,
-                })}
-                onChange={onChange}
-                onKeyDown={onKeyDown}
-                value={value}
-              />
             </Label>
-            <HoverCard>
-              <HoverCardTrigger>
+            <Label className="!hidden cursor-pointer flex-row items-center gap-2 md:landscape:!flex">
+              {theme === 'dark' ? <Moon /> : <Sun />}
+              <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
+            </Label>
+            <HoverCard
+              open={usermenu}
+              onOpenChange={(value) =>
+                onclick(setStatus, { usermenu: value })()
+              }
+            >
+              <HoverCardTrigger
+                onClick={onclick(setStatus, { usermenu: !usermenu })}
+              >
                 <Badge className="cursor-pointer text-sm" variant="outline">
                   {(name ?? 'User')
                     .split(' ')
@@ -560,7 +603,7 @@ export function Layout() {
                     .join('')}
                 </Badge>
               </HoverCardTrigger>
-              <HoverCardContent>
+              <HoverCardContent className="mx-4 xl:mx-0">
                 {errorCurrentUser && <Error currentUser />}
                 {pendingCurrentUser && (
                   <div className="p-2">
@@ -578,31 +621,42 @@ export function Layout() {
                   </div>
                 )}
                 {okCurrentUser && (
-                  <div className="p-2">
-                    <Avatar className="ring-1 ring-ring">
-                      <AvatarFallback>
-                        {name?.split(' ')?.map((items) => items?.[0])}
-                      </AvatarFallback>
-                    </Avatar>
-                    <ul className="space-y-2 [&>li]:w-fit">
-                      <li>
-                        <Dialog open={open} onOpenChange={onOpenChange}>
-                          <DialogTrigger asChild>
-                            <span
-                              title="Modificar mi usuario"
-                              className="cursor-pointer font-bold after:opacity-0 after:transition after:transition after:delay-150 after:duration-300 hover:after:opacity-100 hover:after:content-['#']"
-                            >
-                              {currentUserRes?.nombre}
-                            </span>
-                          </DialogTrigger>
-                          <MyUserInfo />
-                        </Dialog>
-                      </li>
-                      <li>
-                        {' '}
-                        <Badge> {currentUserRes?.rol} </Badge>{' '}
-                      </li>
-                    </ul>
+                  <div className="w=full flex flex-col [&>*]:w-full">
+                    <div className="">
+                      <Avatar className="ring-1 ring-ring">
+                        <AvatarFallback>
+                          {name?.split(' ')?.map((items) => items?.[0])}
+                        </AvatarFallback>
+                      </Avatar>
+                      <ul className="w-full space-y-2 p-2 [&>li]:w-fit">
+                        <li>
+                          <Dialog open={open} onOpenChange={onOpenChange}>
+                            <DialogTrigger asChild>
+                              <span
+                                title="Modificar mi usuario"
+                                className="cursor-pointer font-bold after:opacity-0 after:transition after:transition after:delay-150 after:duration-300 hover:after:opacity-100 hover:after:content-['#']"
+                              >
+                                {currentUserRes?.nombre}
+                              </span>
+                            </DialogTrigger>
+                            <MyUserInfo />
+                          </Dialog>
+                        </li>
+                        <li>
+                          {' '}
+                          <Badge> {currentUserRes?.rol} </Badge>{' '}
+                        </li>
+                      </ul>
+                    </div>
+                    <div>
+                      <Label className="flex cursor-pointer items-center gap-2 md:landscape:hidden">
+                        {theme === 'dark' ? <Moon /> : <Sun />}
+                        <Switch
+                          checked={theme === 'dark'}
+                          onCheckedChange={onSwitch}
+                        />
+                      </Label>
+                    </div>
                   </div>
                 )}
               </HoverCardContent>
@@ -627,8 +681,8 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <main className="space-y-2 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
-        <div>
+      <main className=" space-y-2 px-4 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
+        <div className="!hidden xl:block">
           <Button
             onClick={onBack}
             variant="ghost"
@@ -667,13 +721,13 @@ export function Layout() {
             </BreadcrumbList>
           </Breadcrumb>
         </div>
-        <div className="flex h-full flex-col justify-between px-8 py-4">
+        <div className="flex flex-col justify-between space-y-4 xl:h-full xl:px-8 xl:py-4">
           <Outlet />
         </div>
       </main>
-      <footer className="py-4">
-        <Separator className="my-4" />
-        <h3 className="ms-auto w-fit space-x-2">
+      <footer className="py-2 xl:py-4">
+        <Separator className="my-2 xl:my-4" />
+        <h3 className="m-auto w-fit space-x-2 xl:ms-auto">
           <span className="italic">{text.footer.copyright}</span>
           <Badge> &copy; {new Date().getFullYear()} </Badge>
         </h3>
@@ -683,7 +737,40 @@ export function Layout() {
 }
 
 /* eslint-disable-next-line */
-const SpinLoader = memo(function () {
+type TSpinLoader = {
+  rchild?: string
+  value?: string
+  onChange: React.ChangeEventHandler<React.ComponentRef<typeof Input>>
+}
+
+/* eslint-disable-next-line */
+const SpinLoader = memo<TSpinLoader>(function ({ onChange, rchild, value }) {
+  const [menu, setMenu] = useState<boolean>(false)
+
+  const onOpenChange = (open: boolean) => {
+    setMenu(open)
+  }
+
+  const onClick: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
+    setMenu(!menu)
+  }
+
+  const onSearch: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
+    if (!value || value === '') return
+    setMenu(!menu)
+  }
+
+  const onKeyDown: React.KeyboardEventHandler<
+    React.ComponentRef<typeof Input>
+  > = (ev) => {
+    const key = ev.key
+    if (key === 'Enter') setMenu(!menu)
+  }
+
   const getUser = useIsFetching({
     fetchStatus: 'fetching',
     type: 'inactive',
@@ -909,6 +996,60 @@ const SpinLoader = memo(function () {
       </span>
     )
   }
+
+  return (
+    <Popover open={menu} onOpenChange={onOpenChange}>
+      <PopoverTrigger asChild className="xl:hidden">
+        <img alt="brand" src={brand} className={clsx('aspect-contain h-12')} />
+      </PopoverTrigger>
+      <PopoverContent className="min-sm:rounded-t-none w-screen space-y-2 shadow-xl md:mx-4 md:mt-4 md:w-[96dvw]">
+        <Label className="flex items-center gap-2 px-4 md:hidden">
+          <Input
+            type="search"
+            placeholder={text.search.placeholder({
+              pathname: rchild,
+            })}
+            onChange={onChange}
+            value={value}
+            onKeyDown={onKeyDown}
+          />
+          <Button
+            variant="outline"
+            className="duration-450 px-2 opacity-100 transition delay-300 group-hover:invisible group-hover:opacity-0 xl:hidden"
+            onClick={onSearch}
+          >
+            <Search />
+          </Button>
+        </Label>
+        <Separator className="my-2" />
+        <ul className="space-y-3 px-4 md:px-20 [&_button]:w-full">
+          {Object.entries(translate())
+            ?.filter(([, { validation }]) => validation)
+            ?.map(([url, { name: title, icon: Icon }], index) => {
+              return (
+                <li key={index}>
+                  <Link to={url}>
+                    {({ isActive }) => (
+                      <Button
+                        onClick={onClick}
+                        variant={!isActive ? 'link' : 'default'}
+                        className={clsx(
+                          'delay-50 flex justify-start gap-2 font-bold  duration-300 md:justify-center',
+                          {}
+                        )}
+                      >
+                        <Icon />
+                        {title}
+                      </Button>
+                    )}
+                  </Link>
+                </li>
+              )
+            })}
+        </ul>
+      </PopoverContent>
+    </Popover>
+  )
 })
 
 /* eslint-disable-next-line */

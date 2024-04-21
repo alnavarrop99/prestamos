@@ -41,7 +41,9 @@ import { queryClient } from '@/pages/__root'
 import { Skeleton } from '@/components/ui/skeleton'
 import styles from '@/styles/global.module.css'
 import { useToken } from '@/lib/context/login'
-import { redirect } from '@tanstack/react-router'
+// import { redirect } from '@tanstack/react-router'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { ScrollBar } from '@/components/ui/scroll-area'
 
 export const updateClientByIdOpt = {
   mutationKey: ['update-client-by-id'],
@@ -56,13 +58,15 @@ export const getClientByIdOpt = ({ clientId }: { clientId: string }) => ({
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
   loader: async ({ params }) => {
-    const { rol, userId } = useToken.getState()
     const data = queryClient.ensureQueryData(
       queryOptions(getClientByIdOpt(params))
     )
-    const ownerId = (await data)?.owner.id
-    if (ownerId !== userId && rol?.rolName !== 'Administrador')
-      throw redirect({ to: '/client' })
+
+    // TOOD: change this of site infer in the charge
+    // const { rol, userId } = useToken.getState()
+    // const ownerId = (await data)?.owner.id
+    // if (ownerId !== userId && rol?.rolName !== 'Administrador')
+    //   throw redirect({ to: '/client' })
 
     return { client: defer(data) }
   },
@@ -89,7 +93,7 @@ export function UpdateClientById() {
   const init = useRef(client)
 
   useEffect(() => {
-    if (!clientRes) throw Error()
+    if (!clientRes && isError) throw Error()
   }, [isError])
 
   const onSuccess = (data: TCLIENT_POST) => {
@@ -250,197 +254,206 @@ export function UpdateClientById() {
       {!open && <Navigate to={'../../'} replace />}
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-2xl">
+          <DialogTitle className="text-start text-xl md:text-2xl">
             {text.title({ state: !checked })}
           </DialogTitle>
           <Separator />
-          <DialogDescription className="text-muted-foreground">
+          <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
             {text.description({ state: !checked })}
           </DialogDescription>
         </DialogHeader>
-        <form
-          autoComplete="off"
-          ref={form}
-          onSubmit={onSubmit}
-          onChange={onChange}
-          id="update-client"
-          className={clsx(
-            'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>label:last-child]:col-span-full [&>label]:space-y-2 [&_*:disabled]:cursor-text [&_*:disabled]:opacity-100',
-            {
-              '[&>label>span]:font-bold': checked,
-            }
-          )}
-        >
-          <Label>
-            <span>{text.form.firstName.label}</span>
-            {!isSuccess ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Input
-                required
-                disabled={!checked}
-                name={'nombres' as TFormName}
-                type="text"
-                defaultValue={clientRes?.nombres}
-                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
-                placeholder={
-                  checked ? text.form.firstName.placeholder : undefined
-                }
-              />
+        <ScrollArea className="h-[60dvh] overflow-y-auto md:h-full">
+          <ScrollBar orientation="vertical" />
+          <form
+            autoFocus={false}
+            autoComplete="off"
+            ref={form}
+            onSubmit={onSubmit}
+            onChange={onChange}
+            id="update-client"
+            className={clsx(
+              'grid-rows-subgrid grid grid-cols-none gap-3 gap-y-4 p-1 md:grid-cols-2 [&>label:last-child]:col-span-full [&>label]:space-y-2 [&_*:disabled]:cursor-text [&_*:disabled]:opacity-100',
+              {
+                '[&>label>span]:font-bold': checked,
+              }
             )}
-          </Label>
-          <Label>
-            <span>{text.form.lastName.label} </span>
-            {!isSuccess ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Input
-                required
-                disabled={!checked}
-                name={'apellidos' as TFormName}
-                type="text"
-                defaultValue={clientRes?.apellidos}
-                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
-                placeholder={
-                  checked ? text.form.lastName.placeholder : undefined
-                }
-              />
-            )}
-          </Label>
-          <Label>
-            <span>{text.form.id.label} </span>
-            {!isSuccess ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Input
-                required
-                disabled={!checked}
-                name={'numero_de_identificacion' as TFormName}
-                type="text"
-                defaultValue={clientRes?.numero_de_identificacion}
-                placeholder={checked ? text.form.id.placeholder : undefined}
-                pattern="[A-Za-z0-9]{6,12}"
-              />
-            )}
-          </Label>
-          <Label>
-            <span>{text.form.typeId.label} </span>
-            {!isSuccess || !clientRes ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Select
-                defaultValue={
-                  '' + getIdById({ id: clientRes?.tipo_de_identificacion })?.id
-                }
-                disabled={!checked}
-                required
-                name={'tipo_de_identificacion' as TFormName}
-              >
-                <SelectTrigger className={clsx('w-full')}>
-                  <SelectValue placeholder={text.form.typeId.placeholder} />
-                </SelectTrigger>
-                <SelectContent className="[&_*]:cursor-pointer">
-                  {listIds()?.map(({ id, nombre }, index) => (
-                    <SelectItem key={index} value={'' + id}>
-                      {nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </Label>
-          <Label>
-            <span>{text.form.phone.label} </span>
-            {!isSuccess ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Input
-                required
-                disabled={!checked}
-                name={'celular' as TFormName}
-                type="tel"
-                defaultValue={clientRes?.celular}
-                pattern="(?:\+57|0)[0-9]{8}"
-                placeholder={checked ? text.form.phone.placeholder : undefined}
-              />
-            )}
-          </Label>
-          <Label>
-            <span>{text.form.telephone.label} </span>
-            {!isSuccess ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Input
-                required
-                disabled={!checked}
-                name={'telefono' as TFormName}
-                type="tel"
-                defaultValue={clientRes?.telefono}
-                pattern="(?:\+57|0)[0-9]{6,7}"
-                placeholder={
-                  checked ? text.form.telephone.placeholder : undefined
-                }
-              />
-            )}
-          </Label>
-          <Label>
-            <span>{text.form.direction.label}</span>
-            {!isSuccess ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Input
-                required
-                disabled={!checked}
-                name={'direccion' as TFormName}
-                type="text"
-                defaultValue={clientRes?.direccion}
-                placeholder={
-                  checked ? text.form.direction.placeholder : undefined
-                }
-              />
-            )}
-          </Label>
-          <Label>
-            <span>{text.form.ref.label}</span>
-            {!isSuccess ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <>
+          >
+            <Label>
+              <span>{text.form.firstName.label}</span>
+              {!isSuccess ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
                 <Input
+                  required
                   disabled={!checked}
-                  name={'referencia' as TFormName}
-                  list="client-referent"
+                  name={'nombres' as TFormName}
                   type="text"
-                  defaultValue={ref?.fullName}
-                  placeholder={checked ? text.form.ref.placeholder : undefined}
-                  pattern={`(${clients
-                    ?.map(({ fullName }) => fullName?.replace(/\s+/g, '\\s+'))
-                    ?.join('|')})`}
+                  defaultValue={clientRes?.nombres}
+                  pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
+                  placeholder={
+                    checked ? text.form.firstName.placeholder : undefined
+                  }
                 />
-                <datalist id="client-referent">
-                  {clients?.map(({ fullName }, index) => (
-                    <option key={index} value={fullName} />
-                  ))}
-                </datalist>
-              </>
-            )}
-          </Label>
-          <Label>
-            <span>{text.form.comment.label}</span>
-            {!isSuccess ? (
-              <Skeleton className="h-28 w-full" />
-            ) : (
-              <Textarea
-                rows={5}
-                name={'comentarios' as TFormName}
-                placeholder={text.form.comment.placeholder}
-                defaultValue={clientRes?.comentarios}
-                disabled={!checked}
-              />
-            )}
-          </Label>
-        </form>
-        <DialogFooter className="!justify-between">
+              )}
+            </Label>
+            <Label>
+              <span>{text.form.lastName.label} </span>
+              {!isSuccess ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input
+                  required
+                  disabled={!checked}
+                  name={'apellidos' as TFormName}
+                  type="text"
+                  defaultValue={clientRes?.apellidos}
+                  pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
+                  placeholder={
+                    checked ? text.form.lastName.placeholder : undefined
+                  }
+                />
+              )}
+            </Label>
+            <Label>
+              <span>{text.form.id.label} </span>
+              {!isSuccess ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input
+                  required
+                  disabled={!checked}
+                  name={'numero_de_identificacion' as TFormName}
+                  type="text"
+                  defaultValue={clientRes?.numero_de_identificacion}
+                  placeholder={checked ? text.form.id.placeholder : undefined}
+                  pattern="[A-Za-z0-9]{6,12}"
+                />
+              )}
+            </Label>
+            <Label>
+              <span>{text.form.typeId.label} </span>
+              {!isSuccess || !clientRes ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Select
+                  defaultValue={
+                    '' +
+                    getIdById({ id: clientRes?.tipo_de_identificacion })?.id
+                  }
+                  disabled={!checked}
+                  required
+                  name={'tipo_de_identificacion' as TFormName}
+                >
+                  <SelectTrigger className={clsx('w-full')}>
+                    <SelectValue placeholder={text.form.typeId.placeholder} />
+                  </SelectTrigger>
+                  <SelectContent className="[&_*]:cursor-pointer">
+                    {listIds()?.map(({ id, nombre }, index) => (
+                      <SelectItem key={index} value={'' + id}>
+                        {nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </Label>
+            <Label>
+              <span>{text.form.phone.label} </span>
+              {!isSuccess ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input
+                  required
+                  disabled={!checked}
+                  name={'celular' as TFormName}
+                  type="tel"
+                  defaultValue={clientRes?.celular}
+                  pattern="(?:\+57|0)[0-9]{8}"
+                  placeholder={
+                    checked ? text.form.phone.placeholder : undefined
+                  }
+                />
+              )}
+            </Label>
+            <Label>
+              <span>{text.form.telephone.label} </span>
+              {!isSuccess ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input
+                  required
+                  disabled={!checked}
+                  name={'telefono' as TFormName}
+                  type="tel"
+                  defaultValue={clientRes?.telefono}
+                  pattern="(?:\+57|0)[0-9]{6,7}"
+                  placeholder={
+                    checked ? text.form.telephone.placeholder : undefined
+                  }
+                />
+              )}
+            </Label>
+            <Label>
+              <span>{text.form.direction.label}</span>
+              {!isSuccess ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Input
+                  required
+                  disabled={!checked}
+                  name={'direccion' as TFormName}
+                  type="text"
+                  defaultValue={clientRes?.direccion}
+                  placeholder={
+                    checked ? text.form.direction.placeholder : undefined
+                  }
+                />
+              )}
+            </Label>
+            <Label>
+              <span>{text.form.ref.label}</span>
+              {!isSuccess ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <>
+                  <Input
+                    disabled={!checked}
+                    name={'referencia' as TFormName}
+                    list="client-referent"
+                    type="text"
+                    defaultValue={ref?.fullName}
+                    placeholder={
+                      checked ? text.form.ref.placeholder : undefined
+                    }
+                    pattern={`(${clients
+                      ?.map(({ fullName }) => fullName?.replace(/\s+/g, '\\s+'))
+                      ?.join('|')})`}
+                  />
+                  <datalist id="client-referent">
+                    {clients?.map(({ fullName }, index) => (
+                      <option key={index} value={fullName} />
+                    ))}
+                  </datalist>
+                </>
+              )}
+            </Label>
+            <Label>
+              <span>{text.form.comment.label}</span>
+              {!isSuccess ? (
+                <Skeleton className="h-28 w-full" />
+              ) : (
+                <Textarea
+                  rows={5}
+                  name={'comentarios' as TFormName}
+                  placeholder={text.form.comment.placeholder}
+                  defaultValue={clientRes?.comentarios}
+                  disabled={!checked}
+                />
+              )}
+            </Label>
+          </form>
+        </ScrollArea>
+        <DialogFooter className="flex-row !justify-between gap-2">
           <div
             className={clsx('flex items-center gap-2 font-bold italic', {
               invisible: !userId || rol?.rolName !== 'Administrador',
@@ -448,8 +461,8 @@ export function UpdateClientById() {
           >
             {!isSuccess ? (
               <>
-                <Skeleton className="h-10 w-12" />
-                <Skeleton className="h-10 w-16" />
+                <Skeleton className="h-6 w-16 rounded-full md:h-8 md:w-12" />
+                <Skeleton className="h-6 w-16 rounded-full md:h-8 md:w-14" />
               </>
             ) : (
               <>
@@ -467,8 +480,8 @@ export function UpdateClientById() {
           <div className="space-x-2">
             {!isSuccess ? (
               <>
-                <Skeleton className="inline-block h-12 w-24" />
-                <Skeleton className="inline-block h-12 w-24" />
+                <Skeleton className="inline-block h-10 w-20 md:h-12 md:w-24" />
+                <Skeleton className="inline-block h-10 w-20 md:h-12 md:w-24" />
               </>
             ) : (
               <>
@@ -511,7 +524,7 @@ export function Error() {
       description: (
         <div className="flex flex-row items-center gap-2">
           <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-md"> {text.error.descriiption} </p>
+          <p className="text-base"> {text.error.descriiption} </p>
         </div>
       ),
       variant: 'destructive',

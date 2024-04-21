@@ -285,8 +285,10 @@ export function Users() {
 
   useEffect(() => {
     if (value) {
-      usersRes?.filter(({ nombre }) =>
-        nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
+      setUsers(
+        usersRes?.filter(({ nombre }) =>
+          nombre.toLowerCase().includes(value?.toLowerCase() ?? '')
+        )
       )
       setPagination({ ...pagination, start: 0, end: STEP })
     }
@@ -299,9 +301,9 @@ export function Users() {
     <_selectUsers.Provider value={users?.filter(({ selected }) => selected)}>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-3xl font-bold">{text.title}</h1>
+          <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
           {!!users?.length && (
-            <Badge className="px-3 text-xl">{users?.length}</Badge>
+            <Badge className="text-lg md:text-xl">{users?.length}</Badge>
           )}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger asChild className="ms-auto">
@@ -333,15 +335,15 @@ export function Users() {
         </div>
         <Separator />
         {!!users?.length && (
-          <div className="items-between flex">
-            <p className="text-muted-foreground">
+          <div className="flex items-center">
+            <p className="hidden text-sm text-muted-foreground xl:block">
               {text.select({
                 select: users?.filter(({ selected }) => selected)?.length,
                 total: usersRes?.length,
               })}
             </p>
             <Select required defaultValue={order} onValueChange={onSelectOrder}>
-              <SelectTrigger className="!border-1 ms-auto w-48 !border-ring">
+              <SelectTrigger className="!border-1 w-44 !border-ring xl:ms-auto xl:w-48">
                 <SelectValue placeholder={'Orden'} />
               </SelectTrigger>
               <SelectContent className="[&_*]:cursor-pointer">
@@ -357,7 +359,7 @@ export function Users() {
         {!users?.length && <p>{text.notFound}</p>}
         <div
           className={clsx(
-            'min-w-80 [&>*]:min-w-1/4 flex flex-wrap  content-start justify-center gap-4 [&>*]:max-w-[24rem] [&>*]:flex-auto [&>*]:shrink',
+            'md:[&>*]:baisis-3/5 flex flex-wrap content-start justify-center gap-3 xl:gap-4 [&>*]:flex-auto',
             { '!justify-start': users?.length - pagination?.start * LENGTH < 3 }
           )}
         >
@@ -391,7 +393,7 @@ export function Users() {
                           <DropdownMenuTrigger asChild onClick={onClickStop}>
                             <Button
                               variant="ghost"
-                              className="h-8 w-8 p-0 hover:ring hover:ring-primary"
+                              className="h-4 w-8 p-0 hover:ring hover:ring-primary xl:h-8 xl:w-8"
                             >
                               <span className="sr-only">{text.menu.aria}</span>
                               <MoreHorizontal className="h-4 w-4" />
@@ -400,9 +402,9 @@ export function Users() {
                           <DropdownMenuContent
                             onClick={onClickStop}
                             align="center"
-                            className="w-56 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
+                            className="mx-4 w-56 xl:mx-0 [&>*:not(:is([role=separator],:first-child))]:h-16 [&>*]:flex [&>*]:cursor-pointer [&>*]:justify-between [&>*]:gap-2"
                           >
-                            <DropdownMenuLabel className="text-md">
+                            <DropdownMenuLabel className="text-base">
                               {text.menu.title}
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
@@ -569,22 +571,22 @@ export function Pending() {
     <>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-8 w-24 md:w-48" />
           <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="ms-auto h-10 w-24" />
-          <Skeleton className="h-10 w-24" />
+          <Skeleton className="ms-auto h-10 w-20 md:w-24" />
+          <Skeleton className="h-10 w-20 md:w-24" />
         </div>
         <Separator />
         <div className="flex items-center">
-          <Skeleton className="h-6 w-56" />
-          <Skeleton className="ms-auto h-8 w-40" />
+          <Skeleton className="hidden h-6 md:w-56 xl:block" />
+          <Skeleton className="h-8 w-40 xl:ms-auto" />
         </div>
-        <div className="flex flex-wrap gap-4 px-2">
+        <div className="flex flex-wrap gap-4 px-2 [&>*]:flex-1">
           {Array.from({ length: LENGTH })?.map((_, index) => (
             <Card
               key={index}
               className={clsx(
-                'justify-streetch grid h-full items-end shadow-lg'
+                'justify-streetch inline-grid items-end shadow-lg'
               )}
             >
               <CardHeader>
@@ -592,15 +594,15 @@ export function Pending() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-4">
-                  <Skeleton className="h-20 w-20 rounded-full" />
+                  <Skeleton className="h-16 w-16 rounded-full" />
                   <div className="space-y-2">
-                    <Skeleton className="h-6 w-48" />
                     <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-6 w-24" />
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="flex items-center gap-2">
-                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-6 w-28" />
               </CardFooter>
             </Card>
           ))}
@@ -620,7 +622,7 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex h-full items-center items-center justify-center gap-4 [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-full flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
         <h1 className="font-bold">{text.error}</h1>

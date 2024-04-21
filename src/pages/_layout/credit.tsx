@@ -340,10 +340,10 @@ export function Credits() {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Label htmlFor="acitve-credits" className="cursor-pointer">
-            <h1 className="text-3xl font-bold">{text.title}</h1>
+            <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
           </Label>
           {!!credits?.length && (
-            <Badge className="px-3 text-xl">{credits?.length}</Badge>
+            <Badge className="px-3 text-lg md:text-xl">{credits?.length}</Badge>
           )}
           <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogTrigger className="ms-auto" asChild>
@@ -356,14 +356,14 @@ export function Credits() {
         </div>
         <Separator />
         {!!credits?.length && (
-          <div className="items-between flex">
-            <p className="text-muted-foreground">
+          <div className="flex xl:items-center">
+            <p className="hidden text-sm text-muted-foreground xl:block">
               {text.select({
                 total: credits?.length,
               })}
             </p>
             <Select defaultValue={order} onValueChange={onSelectOrder}>
-              <SelectTrigger className="!border-1 ms-auto w-48 !border-ring">
+              <SelectTrigger className="!border-1 w-44 !border-ring xl:ms-auto xl:w-48">
                 <SelectValue placeholder={'Orden'} />
               </SelectTrigger>
               <SelectContent className="[&_*]:cursor-pointer">
@@ -380,7 +380,7 @@ export function Credits() {
         {!!credits?.length && (
           <div
             className={clsx(
-              'flex flex-wrap gap-6 [&>*]:flex-1 [&>*]:basis-2/5'
+              'flex flex-wrap gap-4 xl:gap-6 [&>*]:flex-1 md:[&>*]:basis-2/5'
             )}
           >
             {!!credits?.length &&
@@ -420,7 +420,7 @@ export function Credits() {
                         >
                           <CardHeader>
                             <div className="flex items-center gap-2">
-                              <CardTitle className="flex-row items-center">
+                              <CardTitle className="line-clamp-1 flex-row items-center">
                                 <Link
                                   onClick={onOpenUser}
                                   to={'/client/$clientId/update'}
@@ -430,7 +430,7 @@ export function Credits() {
                                   {nombre_del_cliente}
                                 </Link>
                               </CardTitle>
-                              <Badge className='text-md after:duration-400 ms-auto after:opacity-0 after:transition after:delay-150 group-hover:after:opacity-100 group-hover:after:content-["_\219D"]'>
+                              <Badge className='after:duration-400 ms-auto text-base after:opacity-0 after:transition after:delay-150 group-hover:after:opacity-100 group-hover:after:content-["_\219D"]'>
                                 {creditId}
                               </Badge>
                             </div>
@@ -483,28 +483,26 @@ export function Credits() {
                             </Badge>
                             <Dialog open={open} onOpenChange={onOpenChange}>
                               <DialogTrigger asChild className="ms-auto">
-                                {
-                                  <Link
-                                    to={'./print'}
-                                    search={{ creditId }}
+                                <Link
+                                  to={'./print'}
+                                  search={{ creditId }}
+                                  disabled={numero_de_cuota <= 0}
+                                >
+                                  <Button
+                                    variant="ghost"
+                                    onClick={onClick}
                                     disabled={numero_de_cuota <= 0}
+                                    className={clsx(
+                                      'invisible px-3 opacity-0 hover:ring hover:ring-primary group-hover:opacity-100',
+                                      {
+                                        'xl:group-hover:visible':
+                                          numero_de_cuota > 0,
+                                      }
+                                    )}
                                   >
-                                    <Button
-                                      variant="ghost"
-                                      onClick={onClick}
-                                      disabled={numero_de_cuota <= 0}
-                                      className={clsx(
-                                        'invisible px-3 opacity-0 hover:ring hover:ring-primary  group-hover:opacity-100',
-                                        {
-                                          'group-hover:visible':
-                                            numero_de_cuota > 0,
-                                        }
-                                      )}
-                                    >
-                                      <Printer />
-                                    </Button>
-                                  </Link>
-                                }
+                                    <Printer />
+                                  </Button>
+                                </Link>
                               </DialogTrigger>
                               <DialogTrigger asChild>
                                 <Link
@@ -712,18 +710,23 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>(function (
 
 /* eslint-disable-next-line */
 export function Pending() {
+  const { rol } = useToken()
   return (
     <>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-8 w-24 md:w-48" />
           <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="ms-auto h-10 w-24" />
+          <Skeleton className="ms-auto h-10 w-20 md:w-24" />
         </div>
         <Separator />
-        <div className="flex flex-wrap">
+        <div className="flex items-center">
+          <Skeleton className="hidden h-6 md:w-56 xl:block" />
+          <Skeleton className="h-8 w-40 xl:ms-auto" />
+        </div>
+        <div className="flex flex-wrap gap-4 [&>*]:flex-1 md:[&>*]:basis-2/5">
           {Array.from({ length: LENGTH })?.map((_, index) => (
-            <div className="basis-1/2  p-4" key={index}>
+            <div key={index}>
               <Card
                 className={clsx(
                   'justify-streetch grid h-full items-end shadow-lg'
@@ -747,7 +750,9 @@ export function Pending() {
                 <CardFooter className="flex items-center gap-2">
                   <Skeleton className="h-6 w-32" />
                   <Skeleton className="ms-auto h-10 w-11" />
-                  <Skeleton className="h-10 w-11" />
+                  {rol?.rolName === 'Administrador' && (
+                    <Skeleton className="h-10 w-11" />
+                  )}
                 </CardFooter>
               </Card>
             </div>
@@ -768,7 +773,7 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex h-full items-center items-center justify-center gap-4 [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
         <h1 className="font-bold">{text.error}</h1>
