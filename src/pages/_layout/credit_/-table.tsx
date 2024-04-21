@@ -91,7 +91,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
                       </li>
 
                       <li>
-                        <b>{text.payValue + ':'}</b> <b>$</b>{' '}
+                        <b>{text.payValue + ':'}</b> ${' '}
                         {payment?.valor_del_pago?.toFixed(2) + '.'}
                       </li>
 
@@ -107,7 +107,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
 
                       {cuote?.valor_de_mora > 0 && (
                         <li>
-                          <b>{text.payInstallmants + ':'}</b> <b>$</b>{' '}
+                          <b>{text.payInstallmants + ':'}</b> ${' '}
                           {cuote?.valor_de_mora?.toFixed(2) + '.'}
                         </li>
                       )}
@@ -175,10 +175,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
               </ul>
             </TableCell>
             <TableCell>
-              <p>
-                <b>$</b>
-                {payment?.valor_del_pago?.toFixed(2)}
-              </p>
+              <p>${payment?.valor_del_pago?.toFixed(2)}</p>
             </TableCell>
             <TableCell>
               <p>
@@ -193,9 +190,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
             <TableCell>
               <p>
                 {cuote?.valor_de_mora > 0 ? (
-                  <>
-                    <b>$</b> {cuote?.valor_de_mora?.toFixed(2)}
-                  </>
+                  <>$ {cuote?.valor_de_mora?.toFixed(2)}</>
                 ) : (
                   '-'
                 )}
@@ -230,14 +225,12 @@ function GetPay({ credit }: { credit: TCREDIT_GET }) {
 
   return (
     <p>
-      <b>$</b>
+      $
       {credit.pagos
         .map(({ valor_del_pago }) => valor_del_pago)
         .reduce((prev, acc) => (acc += prev))
         ?.toFixed(2)}
-      <b>&#8193;/&#8193;</b>
-      <b>$</b>
-      {credit?.monto}
+      <b>&#8193;/&#8193;</b>${credit?.monto}
     </p>
   )
 }

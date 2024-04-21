@@ -260,7 +260,7 @@ export function Clients() {
               <Select value={filter} onValueChange={onValueChange}>
                 <SelectTrigger
                   title="Filtro de busqueda"
-                  className="ms-auto hidden w-auto xl:block"
+                  className="ms-auto hidden w-auto xl:flex"
                 >
                   <SelectValue placeholder={text.select.placeholder} />
                 </SelectTrigger>
@@ -304,7 +304,7 @@ export function Clients() {
                 </SelectContent>
               </Select>
               <DropdownMenu>
-                <DropdownMenuTrigger asChild className="hidden xl:block">
+                <DropdownMenuTrigger asChild className="hidden xl:flex">
                   <Button variant="outline">
                     {text.dropdown.title}{' '}
                     <ChevronDown className="ml-2 h-4 w-4" />
