@@ -224,7 +224,7 @@ export const MyUserInfo = memo(function () {
           {text.descriiption}
         </DialogDescription>
       </DialogHeader>
-      <ScrollArea className="h-[60dvh] overflow-y-auto md:h-full">
+      <ScrollArea className="h-[50dvh] overflow-y-auto md:h-full">
         <ScrollBar orientation="vertical" />
         <form
           autoFocus={false}
