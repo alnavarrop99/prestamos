@@ -459,6 +459,9 @@ export function Layout() {
             >
               <MenuSquare />
             </Button>
+            <Button onClick={onBack} variant="ghost" className="p-1 xl:hidden">
+              <ArrowLeftCircle />
+            </Button>
             <Link to={'./notification'}>
               {({ isActive }) => (
                 <Button

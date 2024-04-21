@@ -11,6 +11,7 @@ import { flexRender, type Table as TTable } from '@tanstack/react-table'
 import { TClientTable, desktop } from './-column'
 import clsx from 'clsx'
 import { Label } from '@/components/ui/label'
+import { useToken } from '@/lib/context/login'
 
 /* eslint-disable-next-line */
 type TPaymentTable = {
@@ -20,6 +21,7 @@ type TPaymentTable = {
 /* eslint-disable-next-line */
 export function ClientTable({ table }: TPaymentTable) {
   const screen = useScreen()
+  const { rol } = useToken()
 
   if (screen !== 'lg')
     return (
@@ -52,16 +54,18 @@ export function ClientTable({ table }: TPaymentTable) {
                           fullName?.column?.columnDef.cell,
                           fullName?.getContext()
                         )}
-                        <div className="space-x-2 px-4">
-                          {flexRender(
-                            action?.column?.columnDef.cell,
-                            action?.getContext()
-                          )}
-                          {flexRender(
-                            select?.column?.columnDef.cell,
-                            select?.getContext()
-                          )}
-                        </div>
+                        {rol?.rolName === 'Administrador' && (
+                          <div className="space-x-2 px-4">
+                            {flexRender(
+                              action?.column?.columnDef.cell,
+                              action?.getContext()
+                            )}
+                            {flexRender(
+                              select?.column?.columnDef.cell,
+                              select?.getContext()
+                            )}
+                          </div>
+                        )}
                       </Label>
                     </TableHead>
                   </TableRow>
@@ -140,13 +144,16 @@ export function ClientTable({ table }: TPaymentTable) {
         {table.getHeaderGroups().map((headerGroup) => (
           <TableRow key={headerGroup.id}>
             {headerGroup.headers.map((header, index, list) => {
+              if (rol?.rolName !== 'Administrador' && index === 0) return
               return (
                 <TableHead
                   key={header.id}
                   className={clsx(
                     'first:sticky first:left-0 last:sticky last:right-0',
                     {
-                      'rounded-tl-xl': index === 0,
+                      'rounded-tl-xl':
+                        (rol?.rolName === 'Administrador' && index === 0) ||
+                        (rol?.rolName !== 'Administrador' && index === 1),
                       'rounded-tr-xl': index === list?.length - 1,
                     }
                   )}
@@ -170,16 +177,19 @@ export function ClientTable({ table }: TPaymentTable) {
               key={row.id}
               data-state={row.getIsSelected() && 'selected'}
             >
-              {row.getVisibleCells().map((cell) => (
-                <TableCell
-                  key={cell.id}
-                  className={clsx(
-                    'first:sticky first:left-0 last:sticky last:right-0'
-                  )}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
+              {row.getVisibleCells().map((cell, index) => {
+                if (rol?.rolName !== 'Administrador' && index === 0) return
+                return (
+                  <TableCell
+                    key={cell.id}
+                    className={clsx(
+                      'first:sticky first:left-0 last:sticky last:right-0'
+                    )}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                )
+              })}
             </TableRow>
           ))
         ) : (

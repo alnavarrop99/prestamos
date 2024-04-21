@@ -710,6 +710,7 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>(function (
 
 /* eslint-disable-next-line */
 export function Pending() {
+  const { rol } = useToken()
   return (
     <>
       <div className="space-y-4">
@@ -749,7 +750,9 @@ export function Pending() {
                 <CardFooter className="flex items-center gap-2">
                   <Skeleton className="h-6 w-32" />
                   <Skeleton className="ms-auto h-10 w-11" />
-                  <Skeleton className="h-10 w-11" />
+                  {rol?.rolName === 'Administrador' && (
+                    <Skeleton className="h-10 w-11" />
+                  )}
                 </CardFooter>
               </Card>
             </div>

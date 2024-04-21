@@ -327,13 +327,16 @@ export function CreditById() {
 
 /* eslint-disable-next-line */
 export function Pending() {
+  const { rol } = useToken()
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Skeleton className="h-8 w-24 md:w-48" />
-        <Skeleton className="ms-auto h-10 w-10" />
-        <Skeleton className="h-10 w-10" />
-        <Skeleton className="h-10 w-20 md:w-24" />
+        <Skeleton className="ms-auto h-10 w-16" />
+        {rol?.rolName === 'Administrador' && <Skeleton className="h-10 w-16" />}
+        {rol?.rolName === 'Administrador' && (
+          <Skeleton className="h-10 w-20 md:w-24" />
+        )}
         <Skeleton className="hidden h-10 w-20 md:w-24 xl:block" />
       </div>
       <Separator />

@@ -362,17 +362,22 @@ export function Clients() {
 
 /* eslint-disable-next-line */
 export function Pending() {
+  const { rol } = useToken()
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <Skeleton className="h-8 w-24 md:w-36" />
         <Skeleton className="h-8 w-8 rounded-full" />
         <Skeleton className="ms-auto h-10 w-20 md:w-24" />
-        <Skeleton className="h-10 w-20 md:w-24" />
+        {rol?.rolName === 'Administrador' && (
+          <Skeleton className="h-10 w-20 md:w-24" />
+        )}
       </div>
       <Separator />
       <div className="flex items-center gap-2">
-        <Skeleton className="hidden h-6 md:w-56 xl:block" />
+        {rol?.rolName === 'Administrador' && (
+          <Skeleton className="hidden h-6 md:w-56 xl:block" />
+        )}
         <Skeleton className="ms-auto hidden h-8 w-32 xl:block" />
         <Skeleton className="h-8 w-32" />
       </div>
@@ -380,12 +385,18 @@ export function Pending() {
         <table className="hidden w-full border-separate border-spacing-2 divide-y-2 rounded-xl bg-background ring-2 ring-muted xl:table">
           {Array.from({ length: ROW })?.map((_, row) => (
             <tr key={row}>
-              {Array.from({ length: COL })?.map((_, index) => (
-                <td key={index} className={clsx('first:w-12 last:w-16')}>
-                  {' '}
-                  <Skeleton className={clsx('h-9 w-full')} />{' '}
-                </td>
-              ))}
+              {Array.from({ length: COL })?.map((_, index) => {
+                if (rol?.rolName !== 'Administrador' && index === 0) return
+                return (
+                  <td
+                    key={index}
+                    className={clsx('last:w-16', { 'first:w-12': index === 0 })}
+                  >
+                    {' '}
+                    <Skeleton className={clsx('h-9 w-full')} />{' '}
+                  </td>
+                )
+              })}
             </tr>
           ))}
         </table>
@@ -400,7 +411,9 @@ export function Pending() {
               >
                 <Skeleton className="h-6 w-24 !bg-background" />
                 <Skeleton className="ms-auto h-3 w-12 !bg-background" />
-                <Skeleton className="h-4 w-4 !bg-background" />
+                {rol?.rolName === 'Administrador' && (
+                  <Skeleton className="h-4 w-4 !bg-background" />
+                )}
               </div>
 
               <div className="flex flex-col gap-1 px-8 py-2 [&>*]:flex [&>*]:gap-2">
