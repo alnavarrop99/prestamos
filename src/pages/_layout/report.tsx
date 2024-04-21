@@ -181,7 +181,7 @@ export function Error() {
   const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
     history.back()
   }
-  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
+  return <div className='flex flex-col md:flex-row items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
       <Annoyed  className='animate-bounce' />
       <div className='space-y-2'>
         <h1 className='font-bold'>{text.error}</h1>
