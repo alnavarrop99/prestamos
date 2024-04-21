@@ -7,15 +7,6 @@ import {
 import { type TCREDIT_GET, getCreditById } from '@/api/credit'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableFooter,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import clsx from 'clsx'
 import { Button } from '@/components/ui/button'
 import { Annoyed, Printer } from 'lucide-react'
@@ -44,6 +35,7 @@ import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
+import { PaymentTable } from './-table'
 
 export const getCreditByIdOpt = ({ creditId }: { creditId: string }) => ({
   queryKey: ['get-credit-by-id', { creditId }],
@@ -126,12 +118,6 @@ export function CreditById() {
     setOpen({ open })
   }
 
-  const onPrint: React.MouseEventHandler<
-    React.ComponentRef<typeof Button>
-  > = () => {
-    onOpenChange(!open)
-  }
-
   const table = useMemo(
     () =>
       credit?.pagos?.map((_, i, list) => ({
@@ -183,10 +169,14 @@ export function CreditById() {
       <_credit.Provider value={credit}>
         <div className="space-y-4">
           <div className="flex gap-2">
-            <h1 className="text-3xl font-bold">{text.title}</h1>
+            <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
             <Dialog open={open} onOpenChange={onOpenChange}>
-              <DialogTrigger className="ms-auto" asChild>
-                <Link to={'./print'} disabled={credit?.pagos?.length <= 0}>
+              <DialogTrigger asChild>
+                <Link
+                  to={'./print'}
+                  disabled={credit?.pagos?.length <= 0}
+                  className="hidden xl:ms-auto xl:block"
+                >
                   <Button
                     variant="outline"
                     className="hover:ring hover:ring-primary"
@@ -196,7 +186,7 @@ export function CreditById() {
                   </Button>
                 </Link>
               </DialogTrigger>
-              <DialogTrigger asChild>
+              <DialogTrigger asChild className="ms-auto xl:ms-0">
                 <Link to={'./pay'}>
                   <Button
                     variant="default"
@@ -226,7 +216,10 @@ export function CreditById() {
             </Dialog>
           </div>
           <Separator />
-          <h2 className="text-2xl font-bold"> {text.details.title} </h2>
+          <h2 className="text-xl font-bold md:text-2xl">
+            {' '}
+            {text.details.title}{' '}
+          </h2>
           <ul className="flex flex-col gap-2 px-2 [&>li]:space-x-2">
             <li>
               <b>{text.details.status + ':'}</b>
@@ -310,107 +303,21 @@ export function CreditById() {
               </span>
             </li>
             <li>
-              <b>{text.details.comment + ':'}</b> <p>{credit?.comentario}</p>
+              <b>{text.details.comment + ':'}</b>{' '}
+              <p className="text-sm md:text-base">{credit?.comentario}</p>
             </li>
           </ul>
           <Separator />
           {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
-            <h2 className="text-2xl font-bold"> {text.cuotes.title} </h2>
+            <h2 className="text-xl font-bold md:text-2xl">
+              {' '}
+              {text.cuotes.title}{' '}
+            </h2>
           )}
           {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
-            <Table className="rounded-xl bg-background">
-              <TableHeader className="bg-muted [&_th]:text-center">
-                <TableRow>
-                  <TableHead></TableHead>
-                  <TableHead>{text.cuotes.payDate}</TableHead>
-                  <TableHead>{text.cuotes.payValue}</TableHead>
-                  <TableHead>{text.cuotes.installmantsDate}</TableHead>
-                  <TableHead>{text.cuotes.payInstallmants}</TableHead>
-                  <TableHead>{text.cuotes.payStatus}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody className="[&_td>*]:text-center">
-                {table?.map(({ payment, cuote }, index) => (
-                  <TableRow key={index} className="group">
-                    <TableCell className="relative flex w-20 items-center justify-center">
-                      <p className="trasition font-bold opacity-100 delay-150 duration-300 group-hover:opacity-0">
-                        {index + 1}
-                      </p>
-                      <Link
-                        to={'./print'}
-                        search={{ index }}
-                        className="z-index absolute"
-                      >
-                        <Button
-                          onClick={onPrint}
-                          variant="ghost"
-                          className="opacity-0 hover:ring hover:ring-primary group-hover:opacity-100"
-                          disabled={credit?.pagos?.length <= 0}
-                        >
-                          <Printer />
-                        </Button>
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <ul>
-                        <li className='before:font-bold before:text-destructive before:content-["_-_"]'>
-                          {format(new Date(cuote?.fecha_de_pago), 'dd/MM/yyyy')}
-                        </li>
-                        <li className='before:font-bold before:text-success before:content-["_+_"]'>
-                          {format(
-                            new Date(payment?.fecha_de_pago),
-                            'dd/MM/yyyy'
-                          )}
-                        </li>
-                      </ul>
-                    </TableCell>
-                    <TableCell>
-                      <p>
-                        <b>$</b>
-                        {payment?.valor_del_pago?.toFixed(2)}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <p>
-                        {cuote?.valor_de_mora > 0
-                          ? format(
-                              new Date(cuote?.fecha_de_aplicacion_de_mora),
-                              'dd/MM/yyyy'
-                            )
-                          : '-'}
-                      </p>
-                    </TableCell>
-                    <TableCell>
-                      <p>
-                        {cuote?.valor_de_mora > 0 ? (
-                          <>
-                            <b>$</b> {cuote?.valor_de_mora?.toFixed(2)}
-                          </>
-                        ) : (
-                          '-'
-                        )}
-                      </p>
-                    </TableCell>
-                    <TableCell className="flex justify-center">
-                      <Switch
-                        checked={cuote?.pagada}
-                        className={'cursor-not-allowed'}
-                      ></Switch>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell colSpan={5} className="font-bold">
-                    <p>{text.cuotes.total + ':'}</p>
-                  </TableCell>
-                  <TableCell colSpan={2} className="text-right">
-                    <GetPay credit={credit} />
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
-            </Table>
+            <div className="rounded-xl bg-background ring-2 ring-border">
+              <PaymentTable credit={credit} table={table} />
+            </div>
           )}
         </div>
       </_credit.Provider>
@@ -420,66 +327,77 @@ export function CreditById() {
 
 /* eslint-disable-next-line */
 export function Pending() {
+  const { rol } = useToken()
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-8 w-8 rounded-full" />
-        <Skeleton className="ms-auto h-10 w-10" />
-        <Skeleton className="h-10 w-10" />
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="h-10 w-24" />
+        <Skeleton className="h-8 w-24 md:w-48" />
+        <Skeleton className="ms-auto h-10 w-16" />
+        {rol?.rolName === 'Administrador' && <Skeleton className="h-10 w-16" />}
+        {rol?.rolName === 'Administrador' && (
+          <Skeleton className="h-10 w-20 md:w-24" />
+        )}
+        <Skeleton className="hidden h-10 w-20 md:w-24 xl:block" />
       </div>
       <Separator />
-      <Skeleton className="h-8 w-64" />
+      <Skeleton className="h-8 w-40 md:w-64" />
       <div className="space-y-4 px-4 [&>div:last-child]:flex-col [&>div]:flex [&>div]:gap-2">
         <div className="flex items-end">
           {' '}
-          <Skeleton className="h-6 w-24" /> <Skeleton className="h-8 w-24" />{' '}
+          <Skeleton className="h-6 w-24 md:w-20" />{' '}
+          <Skeleton className="h-8 w-24 md:w-16" />{' '}
         </div>
         <div>
           {' '}
-          <Skeleton className="h-6 w-36" /> <Skeleton className="h-6 w-24" />{' '}
+          <Skeleton className="h-6 w-36 md:w-24" />{' '}
+          <Skeleton className="h-6 w-24 md:w-20" />{' '}
         </div>
         <div>
           {' '}
-          <Skeleton className="h-6 w-32" /> <Skeleton className="h-6 w-10" />{' '}
+          <Skeleton className="h-6 w-32 md:w-20" />{' '}
+          <Skeleton className="h-6 w-10" />{' '}
         </div>
         <div>
           {' '}
-          <Skeleton className="h-6 w-32" /> <Skeleton className="h-6 w-16" />{' '}
+          <Skeleton className="h-6 w-32 md:w-20" />{' '}
+          <Skeleton className="h-6 w-16 md:w-12" />{' '}
         </div>
         <div>
           {' '}
-          <Skeleton className="h-6 w-36" /> <Skeleton className="h-6 w-24" />{' '}
+          <Skeleton className="h-6 w-36 md:w-24" />{' '}
+          <Skeleton className="h-6 w-24 md:w-20" />{' '}
         </div>
         <div>
           {' '}
-          <Skeleton className="h-6 w-32" /> <Skeleton className="h-6 w-10" />{' '}
+          <Skeleton className="h-6 w-32 md:w-20" />{' '}
+          <Skeleton className="h-6 w-10" />{' '}
         </div>
         <div>
           {' '}
-          <Skeleton className="h-6 w-36" /> <Skeleton className="h-6 w-24" />{' '}
+          <Skeleton className="h-6 w-36 md:w-24" />{' '}
+          <Skeleton className="h-6 w-24 md:w-20" />{' '}
         </div>
         <div>
           {' '}
-          <Skeleton className="h-6 w-36" /> <Skeleton className="h-6 w-24" />{' '}
+          <Skeleton className="h-6 w-36 md:w-20" />{' '}
+          <Skeleton className="h-6 w-24 md:w-20" />{' '}
         </div>
         <div>
           {' '}
           <Skeleton className="h-6 w-24" /> <Skeleton className="h-6 w-24" />{' '}
         </div>
         <div>
-          <Skeleton className="h-6 w-36" />
-          <Skeleton className="mx-4 h-6 w-[50rem]" />
-          <Skeleton className="mx-4 h-6 w-[50rem]" />
-          <Skeleton className="mx-4 h-6 w-[12rem]" />
+          <Skeleton className="h-6 w-36 md:w-24" />
+          <Skeleton className="mx-4 h-6 w-full" />
+          <Skeleton className="mx-4 h-6 w-full" />
+          <Skeleton className="mx-4 h-6 w-full" />
         </div>
       </div>
       <Separator />
-      <Skeleton className="h-8 w-64" />
-      <div className="px-4">
-        <table className="w-full border-separate border-spacing-2 rounded-md ring-4 ring-transparent">
+      <Skeleton className="md:40 h-8 w-64" />
+
+      <div className="divide-y-2 rounded-xl ring-2 ring-muted">
+        <table className="hidden w-full border-separate border-spacing-2 divide-y-2 rounded-xl bg-background ring-2 ring-muted xl:table">
           {Array.from({ length: ROW })?.map((_, index) => (
             <tr key={index}>
               {Array.from({ length: COL })?.map((_, index) => (
@@ -491,6 +409,49 @@ export function Pending() {
             </tr>
           ))}
         </table>
+
+        <div className="divide-y-2 rounded-xl ring-2 ring-muted xl:hidden">
+          {Array.from({ length: ROW })?.map((_, row) => (
+            <div key={row} className="w-full bg-background">
+              <div
+                className={clsx('flex items-center gap-2 bg-muted px-4 py-2 ', {
+                  'rounded-t-xl': row === 0,
+                })}
+              >
+                <Skeleton className="h-6 w-24 !bg-background" />
+                <Skeleton className="ms-auto h-6 w-6 rounded-full !bg-background" />
+                <Skeleton className="h-6 w-12 rounded-full !bg-background" />
+              </div>
+
+              <div className="flex flex-col gap-1 px-8 py-2 [&>*]:flex [&>*]:gap-2">
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-28" />{' '}
+                  <Skeleton className="h-6 w-12" />{' '}
+                </div>
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-32" />{' '}
+                  <Skeleton className="h-6 w-12" />{' '}
+                </div>
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-24" />{' '}
+                  <Skeleton className="h-6 w-16" />{' '}
+                </div>
+              </div>
+            </div>
+          ))}
+          <div
+            className={clsx(
+              'flex items-center gap-2 rounded-b-xl bg-muted px-4 py-2'
+            )}
+          >
+            <Skeleton className="h-4 w-24 !bg-background" />
+            <Skeleton className="ms-auto h-6 w-16 !bg-background" />
+            <Skeleton className="h-6 w-16 !bg-background" />
+          </div>
+        </div>
       </div>
     </div>
   )
@@ -505,7 +466,7 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex h-full items-center items-center justify-center gap-4 [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
         <h1 className="font-bold">{text.error}</h1>
@@ -517,24 +478,6 @@ export function Error() {
         </Button>
       </div>
     </div>
-  )
-}
-
-/* eslint-disable-next-line */
-function GetPay({ credit }: { credit: TCREDIT_GET }) {
-  if (!credit.cuotas || !credit.pagos) return
-
-  return (
-    <p>
-      <b>$</b>
-      {credit.pagos
-        .map(({ valor_del_pago }) => valor_del_pago)
-        .reduce((prev, acc) => (acc += prev))
-        ?.toFixed(2)}
-      <b>&#8193;/&#8193;</b>
-      <b>$</b>
-      {credit?.monto}
-    </p>
   )
 }
 

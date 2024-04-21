@@ -1,12 +1,3 @@
-import { Button } from '@/components/ui/button'
-import {
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -38,6 +29,16 @@ import { SpinLoader } from '@/components/ui/loader'
 import { queryClient } from '@/pages/__root'
 import { useToken } from '@/lib/context/login'
 import { Link } from '@tanstack/react-router'
+import {
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 export const updateUserByIdOpt = {
   mutationKey: ['update-user-by-id'],
@@ -254,157 +255,165 @@ export function UpdateUserById() {
       {!open && <Navigate to={'../../'} />}
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">
+            {text.title}
+          </DialogTitle>
           <Separator />
-          <DialogDescription>{text.descriiption}</DialogDescription>
+          <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
+            {text.descriiption}
+          </DialogDescription>
         </DialogHeader>
-        <form
-          autoComplete="off"
-          ref={form}
-          onSubmit={onSubmit}
-          onChange={onChange}
-          id="update-user"
-          className={clsx(
-            'grid-rows-subgrid grid grid-cols-2 gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2 [&_label>span]:font-bold',
-            {
-              '[&_*:disabled]:opacity-100':
-                !!userId && rol?.rolName !== 'Administrador',
-            }
-          )}
-        >
-          <Label className="!col-span-1">
-            <span>{text.form.firstName.label}</span>
-            {!isSuccess ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Input
-                required
-                name={'firstName' as TFormName}
-                type="text"
-                placeholder={text.form.firstName.placeholder}
-                defaultValue={userRes?.nombre.split(' ')?.at(0)}
-                onChange={onChangeName('firstName')}
-                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
-              />
+        <ScrollArea className="h-[60dvh] overflow-y-auto md:h-full">
+          <ScrollBar orientation="vertical" />
+          <form
+            autoFocus={false}
+            autoComplete="off"
+            ref={form}
+            onSubmit={onSubmit}
+            onChange={onChange}
+            id="update-user"
+            className={clsx(
+              'grid-rows-subgrid grid grid-cols-none gap-3 gap-y-4 p-1 md:grid-cols-2 [&>*]:col-span-full [&>:is(label,div)]:space-y-2 [&_label>span]:font-bold',
+              {
+                '[&_*:disabled]:opacity-100':
+                  !!userId && rol?.rolName !== 'Administrador',
+              }
             )}
-          </Label>
-          <Label className="!col-span-1">
-            <span>{text.form.lastName.label} </span>
-            {!isSuccess ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Input
-                required
-                name={'lastName' as TFormName}
-                type="text"
-                placeholder={text.form.lastName.placeholder}
-                defaultValue={userRes?.nombre.split(' ')?.at(1)}
-                onChange={onChangeName('lastName')}
-                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
-              />
-            )}
-          </Label>
-          <Label>
-            <span>{text.form.rol.label} </span>
-            {!isSuccess ? (
-              <Skeleton className="h-10 w-full" />
-            ) : (
-              <Select
-                required
-                name={'rol' as TFormName}
-                defaultValue={
-                  '' + getRolByName({ rolName: userRes?.rol as TROLES })?.id
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={text.form.rol.placeholder} />
-                </SelectTrigger>
-                <SelectContent className="[&_*]:cursor-pointer">
-                  {listRols()?.map(({ id, nombre }) => (
-                    <SelectItem key={id} value={'' + id}>
-                      {nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </Label>
-          <div>
-            <Label htmlFor="user-password">
-              <span>{text.form.password.current.label} </span>
-            </Label>
-            <div className="flex flex-row-reverse items-center gap-x-2">
+          >
+            <Label className="!col-span-1">
+              <span>{text.form.firstName.label}</span>
               {!isSuccess ? (
-                <>
-                  <Skeleton className="h-10 w-10" />
-                  <Skeleton className="h-10 w-full" />
-                </>
+                <Skeleton className="h-10 w-full" />
               ) : (
-                <>
-                  <Button
-                    type="button"
-                    className="w-fit p-1.5"
-                    onClick={onClick('password')}
-                    variant={!visibility.password ? 'outline' : 'default'}
-                  >
-                    {!visibility.password ? <Eye /> : <EyeOff />}
-                  </Button>
-                  <Input
-                    id="user-password"
-                    name={'password' as TFormName}
-                    type={!visibility.password ? 'password' : 'text'}
-                    placeholder={text.form.password.current.placeholder}
-                    defaultValue={password?.password}
-                    onChange={onChangePassword}
-                    pattern="^.{6,}$"
-                  />
-                </>
+                <Input
+                  required
+                  name={'firstName' as TFormName}
+                  type="text"
+                  placeholder={text.form.firstName.placeholder}
+                  defaultValue={userRes?.nombre.split(' ')?.at(0)}
+                  onChange={onChangeName('firstName')}
+                  pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
+                />
               )}
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="user-new">
-              <span>{text.form.password.new.label} </span>
             </Label>
-            <div className="flex flex-row-reverse items-center gap-x-2">
+            <Label className="!col-span-1">
+              <span>{text.form.lastName.label} </span>
               {!isSuccess ? (
-                <>
-                  <Skeleton className="h-10 w-10" />
-                  <Skeleton className="h-10 w-full" />
-                </>
+                <Skeleton className="h-10 w-full" />
               ) : (
-                <>
-                  <Button
-                    type="button"
-                    className="w-fit p-1.5"
-                    onClick={onClick('confirmation')}
-                    variant={!visibility.confirmation ? 'outline' : 'default'}
-                  >
-                    {!visibility.confirmation ? <Eye /> : <EyeOff />}
-                  </Button>
-                  <Input
-                    id="user-new"
-                    name={'newPassword' as TFormName}
-                    required={!!password?.password}
-                    type={!visibility.confirmation ? 'password' : 'text'}
-                    placeholder={text.form.password.new.placeholder}
-                    defaultValue={password?.confirmation}
-                    onChange={onChangePassword}
-                    pattern={password?.password}
-                  />
-                </>
+                <Input
+                  required
+                  name={'lastName' as TFormName}
+                  type="text"
+                  placeholder={text.form.lastName.placeholder}
+                  defaultValue={userRes?.nombre.split(' ')?.at(1)}
+                  onChange={onChangeName('lastName')}
+                  pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
+                />
               )}
+            </Label>
+            <Label>
+              <span>{text.form.rol.label} </span>
+              {!isSuccess ? (
+                <Skeleton className="h-10 w-full" />
+              ) : (
+                <Select
+                  required
+                  name={'rol' as TFormName}
+                  defaultValue={
+                    '' + getRolByName({ rolName: userRes?.rol as TROLES })?.id
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={text.form.rol.placeholder} />
+                  </SelectTrigger>
+                  <SelectContent className="[&_*]:cursor-pointer">
+                    {listRols()?.map(({ id, nombre }) => (
+                      <SelectItem key={id} value={'' + id}>
+                        {nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </Label>
+            <div>
+              <Label htmlFor="user-password">
+                <span>{text.form.password.current.label} </span>
+              </Label>
+              <div className="flex flex-row-reverse items-center gap-x-2">
+                {!isSuccess ? (
+                  <>
+                    <Skeleton className="h-10 w-10" />
+                    <Skeleton className="h-10 w-full" />
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      className="w-fit p-1.5"
+                      onClick={onClick('password')}
+                      variant={!visibility.password ? 'outline' : 'default'}
+                    >
+                      {!visibility.password ? <Eye /> : <EyeOff />}
+                    </Button>
+                    <Input
+                      id="user-password"
+                      name={'password' as TFormName}
+                      type={!visibility.password ? 'password' : 'text'}
+                      placeholder={text.form.password.current.placeholder}
+                      defaultValue={password?.password}
+                      onChange={onChangePassword}
+                      pattern="^.{6,}$"
+                    />
+                  </>
+                )}
+              </div>
             </div>
-          </div>
-        </form>
-        <DialogFooter className="justify-start gap-2">
+            <div>
+              <Label htmlFor="user-new">
+                <span>{text.form.password.new.label} </span>
+              </Label>
+              <div className="flex flex-row-reverse items-center gap-x-2">
+                {!isSuccess ? (
+                  <>
+                    <Skeleton className="h-10 w-10" />
+                    <Skeleton className="h-10 w-full" />
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      type="button"
+                      className="w-fit p-1.5"
+                      onClick={onClick('confirmation')}
+                      variant={!visibility.confirmation ? 'outline' : 'default'}
+                    >
+                      {!visibility.confirmation ? <Eye /> : <EyeOff />}
+                    </Button>
+                    <Input
+                      id="user-new"
+                      name={'newPassword' as TFormName}
+                      required={!!password?.password}
+                      type={!visibility.confirmation ? 'password' : 'text'}
+                      placeholder={text.form.password.new.placeholder}
+                      defaultValue={password?.confirmation}
+                      onChange={onChangePassword}
+                      pattern={password?.password}
+                    />
+                  </>
+                )}
+              </div>
+            </div>
+          </form>
+        </ScrollArea>
+        <DialogFooter className="flex-col justify-start gap-2 md:flex-row">
           {!isSuccess ? (
             <>
               {currentUserId === +userId && (
-                <Skeleton className="me-auto h-12 w-40" />
+                <Skeleton className="me-auto h-12 w-full md:w-40" />
               )}
-              <Skeleton className="h-12 w-24" />
-              <Skeleton className="h-12 w-24" />
+              <Skeleton className="h-12 w-full md:w-24" />
+              <Skeleton className="h-12 w-full md:w-24" />
             </>
           ) : (
             <>
@@ -457,7 +466,7 @@ export function Error() {
       description: (
         <div className="flex flex-row items-center gap-2">
           <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-md"> {text.error.descriiption} </p>
+          <p className="text-base"> {text.error.descriiption} </p>
         </div>
       ),
       variant: 'destructive',

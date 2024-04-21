@@ -18,6 +18,8 @@ import { type TUSER_LOGIN, type TUSER_LOGIN_BODY, loginUser } from '@/api/users'
 import { useToken } from '@/lib/context/login'
 import { BoundleLoader } from '@/components/ui/loader'
 import { ToastAction } from '@radix-ui/react-toast'
+import { Separator } from '@radix-ui/react-separator'
+import brand from '@/assets/menu-brand.avif'
 
 export const postCurrentUser = {
   mutationKey: ['login-user'],
@@ -115,19 +117,26 @@ export function Login() {
     <>
       {token && <Navigate to={'/'} />}
       <section className="grid min-h-screen place-content-center place-items-center">
-        <Card className="inline-block shadow-lg">
+        <Card className="w-screen shadow-lg md:w-full">
           <CardHeader>
             <CardTitle>{text.title}</CardTitle>
             <CardDescription>
-              <p className="text-lg font-bold">{text?.description?.[0]}</p>
-              <p>{text?.description?.[1]}</p>
+              <p className="text-base font-bold md:text-lg">
+                {text?.description?.[0]}
+              </p>
+              <p className="text-xs md:block md:text-base">
+                {text?.description?.[1]}
+              </p>
             </CardDescription>
           </CardHeader>
+          <Separator />
           <CardContent>
             <form
+              autoFocus={false}
               id="login"
               className="flex flex-col gap-4 [&>label>span]:font-bold"
-              {...{ ref, onSubmit }}
+              ref={ref}
+              onSubmit={onSubmit}
             >
               <Label>
                 <span>{text.username.label}</span>
@@ -161,6 +170,7 @@ export function Login() {
             </form>
           </CardContent>
           <CardFooter>
+            <img alt="brand" src={brand} className="aspect-contain max-h-12" />
             <Button
               type="submit"
               form="login"

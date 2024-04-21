@@ -158,6 +158,7 @@ export function PrintSelectedCredit() {
           </DialogDescription>
         </DialogHeader>
         <form
+          autoFocus={false}
           autoComplete="on"
           ref={form}
           onSubmit={onSubmit}
@@ -347,7 +348,7 @@ export function ErrorComp() {
       description: (
         <div className="flex flex-row items-center gap-2">
           <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-md"> {text.error.descriiption} </p>
+          <p className="text-base"> {text.error.descriiption} </p>
         </div>
       ),
       variant: 'destructive',

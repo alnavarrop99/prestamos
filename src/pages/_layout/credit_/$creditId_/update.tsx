@@ -271,8 +271,8 @@ export function UpdateCreditById() {
           <_client.Provider value={client}>
             <Navigate to={Route.to} />
             <div className="space-y-4">
-              <div className="flex gap-2">
-                <h1 className="text-3xl font-bold">{text.title}</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
                 <Dialog open={open} onOpenChange={onOpenChange}>
                   <Button
                     className="ms-auto"
@@ -282,7 +282,7 @@ export function UpdateCreditById() {
                   >
                     {text.button.update}
                   </Button>
-                  <Link to={'../'}>
+                  <Link to={'../'} className="hidden md:block">
                     <Button
                       variant="outline"
                       className="hover:ring hover:ring-primary"
@@ -297,8 +297,8 @@ export function UpdateCreditById() {
               <Separator />
               <Card className="duration-400 shadow-lg transition delay-150 hover:shadow-xl">
                 <CardHeader>
-                  <div className="flex flex-row justify-between">
-                    <CardTitle className="text-2xl font-bold">
+                  <div className="flex flex-row items-center justify-between">
+                    <CardTitle className="text-xl font-bold md:text-2xl">
                       {text.form.details.title}
                     </CardTitle>
                     <Switch
@@ -311,7 +311,8 @@ export function UpdateCreditById() {
                 </CardHeader>
                 <CardContent>
                   <form
-                    className="grid grid-cols-3 gap-4 [&>label:last-child]:col-span-full [&>label>div>span]:font-bold [&>label>span]:font-bold [&>label]:space-y-2"
+                    autoFocus={false}
+                    className="grid grid-cols-none gap-4 p-1 md:grid-cols-2 xl:grid-cols-3 [&>label:last-child]:col-span-full [&>label>div>span]:font-bold [&>label>span]:font-bold [&>label]:space-y-2"
                     id={'edit-credit'}
                     onChange={onChangeDetail}
                     onSubmit={onSubmit}
@@ -330,7 +331,15 @@ export function UpdateCreditById() {
                             ? client?.nombres + ' ' + client?.apellidos
                             : undefined
                         }
-                        pattern={`(${clients?.map(({ nombres, apellidos }) => ( nombres + " " + apellidos )?.replace(/\s+/g, '\\s+'))?.join('|')})`}
+                        pattern={`(${clients
+                          ?.map(
+                            ({ nombres, apellidos }) =>
+                              (nombres + ' ' + apellidos)?.replace(
+                                /\s+/g,
+                                '\\s+'
+                              )
+                          )
+                          ?.join('|')})`}
                       />
                       <datalist id="credit-clients">
                         {clients?.map(({ nombres, apellidos }, index) => (
@@ -350,7 +359,7 @@ export function UpdateCreditById() {
                         label={text.form.details.date.placeholder}
                       />
                     </Label>
-                    <Label className="!col-span-1">
+                    <Label className="md:!col-span-1">
                       <span>{text.form.details.ref.label}</span>
                       <Input
                         name={'ref' as TFormName}
@@ -362,7 +371,15 @@ export function UpdateCreditById() {
                             : undefined
                         }
                         placeholder={text.form.details.ref.placeholder}
-                        pattern={`(${clients?.map(({ nombres, apellidos }) => ( nombres + " " + apellidos )?.replace(/\s+/g, '\\s+'))?.join('|')})`}
+                        pattern={`(${clients
+                          ?.map(
+                            ({ nombres, apellidos }) =>
+                              (nombres + ' ' + apellidos)?.replace(
+                                /\s+/g,
+                                '\\s+'
+                              )
+                          )
+                          ?.join('|')})`}
                       />
                     </Label>
                     <Label>
@@ -448,7 +465,9 @@ export function UpdateCreditById() {
                         defaultValue={
                           creditChange?.cobrador_id ? user?.nombre : undefined
                         }
-                        pattern={`(${users?.map(({ nombre }) => nombre?.replace(/\s+/g, '\\s+'))?.join('|')})`}
+                        pattern={`(${users
+                          ?.map(({ nombre }) => nombre?.replace(/\s+/g, '\\s+'))
+                          ?.join('|')})`}
                       />
                       <datalist id="credit-user">
                         {users?.map(({ nombre }, index) => (
@@ -458,7 +477,7 @@ export function UpdateCreditById() {
                     </Label>
                     <Label
                       htmlFor="credit-installments"
-                      className="row-start-4"
+                      className="md:row-start-4"
                     >
                       <div className="flex items-center justify-between gap-2 [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&_label]:flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2">
                         <span>{text.form.details.installmants.label}</span>
@@ -511,7 +530,7 @@ export function UpdateCreditById() {
                         }
                       />
                     </Label>
-                    <Label className="row-start-4">
+                    <Label className="md:row-start-4">
                       <span>{text.form.details.aditionalsDays.label}</span>
                       <Input
                         min={0}
@@ -541,7 +560,7 @@ export function UpdateCreditById() {
                 !!creditChange?.cuotas?.length && (
                   <Card className="duration-400 shadow-lg transition delay-150 hover:shadow-xl">
                     <CardHeader>
-                      <CardTitle className="text-2xl font-bold">
+                      <CardTitle className="text-xl font-bold md:text-2xl">
                         {text.form.pay.title}
                       </CardTitle>
                     </CardHeader>
@@ -596,7 +615,8 @@ export function UpdateCreditById() {
                               </AccordionTrigger>
                               <AccordionContent asChild>
                                 <form
-                                  className="grid grid-cols-2 items-end gap-4 px-4 [&>label:last-child]:col-span-full [&>label>div]:flex [&>label>div]:items-center [&>label>div]:justify-between [&>label>div]:gap-2 [&>label]:space-y-2 [&>label_span]:font-bold"
+                                  autoFocus={false}
+                                  className="grid grid-cols-none items-end gap-4 p-1 px-4 md:grid-cols-2 [&>label:last-child]:col-span-full [&>label>div]:flex [&>label>div]:items-center [&>label>div]:justify-between [&>label>div]:gap-2 [&>label]:space-y-2 [&>label_span]:font-bold"
                                   id={'edit-pay-' + index}
                                   onChange={onChangePaymentById(index)}
                                   onSubmit={onCuoteSubmit(index)}
@@ -672,73 +692,73 @@ export function Pending() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Skeleton className="h-8 w-56" />
-        <Skeleton className="ms-auto h-10 w-24" />
-        <Skeleton className="h-10 w-24" />
+        <Skeleton className="h-8 w-20 md:w-56" />
+        <Skeleton className="ms-auto h-10 w-20 md:w-24" />
+        <Skeleton className="h-10 w-20 md:w-24" />
       </div>
       <Separator />
       <Card>
         <CardHeader className="items-between flex">
           <div className="flex flex-row justify-between">
-            <Skeleton className="h-8 w-52" />
-            <Skeleton className="ms-auto h-10 w-16" />
+            <Skeleton className="h-8 w-40 md:w-52" />
+            <Skeleton className="ms-auto h-8 w-16 rounded-full" />
           </div>
         </CardHeader>
-        <CardContent className="grid grid-cols-3 gap-4 [&>div]:flex [&>div]:flex-col [&>div]:gap-2">
+        <CardContent className="grid grid-cols-none gap-4 md:grid-cols-2 xl:grid-cols-3 [&>div]:flex [&>div]:flex-col [&>div]:gap-2">
           <div>
             {' '}
             <Skeleton className="h-6 w-36" />{' '}
-            <Skeleton className="h-10 w-full" />{' '}
+            <Skeleton className="h-8 w-full" />{' '}
           </div>
           <div>
             {' '}
             <Skeleton className="h-6 w-24" />{' '}
-            <Skeleton className="h-10 w-full" />{' '}
+            <Skeleton className="h-8 w-full" />{' '}
           </div>
           <div>
             {' '}
             <Skeleton className="h-6 w-32" />{' '}
-            <Skeleton className="h-10 w-full" />{' '}
+            <Skeleton className="h-8 w-full" />{' '}
           </div>
           <div>
             {' '}
             <Skeleton className="h-6 w-24" />{' '}
-            <Skeleton className="h-10 w-full" />{' '}
+            <Skeleton className="h-8 w-full" />{' '}
           </div>
           <div>
             {' '}
             <Skeleton className="h-6 w-36" />{' '}
-            <Skeleton className="h-10 w-full" />{' '}
+            <Skeleton className="h-8 w-full" />{' '}
           </div>
           <div>
             {' '}
             <Skeleton className="h-6 w-32" />{' '}
-            <Skeleton className="h-10 w-full" />{' '}
+            <Skeleton className="h-8 w-full" />{' '}
           </div>
-          <div className="row-start-3">
+          <div className="xl:row-start-3">
             {' '}
             <Skeleton className="h-6 w-24 " />{' '}
-            <Skeleton className="h-10 w-full" />{' '}
+            <Skeleton className="h-8 w-full" />{' '}
           </div>
-          <div className="row-start-3">
+          <div className="xl:row-start-3">
             {' '}
             <Skeleton className="h-6 w-24 " />{' '}
-            <Skeleton className="h-10 w-full" />{' '}
+            <Skeleton className="h-8 w-full" />{' '}
           </div>
-          <div className="row-start-4">
+          <div className="xl:row-start-4">
             {' '}
-            <Skeleton className="row-start-5 h-6 w-24" />{' '}
-            <Skeleton className="h-10 w-full" />{' '}
+            <Skeleton className="h-6 w-24 xl:row-start-5" />{' '}
+            <Skeleton className="h-8 w-full" />{' '}
           </div>
-          <div className="row-start-4">
+          <div className="xl:row-start-4">
             {' '}
-            <Skeleton className="row-start-5 h-6 w-32" />{' '}
-            <Skeleton className="h-10 w-full" />{' '}
+            <Skeleton className="h-6 w-32 xl:row-start-5" />{' '}
+            <Skeleton className="h-8 w-full" />{' '}
           </div>
-          <div className="col-span-full row-start-5">
+          <div className="col-span-full xl:row-start-5">
             {' '}
             <Skeleton className=" h-6 w-24" />{' '}
-            <Skeleton className="h-32 w-full" />{' '}
+            <Skeleton className="h-32 w-full md:h-24" />{' '}
           </div>
         </CardContent>
       </Card>
@@ -770,7 +790,7 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex h-full items-center items-center justify-center gap-4 [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
         <h1 className="font-bold">{text.error}</h1>

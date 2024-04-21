@@ -70,9 +70,9 @@ export function Report() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold">{text.title}</h1>
+      <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
       <Separator />
-      <Accordion className="my-2 space-y-2" type="multiple">
+      <Accordion className="my-2 space-y-2" type="single">
         {reports.map(({ nombre, parametros, id, comentario}, index) => (
           <AccordionItem
             key={id}
@@ -81,15 +81,16 @@ export function Report() {
           >
             <AccordionTrigger className="group !no-underline">
               <div className="place-contents-start flex flex-col place-items-start p-2 text-start">
-                <p className="text-lg font-bold"> {nombre} </p>
-                <p className="text-md text-muted-foreground"> {comentario} </p>
+                <p className="text-base md:text-lg font-bold"> {nombre} </p>
+                <p className="text-sm md:text-base text-muted-foreground"> {comentario} </p>
               </div>
             </AccordionTrigger>
             <AccordionContent className="space-y-2">
               <form
+                autoFocus={false}
                 ref={form?.[index]}
                 onSubmit={onSubmit(index)}
-                className="grid grid-cols-2 gap-4 px-6 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
+                className="p-1 grid grid-cols-none md:grid-cols-2 gap-4 md:px-4 xl:px-4 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
                 id={'report' + id}
               >
                 {parametros.map(({ nombre, id, tipo_dato, obligatorio }) => (
@@ -180,7 +181,7 @@ export function Error() {
   const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
     history.back()
   }
-  return <div className='flex items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
+  return <div className='flex flex-col md:flex-row items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
       <Annoyed  className='animate-bounce' />
       <div className='space-y-2'>
         <h1 className='font-bold'>{text.error}</h1>

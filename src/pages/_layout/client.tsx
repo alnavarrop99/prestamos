@@ -1,16 +1,7 @@
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
-  flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
@@ -45,7 +36,7 @@ import {
 } from '@/components/ui/select'
 import { type TCLIENT_GET_ALL, getClientsList } from '@/api/clients'
 import clsx from 'clsx'
-import { columns, type TClientTable } from '@/pages/_layout/-column'
+import { desktop, movile, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
 import { useClientByUsers } from '@/lib/context/client'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -61,6 +52,8 @@ import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useToken } from '@/lib/context/login'
+import { ClientTable } from './-table'
+import { useScreen } from '@/lib/hook/useScreens'
 
 type TSearch = {
   userId: number
@@ -109,6 +102,7 @@ export function Clients() {
   const navigate = useNavigate()
   const { filter, setFilter } = useFilter()
   const { userId: ownerId } = Route.useSearch()
+  const screen = useScreen()
   const isUpdateClient = useIsMutating({
     status: 'success',
     mutationKey: updateClientByIdOpt.mutationKey,
@@ -162,7 +156,7 @@ export function Clients() {
 
   const table = useReactTable({
     data: clientsRes,
-    columns,
+    columns: screen !== 'lg' ? movile : desktop,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -212,55 +206,61 @@ export function Clients() {
       <_rowSelected.Provider value={table.resetRowSelection}>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold">{text.title}</h1>
+            <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
             {!!clientsRes?.length && (
-              <Badge className="px-3 text-xl">
+              <Badge className="px-3 text-lg md:text-xl">
                 {table.getFilteredRowModel().rows.length}
               </Badge>
             )}
+            <Dialog open={open} onOpenChange={onOpenChange}>
+              <DialogTrigger asChild className="ms-auto">
+                <Link to={'./new'}>
+                  <Button variant="default">{text.buttons.new}</Button>
+                </Link>
+              </DialogTrigger>
+              {!!userId && rol?.rolName === 'Administrador' && (
+                <DialogTrigger asChild>
+                  <Link
+                    disabled={!table.getFilteredSelectedRowModel().rows?.length}
+                    to={'./delete'}
+                    search={{
+                      clients: table
+                        .getFilteredSelectedRowModel()
+                        ?.rows?.map(({ original }) => original.id),
+                    }}
+                  >
+                    <Button
+                      className={clsx({
+                        'bg-destructive hover:bg-destructive':
+                          table.getFilteredSelectedRowModel().rows?.length,
+                      })}
+                      disabled={
+                        !table.getFilteredSelectedRowModel().rows?.length
+                      }
+                    >
+                      {text.buttons.delete}
+                    </Button>
+                  </Link>
+                </DialogTrigger>
+              )}
+              <Outlet />
+            </Dialog>
           </div>
           <Separator />
           <div>
             <div className="flex items-center gap-2 py-4">
-              <Dialog open={open} onOpenChange={onOpenChange}>
-                <DialogTrigger asChild>
-                  <Link to={'./new'}>
-                    <Button variant="default">{text.buttons.new}</Button>
-                  </Link>
-                </DialogTrigger>
-                {!!userId && rol?.rolName === 'Administrador' && (
-                  <DialogTrigger asChild>
-                    <Link
-                      disabled={
-                        !table.getFilteredSelectedRowModel().rows?.length
-                      }
-                      to={'./delete'}
-                      search={{
-                        clients: table
-                          .getFilteredSelectedRowModel()
-                          ?.rows?.map(({ original }) => original.id),
-                      }}
-                    >
-                      <Button
-                        className={clsx({
-                          'bg-destructive hover:bg-destructive':
-                            table.getFilteredSelectedRowModel().rows?.length,
-                        })}
-                        disabled={
-                          !table.getFilteredSelectedRowModel().rows?.length
-                        }
-                      >
-                        {text.buttons.delete}
-                      </Button>
-                    </Link>
-                  </DialogTrigger>
-                )}
-                <Outlet />
-              </Dialog>
+              {!!table.getRowCount() && (
+                <p className="hidden text-sm text-muted-foreground xl:block">
+                  {text.search.selected({
+                    selected: table.getFilteredSelectedRowModel().rows.length,
+                    total: table.getFilteredRowModel().rows.length,
+                  })}
+                </p>
+              )}
               <Select value={filter} onValueChange={onValueChange}>
                 <SelectTrigger
                   title="Filtro de busqueda"
-                  className="ms-auto w-auto"
+                  className="ms-auto hidden w-auto xl:flex"
                 >
                   <SelectValue placeholder={text.select.placeholder} />
                 </SelectTrigger>
@@ -304,7 +304,7 @@ export function Clients() {
                 </SelectContent>
               </Select>
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+                <DropdownMenuTrigger asChild className="hidden xl:flex">
                   <Button variant="outline">
                     {text.dropdown.title}{' '}
                     <ChevronDown className="ml-2 h-4 w-4" />
@@ -329,73 +329,10 @@ export function Clients() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
-            <div className="overflow-x-auto rounded-md bg-background ring-1 ring-border">
-              <Table>
-                <TableHeader className="bg-muted">
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                      {headerGroup.headers.map((header) => {
-                        return (
-                          <TableHead
-                            key={header.id}
-                            className={clsx(
-                              'first:sticky first:left-0 last:sticky last:right-0'
-                            )}
-                          >
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                          </TableHead>
-                        )
-                      })}
-                    </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && 'selected'}
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell
-                            key={cell.id}
-                            className={clsx(
-                              'first:sticky first:left-0 last:sticky last:right-0'
-                            )}
-                          >
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  ) : (
-                    <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="h-24 text-center"
-                      >
-                        {text.search[404]}
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+            <div className="rounded-xl bg-background ring-2 ring-border">
+              <ClientTable table={table} />
             </div>
             <div className="flex items-center justify-end space-x-2 py-4">
-              <div className="flex-1 text-sm text-muted-foreground">
-                {text.search.selected({
-                  selected: table.getFilteredSelectedRowModel().rows.length,
-                  total: table.getFilteredRowModel().rows.length,
-                })}
-              </div>
               <div className="space-x-2">
                 <Button
                   variant="outline"
@@ -425,35 +362,92 @@ export function Clients() {
 
 /* eslint-disable-next-line */
 export function Pending() {
+  const { rol } = useToken()
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Skeleton className="h-8 w-36" />
+        <Skeleton className="h-8 w-24 md:w-36" />
         <Skeleton className="h-8 w-8 rounded-full" />
+        <Skeleton className="ms-auto h-10 w-20 md:w-24" />
+        {rol?.rolName === 'Administrador' && (
+          <Skeleton className="h-10 w-20 md:w-24" />
+        )}
       </div>
       <Separator />
       <div className="flex items-center gap-2">
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="ms-auto h-8 w-32" />
+        {rol?.rolName === 'Administrador' && (
+          <Skeleton className="hidden h-6 md:w-56 xl:block" />
+        )}
+        <Skeleton className="ms-auto hidden h-8 w-32 xl:block" />
         <Skeleton className="h-8 w-32" />
       </div>
       <div className="px-4">
-        <table className="w-full border-separate border-spacing-2 rounded-md ring-4 ring-transparent">
-          {Array.from({ length: ROW })?.map((_, index) => (
-            <tr key={index}>
-              {Array.from({ length: COL })?.map((_, index) => (
-                <td key={index} className="first:w-12 last:w-16">
-                  {' '}
-                  <Skeleton className="h-9 w-full" />{' '}
-                </td>
-              ))}
+        <table className="hidden w-full border-separate border-spacing-2 divide-y-2 rounded-xl bg-background ring-2 ring-muted xl:table">
+          {Array.from({ length: ROW })?.map((_, row) => (
+            <tr key={row}>
+              {Array.from({ length: COL })?.map((_, index) => {
+                if (rol?.rolName !== 'Administrador' && index === 0) return
+                return (
+                  <td
+                    key={index}
+                    className={clsx('last:w-16', { 'first:w-12': index === 0 })}
+                  >
+                    {' '}
+                    <Skeleton className={clsx('h-9 w-full')} />{' '}
+                  </td>
+                )
+              })}
             </tr>
           ))}
         </table>
+
+        <div className="divide-y-2 rounded-xl ring-2 ring-muted xl:hidden">
+          {Array.from({ length: ROW })?.map((_, row) => (
+            <div key={row} className="w-full bg-background">
+              <div
+                className={clsx('flex items-center gap-2 bg-muted px-4 py-2 ', {
+                  'rounded-t-xl': row === 0,
+                })}
+              >
+                <Skeleton className="h-6 w-24 !bg-background" />
+                <Skeleton className="ms-auto h-3 w-12 !bg-background" />
+                {rol?.rolName === 'Administrador' && (
+                  <Skeleton className="h-4 w-4 !bg-background" />
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1 px-8 py-2 [&>*]:flex [&>*]:gap-2">
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-20" />{' '}
+                  <Skeleton className="h-6 w-20" />{' '}
+                </div>
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-16" />{' '}
+                  <Skeleton className="h-6 w-24" />{' '}
+                </div>
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-28" />{' '}
+                  <Skeleton className="h-6 w-12" />{' '}
+                </div>
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-32" />{' '}
+                  <Skeleton className="h-6 w-12" />{' '}
+                </div>
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-24" />{' '}
+                  <Skeleton className="h-6 w-16" />{' '}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="flex items-center gap-2">
-        <Skeleton className="h-8 w-48" />
         <Skeleton className="ms-auto h-10 w-24" />
         <Skeleton className="h-10 w-24" />
       </div>
@@ -470,7 +464,7 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex h-full items-center items-center justify-center gap-4 [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
         <h1 className="font-bold">{text.error}</h1>
