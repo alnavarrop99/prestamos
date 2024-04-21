@@ -312,7 +312,7 @@ export function UpdateCreditById() {
                 <CardContent>
                   <form
                     autoFocus={false}
-                    className="grid grid-cols-none md:grid-cols-2 xl:grid-cols-3 gap-4 [&>label:last-child]:col-span-full [&>label>div>span]:font-bold [&>label>span]:font-bold [&>label]:space-y-2"
+                    className="p-1 grid grid-cols-none md:grid-cols-2 xl:grid-cols-3 gap-4 [&>label:last-child]:col-span-full [&>label>div>span]:font-bold [&>label>span]:font-bold [&>label]:space-y-2"
                     id={'edit-credit'}
                     onChange={onChangeDetail}
                     onSubmit={onSubmit}
@@ -598,7 +598,7 @@ export function UpdateCreditById() {
                               <AccordionContent asChild>
                                 <form
                                   autoFocus={false}
-                                  className="grid grid-cols-none md:grid-cols-2 items-end gap-4 px-4 [&>label:last-child]:col-span-full [&>label>div]:flex [&>label>div]:items-center [&>label>div]:justify-between [&>label>div]:gap-2 [&>label]:space-y-2 [&>label_span]:font-bold"
+                                  className="p-1 grid grid-cols-none md:grid-cols-2 items-end gap-4 px-4 [&>label:last-child]:col-span-full [&>label>div]:flex [&>label>div]:items-center [&>label>div]:justify-between [&>label>div]:gap-2 [&>label]:space-y-2 [&>label_span]:font-bold"
                                   id={'edit-pay-' + index}
                                   onChange={onChangePaymentById(index)}
                                   onSubmit={onCuoteSubmit(index)}

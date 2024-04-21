@@ -127,7 +127,7 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
         onSubmit={onSubmit}
         id="pay-credit"
         className={clsx(
-          'px-1 grid-rows-subgrid grid gap-3 grid-cols-none md:grid-cols-2 gap-y-4 [&>label]:space-y-2',
+          'p-1 grid-rows-subgrid grid gap-3 grid-cols-none md:grid-cols-2 gap-y-4 [&>label]:space-y-2',
           styles?.["custom-form"]
         )}
       >

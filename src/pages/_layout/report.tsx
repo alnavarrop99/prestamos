@@ -90,7 +90,7 @@ export function Report() {
                 autoFocus={false}
                 ref={form?.[index]}
                 onSubmit={onSubmit(index)}
-                className="px-1 grid grid-cols-none md:grid-cols-2 gap-4 md:px-4 xl:px-4 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
+                className="p-1 grid grid-cols-none md:grid-cols-2 gap-4 md:px-4 xl:px-4 py-2 [&>label:last-child]:col-span-full [&>label>span]:font-bold [&>label]:space-y-2"
                 id={'report' + id}
               >
                 {parametros.map(({ nombre, id, tipo_dato, obligatorio }) => (

@@ -31,6 +31,7 @@ import { useToken } from '@/lib/context/login'
 import { Link } from '@tanstack/react-router'
 import { DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 export const updateUserByIdOpt = {
   mutationKey: ['update-user-by-id'],
@@ -251,6 +252,8 @@ export function UpdateUserById() {
           <Separator />
           <DialogDescription className='text-xs text-start md:text-base text-muted-foreground'>{text.descriiption}</DialogDescription>
         </DialogHeader>
+        <ScrollArea className='overflow-y-auto h-[60dvh] md:h-full'>
+        <ScrollBar orientation='vertical' />
         <form
           autoFocus={false}
           autoComplete="off"
@@ -259,7 +262,7 @@ export function UpdateUserById() {
           onChange={onChange}
           id="update-user"
           className={clsx(
-            'px-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2 [&_label>span]:font-bold',
+            'p-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2 [&_label>span]:font-bold',
             {
               '[&_*:disabled]:opacity-100':
                 !!userId && rol?.rolName !== 'Administrador',
@@ -391,6 +394,7 @@ export function UpdateUserById() {
             </div>
           </div>
         </form>
+        </ScrollArea>
         <DialogFooter className="justify-start gap-2 flex-col md:flex-row">
           {!isSuccess ? (
             <>

@@ -148,7 +148,7 @@ export function NewClient() {
             {text.descriiption}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className='overflow-y-auto h-[25rem] md:h-full'>
+        <ScrollArea className='overflow-y-auto h-[50dvh] md:h-full'>
         <ScrollBar orientation='vertical' />
           <form
             autoFocus={false}
@@ -157,7 +157,7 @@ export function NewClient() {
             onSubmit={onSubmit}
             id="new-client"
             className={clsx(
-              'px-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>label]:space-y-2',
+              'p-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>label]:space-y-2',
               styles?.['custom-form']
             )}
           >

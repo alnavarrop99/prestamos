@@ -279,7 +279,7 @@ export function NewCredit() {
             {text.descriiption}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className='h-[25rem] md:h-full'>
+        <ScrollArea className='h-[60dvh] md:h-full'>
         <ScrollBar orientation='vertical' />
         <form
           autoFocus={false}

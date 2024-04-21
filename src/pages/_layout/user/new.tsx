@@ -29,6 +29,7 @@ import { useMutation } from '@tanstack/react-query'
 import { type TUSER_GET, type TUSER_POST_BODY, postUser } from '@/api/users'
 import { getRolByName, listRols } from '@/lib/type/rol'
 import { useStatus } from '@/lib/context/layout'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 export const postUserOpt = {
   mutationKey: ['create-user'],
@@ -149,6 +150,8 @@ export function NewUser() {
           <Separator />
           <DialogDescription className='text-xs text-start md:text-base text-muted-foreground'>{text.descriiption}</DialogDescription>
         </DialogHeader>
+        <ScrollArea className='overflow-y-auto h-[60dvh] md:h-full'>
+        <ScrollBar orientation='vertical' />
         <form
           autoFocus={false}
           autoComplete="off"
@@ -156,7 +159,7 @@ export function NewUser() {
           onSubmit={onSubmit}
           id="new-client-form"
           className={clsx(
-            'px-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2',
+            'p-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2',
             styles?.['custom-form']
           )}
         >
@@ -249,6 +252,7 @@ export function NewUser() {
             </div>
           </div>
         </form>
+        </ScrollArea>
         <DialogFooter className="justify-end gap-2 flex-col md:flex-row">
           <Button variant="default" form="new-client-form" type="submit">
             {text.button.update}

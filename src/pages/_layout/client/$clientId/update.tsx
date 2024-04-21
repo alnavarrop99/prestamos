@@ -260,7 +260,7 @@ export function UpdateClientById() {
             {text.description({ state: !checked })}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className='overflow-y-auto h-[25rem] md:h-full'>
+        <ScrollArea className='overflow-y-auto h-[60dvh] md:h-full'>
         <ScrollBar orientation='vertical' />
         <form
           autoFocus={false}
@@ -270,7 +270,7 @@ export function UpdateClientById() {
           onChange={onChange}
           id="update-client"
           className={clsx(
-            'px-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>label:last-child]:col-span-full [&>label]:space-y-2 [&_*:disabled]:cursor-text [&_*:disabled]:opacity-100',
+            'p-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>label:last-child]:col-span-full [&>label]:space-y-2 [&_*:disabled]:cursor-text [&_*:disabled]:opacity-100',
             {
               '[&>label>span]:font-bold': checked,
             }

@@ -33,6 +33,7 @@ import { Link } from '@tanstack/react-router'
 import { getCurrentUserOpt } from '@/pages/_layout'
 import { updateUserByIdOpt } from '@/pages/_layout/user/$userId/update'
 import { useToken } from '@/lib/context/login'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 
 /* eslint-disable-next-line */
 interface TPassowordVisibilityState {
@@ -223,6 +224,8 @@ export const MyUserInfo = memo(function () {
           {text.descriiption}
         </DialogDescription>
       </DialogHeader>
+      <ScrollArea className='overflow-y-auto h-[60dvh] md:h-full'>
+      <ScrollBar orientation='vertical' />
       <form
         autoFocus={false}
         autoComplete="off"
@@ -231,7 +234,7 @@ export const MyUserInfo = memo(function () {
         onChange={onChange}
         id="user-info"
         className={clsx(
-          'grid-rows-subgrid grid grid-cols-none gap-3 gap-y-4 px-1 md:grid-cols-2 [&>*]:col-span-full [&>:is(label,div)]:space-y-2 [&_label>span]:font-bold',
+          'p-1 grid-rows-subgrid grid grid-cols-none gap-3 gap-y-4 px-1 md:grid-cols-2 [&>*]:col-span-full [&>:is(label,div)]:space-y-2 [&_label>span]:font-bold',
           {
             '[&_*:disabled]:opacity-100':
               !!userId && rol?.rolName !== 'Administrador',
@@ -366,6 +369,7 @@ export const MyUserInfo = memo(function () {
           </div>
         </div>
       </form>
+      </ScrollArea>
       <DialogFooter className="flex-col justify-start gap-2 gap-2 md:flex-row">
         {!isSuccess ? (
           <>
