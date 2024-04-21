@@ -714,14 +714,18 @@ export function Pending() {
     <>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-8 w-24 md:w-48" />
           <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="ms-auto h-10 w-24" />
+          <Skeleton className="ms-auto h-10 w-20 md:w-24" />
         </div>
         <Separator />
-        <div className="flex flex-wrap">
+        <div className="flex items-center">
+          <Skeleton className="hidden h-6 md:w-56 xl:block" />
+          <Skeleton className="h-8 w-40 xl:ms-auto" />
+        </div>
+        <div className="flex flex-wrap gap-4 [&>*]:flex-1 md:[&>*]:basis-2/5">
           {Array.from({ length: LENGTH })?.map((_, index) => (
-            <div className="basis-1/2  p-4" key={index}>
+            <div key={index}>
               <Card
                 className={clsx(
                   'justify-streetch grid h-full items-end shadow-lg'
@@ -766,7 +770,7 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex flex-col md:flex-row  h-full items-center items-center justify-center gap-4 [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
         <h1 className="font-bold">{text.error}</h1>

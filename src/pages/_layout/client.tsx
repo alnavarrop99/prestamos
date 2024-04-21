@@ -260,7 +260,7 @@ export function Clients() {
               <Select value={filter} onValueChange={onValueChange}>
                 <SelectTrigger
                   title="Filtro de busqueda"
-                  className="ms-auto w-auto"
+                  className="ms-auto hidden w-auto xl:block"
                 >
                   <SelectValue placeholder={text.select.placeholder} />
                 </SelectTrigger>
@@ -365,32 +365,76 @@ export function Pending() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <Skeleton className="h-8 w-36" />
+        <Skeleton className="h-8 w-24 md:w-36" />
         <Skeleton className="h-8 w-8 rounded-full" />
+        <Skeleton className="ms-auto h-10 w-20 md:w-24" />
+        <Skeleton className="h-10 w-20 md:w-24" />
       </div>
       <Separator />
       <div className="flex items-center gap-2">
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="h-10 w-24" />
-        <Skeleton className="ms-auto h-8 w-32" />
+        <Skeleton className="hidden h-6 md:w-56 xl:block" />
+        <Skeleton className="ms-auto hidden h-8 w-32 xl:block" />
         <Skeleton className="h-8 w-32" />
       </div>
       <div className="px-4">
-        <table className="w-full border-separate border-spacing-2 rounded-md ring-4 ring-transparent">
-          {Array.from({ length: ROW })?.map((_, index) => (
-            <tr key={index}>
+        <table className="hidden w-full border-separate border-spacing-2 divide-y-2 rounded-xl bg-background ring-2 ring-muted xl:table">
+          {Array.from({ length: ROW })?.map((_, row) => (
+            <tr key={row}>
               {Array.from({ length: COL })?.map((_, index) => (
-                <td key={index} className="first:w-12 last:w-16">
+                <td key={index} className={clsx('first:w-12 last:w-16')}>
                   {' '}
-                  <Skeleton className="h-9 w-full" />{' '}
+                  <Skeleton className={clsx('h-9 w-full')} />{' '}
                 </td>
               ))}
             </tr>
           ))}
         </table>
+
+        <div className="divide-y-2 rounded-xl ring-2 ring-muted xl:hidden">
+          {Array.from({ length: ROW })?.map((_, row) => (
+            <div key={row} className="w-full bg-background">
+              <div
+                className={clsx('flex items-center gap-2 bg-muted px-4 py-2 ', {
+                  'rounded-t-xl': row === 0,
+                })}
+              >
+                <Skeleton className="h-6 w-24 !bg-background" />
+                <Skeleton className="ms-auto h-3 w-12 !bg-background" />
+                <Skeleton className="h-4 w-4 !bg-background" />
+              </div>
+
+              <div className="flex flex-col gap-1 px-8 py-2 [&>*]:flex [&>*]:gap-2">
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-20" />{' '}
+                  <Skeleton className="h-6 w-20" />{' '}
+                </div>
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-16" />{' '}
+                  <Skeleton className="h-6 w-24" />{' '}
+                </div>
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-28" />{' '}
+                  <Skeleton className="h-6 w-12" />{' '}
+                </div>
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-32" />{' '}
+                  <Skeleton className="h-6 w-12" />{' '}
+                </div>
+                <div>
+                  {' '}
+                  <Skeleton className="h-6 w-24" />{' '}
+                  <Skeleton className="h-6 w-16" />{' '}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="flex items-center gap-2">
-        <Skeleton className="h-8 w-48" />
         <Skeleton className="ms-auto h-10 w-24" />
         <Skeleton className="h-10 w-24" />
       </div>
@@ -407,7 +451,7 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex flex-col md:flex-row  h-full items-center items-center justify-center gap-4 [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
         <h1 className="font-bold">{text.error}</h1>

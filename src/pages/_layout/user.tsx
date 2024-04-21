@@ -571,22 +571,22 @@ export function Pending() {
     <>
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Skeleton className="h-8 w-48" />
+          <Skeleton className="h-8 w-24 md:w-48" />
           <Skeleton className="h-8 w-8 rounded-full" />
-          <Skeleton className="ms-auto h-10 w-24" />
-          <Skeleton className="h-10 w-24" />
+          <Skeleton className="ms-auto h-10 w-20 md:w-24" />
+          <Skeleton className="h-10 w-20 md:w-24" />
         </div>
         <Separator />
         <div className="flex items-center">
-          <Skeleton className="h-6 w-56" />
-          <Skeleton className="ms-auto h-8 w-40" />
+          <Skeleton className="hidden h-6 md:w-56 xl:block" />
+          <Skeleton className="h-8 w-40 xl:ms-auto" />
         </div>
-        <div className="flex flex-wrap gap-4 px-2">
+        <div className="flex flex-wrap gap-4 px-2 [&>*]:flex-1">
           {Array.from({ length: LENGTH })?.map((_, index) => (
             <Card
               key={index}
               className={clsx(
-                'justify-streetch grid h-full items-end shadow-lg'
+                'justify-streetch inline-grid items-end shadow-lg'
               )}
             >
               <CardHeader>
@@ -594,15 +594,15 @@ export function Pending() {
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-4">
-                  <Skeleton className="h-20 w-20 rounded-full" />
+                  <Skeleton className="h-16 w-16 rounded-full" />
                   <div className="space-y-2">
-                    <Skeleton className="h-6 w-48" />
                     <Skeleton className="h-6 w-32" />
+                    <Skeleton className="h-6 w-24" />
                   </div>
                 </div>
               </CardContent>
               <CardFooter className="flex items-center gap-2">
-                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-6 w-28" />
               </CardFooter>
             </Card>
           ))}
@@ -622,7 +622,7 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex flex-col md:flex-row h-full items-center items-center justify-center gap-4 [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-full flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
         <h1 className="font-bold">{text.error}</h1>

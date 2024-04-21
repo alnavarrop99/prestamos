@@ -120,7 +120,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
         </TableBody>
 
         <TableFooter>
-          <TableRow>
+          <TableRow className="rounded-b-xl">
             <TableCell colSpan={5} className="flex justify-between font-bold">
               <p>{text.total + ':'}</p>
               <GetPay credit={credit} />
