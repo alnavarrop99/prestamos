@@ -25,11 +25,17 @@ import styles from '@/styles/global.module.css'
 import { useRef, useState } from 'react'
 import { Eye as PassOn, EyeOff as PassOff } from 'lucide-react'
 import { useNotifications } from '@/lib/context/notification'
-import { useMutation } from '@tanstack/react-query'
-import { type TUSER_GET, type TUSER_POST_BODY, postUser } from '@/api/users'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import {
+  type TUSER_GET,
+  type TUSER_POST_BODY,
+  postUser,
+  TUSER_GET_ALL,
+} from '@/api/users'
 import { getRolByName, listRols } from '@/lib/type/rol'
 import { useStatus } from '@/lib/context/layout'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { getUsersListOpt } from '../user'
 
 export const postUserOpt = {
   mutationKey: ['create-user'],
@@ -56,6 +62,7 @@ export function NewUser() {
   const form = useRef<HTMLFormElement>(null)
   const { pushNotification } = useNotifications()
   const { open } = useStatus()
+  const qClient = useQueryClient()
 
   const onChange: React.ChangeEventHandler<React.ComponentRef<typeof Input>> = (
     ev
@@ -67,7 +74,7 @@ export function NewUser() {
     data: TUSER_GET,
     variables: TUSER_POST_BODY,
     context: unknown
-  ) => unknown = (_, items) => {
+  ) => unknown = (newData, items) => {
     const description = text.notification.decription({
       username: items?.nombre,
     })
@@ -83,6 +90,12 @@ export function NewUser() {
       action: 'POST',
       description,
     })
+
+    const update: (data: TUSER_GET_ALL) => TUSER_GET_ALL = (data) => {
+      return [...data, newData]
+    }
+
+    qClient?.setQueryData(getUsersListOpt?.queryKey, update)
   }
 
   const onError: (
@@ -146,114 +159,120 @@ export function NewUser() {
       {!open && <Navigate to={'../'} replace />}
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">
+            {text.title}
+          </DialogTitle>
           <Separator />
-          <DialogDescription className='text-xs text-start md:text-base text-muted-foreground'>{text.descriiption}</DialogDescription>
+          <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
+            {text.descriiption}
+          </DialogDescription>
         </DialogHeader>
-        <ScrollArea className='overflow-y-auto h-[60dvh] md:h-full'>
-        <ScrollBar orientation='vertical' />
-        <form
-          autoFocus={false}
-          autoComplete="off"
-          ref={form}
-          onSubmit={onSubmit}
-          id="new-client-form"
-          className={clsx(
-            'p-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>*]:col-span-full [&>:is(label,div)]:space-y-2',
-            styles?.['custom-form']
-          )}
-        >
-          <Label className="!col-span-1">
-            <span>{text.form.firstName.label}</span>
-            <Input
-              required
-              name={'firstName' as TFormName}
-              type="text"
-              placeholder={text.form.firstName.placeholder}
-              pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
-            />
-          </Label>
-          <Label className="!col-span-1">
-            <span>{text.form.lastName.label} </span>
-            <Input
-              required
-              name={'lastName' as TFormName}
-              type="text"
-              placeholder={text.form.lastName.placeholder}
-              pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
-            />
-          </Label>
-          <Label>
-            <span className="after:text-red-500 after:content-['_*_']">
-              {text.form.rol.label}{' '}
-            </span>
-            <Select
-              required
-              name={'rol' as TFormName}
-              defaultValue={'' + getRolByName({ rolName: 'Administrador' })?.id}
-            >
-              <SelectTrigger className="!border-1 w-full !border-ring">
-                <SelectValue placeholder={text.form.rol.placeholder} />
-              </SelectTrigger>
-              <SelectContent className="[&_*]:cursor-pointer">
-                {listRols()?.map(({ nombre, id }, index) => (
-                  <SelectItem key={index} value={'' + id}>
-                    {nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Label>
-          <div className='[&>label]:after:text-red-500 [&>label]:after:content-["_*_"]'>
-            <Label htmlFor="user-password">
-              <span>{text.form.password.current.label} </span>
-            </Label>
-            <div className="flex flex-row-reverse items-center gap-x-2">
-              <Button
-                type="button"
-                className="w-fit p-1.5"
-                onClick={onClick('password')}
-                variant={!visibility.password ? 'outline' : 'default'}
-              >
-                {!visibility.password ? <PassOn /> : <PassOff />}
-              </Button>
+        <ScrollArea className="h-[60dvh] overflow-y-auto md:h-full">
+          <ScrollBar orientation="vertical" />
+          <form
+            autoFocus={false}
+            autoComplete="off"
+            ref={form}
+            onSubmit={onSubmit}
+            id="new-client-form"
+            className={clsx(
+              'grid-rows-subgrid grid grid-cols-none gap-3 gap-y-4 p-1 md:grid-cols-2 [&>*]:col-span-full [&>:is(label,div)]:space-y-2',
+              styles?.['custom-form']
+            )}
+          >
+            <Label className="!col-span-1">
+              <span>{text.form.firstName.label}</span>
               <Input
-                id="user-password"
                 required
-                name={'password' as TFormName}
-                type={!visibility.password ? 'password' : 'text'}
-                placeholder={text.form.password.current.placeholder}
-                onChange={onChange}
-                pattern="^.{6,}$"
+                name={'firstName' as TFormName}
+                type="text"
+                placeholder={text.form.firstName.placeholder}
+                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
               />
-            </div>
-          </div>
-          <div className='[&>label]:after:text-red-500 [&>label]:after:content-["_*_"]'>
-            <Label htmlFor="user-confirmation">
-              <span>{text.form.password.confirmation.label} </span>
             </Label>
-            <div className="flex flex-row-reverse items-center gap-x-2">
-              <Button
-                type="button"
-                className="w-fit p-1.5"
-                onClick={onClick('confirmation')}
-                variant={!visibility?.confirmation ? 'outline' : 'default'}
-              >
-                {!visibility?.confirmation ? <PassOn /> : <PassOff />}
-              </Button>
+            <Label className="!col-span-1">
+              <span>{text.form.lastName.label} </span>
               <Input
-                id="user-confirmation"
                 required
-                name={'confirmation' as TFormName}
-                type={!visibility?.confirmation ? 'password' : 'text'}
-                placeholder={text.form.password.confirmation.placeholder}
-                pattern={password}
+                name={'lastName' as TFormName}
+                type="text"
+                placeholder={text.form.lastName.placeholder}
+                pattern="^[a-zA-Z]+(?: [a-zA-Z]+)?$"
               />
+            </Label>
+            <Label>
+              <span className="after:text-red-500 after:content-['_*_']">
+                {text.form.rol.label}{' '}
+              </span>
+              <Select
+                required
+                name={'rol' as TFormName}
+                defaultValue={
+                  '' + getRolByName({ rolName: 'Administrador' })?.id
+                }
+              >
+                <SelectTrigger className="!border-1 w-full !border-ring">
+                  <SelectValue placeholder={text.form.rol.placeholder} />
+                </SelectTrigger>
+                <SelectContent className="[&_*]:cursor-pointer">
+                  {listRols()?.map(({ nombre, id }, index) => (
+                    <SelectItem key={index} value={'' + id}>
+                      {nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Label>
+            <div className='[&>label]:after:text-red-500 [&>label]:after:content-["_*_"]'>
+              <Label htmlFor="user-password">
+                <span>{text.form.password.current.label} </span>
+              </Label>
+              <div className="flex flex-row-reverse items-center gap-x-2">
+                <Button
+                  type="button"
+                  className="w-fit p-1.5"
+                  onClick={onClick('password')}
+                  variant={!visibility.password ? 'outline' : 'default'}
+                >
+                  {!visibility.password ? <PassOn /> : <PassOff />}
+                </Button>
+                <Input
+                  id="user-password"
+                  required
+                  name={'password' as TFormName}
+                  type={!visibility.password ? 'password' : 'text'}
+                  placeholder={text.form.password.current.placeholder}
+                  onChange={onChange}
+                  pattern="^.{6,}$"
+                />
+              </div>
             </div>
-          </div>
-        </form>
+            <div className='[&>label]:after:text-red-500 [&>label]:after:content-["_*_"]'>
+              <Label htmlFor="user-confirmation">
+                <span>{text.form.password.confirmation.label} </span>
+              </Label>
+              <div className="flex flex-row-reverse items-center gap-x-2">
+                <Button
+                  type="button"
+                  className="w-fit p-1.5"
+                  onClick={onClick('confirmation')}
+                  variant={!visibility?.confirmation ? 'outline' : 'default'}
+                >
+                  {!visibility?.confirmation ? <PassOn /> : <PassOff />}
+                </Button>
+                <Input
+                  id="user-confirmation"
+                  required
+                  name={'confirmation' as TFormName}
+                  type={!visibility?.confirmation ? 'password' : 'text'}
+                  placeholder={text.form.password.confirmation.placeholder}
+                  pattern={password}
+                />
+              </div>
+            </div>
+          </form>
         </ScrollArea>
-        <DialogFooter className="justify-end gap-2 flex-col md:flex-row">
+        <DialogFooter className="flex-col justify-end gap-2 md:flex-row">
           <Button variant="default" form="new-client-form" type="submit">
             {text.button.update}
           </Button>

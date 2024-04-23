@@ -20,10 +20,10 @@ import { Badge } from '@/components/ui/badge'
 import {
   getClientById,
   pathClientById,
-  type TCLIENT_POST,
   type TCLIENT_GET,
   type TCLIENT_PATCH_BODY,
   TCLIENT_GET_ALL,
+  TCLIENT_PATCH,
 } from '@/api/clients'
 import {
   Select,
@@ -103,7 +103,7 @@ export function UpdateClientById() {
     if (!clientRes && isError) throw Error()
   }, [isError])
 
-  const onSuccess = (newData: TCLIENT_POST) => {
+  const onSuccess = (newData: TCLIENT_PATCH) => {
     if (!init?.current?.nombres || !init?.current?.apellidos) return
 
     const description = text.notification.decription({
@@ -140,7 +140,7 @@ export function UpdateClientById() {
       })
     }
 
-    const updateClient: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
+    const updateClient: (data: TCLIENT_PATCH) => TCLIENT_PATCH = (data) => {
       return { ...newData, ...data }
     }
 

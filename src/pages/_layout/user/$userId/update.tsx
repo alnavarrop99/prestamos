@@ -19,10 +19,16 @@ import {
   type TUSER_PATCH,
   getUserById,
   pathUserById,
+  TUSER_GET_ALL,
 } from '@/api/users'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
-import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { type TROLES, getRolByName, listRols } from '@/lib/type/rol'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SpinLoader } from '@/components/ui/loader'
@@ -39,6 +45,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { getUsersListOpt } from '../../user'
 
 export const updateUserByIdOpt = {
   mutationKey: ['update-user-by-id'],
@@ -92,8 +99,9 @@ export function UpdateUserById() {
   >(undefined)
   const init = useRef(user)
   const { userId: currentUserId, rol } = useToken()
+  const qClient = useQueryClient()
 
-  const onSuccess = (data: TUSER_PATCH) => {
+  const onSuccess: (data: TUSER_PATCH) => void = (newData) => {
     if (!init?.current?.nombre) return
 
     const description = text.notification.decription({
@@ -118,13 +126,24 @@ export function UpdateUserById() {
       variant: 'default',
     })
 
-    queryClient.setQueriesData(
-      { queryKey: getUserByIdOpt({ userId }).queryKey },
-      data
-    )
+    const updateList: (data: TUSER_GET_ALL) => TUSER_GET_ALL = (data) => {
+      const res = data
+      return res?.map(({ id }, index, list) => {
+        if (id === +userId)
+          return {
+            ...list?.[index],
+            ...newData,
+          }
+        return list?.[index]
+      })
+    }
 
-    // TODO: not update user with exec a path update
-    // setUser( { ...data, password: "" } )
+    const updateClient: (data: TUSER_PATCH) => TUSER_PATCH = (data) => {
+      return { ...newData, ...data }
+    }
+
+    qClient?.setQueryData(getUsersListOpt?.queryKey, updateList)
+    qClient?.setQueryData(getUserByIdOpt({ userId })?.queryKey, updateClient)
   }
 
   const onError = () => {

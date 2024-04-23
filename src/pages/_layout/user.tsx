@@ -58,14 +58,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import {
-  queryOptions,
-  useIsMutating,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { queryClient } from '@/pages/__root'
-import { updateUserByIdOpt } from '@/pages/_layout/user/$userId/update'
-import { postUserOpt } from '@/pages/_layout/user/new'
 import { useToken } from '@/lib/context/login'
 
 export const getUsersListOpt = {
@@ -144,22 +138,19 @@ export function Users() {
         }))
         ?.filter(({ id }) => userId !== id)
     )
-  const { data: usersRes, refetch } = useSuspenseQuery(
+  const { data: usersRes } = useSuspenseQuery(
     queryOptions({ ...getUsersListOpt, select })
   )
-  const [users, setUsers] = useState<TUsersState[]>(usersRes)
+  const [users, setUsers] = useState<TUsersState[]>([])
   const navigate = useNavigate()
   const { value } = useStatus()
   const { open, setOpen } = useStatus()
   const { setPagination, ...pagination } = usePagination()
-  const isUpdateUser = useIsMutating({
-    status: 'success',
-    mutationKey: updateUserByIdOpt.mutationKey,
-  })
-  const isNewUser = useIsMutating({
-    status: 'success',
-    mutationKey: postUserOpt.mutationKey,
-  })
+
+  useEffect(() => {
+    if (!usersRes) return () => {}
+    setUsers(usersRes)
+  }, [usersRes])
 
   const onSelectOrder: (value: string) => void = (value) => {
     if (order !== 'rol' && order !== 'nombre' && order !== 'id') return
@@ -270,18 +261,6 @@ export function Users() {
 
       ev.stopPropagation()
     }
-
-  useEffect(() => {
-    if (usersRes) {
-      refetch()?.then(({ data }) => {
-        if (!data) return
-        setUsers(data)
-      })
-    }
-    return () => {
-      // setUsers( usersRes )
-    }
-  }, [isUpdateUser, isNewUser])
 
   useEffect(() => {
     if (value) {
