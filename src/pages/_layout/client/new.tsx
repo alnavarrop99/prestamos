@@ -123,7 +123,7 @@ export function NewClient() {
       nombres: items?.nombres,
       apellidos: items?.apellidos,
       direccion: items?.direccion,
-      telefono: items?.telefono,
+      telefono: items?.telefono ?? '',
       celular: items?.celular,
       numero_de_identificacion: items?.numero_de_identificacion,
       tipo_de_identificacion_id: +items?.tipo_de_identificacion_id,
@@ -220,17 +220,19 @@ export function NewClient() {
                 name={'celular' as TFormName}
                 type="tel"
                 placeholder={text.form.phone.placeholder}
-                pattern="(?:\+57|0)[0-9]{8}"
+                // pattern="(?:\+57|0)[0-9]{8}"
+                pattern="[0-9]{8, 12}"
               />
             </Label>
             <Label>
               <span>{text.form.telephone.label} </span>
               <Input
-                required
                 name={'telefono' as TFormName}
                 type="tel"
                 placeholder={text.form.telephone.placeholder}
-                pattern="(?:\+57|0)[0-9]{6,7}"
+                // pattern="(?:\+57|0)[0-9]{6,7}"
+                // pattern="(?:\+57|0)[0-9]{6,7}"
+                pattern="[0-9]{8, 12}"
               />
             </Label>
             <Label>
