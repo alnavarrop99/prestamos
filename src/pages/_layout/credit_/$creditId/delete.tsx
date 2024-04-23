@@ -18,19 +18,19 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { deleteCreditById, type TCREDIT_GET_BASE } from '@/api/credit'
+import { deleteCreditById, TCREDIT_GET_ALL, TCREDIT_GET_FILTER_ALL, type TCREDIT_GET_BASE } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import {
   queryOptions,
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query'
-import { _credit } from '@/pages/_layout/credit_/$creditId'
+import { _credit, getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
 import { Navigate } from '@tanstack/react-router'
-import { queryClient } from '@/pages/__root'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
+import { getCreditsListOpt } from '@/pages/_layout/credit'
 
 export const deleteCreditByIdOpt = {
   mutationKey: ['delete-credit-by-id'],
@@ -52,8 +52,8 @@ export function DeleteCreditById() {
   const [checked, setChecked] = useState(false)
   const { open, setOpen } = useStatus()
   const { pushNotification } = useNotifications()
-  const qClient = useQueryClient(queryClient)
   const { creditId } = Route.useParams()
+  const qClient = useQueryClient()
 
   const onSuccess: (
     data: TCREDIT_GET_BASE,
@@ -78,6 +78,15 @@ export function DeleteCreditById() {
       description,
       variant: 'default',
     })
+
+    const update: (data: TCREDIT_GET_FILTER_ALL) => TCREDIT_GET_FILTER_ALL = (data) => {
+      const res = data
+      return res?.filter(({ id }) => id !== +creditId)
+    }
+
+    qClient?.removeQueries({ queryKey: getCreditByIdOpt({ creditId })?.queryKey })
+    qClient?.setQueryData(getCreditsListOpt?.queryKey, update)
+
   }
   const onError: (
     error: Error,

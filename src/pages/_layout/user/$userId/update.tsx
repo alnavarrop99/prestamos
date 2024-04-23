@@ -138,12 +138,12 @@ export function UpdateUserById() {
       })
     }
 
-    const updateClient: (data: TUSER_PATCH) => TUSER_PATCH = (data) => {
+    const updateUser: (data: TUSER_PATCH) => TUSER_PATCH = (data) => {
       return { ...newData, ...data }
     }
 
     qClient?.setQueryData(getUsersListOpt?.queryKey, updateList)
-    qClient?.setQueryData(getUserByIdOpt({ userId })?.queryKey, updateClient)
+    qClient?.setQueryData(getUserByIdOpt({ userId })?.queryKey, updateUser)
   }
 
   const onError = () => {

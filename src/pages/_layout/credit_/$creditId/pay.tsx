@@ -16,9 +16,10 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
-import { useMutation } from '@tanstack/react-query'
-import { _client, _credit } from '@/pages/_layout/credit_/$creditId'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { _client, _credit, getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
 import { format } from 'date-fns'
+import { getCreditsListOpt } from '../../credit'
 
 export const postPaymentOpt = {
   mutationKey: ["create-payment"],
@@ -40,6 +41,7 @@ export function PayCreditById() {
   const { open, setOpen } = useStatus()
   const { pushNotification } = useNotifications()
   const { creditId } = Route.useParams()
+  const qClient = useQueryClient()
 
   const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = (_, items) => {
     const description = text.notification.decription({
@@ -58,6 +60,10 @@ export function PayCreditById() {
       action: "POST",
       description,
     })
+
+    qClient?.refetchQueries(
+      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey]  },
+    )
   }
   const onError: ((error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = (_, items) => {
     const description = text.notification.decription({

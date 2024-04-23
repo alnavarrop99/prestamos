@@ -16,9 +16,12 @@ import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { postPaymentOpt } from "@/pages/_layout/credit_/$creditId/pay"
+import { TCREDIT_GET_BASE, TCREDIT_GET_FILTER_ALL } from '@/api/credit'
+import { getCreditsListOpt } from '../credit'
+import { getCreditByIdOpt } from '../credit_/$creditId'
 
 type TSearch = {
   name: string
@@ -41,6 +44,7 @@ export function PaySelectedCredit() {
   const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const { pay, name, creditId } = Route.useSearch()
+  const qClient = useQueryClient()
 
 const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = ( _, items ) => {
     const description = text.notification.decription({
@@ -59,6 +63,11 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
       action: "POST",
       description,
     })
+
+    qClient?.refetchQueries(
+      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey]  },
+    )
+
   }
 
   const onError: ((error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = ( ) => {

@@ -12,12 +12,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle  } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { patchCreditsById, type TCREDIT_GET_BASE, type TCREDIT_GET, type TCREDIT_PATCH_BODY } from '@/api/credit'
+import { patchCreditsById, type TCREDIT_GET, type TCREDIT_PATCH_BODY, TCREDIT_GET_FILTER_ALL, TCREDIT_PATCH } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { _client, _credit, _creditChange, _payDelete } from '@/pages/_layout/credit_/$creditId_/update'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { type TPAYMENT_GET_BASE, deletePaymentById, patchPaymentById, type TPAYMENT_PATCH_BODY } from "@/api/payment";
 import { format } from 'date-fns'
+import { getCreditsListOpt } from '../../credit'
+import { getCreditByIdOpt } from '../$creditId'
 
 export const updateCreditByIdOpt = {
     mutationKey: ["update-credit"],
@@ -48,8 +50,9 @@ export function UpdateConfirmationCredit() {
   const { pushNotification } = useNotifications()
   const client = useContext(_client) 
   const { creditId } = Route.useParams()
+  const qClient = useQueryClient()
 
-  const onSuccessUpdateCredit: ((data: TCREDIT_GET_BASE, variables: { creditId: number; updateCredit?: TCREDIT_PATCH_BODY | undefined; }, context: unknown) => unknown) = () => {
+  const onSuccessUpdateCredit: ((data: TCREDIT_PATCH, variables: { creditId: number; updateCredit?: TCREDIT_PATCH_BODY | undefined; }, context: unknown) => unknown) = ( newData ) => {
     const description = text.notification.credit.decription({
       username: client?.nombres + " " + client?.apellidos,
     })
@@ -65,7 +68,30 @@ export function UpdateConfirmationCredit() {
       action: "PATH",
       description,
     })
+
+    const updateList: (data: TCREDIT_GET_FILTER_ALL) => TCREDIT_GET_FILTER_ALL = (data) => {
+      const res = data
+      return res?.map(({ id }, index, list) => {
+        if (id === +creditId)
+          return {
+            ...list?.[index],
+            ...newData,
+          }
+        return list?.[index]
+      })
+    }
+
+    const updateCredit: (data: TCREDIT_PATCH) => TCREDIT_PATCH = (data) => {
+      return { ...newData, ...data }
+    }
+
+    qClient?.setQueryData(getCreditsListOpt?.queryKey, updateList)
+    qClient?.setQueryData(
+      getCreditByIdOpt({ creditId })?.queryKey,
+      updateCredit
+    )
   }
+
   const onErrorUpdateCredit: ((error: Error, variables: { creditId: number; updateCredit?: TCREDIT_PATCH_BODY | undefined; }, context: unknown) => unknown) = () => {
     const description = text.notification.credit.error({
       username: client?.nombres + " " + client?.apellidos,
@@ -106,6 +132,10 @@ export function UpdateConfirmationCredit() {
       action: "PATH",
       description,
     })
+
+    qClient?.refetchQueries(
+      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey]  },
+    )
   }
   const onErrorUpdatePayment: ((error: Error, variables: { paymentId: number; updatePayment?: TPAYMENT_PATCH_BODY | undefined; }, context: unknown) => unknown) = () => {
     const description = text.notification.payment.error({
@@ -147,6 +177,10 @@ export function UpdateConfirmationCredit() {
       action: "DELETE",
       description,
     })
+
+    qClient?.refetchQueries(
+      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey]  },
+    )
   }
   const onErrorRemovePayment: ((error: Error, variables: { paymentId: number; }, context: unknown) => unknown) = () => {
     const description = text.notification.deletePayment.error({

@@ -29,7 +29,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
 import {
+    getCreditsList,
   postCredit,
+  TCREDIT_GET_ALL,
   type TCREDIT_GET_BASE,
   type TCREDIT_POST_BODY,
 } from '@/api/credit'
@@ -37,7 +39,7 @@ import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { type TMORA_TYPE, getMoraTypeByName } from '@/lib/type/moraType'
 import { getFrecuencyByName, listFrecuencys } from '@/lib/type/frecuency'
-import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
+import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Navigate } from '@tanstack/react-router'
 import { getStatusByName } from '@/lib/type/status'
 import { format } from 'date-fns'
@@ -48,6 +50,7 @@ import { type TUSER_GET } from '@/api/users'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToken } from '@/lib/context/login'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { getCreditsListOpt } from '../credit'
 
 type TSearch = {
   clientId: number
@@ -105,7 +108,7 @@ export function NewCredit() {
   const { open, setOpen } = useStatus()
   const { clientId } = Route.useSearch()
   const { userId: curruntUserId, rol } = useToken()
-
+  const qClient = useQueryClient()
   const [user, setUser] = useState<TUSER_GET | undefined>()
   const [client, setClient] = useState<TCLIENT_GET_BASE | undefined>()
   const [ref, setRef] = useState<TCLIENT_GET_BASE | undefined>()
@@ -145,7 +148,7 @@ export function NewCredit() {
     data: TCREDIT_GET_BASE,
     variables: TCREDIT_POST_BODY,
     context: unknown
-  ) => unknown = () => {
+  ) => unknown = ( newData ) => {
     const description = text.notification.decription({
       username: client?.nombres + ' ' + client?.apellidos,
     })
@@ -161,6 +164,13 @@ export function NewCredit() {
       action: 'POST',
       description,
     })
+
+    const update: (data: TCREDIT_GET_ALL) => TCREDIT_GET_ALL = (data) => {
+      return [...data, newData]
+    }
+
+    qClient?.setQueryData(getCreditsListOpt?.queryKey, update)
+
   }
 
   const onError: (
