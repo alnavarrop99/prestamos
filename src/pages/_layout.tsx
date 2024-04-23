@@ -20,6 +20,7 @@ import {
   Sun,
   X as ErrorIcon,
   Search,
+  Annoyed,
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
@@ -123,6 +124,7 @@ export const getCurrentUserOpt = {
 export const Route = createFileRoute('/_layout')({
   component: Layout,
   pendingComponent: () => <></>,
+  errorComponent: Error,
   loader: async () => ({
     user: queryClient.ensureQueryData(queryOptions(getCurrentUserOpt)),
     clients: defer(queryClient.ensureQueryData(queryOptions(getClientListOpt))),
@@ -503,7 +505,7 @@ export function Layout() {
                     variant={!search ? 'ghost' : 'default'}
                   >
                     <User />
-                    {errorClients && <Error searchList />}
+                    {errorClients && <ErrorStates searchList />}
                     {pendingClients && <BoundleLoader />}
                     {okClients && (
                       <Badge
@@ -604,7 +606,7 @@ export function Layout() {
                 </Badge>
               </HoverCardTrigger>
               <HoverCardContent className="mx-4 xl:mx-0">
-                {errorCurrentUser && <Error currentUser />}
+                {errorCurrentUser && <ErrorStates currentUser />}
                 {pendingCurrentUser && (
                   <div className="p-2">
                     <Skeleton className="h-10 w-10 rounded-full ring-1 ring-ring" />
@@ -681,7 +683,7 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <main className="space-y-2 px-4 xl:[&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
+      <main className="space-y-2 px-4 [&>:first-child]:items-center [&>:first-child]:gap-2 xl:[&>:first-child]:flex">
         <div className="hidden">
           <Button
             onClick={onBack}
@@ -1053,7 +1055,7 @@ const SpinLoader = memo<TSpinLoader>(function ({ onChange, rchild, value }) {
 })
 
 /* eslint-disable-next-line */
-export const Error = ({
+export const ErrorStates = ({
   searchList,
 }: {
   currentUser?: boolean
@@ -1070,12 +1072,48 @@ export const Error = ({
   )
 }
 
+/* eslint-disable-next-line */
+export function Error() {
+  const onClick: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
+    useToken.setState({
+      token: undefined,
+      rol: undefined,
+      name: undefined,
+      userId: undefined,
+    })
+    userOrder.setState({ order: 'id' })
+    creditOrder.setState({ order: 'id' })
+    userPagination.setState({ start: 0, end: 3 })
+    creditPagination.setState({ start: 0, end: 3 })
+    clientFilter.setState({ filter: 'fullName' })
+  }
+  return (
+    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+      <Annoyed className="animate-bounce" />
+      <div className="space-y-2">
+        <h1 className="font-bold">{text.error}</h1>
+        <p className="italic">{text.errorDescription}</p>
+        <Separator />
+        <Button variant="ghost" onClick={onClick} className="text-sm">
+          {' '}
+          {text.retry + '.'}{' '}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 Layout.dispalyname = 'Layout'
+ErrorStates.dispalyname = 'LayoutErrorStates'
 Error.dispalyname = 'LayoutError'
 
 const text = {
   title: 'Matcor',
-  error: 'Ups!!! ha ocurrido un error inesperado',
+  error: 'Ups!!! ha ocurrido un error',
+  errorDescription: 'La carga de la pagina ha fallado.',
+  retry: 'Intente recargar o borrar los daton sde inicio de session',
   loader: {
     user: {
       new: 'Creando usuario',
