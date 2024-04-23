@@ -86,13 +86,15 @@ export function ClientTable({ table }: TPaymentTable) {
                           )}
                         </li>
 
-                        <li>
-                          <b>{'Telefono' + ':'}</b>{' '}
-                          {flexRender(
-                            telephone?.column?.columnDef.cell,
-                            telephone?.getContext()
-                          )}
-                        </li>
+                        {telephone?.getValue() !== '' && (
+                          <li>
+                            <b>{'Telefono' + ':'}</b>{' '}
+                            {flexRender(
+                              telephone?.column?.columnDef.cell,
+                              telephone?.getContext()
+                            )}
+                          </li>
+                        )}
 
                         <li>
                           <b>{'Direccion' + ':'}</b>{' '}

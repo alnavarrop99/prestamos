@@ -92,7 +92,7 @@ export const movile: ColumnDef<TClientTable>[] = [
     ),
   },
   {
-    accessorKey: 'tipo_de_identificacion' as keyof TClientTable,
+    accessorKey: 'tipo_de_identificacion_id' as keyof TClientTable,
     header: () => <p>{text.columns.idType}</p>,
     cell: ({ row }) => {
       const id: number = row.getValue(
@@ -175,23 +175,21 @@ export const desktop: ColumnDef<TClientTable>[] = [
   {
     accessorKey: 'celular' as keyof TClientTable,
     header: () => {
-      return <p>{text.columns.phone}</p>
-    },
-    cell: ({ row }) => (
-      <p className="lowercase">
-        {row.getValue('celular' as keyof TClientTable)}
-      </p>
-    ),
-  },
-  {
-    accessorKey: 'telefono' as keyof TClientTable,
-    header: () => {
       return <p>{text.columns.telephone}</p>
     },
     cell: ({ row }) => (
-      <p className="lowercase">
-        {row.getValue('telefono' as keyof TClientTable)}
-      </p>
+      <div className="[&_span]:font-bold">
+        <p>
+          <span>{'M' + ':'}</span>
+          {row.getValue('celular' as keyof TClientTable)}
+        </p>
+        {row?.original?.telefono !== '' && (
+          <p>
+            <span>{'T' + ':'}</span>
+            {row.original?.telefono}
+          </p>
+        )}
+      </div>
     ),
   },
   {
@@ -200,9 +198,9 @@ export const desktop: ColumnDef<TClientTable>[] = [
       return <p>{text.columns.id}</p>
     },
     cell: ({ row }) => (
-      <div className="">
+      <div>
         <p className="font-bold capitalize">
-          {getIdById({ id: row.original.tipo_de_identificacion_id })?.nombre}
+          {getIdById({ id: row.original?.tipo_de_identificacion_id })?.nombre}
         </p>
         <p>{row.getValue('numero_de_identificacion' as keyof TClientTable)}</p>
       </div>
@@ -233,7 +231,14 @@ export const desktop: ColumnDef<TClientTable>[] = [
 ]
 
 function ClientActions({ row }: { row: Row<TClientTable> }) {
-  const { id, celular, fullName, numero_de_identificacion } = row.original
+  const {
+    id,
+    celular,
+    fullName,
+    numero_de_identificacion,
+    telefono,
+    direccion,
+  } = row.original
   const { open, setOpen } = useStatus()
   const [{ menu }, setMenu] = useState<{ menu?: boolean }>({ menu: false })
   const navigate = useNavigate()
@@ -243,7 +248,9 @@ function ClientActions({ row }: { row: Row<TClientTable> }) {
     React.ComponentRef<typeof DropdownMenuItem>
   > = () => {
     navigator.clipboard.writeText(
-      [fullName, celular, numero_de_identificacion].join(' ')
+      [fullName, celular, telefono, direccion, numero_de_identificacion].join(
+        ' '
+      )
     )
   }
 
@@ -346,7 +353,7 @@ const text = {
     id: 'I.D.',
     idType: 'Tipo de I.D.',
     phone: 'Celular',
-    telephone: 'Telefono',
+    telephone: '#Telefono',
     ref: 'Referencia',
     direction: 'Direccion',
     secondDirection: 'Segunda Direccion',

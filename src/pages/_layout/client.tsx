@@ -72,7 +72,7 @@ export const Route = createFileRoute('/_layout/client')({
   validateSearch: (search: TSearch) => search,
 })
 
-const ROW = 14
+const ROW = 13
 const COL = 7
 export const _clientContext = createContext<TClientTable[] | undefined>(
   undefined
