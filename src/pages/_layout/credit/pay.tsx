@@ -19,9 +19,9 @@ import { useStatus } from '@/lib/context/layout'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { postPaymentOpt } from "@/pages/_layout/credit_/$creditId/pay"
-import { TCREDIT_GET_BASE, TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 import { getCreditsListOpt } from '../credit'
 import { getCreditByIdOpt } from '../credit_/$creditId'
+import { getPaymentListOpt } from '@/pages/_layout'
 
 type TSearch = {
   name: string
@@ -65,7 +65,7 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
     })
 
     qClient?.refetchQueries(
-      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey]  },
+      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey, ...getPaymentListOpt?.queryKey]  },
     )
 
   }

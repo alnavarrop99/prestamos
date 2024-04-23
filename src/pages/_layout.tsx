@@ -132,10 +132,10 @@ export const Route = createFileRoute('/_layout')({
   pendingComponent: () => <></>,
   errorComponent: Error,
   loader: async () => ({
-    user: defer(queryClient.ensureQueryData(queryOptions(getCurrentUserOpt))),
-    // clients: defer(queryClient.ensureQueryData(queryOptions(getClientListOpt))),
-    // credits: defer( queryClient.ensureQueryData(queryOptions(getCreditsListOpt))),
-    // payment: defer( queryClient.ensureQueryData(queryOptions(getPaymentListOpt))),
+    user: defer( queryClient.ensureQueryData(queryOptions(getCurrentUserOpt))),
+    clients: defer( queryClient.ensureQueryData(queryOptions(getClientListOpt))),
+    credits: defer( queryClient.ensureQueryData(queryOptions(getCreditsListOpt))),
+    payment: defer( queryClient.ensureQueryData(queryOptions(getPaymentListOpt))),
   }),
   onLeave: () => {
     useToken.setState({
@@ -190,7 +190,6 @@ export function Layout() {
     data: currentUserRes,
     isSuccess: okCurrentUser,
     isError: errorCurrentUser,
-    isPending: pendingCurrentUser,
     refetch,
   } = useSuspenseQuery(queryOptions(getCurrentUserOpt))
 
@@ -518,8 +517,8 @@ export function Layout() {
                     variant={!search ? 'ghost' : 'default'}
                   >
                     <User />
+                    {pendingClients && !clientsRes && <BoundleLoader> </BoundleLoader>}
                     {errorClients && <ErrorStates searchList />}
-                    {pendingClients && <BoundleLoader />}
                     {okClients && (
                       <Badge
                         className={clsx(
@@ -603,7 +602,7 @@ export function Layout() {
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
             <HoverCard
-              open={usermenu && !errorPayments && !errorPayments}
+              open={usermenu}
               onOpenChange={(value) =>
                 onclick(setStatus, { usermenu: value })()
               }
@@ -618,9 +617,8 @@ export function Layout() {
                     .join('')}
                 </Badge>
               </HoverCardTrigger>
-              <HoverCardContent className="mx-4 xl:mx-0">
-                {errorCurrentUser && <ErrorStates currentUser />}
-                {pendingCurrentUser && pendingPayments && (
+              <HoverCardContent className="mx-4 xl:mx-0" >
+                {pendingPayments && (
                   <div className="p-2">
                     <Skeleton className="h-10 w-10 rounded-full ring-1 ring-ring" />
                     <ul className="space-y-2 [&>li]:w-fit">
@@ -630,11 +628,16 @@ export function Layout() {
                       </li>
                       <li>
                         {' '}
+                        <Skeleton className="h-4 w-20" />{' '}
+                      </li>
+                      <li>
+                        {' '}
                         <Skeleton className="h-4 w-16" />{' '}
                       </li>
                     </ul>
                   </div>
                 )}
+                {errorCurrentUser || errorPayments && <ErrorStates currentUser />}
                 {okCurrentUser && okPayments && (
                   <div className="w=full flex flex-col [&>*]:w-full">
                     <div className="">

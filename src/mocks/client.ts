@@ -1,4 +1,4 @@
-import { HttpResponse, http } from 'msw'
+import { HttpResponse, delay, http } from 'msw'
 import type {
   TCLIENT_POST_BODY,
   TCLIENT_GET_ALL,
@@ -18,6 +18,7 @@ const allClients = http.all(
     const auth = request.headers.get('Authorization')
     if (!auth || !auth.includes(token)) throw new Error('not auth')
 
+    await delay(10000)
     return HttpResponse.json<TCLIENT_GET_ALL>(Array.from(clients?.values()))
   }
 )

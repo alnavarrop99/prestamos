@@ -20,6 +20,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { _client, _credit, getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
 import { format } from 'date-fns'
 import { getCreditsListOpt } from '../../credit'
+import { getPaymentListOpt } from '@/pages/_layout'
 
 export const postPaymentOpt = {
   mutationKey: ["create-payment"],
@@ -62,7 +63,7 @@ export function PayCreditById() {
     })
 
     qClient?.refetchQueries(
-      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey]  },
+      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey, ...getPaymentListOpt?.queryKey]  },
     )
   }
   const onError: ((error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = (_, items) => {
