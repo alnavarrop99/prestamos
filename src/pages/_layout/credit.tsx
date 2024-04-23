@@ -25,7 +25,7 @@ import {
   CircleDollarSign as Pay,
   Annoyed,
 } from 'lucide-react'
-import { createContext, forwardRef, useEffect, useState } from 'react'
+import { createContext, useEffect, useState } from 'react'
 import {
   getCreditById,
   getCreditsFilter,
@@ -38,7 +38,6 @@ import { format } from 'date-fns'
 import styles from '@/styles/global.module.css'
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { getClientById } from '@/api/clients'
-import brand from '@/assets/menu-brand.avif'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Pagination,
@@ -510,6 +509,7 @@ export function Credits() {
                                   search={{
                                     name: nombre_del_cliente,
                                     pay: valor_de_cuota,
+                                    creditId: creditId
                                   }}
                                 >
                                   <Button
@@ -601,112 +601,6 @@ export function Credits() {
     </>
   )
 }
-
-interface TPrintCredit
-  extends React.DetailedHTMLProps<
-    React.HTMLAttributes<HTMLDivElement>,
-    HTMLDivElement
-  > {
-  client: string
-  ssn: string
-  telephone: string
-  phone: string
-  date: string
-  pay: number
-  mora?: number
-  cuoteNumber: number
-  pending: number
-  comment?: string
-}
-
-export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>(function (
-  {
-    client,
-    cuoteNumber,
-    mora,
-    pay,
-    date,
-    comment,
-    pending,
-    telephone,
-    ssn,
-    phone,
-  },
-  ref
-) {
-  return (
-    <main
-      ref={ref}
-      className="space-y-3 divide-y-2 divide-gray-900 p-4 py-6 text-sm dark:divide-gray-300 [&>section>p>span]:font-normal [&>section>p>span]:italic [&>section>p]:font-bold"
-    >
-      <header>
-        <img
-          alt="brand"
-          src={brand}
-          className="light:brightness-50 mx-auto grayscale filter dark:brightness-200"
-          width={160}
-        />
-        <h4 className="text-sm font-bold">{text.print.title + ':'}</h4>
-      </header>
-      <section>
-        <p>
-          {text.print.client + ':'}
-          <span>{client + '.'}</span>{' '}
-        </p>
-        <p>
-          {text.print.ssn + ':'}
-          <span>{ssn + '.'}</span>{' '}
-        </p>
-        <p>
-          {text.print.telephone + ':'}
-          <span>{telephone + '.'}</span>{' '}
-        </p>
-        <p>
-          {text.print.phone + ':'}
-          <span>{phone + '.'}</span>{' '}
-        </p>
-        <p>
-          {text.print.date + ':'}
-          <span>{date + '.'}</span>
-        </p>
-        <p>
-          {text.print.cuoteNumber + ':'}
-          <span>{cuoteNumber + '.'}</span>
-        </p>
-        <p>
-          {text.print.pay + ':'}
-          <span> $ {pay + '.'} </span>
-        </p>
-        {mora && (
-          <p>
-            {text.print.mora + ':'}
-            <span> $ {mora + '.'}</span>
-          </p>
-        )}
-      </section>
-      <section>
-        <p>
-          {text.print.pending + ''} <span>$ {pending + '.'}</span>
-        </p>
-        {comment && (
-          <>
-            <p>{text.print.comment + ':'}</p>
-            <p className="line-clamp-3 !font-normal italic">{comment}</p>
-          </>
-        )}
-      </section>
-      <footer>
-        <p className="my-4 ms-auto w-fit italic underline">
-          {' '}
-          {text.print.services}{' '}
-          <span className="font-bold not-italic">
-            {import.meta.env.VITE_NAME}
-          </span>
-        </p>
-      </footer>
-    </main>
-  )
-})
 
 /* eslint-disable-next-line */
 export function Pending() {

@@ -681,8 +681,8 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <main className=" space-y-2 px-4 [&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
-        <div className="!hidden xl:block">
+      <main className="space-y-2 px-4 xl:[&>:first-child]:flex [&>:first-child]:items-center [&>:first-child]:gap-2">
+        <div className="hidden">
           <Button
             onClick={onBack}
             variant="ghost"

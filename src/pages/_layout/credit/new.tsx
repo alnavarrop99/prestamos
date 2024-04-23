@@ -40,7 +40,7 @@ import { getFrecuencyByName, listFrecuencys } from '@/lib/type/frecuency'
 import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
 import { Navigate } from '@tanstack/react-router'
 import { getStatusByName } from '@/lib/type/status'
-import { formatISO } from 'date-fns'
+import { format } from 'date-fns'
 import { queryClient } from '@/pages/__root'
 import { getClientListOpt } from '@/pages/_layout/client'
 import { getUsersListOpt } from '@/pages/_layout/user'
@@ -255,7 +255,7 @@ export function NewCredit() {
       frecuencia_del_credito_id: +items?.frecuencia_del_credito_id,
       owner_id: clientId,
       garante_id: refId ?? null,
-      fecha_de_aprobacion: formatISO(new Date(items?.fecha_de_aprobacion)),
+      fecha_de_aprobacion: format(items?.fecha_de_aprobacion ?? new Date(), "yyyy-MM-dd"),
     })
 
     setOpen({ open: !open })

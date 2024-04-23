@@ -16,7 +16,7 @@ import styles from "@/styles/global.module.css"
 import { Select, SelectContent, SelectTrigger, SelectValue, SelectItem } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { Navigate } from '@tanstack/react-router'
-import { PrintCredit } from '@/pages/_layout/credit'
+import { PrintCredit } from '@/pages/_layout/-print'
 import { useReactToPrint } from 'react-to-print'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { _client, _credit } from '@/pages/_layout/credit_/$creditId'
@@ -158,7 +158,7 @@ export function PrintCreditById() {
                   ssn: client?.numero_de_identificacion,
                   telephone: client?.telefono,
                   phone: client?.celular,
-                  date: format( pay?.fecha_de_pago ?? "",  "dd/MM/yyyy - hh:mm aaaa" ),
+                  date: format( pay?.fecha_de_pago ?? "",  "dd/MM/yyyy" ),
                   // date: pay?.fecha_de_pago ?? "",
                   pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
                   mora: mora ? +mora.toFixed(2) : undefined,

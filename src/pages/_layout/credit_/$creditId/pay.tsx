@@ -18,7 +18,7 @@ import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation } from '@tanstack/react-query'
 import { _client, _credit } from '@/pages/_layout/credit_/$creditId'
-import { formatISO } from 'date-fns'
+import { format } from 'date-fns'
 
 export const postPaymentOpt = {
   mutationKey: ["create-payment"],
@@ -103,7 +103,7 @@ export function PayCreditById() {
        valor_del_pago: +items?.valor_del_pago,
        comentario: items?.comentario ?? "",
        credito_id: +creditId,
-       fecha_de_pago: formatISO(items?.fecha_de_pago ?? new Date)
+       fecha_de_pago: format( items?.fecha_de_pago ?? new Date(), "yyyy-MM-dd" ) 
     })
 
     setOpen({ open: !open })

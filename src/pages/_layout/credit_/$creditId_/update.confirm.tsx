@@ -17,7 +17,7 @@ import { useNotifications } from '@/lib/context/notification'
 import { _client, _credit, _creditChange, _payDelete } from '@/pages/_layout/credit_/$creditId_/update'
 import { useMutation } from '@tanstack/react-query'
 import { type TPAYMENT_GET_BASE, deletePaymentById, patchPaymentById, type TPAYMENT_PATCH_BODY } from "@/api/payment";
-import { formatISO } from 'date-fns'
+import { format } from 'date-fns'
 
 export const updateCreditByIdOpt = {
     mutationKey: ["update-credit"],
@@ -209,7 +209,7 @@ export function UpdateConfirmationCredit() {
           tipo_de_mora_id: +creditItems?.tipo_de_mora_id || undefined,
           dias_adicionales: +creditItems?.dias_adicionales || undefined,
           numero_de_cuotas: +creditItems?.numero_de_cuotas || undefined,
-          fecha_de_aprobacion: creditItems?.fecha_de_aprobacion ? formatISO( creditItems?.fecha_de_aprobacion ) : undefined,
+          fecha_de_aprobacion: creditItems?.fecha_de_aprobacion ? format( creditItems?.fecha_de_aprobacion, "yyyy-MM-dd" ) : undefined,
           frecuencia_del_credito_id: +creditItems?.frecuencia_del_credito_id || undefined,
         }
       })
@@ -221,7 +221,7 @@ export function UpdateConfirmationCredit() {
         updatePayment: {
           valor_del_pago: +pay?.valor_del_pago || undefined,
           comentario: pay?.comentario,
-          fecha_de_pago: formatISO( pay?.fecha_de_pago )
+          fecha_de_pago: format( pay?.fecha_de_pago, "yyyy-MM-dd" )
         }
       })
     }

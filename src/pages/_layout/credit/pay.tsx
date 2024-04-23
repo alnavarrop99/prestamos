@@ -17,7 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { useMutation } from '@tanstack/react-query'
-import { formatISO } from 'date-fns'
+import { format } from 'date-fns'
 import { postPaymentOpt } from "@/pages/_layout/credit_/$creditId/pay"
 
 type TSearch = {
@@ -98,11 +98,13 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
       return [ key, value ]
     })) as Record<TFormName, string>
 
+      alert(creditId)
+
     createPayment({
         valor_del_pago: +items?.valor_del_pago,
         comentario: items?.comentario ?? "",
         credito_id: creditId,
-        fecha_de_pago: formatISO( items?.fecha_de_pago ?? new Date() ) 
+        fecha_de_pago: format( items?.fecha_de_pago ?? new Date(), "yyyy-MM-dd" ) 
     })
 
     setOpen({ open: !open })
