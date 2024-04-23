@@ -18,6 +18,7 @@ import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
 import {
   postClient,
+  type TCLIENT_GET_ALL,
   type TCLIENT_POST,
   type TCLIENT_POST_BODY,
 } from '@/api/clients'
@@ -29,9 +30,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useNotifications } from '@/lib/context/notification'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { listIds, getIdByName } from '@/lib/type/id'
-import { _clientContext } from '@/pages/_layout/client'
+import { _clientContext, getClientListOpt } from '@/pages/_layout/client'
 import { useStatus } from '@/lib/context/layout'
 import { getStatusByName } from '@/lib/type/status'
 import { Textarea } from '@/components/ui/textarea'
@@ -56,11 +57,12 @@ export function NewClient() {
   const form = useRef<HTMLFormElement>(null)
   const { pushNotification } = useNotifications()
   const { open } = useStatus()
+  const qClient = useQueryClient()
 
   const onSuccess: (
-    data: TCLIENT_POST,
+    newData: TCLIENT_POST,
     variables: TCLIENT_POST_BODY
-  ) => unknown = (_, items) => {
+  ) => unknown = (newData, items) => {
     const description = text.notification.decription({
       username: items?.nombres + items?.apellidos,
     })
@@ -76,6 +78,12 @@ export function NewClient() {
       action: 'POST',
       description,
     })
+
+    const update: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
+      return [...data, newData]
+    }
+
+    qClient?.setQueryData(getClientListOpt?.queryKey, update)
   }
 
   const onError: (

@@ -19,9 +19,11 @@ import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
-import { useMutation } from '@tanstack/react-query'
-import { deleteClientsById } from '@/api/clients'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { type TCLIENT_GET_ALL, deleteClientsById } from '@/api/clients'
 import { useToken } from '@/lib/context/login'
+import { getClientByIdOpt } from './update'
+import { getClientListOpt } from '../../client'
 
 type TSearch = {
   name: string
@@ -50,6 +52,7 @@ export function DeleteClientById() {
   const [checked, setChecked] = useState(false)
   const { setOpen, open } = useStatus()
   const { pushNotification } = useNotifications()
+  const qClient = useQueryClient()
 
   const onSuccess = () => {
     const description = text.notification.decription({
@@ -67,6 +70,16 @@ export function DeleteClientById() {
       action: 'POST',
       description,
     })
+
+    const update: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
+      const res = data
+      return res?.filter(({ id }) => id !== +clientId)
+    }
+
+    qClient?.removeQueries({
+      queryKey: getClientByIdOpt({ clientId })?.queryKey,
+    })
+    qClient?.setQueryData(getClientListOpt?.queryKey, update)
   }
 
   const onError = () => {
@@ -115,19 +128,23 @@ export function DeleteClientById() {
       {!open && <Navigate to={'../../'} replace />}
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">
+            {text.title}
+          </DialogTitle>
           <Separator />
           <DialogDescription>
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4 hidden md:block" />
-              <AlertTitle className='text-sm md:text-base text-start max-sm:!px-0'>{text.alert.title}</AlertTitle>
-              <AlertDescription className='text-xs md:text-base text-start max-sm:!px-0'>
+              <AlertCircle className="hidden h-4 w-4 md:block" />
+              <AlertTitle className="text-start text-sm max-sm:!px-0 md:text-base">
+                {text.alert.title}
+              </AlertTitle>
+              <AlertDescription className="text-start text-xs max-sm:!px-0 md:text-base">
                 {text.alert.description({ username: name })}
               </AlertDescription>
             </Alert>
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="!justify-between flex-col md:flex-row">
+        <DialogFooter className="flex-col !justify-between md:flex-row">
           <div className="flex items-center gap-2 font-bold italic">
             <Checkbox
               id="switch-updates-client"

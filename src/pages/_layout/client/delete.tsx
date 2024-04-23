@@ -18,13 +18,14 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { type TCLIENT_DELETE } from '@/api/clients'
-import { _rowSelected } from '@/pages/_layout/client'
+import { type TCLIENT_GET_ALL, type TCLIENT_DELETE } from '@/api/clients'
+import { _rowSelected, getClientListOpt } from '@/pages/_layout/client'
 import { useNotifications } from '@/lib/context/notification'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
+import { getClientByIdOpt } from './$clientId/update'
 
 type TSearch = {
   clients: number[]
@@ -49,6 +50,7 @@ export function DeleteSelectedClients() {
   const { toast } = useToast()
   const { clients } = Route.useSearch()
   const rowSelected = useContext(_rowSelected)
+  const qClient = useQueryClient()
 
   const onSuccess = (data: TCLIENT_DELETE) => {
     const description = text.notification.decription({
@@ -66,6 +68,18 @@ export function DeleteSelectedClients() {
       action: 'DELETE',
       description,
     })
+
+    const update: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
+      const res = data
+      return res?.filter(({ id }) => !id || !clients?.includes(id))
+    }
+
+    for (const clientId of clients) {
+      qClient?.removeQueries({
+        queryKey: getClientByIdOpt({ clientId: '' + clientId })?.queryKey,
+      })
+    }
+    qClient?.setQueryData(getClientListOpt?.queryKey, update)
 
     if (!rowSelected) return
     rowSelected()
@@ -104,7 +118,6 @@ export function DeleteSelectedClients() {
 
     for (const clientId of clients) {
       if (!clientId) continue
-      alert(clientId)
       deleteClient({ clientId })
     }
 

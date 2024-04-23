@@ -23,6 +23,7 @@ import {
   type TCLIENT_POST,
   type TCLIENT_GET,
   type TCLIENT_PATCH_BODY,
+  TCLIENT_GET_ALL,
 } from '@/api/clients'
 import {
   Select,
@@ -33,9 +34,14 @@ import {
 } from '@/components/ui/select'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
-import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { listIds, getIdById } from '@/lib/type/id'
-import { _clientContext } from '@/pages/_layout/client'
+import { _clientContext, getClientListOpt } from '@/pages/_layout/client'
 import { Textarea } from '@/components/ui/textarea'
 import { queryClient } from '@/pages/__root'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -91,12 +97,13 @@ export function UpdateClientById() {
   const { open, setOpen } = useStatus()
   const { pushNotification } = useNotifications()
   const init = useRef(client)
+  const qClient = useQueryClient()
 
   useEffect(() => {
     if (!clientRes && isError) throw Error()
   }, [isError])
 
-  const onSuccess = (data: TCLIENT_POST) => {
+  const onSuccess = (newData: TCLIENT_POST) => {
     if (!init?.current?.nombres || !init?.current?.apellidos) return
 
     const description = text.notification.decription({
@@ -121,13 +128,27 @@ export function UpdateClientById() {
       variant: 'default',
     })
 
-    queryClient.setQueriesData(
-      { queryKey: getClientByIdOpt({ clientId }).queryKey },
-      data
-    )
+    const updateList: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
+      const res = data
+      return res?.map(({ id }, index, list) => {
+        if (id === +clientId)
+          return {
+            ...list?.[index],
+            ...newData,
+          }
+        return list?.[index]
+      })
+    }
 
-    // TODO: not update user with exec a path update
-    // setUser( { ...data, password: "" } )
+    const updateClient: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
+      return { ...newData, ...data }
+    }
+
+    qClient?.setQueryData(getClientListOpt?.queryKey, updateList)
+    qClient?.setQueryData(
+      getClientByIdOpt({ clientId })?.queryKey,
+      updateClient
+    )
   }
 
   const onError = () => {

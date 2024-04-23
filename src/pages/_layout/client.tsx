@@ -38,17 +38,9 @@ import { type TCLIENT_GET_ALL, getClientsList } from '@/api/clients'
 import clsx from 'clsx'
 import { desktop, movile, type TClientTable } from '@/pages/_layout/-column'
 import { Separator } from '@/components/ui/separator'
-import { useClientByUsers } from '@/lib/context/client'
 import { Skeleton } from '@/components/ui/skeleton'
 import { queryClient } from '@/pages/__root'
-import {
-  queryOptions,
-  useIsMutating,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
-import { postClientOpt } from '@/pages/_layout/client/new'
-import { updateClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
-import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useToken } from '@/lib/context/login'
@@ -103,18 +95,6 @@ export function Clients() {
   const { filter, setFilter } = useFilter()
   const { userId: ownerId } = Route.useSearch()
   const screen = useScreen()
-  const isUpdateClient = useIsMutating({
-    status: 'success',
-    mutationKey: updateClientByIdOpt.mutationKey,
-  })
-  const isNewClient = useIsMutating({
-    status: 'success',
-    mutationKey: postClientOpt.mutationKey,
-  })
-  const isDeleteClient = useIsMutating({
-    status: 'success',
-    mutationKey: deleteClientByIdOpt.mutationKey,
-  })
 
   const select: (data: TCLIENT_GET_ALL) => TClientTable[] = (data) => {
     const clients = data?.map<TClientTable>(
@@ -141,14 +121,9 @@ export function Clients() {
       return clients?.filter(({ owner_id }) => owner_id === userId)
     return clients
   }
-  const { data: clientsRes, refetch } = useSuspenseQuery(
+  const { data: clientsRes } = useSuspenseQuery(
     queryOptions({ ...getClientListOpt, select })
   )
-
-  const { clients, setClient } = useClientByUsers(({ clients, ...items }) => ({
-    clients: clients ?? clientsRes,
-    ...items,
-  }))
 
   useEffect(() => {
     document.title = import.meta.env.VITE_NAME + ' | ' + text.browser
@@ -189,20 +164,8 @@ export function Clients() {
     table.resetRowSelection()
   }
 
-  useEffect(() => {
-    if (clientsRes) {
-      refetch()?.then(({ data }) => {
-        if (!data) return
-        setClient({ clients: data })
-      })
-    }
-    return () => {
-      // setClients( clientsRes )
-    }
-  }, [isUpdateClient, isNewClient, isDeleteClient])
-
   return (
-    <_clientContext.Provider value={clients}>
+    <_clientContext.Provider value={clientsRes}>
       <_rowSelected.Provider value={table.resetRowSelection}>
         <div className="space-y-2">
           <div className="flex items-center gap-2">
