@@ -22,18 +22,27 @@ import { toast } from '@/components/ui/use-toast'
 import clsx from 'clsx'
 import { ComponentRef, memo, useEffect, useMemo, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
-import { type TUSER_GET } from '@/api/users'
+import { TUSER_GET_ALL, type TUSER_GET, TUSER_PATCH } from '@/api/users'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
-import { queryOptions, useMutation, useQuery } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { type TROLES, getRolByName, listRols } from '@/lib/type/rol'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SpinLoader } from '@/components/ui/loader'
 import { Link } from '@tanstack/react-router'
 import { getCurrentUserOpt } from '@/pages/_layout'
-import { updateUserByIdOpt } from '@/pages/_layout/user/$userId/update'
+import {
+  getUserByIdOpt,
+  updateUserByIdOpt,
+} from '@/pages/_layout/user/$userId/update'
 import { useToken } from '@/lib/context/login'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { getUsersListOpt } from './_layout/user'
 
 /* eslint-disable-next-line */
 interface TPassowordVisibilityState {
@@ -63,8 +72,9 @@ export const MyUserInfo = memo(function () {
   >(undefined)
   const { rol, userId } = useToken()
   const init = useRef(user)
+  const qClient = useQueryClient()
 
-  const onSuccess = () => {
+  const onSuccess: (data: TUSER_PATCH) => void = (newData) => {
     if (!init?.current?.nombre) return
 
     const description = text.notification.decription({
@@ -88,6 +98,29 @@ export const MyUserInfo = memo(function () {
       description,
       variant: 'default',
     })
+
+    const updateList: (data: TUSER_GET_ALL) => TUSER_GET_ALL = (data) => {
+      const res = data
+      return res?.map(({ id }, index, list) => {
+        if (id === userId)
+          return {
+            ...list?.[index],
+            ...newData,
+          }
+        return list?.[index]
+      })
+    }
+
+    const updateUser: (data: TUSER_PATCH) => TUSER_PATCH = (data) => {
+      return { ...newData, ...data }
+    }
+
+    qClient?.setQueryData(getUsersListOpt?.queryKey, updateList)
+    qClient?.setQueryData(
+      getUserByIdOpt({ userId: '' + userId })?.queryKey,
+      updateUser
+    )
+    qClient?.setQueryData(getCurrentUserOpt?.queryKey, updateUser)
   }
 
   const onError = () => {
