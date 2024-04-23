@@ -4,6 +4,7 @@ import {
   Outlet,
   redirect,
   useChildMatches,
+  useNavigate,
   useRouter,
 } from '@tanstack/react-router'
 import styles from '@/styles/global.module.css'
@@ -132,10 +133,14 @@ export const Route = createFileRoute('/_layout')({
   pendingComponent: () => <></>,
   errorComponent: Error,
   loader: async () => ({
-    user: defer( queryClient.ensureQueryData(queryOptions(getCurrentUserOpt))),
-    clients: defer( queryClient.ensureQueryData(queryOptions(getClientListOpt))),
-    credits: defer( queryClient.ensureQueryData(queryOptions(getCreditsListOpt))),
-    payment: defer( queryClient.ensureQueryData(queryOptions(getPaymentListOpt))),
+    user: defer(queryClient.ensureQueryData(queryOptions(getCurrentUserOpt))),
+    clients: defer(queryClient.ensureQueryData(queryOptions(getClientListOpt))),
+    credits: defer(
+      queryClient.ensureQueryData(queryOptions(getCreditsListOpt))
+    ),
+    payment: defer(
+      queryClient.ensureQueryData(queryOptions(getPaymentListOpt))
+    ),
   }),
   onLeave: () => {
     useToken.setState({
@@ -517,7 +522,9 @@ export function Layout() {
                     variant={!search ? 'ghost' : 'default'}
                   >
                     <User />
-                    {pendingClients && !clientsRes && <BoundleLoader> </BoundleLoader>}
+                    {pendingClients && !clientsRes && (
+                      <BoundleLoader> </BoundleLoader>
+                    )}
                     {errorClients && <ErrorStates searchList />}
                     {okClients && (
                       <Badge
@@ -617,7 +624,7 @@ export function Layout() {
                     .join('')}
                 </Badge>
               </HoverCardTrigger>
-              <HoverCardContent className="mx-4 xl:mx-0" >
+              <HoverCardContent className="mx-4 xl:mx-0">
                 {pendingPayments && (
                   <div className="p-2">
                     <Skeleton className="h-10 w-10 rounded-full ring-1 ring-ring" />
@@ -637,7 +644,8 @@ export function Layout() {
                     </ul>
                   </div>
                 )}
-                {errorCurrentUser || errorPayments && <ErrorStates currentUser />}
+                {errorCurrentUser ||
+                  (errorPayments && <ErrorStates currentUser />)}
                 {okCurrentUser && okPayments && (
                   <div className="w=full flex flex-col [&>*]:w-full">
                     <div className="">
@@ -1106,7 +1114,7 @@ export const ErrorStates = ({
 
 /* eslint-disable-next-line */
 export function Error() {
-  const { history } = useRouter()
+  const navigate = useNavigate()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
   > = () => {
@@ -1121,7 +1129,7 @@ export function Error() {
     userPagination.setState({ start: 0, end: 3 })
     creditPagination.setState({ start: 0, end: 3 })
     clientFilter.setState({ filter: 'fullName' })
-    history.back()
+    navigate({ to: '/' })
   }
   return (
     <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
