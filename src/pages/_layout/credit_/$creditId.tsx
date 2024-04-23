@@ -186,18 +186,20 @@ export function CreditById() {
                   </Button>
                 </Link>
               </DialogTrigger>
-              <DialogTrigger asChild className="ms-auto xl:ms-0">
-                <Link to={'./pay'}>
-                  <Button
-                    variant="default"
-                    className={clsx(
-                      'bg-success ring-success-foreground hover:bg-success hover:ring-4'
-                    )}
-                  >
-                    <Pay />
-                  </Button>
-                </Link>
-              </DialogTrigger>
+              {userId === credit?.cobrador_id && (
+                <DialogTrigger asChild className="ms-auto xl:ms-0">
+                  <Link to={'./pay'}>
+                    <Button
+                      variant="default"
+                      className={clsx(
+                        'bg-success ring-success-foreground hover:bg-success hover:ring-4'
+                      )}
+                    >
+                      <Pay />
+                    </Button>
+                  </Link>
+                </DialogTrigger>
+              )}
               {userId && rol?.rolName === 'Administrador' && (
                 <Link to={'./update'}>
                   <Button variant="default"> {text.button.update} </Button>
