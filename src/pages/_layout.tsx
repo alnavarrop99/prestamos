@@ -115,10 +115,16 @@ import { MyUserInfo } from '@/pages/-info'
 import { format } from 'date-fns'
 import { type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { listPayments } from '@/api/payment'
 
 export const getCurrentUserOpt = {
   queryKey: ['login-user', { userId: useToken.getState().userId }],
   queryFn: getCurrentUser,
+}
+
+export const getPaymentListOpt = {
+  queryKey: ['list-payment'],
+  queryFn: listPayments,
 }
 
 export const Route = createFileRoute('/_layout')({
@@ -126,11 +132,10 @@ export const Route = createFileRoute('/_layout')({
   pendingComponent: () => <></>,
   errorComponent: Error,
   loader: async () => ({
-    user: queryClient.ensureQueryData(queryOptions(getCurrentUserOpt)),
-    clients: defer(queryClient.ensureQueryData(queryOptions(getClientListOpt))),
-    credits: defer(
-      queryClient.ensureQueryData(queryOptions(getCreditsListOpt))
-    ),
+    user: defer(queryClient.ensureQueryData(queryOptions(getCurrentUserOpt))),
+    // clients: defer(queryClient.ensureQueryData(queryOptions(getClientListOpt))),
+    // credits: defer( queryClient.ensureQueryData(queryOptions(getCreditsListOpt))),
+    // payment: defer( queryClient.ensureQueryData(queryOptions(getPaymentListOpt))),
   }),
   onLeave: () => {
     useToken.setState({
@@ -144,6 +149,7 @@ export const Route = createFileRoute('/_layout')({
     userPagination.setState({ start: 0, end: 3 })
     creditPagination.setState({ start: 0, end: 3 })
     clientFilter.setState({ filter: 'fullName' })
+    queryClient.clear()
   },
   beforeLoad: async () => {
     const { token } = useToken.getState()
@@ -187,6 +193,13 @@ export function Layout() {
     isPending: pendingCurrentUser,
     refetch,
   } = useSuspenseQuery(queryOptions(getCurrentUserOpt))
+
+  const {
+    isError: errorPayments,
+    isSuccess: okPayments,
+    isPending: pendingPayments,
+    data: payments,
+  } = useQuery(queryOptions(getPaymentListOpt))
 
   const selectClients: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
     const clients = data
@@ -590,7 +603,7 @@ export function Layout() {
               <Switch checked={theme === 'dark'} onCheckedChange={onSwitch} />
             </Label>
             <HoverCard
-              open={usermenu}
+              open={usermenu && !errorPayments && !errorPayments}
               onOpenChange={(value) =>
                 onclick(setStatus, { usermenu: value })()
               }
@@ -607,7 +620,7 @@ export function Layout() {
               </HoverCardTrigger>
               <HoverCardContent className="mx-4 xl:mx-0">
                 {errorCurrentUser && <ErrorStates currentUser />}
-                {pendingCurrentUser && (
+                {pendingCurrentUser && pendingPayments && (
                   <div className="p-2">
                     <Skeleton className="h-10 w-10 rounded-full ring-1 ring-ring" />
                     <ul className="space-y-2 [&>li]:w-fit">
@@ -622,7 +635,7 @@ export function Layout() {
                     </ul>
                   </div>
                 )}
-                {okCurrentUser && (
+                {okCurrentUser && okPayments && (
                   <div className="w=full flex flex-col [&>*]:w-full">
                     <div className="">
                       <Avatar className="ring-1 ring-ring">
@@ -648,6 +661,22 @@ export function Layout() {
                           {' '}
                           <Badge> {currentUserRes?.rol} </Badge>{' '}
                         </li>
+                        {rol?.rolName === 'Administrador' && (
+                          <li>
+                            {' '}
+                            <Badge variant={'outline'}>
+                              {' '}
+                              ${' '}
+                              {Math.ceil(
+                                payments?.reduce((prev, acc) => ({
+                                  ...acc,
+                                  valor_del_pago:
+                                    acc.valor_del_pago + prev?.valor_del_pago,
+                                }))?.valor_del_pago
+                              )}{' '}
+                            </Badge>{' '}
+                          </li>
+                        )}
                       </ul>
                     </div>
                     <div>
@@ -1074,6 +1103,7 @@ export const ErrorStates = ({
 
 /* eslint-disable-next-line */
 export function Error() {
+  const { history } = useRouter()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
   > = () => {
@@ -1088,6 +1118,7 @@ export function Error() {
     userPagination.setState({ start: 0, end: 3 })
     creditPagination.setState({ start: 0, end: 3 })
     clientFilter.setState({ filter: 'fullName' })
+    history.back()
   }
   return (
     <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
@@ -1113,7 +1144,7 @@ const text = {
   title: 'Matcor',
   error: 'Ups!!! ha ocurrido un error',
   errorDescription: 'La carga de la pagina ha fallado.',
-  retry: 'Intente recargar o borrar los daton sde inicio de session',
+  retry: 'Intente recargar e inicie session',
   loader: {
     user: {
       new: 'Creando usuario',
