@@ -9,9 +9,9 @@ import {
 import { routeTree } from './routeTree.gen'
 
 async function enableMocking() {
-  // if (!+import.meta.env.VITE_MSW || !import.meta.env.DEV) {
-  //   return
-  // }
+  if (!+import.meta.env.VITE_MSW || !import.meta.env.DEV) {
+    return
+  }
   const { worker } = await import('@/mocks/config')
   return worker.start()
 }

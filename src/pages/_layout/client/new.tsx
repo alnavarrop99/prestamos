@@ -126,7 +126,7 @@ export function NewClient() {
       telefono: items?.telefono,
       celular: items?.celular,
       numero_de_identificacion: items?.numero_de_identificacion,
-      tipo_de_identificacion: +items?.tipo_de_identificacion,
+      tipo_de_identificacion_id: +items?.tipo_de_identificacion_id,
       estado: getStatusByName({ statusName: 'Activo' })?.id,
       referencia_id: refId ?? null,
       comentarios: items?.comentarios ?? '',
@@ -138,18 +138,21 @@ export function NewClient() {
     ev.preventDefault()
   }
 
-  return (<>
+  return (
+    <>
       {!open && <Navigate to={'../'} replace />}
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">
+            {text.title}
+          </DialogTitle>
           <Separator />
-          <DialogDescription className="text-xs text-start md:text-base text-muted-foreground">
+          <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
             {text.descriiption}
           </DialogDescription>
         </DialogHeader>
-        <ScrollArea className='overflow-y-auto h-[50dvh] md:h-full'>
-        <ScrollBar orientation='vertical' />
+        <ScrollArea className="h-[50dvh] overflow-y-auto md:h-full">
+          <ScrollBar orientation="vertical" />
           <form
             autoFocus={false}
             autoComplete="off"
@@ -157,7 +160,7 @@ export function NewClient() {
             onSubmit={onSubmit}
             id="new-client"
             className={clsx(
-              'p-1 grid-rows-subgrid grid md:grid-cols-2 grid-cols-none gap-3 gap-y-4 [&>label]:space-y-2',
+              'grid-rows-subgrid grid grid-cols-none gap-3 gap-y-4 p-1 md:grid-cols-2 [&>label]:space-y-2',
               styles?.['custom-form']
             )}
           >
@@ -195,7 +198,7 @@ export function NewClient() {
               <span>{text.form.typeId.label} </span>
               <Select
                 required
-                name={'tipo_de_identificacion' as TFormName}
+                name={'tipo_de_identificacion_id' as TFormName}
                 defaultValue={'' + getIdByName({ idName: 'Cédula' })?.id}
               >
                 <SelectTrigger className="!border-1 w-full !border-ring">
@@ -266,7 +269,7 @@ export function NewClient() {
             </Label>
           </form>
         </ScrollArea>
-        <DialogFooter className="justify-end gap-2 flex-col md:flex-row">
+        <DialogFooter className="flex-col justify-end gap-2 md:flex-row">
           <Button variant="default" form="new-client" type="submit">
             {text.button.update}
           </Button>
@@ -281,7 +284,8 @@ export function NewClient() {
           </DialogClose>
         </DialogFooter>
       </DialogContent>
-  </>)
+    </>
+  )
 }
 
 NewClient.dispalyname = 'NewClient'

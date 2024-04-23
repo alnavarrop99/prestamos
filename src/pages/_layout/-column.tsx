@@ -96,7 +96,7 @@ export const movile: ColumnDef<TClientTable>[] = [
     header: () => <p>{text.columns.idType}</p>,
     cell: ({ row }) => {
       const id: number = row.getValue(
-        'tipo_de_identificacion' as keyof TClientTable
+        'tipo_de_identificacion_id' as keyof TClientTable
       )
       if (!id) return
       return <p>{getIdById({ id })?.nombre}</p>
@@ -202,7 +202,7 @@ export const desktop: ColumnDef<TClientTable>[] = [
     cell: ({ row }) => (
       <div className="">
         <p className="font-bold capitalize">
-          {getIdById({ id: row.original.tipo_de_identificacion })?.nombre}
+          {getIdById({ id: row.original.tipo_de_identificacion_id })?.nombre}
         </p>
         <p>{row.getValue('numero_de_identificacion' as keyof TClientTable)}</p>
       </div>

@@ -227,7 +227,7 @@ export function UpdateClientById() {
         direccion: items?.direccion,
         comentarios: items?.comentarios,
         numero_de_identificacion: items?.numero_de_identificacion,
-        tipo_de_identificacion: +items?.tipo_de_identificacion,
+        tipo_de_identificacion_id: +items?.tipo_de_identificacion_id,
         referencia_id: refId ? refId : null,
       },
     })
@@ -338,11 +338,11 @@ export function UpdateClientById() {
                 <Select
                   defaultValue={
                     '' +
-                    getIdById({ id: clientRes?.tipo_de_identificacion })?.id
+                    getIdById({ id: clientRes?.tipo_de_identificacion_id })?.id
                   }
                   disabled={!checked}
                   required
-                  name={'tipo_de_identificacion' as TFormName}
+                  name={'tipo_de_identificacion_id' as TFormName}
                 >
                   <SelectTrigger className={clsx('w-full')}>
                     <SelectValue placeholder={text.form.typeId.placeholder} />

@@ -71,7 +71,7 @@ export const clients = new Map<number, TCLIENT_GET_BASE>(
           nombres: firstName,
           apellidos: lastName,
           direccion: faker.location.streetAddress(),
-          tipo_de_identificacion: faker.helpers.arrayElement(listIds())?.id,
+          tipo_de_identificacion_id: faker.helpers.arrayElement(listIds())?.id,
           numero_de_identificacion: faker.string.numeric(10),
           owner_id: userId,
         },
