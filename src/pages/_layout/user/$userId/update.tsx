@@ -18,7 +18,7 @@ import {
   type TUSER_PATCH,
   getUserById,
   pathUserById,
-  TUSER_GET_ALL,
+  type TUSER_GET_ALL,
 } from '@/api/users'
 import { useStatus } from '@/lib/context/layout'
 import { useNotifications } from '@/lib/context/notification'
@@ -145,14 +145,16 @@ export function UpdateUserById() {
     qClient?.setQueryData(getUserByIdOpt({ userId })?.queryKey, updateUser)
   }
 
-  const onError: ( error: Error ) => unknown = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+  const onError: (error: Error) => unknown = (error) => {
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: <div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
-      </div>,
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg as unknown as string}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }

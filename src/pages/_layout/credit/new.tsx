@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { type TCLIENT_GET_BASE } from '@/api/clients'
+import { TCLIENT_GET_ALL, type TCLIENT_GET_BASE } from '@/api/clients'
 import styles from '@/styles/global.module.css'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
@@ -95,12 +95,20 @@ type TFormName = keyof (Omit<
 /* eslint-disable-next-line */
 export function NewCredit() {
   const form = useRef<HTMLFormElement>(null)
+  const { userId: currentUserId, rol } = useToken()
   const { data: usersRes, isSuccess: okUsers } = useQuery(
     queryOptions(getUsersListOpt)
   )
-  const { data: clientsRes, isSuccess: okClients } = useQuery(
-    queryOptions(getClientListOpt)
-  )
+
+  const select: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
+    if (currentUserId && rol?.rolName !== 'Administrador')
+      return data?.filter(({ owner_id }) => owner_id === currentUserId)
+    return data
+  }
+  const { data: clientsRes, isSuccess: okClients } = useQuery({
+    ...queryOptions(getClientListOpt),
+    select,
+  })
   const [installmants, setInstallmants] = useState<TCuotesState>(initialCuotes)
   const [{ coute, interest, amount }, setCuote] = useState<{
     coute?: number
@@ -110,11 +118,10 @@ export function NewCredit() {
   const { pushNotification } = useNotifications()
   const { open, setOpen } = useStatus()
   const { clientId } = Route.useSearch()
-  const { userId: curruntUserId, rol } = useToken()
-  const qClient = useQueryClient()
   const [user, setUser] = useState<TUSER_GET | undefined>()
   const [client, setClient] = useState<TCLIENT_GET_BASE | undefined>()
   const [ref, setRef] = useState<TCLIENT_GET_BASE | undefined>()
+  const qClient = useQueryClient()
 
   useEffect(() => {
     if (clientsRes) {
@@ -138,7 +145,7 @@ export function NewCredit() {
       const user = usersRes?.find(
         ({ id }) =>
           id === client?.owner_id ||
-          (rol?.rolName !== 'Administrador' && id === curruntUserId)
+          (rol?.rolName !== 'Administrador' && id === currentUserId)
       )
 
       if (!user) return
@@ -180,13 +187,15 @@ export function NewCredit() {
     variables: TCREDIT_POST_BODY,
     context: unknown
   ) => unknown = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: (<div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
-      </div>),
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg as unknown as string}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }
@@ -239,7 +248,7 @@ export function NewCredit() {
         [nombres, apellidos].join(' ') === items?.client
     )
 
-    const userId = user?.id ?? curruntUserId
+    const userId = user?.id ?? currentUserId
     const clientId = client?.id
     const refId = ref?.id
 
@@ -302,7 +311,7 @@ export function NewCredit() {
               styles?.['custom-form'],
               {
                 '[&_*:disabled]:opacity-100':
-                  !!curruntUserId && rol?.rolName !== 'Administrador',
+                  !!currentUserId && rol?.rolName !== 'Administrador',
               }
             )}
           >
@@ -494,7 +503,7 @@ export function NewCredit() {
                     list="credit-user"
                     defaultValue={user ? user?.nombre : undefined}
                     disabled={
-                      !!curruntUserId && rol?.rolName !== 'Administrador'
+                      !!currentUserId && rol?.rolName !== 'Administrador'
                     }
                     pattern={`(${usersRes
                       ?.map(({ nombre }) => nombre?.replace(/\s+/g, '\\s+'))

@@ -24,7 +24,6 @@ import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import {} from '@/pages/_layout/credit_/$creditId_/update.confirm'
 import { useToken } from '@/lib/context/login'
-import { redirect } from '@tanstack/react-router'
 import { PaymentTable } from './-table'
 
 export const getCreditByIdOpt = ({ creditId }: { creditId: string }) => ({
@@ -37,7 +36,6 @@ export const Route = createFileRoute('/_layout/credit/$creditId')({
   pendingComponent: Pending,
   errorComponent: Error,
   loader: async ({ params }) => {
-    const { userId, rol } = useToken.getState()
     const credit = queryClient.ensureQueryData(
       queryOptions(getCreditByIdOpt(params))
     )
@@ -47,10 +45,12 @@ export const Route = createFileRoute('/_layout/credit/$creditId')({
       )
     )
 
-    const ownerId = (await credit)?.cobrador_id
-    if (ownerId !== userId && rol?.rolName !== 'Administrador') {
-      throw redirect({ to: '/credit' })
-    }
+    // const { userId, rol } = useToken.getState()
+    // TODO:
+    // const ownerId = (await credit)?.cobrador_id
+    // if (ownerId !== userId && rol?.rolName !== 'Administrador') {
+    //   throw redirect({ to: '/credit' })
+    // }
 
     return { credit, client }
   },

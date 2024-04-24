@@ -29,7 +29,7 @@ import {
   type TUSER_GET,
   type TUSER_POST_BODY,
   postUser,
-  TUSER_GET_ALL,
+  type TUSER_GET_ALL,
 } from '@/api/users'
 import { getRolByName, listRols } from '@/lib/type/rol'
 import { useStatus } from '@/lib/context/layout'
@@ -97,14 +97,20 @@ export function NewUser() {
     qClient?.setQueryData(getUsersListOpt?.queryKey, update)
   }
 
-  const onError: ( error: Error, variables: TUSER_POST_BODY, context: unknown) => unknown = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+  const onError: (
+    error: Error,
+    variables: TUSER_POST_BODY,
+    context: unknown
+  ) => unknown = (error) => {
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: <div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
-      </div>,
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg as unknown as string}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }

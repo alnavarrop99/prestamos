@@ -10,10 +10,9 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import styles from '@/styles/global.module.css'
-import { type TCREDIT_GET } from '@/api/credit'
 import {
   Select,
   SelectContent,
@@ -36,7 +35,6 @@ import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { defer } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Await } from '@tanstack/react-router'
 import { SpinLoader } from '@/components/ui/loader'
 import { toast } from '@/components/ui/use-toast'
 
@@ -72,8 +70,12 @@ export function PrintSelectedCredit() {
   }>({
     opt: 'last',
   })
-  const { credit: creditRes } = Route.useLoaderData()
-  const [credit, setCredit] = useState<TCREDIT_GET | undefined>(undefined)
+  const { creditId } = Route.useSearch()
+  const {
+    data: creditRes,
+    isSuccess: okCredits,
+    isPending: pendingCredits,
+  } = useQuery(queryOptions(getCreditByIdOpt({ creditId: '' + creditId })))
 
   const {
     data: client,
@@ -81,24 +83,14 @@ export function PrintSelectedCredit() {
     isError,
   } = useQuery(
     queryOptions({
-      ...getClientByIdOpt({ clientId: '' + credit?.owner_id }),
-      enabled: !!credit,
+      ...getClientByIdOpt({ clientId: '' + creditRes?.owner_id }),
+      enabled: !!creditRes,
     })
   )
 
   useEffect(() => {
     if (!creditRes) throw Error()
   }, [isError])
-
-  useEffect(() => {
-    if (!credit) {
-      creditRes?.then((data) => {
-        setCredit(data)
-        return
-      })
-    }
-    return () => {}
-  }, [creditRes])
 
   useEffect(() => {
     if (isError) {
@@ -114,9 +106,9 @@ export function PrintSelectedCredit() {
   }
 
   const onChange = (value: string) => {
-    if (!credit?.pagos?.length) return
+    if (!creditRes?.pagos?.length) return
     const pay = +value
-    if (pay < 0 && pay >= credit?.pagos?.length) return
+    if (pay < 0 && pay >= creditRes?.pagos?.length) return
     setOpt({ opt, payIndex: pay })
   }
 
@@ -136,12 +128,12 @@ export function PrintSelectedCredit() {
   }
 
   const pay = useMemo(
-    () => credit?.pagos?.at(payIndex ?? -1),
-    [payIndex, credit]
+    () => creditRes?.pagos?.at(payIndex ?? -1),
+    [payIndex, creditRes]
   )
   const mora = useMemo(
-    () => credit?.cuotas?.at(payIndex ?? -1)?.valor_de_mora,
-    [payIndex, credit]
+    () => creditRes?.cuotas?.at(payIndex ?? -1)?.valor_de_mora,
+    [payIndex, creditRes]
   )
 
   return (
@@ -170,66 +162,56 @@ export function PrintSelectedCredit() {
         >
           <Label className='[&>span]:after:text-red-500 [&>span]:after:content-["_*_"]'>
             <span>{text.form.options.label} </span>
-            <Suspense fallback={<Skeleton className="h-10 w-full" />}>
-              <Await promise={creditRes}>
-                {() => (
-                  <Select
-                    required
-                    name={'options'}
-                    value={opt}
-                    onValueChange={onValueChange}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={text.form.options.placeholder}
-                      />
-                    </SelectTrigger>
-                    <SelectContent className="[&_*]:cursor-pointer">
-                      {Object.entries(options).map(([key, value], index) => (
-                        <SelectItem key={index} value={key}>
-                          {value}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </Await>
-            </Suspense>
+            {pendingCredits && <Skeleton className="h-10 w-full" />}
+            {okCredits && (
+              <Select
+                required
+                name={'options'}
+                value={opt}
+                onValueChange={onValueChange}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={text.form.options.placeholder} />
+                </SelectTrigger>
+                <SelectContent className="[&_*]:cursor-pointer">
+                  {Object.entries(options).map(([key, value], index) => (
+                    <SelectItem key={index} value={key}>
+                      {value}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </Label>
           {opt === 'especific' && (
             <Label>
               <span>{text.form.pay.label}</span>
-              <Suspense fallback={<Skeleton className="h-10 w-full" />}>
-                <Await promise={creditRes}>
-                  {(credit) => (
-                    <Select
-                      required
-                      name={'payment'}
-                      onValueChange={onChange}
-                      defaultValue={
-                        typeof payIndex !== 'undefined'
-                          ? '' + payIndex
-                          : undefined
-                      }
-                    >
-                      <SelectTrigger className="!border-1 w-full !border-ring">
-                        <SelectValue placeholder={text.form.pay.placeholder} />
-                      </SelectTrigger>
-                      <SelectContent className="[&_*]:cursor-pointer">
-                        {credit?.pagos?.map((_, index) => (
-                          <SelectItem key={index} value={'' + index}>
-                            {' '}
-                            {format(
-                              credit?.cuotas?.[index].fecha_de_pago,
-                              'dd/MM/yyyy'
-                            )}{' '}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                </Await>
-              </Suspense>
+              {pendingCredits && <Skeleton className="h-10 w-full" />}
+              {okCredits && (
+                <Select
+                  required
+                  name={'payment'}
+                  onValueChange={onChange}
+                  defaultValue={
+                    typeof payIndex !== 'undefined' ? '' + payIndex : undefined
+                  }
+                >
+                  <SelectTrigger className="!border-1 w-full !border-ring">
+                    <SelectValue placeholder={text.form.pay.placeholder} />
+                  </SelectTrigger>
+                  <SelectContent className="[&_*]:cursor-pointer">
+                    {creditRes?.pagos?.map((_, index) => (
+                      <SelectItem key={index} value={'' + index}>
+                        {' '}
+                        {format(
+                          creditRes?.cuotas?.[index].fecha_de_pago,
+                          'dd/MM/yyyy'
+                        )}{' '}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </Label>
           )}
         </form>
@@ -244,91 +226,88 @@ export function PrintSelectedCredit() {
                 (opt === 'especific' && typeof payIndex === 'undefined'),
             })}
           >
-            <Suspense
-              fallback={
-                <>
-                  <Skeleton className="inline-block h-12 w-24" />
-                  <Skeleton className="inline-block h-12 w-64" />
-                </>
-              }
-            >
-              <Await promise={creditRes}>
-                {(credit) => (
-                  <>
-                    <HoverCard openDelay={0} closeDelay={0.5 * 1000}>
-                      <HoverCardTrigger
-                        asChild
-                        className={clsx(
-                          '[&>svg]:cursor-pointer [&>svg]:stroke-primary',
-                          {}
-                        )}
-                      >
-                        <Button
-                          form="print-credit"
-                          type="submit"
-                          disabled={
-                            !client ||
-                            !opt ||
-                            (opt === 'especific' &&
-                              typeof payIndex === 'undefined')
-                          }
-                        >
-                          {text.button.print}
-                          {!isSuccess && <SpinLoader />}
-                        </Button>
-                      </HoverCardTrigger>
-                      {client && opt && pay?.fecha_de_pago && (
-                        <HoverCardContent
-                          side="right"
-                          className="rounded-md bg-secondary-foreground"
-                        >
-                          <PrintCredit
-                            {...{
-                              client: client?.nombres + ' ' + client?.apellidos,
-                              ssn: client?.numero_de_identificacion,
-                              telephone: client?.telefono,
-                              phone: client?.celular,
-                              date: format( new Date(pay.fecha_de_pago), 'dd/MM/yyyy'),
-                              pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
-                              mora: mora ? +mora.toFixed(2) : undefined,
-                              cuoteNumber:
-                                (payIndex ?? credit?.pagos?.length - 1) + 1,
-                              pending: +(
-                                credit?.monto -
-                                credit?.pagos
-                                  ?.slice(0, payIndex ? payIndex + 1 : -1)
-                                  ?.reduce(
-                                    (prev, acc) => {
-                                      const res: typeof acc = { ...acc }
-                                      res.valor_del_pago += prev?.valor_del_pago
-                                      return res
-                                    },
-                                    { valor_del_pago: 0 }
-                                  )?.valor_del_pago
-                              )?.toFixed(2),
-                              comment:
-                                pay?.comentario === ''
-                                  ? pay?.comentario
-                                  : undefined,
-                            }}
-                            ref={ref}
-                          />
-                        </HoverCardContent>
-                      )}
-                    </HoverCard>
-                    <DialogClose asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="font-bold hover:ring hover:ring-primary"
-                      >
-                        {text.button.close}
-                      </Button>
-                    </DialogClose>
-                  </>
-                )}
-              </Await>
-            </Suspense>
+            {pendingCredits && (
+              <>
+                <Skeleton className="inline-block h-12 w-24" />
+                <Skeleton className="inline-block h-12 w-64" />
+              </>
+            )}
+            {okCredits && (
+              <>
+                <HoverCard openDelay={0} closeDelay={0.5 * 1000}>
+                  <HoverCardTrigger
+                    asChild
+                    className={clsx(
+                      '[&>svg]:cursor-pointer [&>svg]:stroke-primary',
+                      {}
+                    )}
+                  >
+                    <Button
+                      form="print-credit"
+                      type="submit"
+                      disabled={
+                        !client ||
+                        !opt ||
+                        (opt === 'especific' && typeof payIndex === 'undefined')
+                      }
+                    >
+                      {text.button.print}
+                      {!isSuccess && <SpinLoader />}
+                    </Button>
+                  </HoverCardTrigger>
+                  {client && opt && pay?.fecha_de_pago && (
+                    <HoverCardContent
+                      side="right"
+                      className="rounded-md bg-secondary-foreground"
+                    >
+                      <PrintCredit
+                        {...{
+                          client: client?.nombres + ' ' + client?.apellidos,
+                          ssn: client?.numero_de_identificacion,
+                          telephone: client?.telefono,
+                          phone: client?.celular,
+                          date: format(
+                            new Date(pay.fecha_de_pago),
+                            'dd/MM/yyyy'
+                          ),
+                          pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
+                          mora: mora ? +mora.toFixed(2) : undefined,
+                          cuoteNumber:
+                            (payIndex ?? creditRes?.pagos?.length) + 1,
+                          pending: +(
+                            creditRes?.monto -
+                            creditRes?.pagos
+                              ?.slice(0, payIndex ? payIndex + 1 : -1)
+                              ?.reduce(
+                                (prev, acc) => {
+                                  const res: typeof acc = { ...acc }
+                                  res.valor_del_pago += prev?.valor_del_pago
+                                  return res
+                                },
+                                { valor_del_pago: 0 }
+                              )?.valor_del_pago
+                          )?.toFixed(2),
+                          comment:
+                            pay?.comentario === ''
+                              ? pay?.comentario
+                              : undefined,
+                        }}
+                        ref={ref}
+                      />
+                    </HoverCardContent>
+                  )}
+                </HoverCard>
+                <DialogClose asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="font-bold hover:ring hover:ring-primary"
+                  >
+                    {text.button.close}
+                  </Button>
+                </DialogClose>
+              </>
+            )}
           </div>
         </DialogFooter>
       </DialogContent>
