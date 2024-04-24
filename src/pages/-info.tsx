@@ -122,17 +122,18 @@ export const MyUserInfo = memo(function () {
     qClient?.setQueryData(getCurrentUserOpt?.queryKey, updateUser)
   }
 
-  const onError: ( error: Error ) => void = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+  const onError: (error: Error) => void = (error) => {
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: (<div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
-      </div>),
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg as unknown as string}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
-
   }
 
   const { mutate: updateUser, isPending } = useMutation({
@@ -309,7 +310,7 @@ export const MyUserInfo = memo(function () {
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={text.form.rol.placeholder} />
                 </SelectTrigger>
-                <SelectContent className="[&_*]:cursor-pointer">
+                <SelectContent className="z-10 [&_*]:cursor-pointer">
                   {listRols()?.map(({ id, nombre }) => (
                     <SelectItem key={id} value={'' + id}>
                       {nombre}

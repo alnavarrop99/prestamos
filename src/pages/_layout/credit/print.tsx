@@ -199,7 +199,7 @@ export function PrintSelectedCredit() {
                   <SelectTrigger className="!border-1 w-full !border-ring">
                     <SelectValue placeholder={text.form.pay.placeholder} />
                   </SelectTrigger>
-                  <SelectContent className="[&_*]:cursor-pointer">
+                  <SelectContent className="z-10 [&_*]:cursor-pointer">
                     {creditRes?.pagos?.map((_, index) => (
                       <SelectItem key={index} value={'' + index}>
                         {' '}

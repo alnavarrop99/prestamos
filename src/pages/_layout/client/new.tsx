@@ -85,14 +85,18 @@ export function NewClient() {
     qClient?.setQueryData(getClientListOpt?.queryKey, update)
   }
 
-  const onError: (error: Error, variables: TCLIENT_POST_BODY ) => void = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+  const onError: (error: Error, variables: TCLIENT_POST_BODY) => void = (
+    error
+  ) => {
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: (<div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
-      </div>),
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg as unknown as string}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }
@@ -201,7 +205,7 @@ export function NewClient() {
                 <SelectTrigger className="!border-1 w-full !border-ring">
                   <SelectValue placeholder={text.form.typeId.placeholder} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="z-10 [&_*]:cursor-pointer">
                   {listIds()?.map(({ id, nombre }, index) => (
                     <SelectItem key={index} value={'' + id}>
                       {nombre}

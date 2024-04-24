@@ -227,7 +227,7 @@ export function Clients() {
                 >
                   <SelectValue placeholder={text.select.placeholder} />
                 </SelectTrigger>
-                <SelectContent className="[&>div]:cursor-pointer">
+                <SelectContent className="z-10 [&>div]:cursor-pointer">
                   <SelectItem
                     value={'fullName' as keyof TClientTable}
                     className="cursor-pointer"

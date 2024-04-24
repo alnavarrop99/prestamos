@@ -139,7 +139,7 @@ export function UpdateClientById() {
       })
     }
 
-    const updateClient: (data: TCLIENT_PATCH ) => TCLIENT_PATCH = (data) => {
+    const updateClient: (data: TCLIENT_PATCH) => TCLIENT_PATCH = (data) => {
       return { ...newData, ...data }
     }
 
@@ -150,15 +150,21 @@ export function UpdateClientById() {
     )
   }
 
-  const onError: ((error: Error, variables: { clientId: number; }, context: unknown) => unknown) = (error) => {
+  const onError: (
+    error: Error,
+    variables: { clientId: number },
+    context: unknown
+  ) => unknown = (error) => {
     if (!init?.current?.nombres || !init?.current?.apellidos) return
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: (<div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
-      </div>),
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg as unknown as string}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }
@@ -353,7 +359,7 @@ export function UpdateClientById() {
                   <SelectTrigger className={clsx('w-full')}>
                     <SelectValue placeholder={text.form.typeId.placeholder} />
                   </SelectTrigger>
-                  <SelectContent className="[&_*]:cursor-pointer">
+                  <SelectContent className="z-10 [&_*]:cursor-pointer">
                     {listIds()?.map(({ id, nombre }, index) => (
                       <SelectItem key={index} value={'' + id}>
                         {nombre}

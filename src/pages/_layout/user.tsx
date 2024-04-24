@@ -292,10 +292,14 @@ export function Users() {
                 </Button>
               </Link>
             </DialogTrigger>
-            <DialogTrigger asChild title='Caracteristica aun en desarrollo' disabled={true}>
+            <DialogTrigger
+              asChild
+              title="Caracteristica aun en desarrollo"
+              disabled={true}
+            >
               <Link
                 to={'./delete'}
-                disabled={ true || !users?.some(({ selected }) => selected)}
+                disabled={true || !users?.some(({ selected }) => selected)}
               >
                 <Button
                   disabled={true || !users?.some(({ selected }) => selected)}
@@ -325,7 +329,7 @@ export function Users() {
               <SelectTrigger className="!border-1 w-44 !border-ring xl:ms-auto xl:w-48">
                 <SelectValue placeholder={'Orden'} />
               </SelectTrigger>
-              <SelectContent className="[&_*]:cursor-pointer">
+              <SelectContent className="z-10 [&_*]:cursor-pointer">
                 {Object.entries(ORDER)?.map(([key, value], index) => (
                   <SelectItem key={index} value={key}>
                     {value}
@@ -413,7 +417,7 @@ export function Users() {
                             </DialogTrigger>
                             <DialogTrigger asChild>
                               <DropdownMenuItem
-                                title='Caracteristica aun en desarrollo'
+                                title="Caracteristica aun en desarrollo"
                                 disabled={true}
                                 onClick={onOpenChangeById(
                                   index + pagination?.start * LENGTH

@@ -208,7 +208,7 @@ export function NewUser() {
                 <SelectTrigger className="!border-1 w-full !border-ring">
                   <SelectValue placeholder={text.form.rol.placeholder} />
                 </SelectTrigger>
-                <SelectContent className="[&_*]:cursor-pointer">
+                <SelectContent className="z-10 [&_*]:cursor-pointer">
                   {listRols()?.map(({ nombre, id }, index) => (
                     <SelectItem key={index} value={'' + id}>
                       {nombre}

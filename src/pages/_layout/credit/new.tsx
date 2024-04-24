@@ -479,7 +479,7 @@ export function NewCredit() {
                       placeholder={text.form.frecuency.placeholder}
                     />
                   </SelectTrigger>
-                  <SelectContent className="[&_*]:cursor-pointer">
+                  <SelectContent className="z-10 [&_*]:cursor-pointer">
                     {listFrecuencys()?.map(({ id, nombre }, index) => (
                       <SelectItem key={index} value={'' + id}>
                         {nombre}
