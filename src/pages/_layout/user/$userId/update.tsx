@@ -45,6 +45,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { getUsersListOpt } from '@/pages/_layout/user.lazy'
+import { ErrorComponentProps } from '@tanstack/react-router'
 
 export const updateUserByIdOpt = {
   mutationKey: ['update-user-by-id'],
@@ -464,20 +465,29 @@ export function UpdateUserById() {
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: (error as Error)?.name, msg: (error as Error).message })
+    }
+  }, [error] )
+
   useEffect(() => {
     toast({
-      title: text.error.title,
+      title: "" + errorMsg?.type,
       description: (
-        <div className="flex flex-row items-center gap-2">
-          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-base"> {text.error.descriiption} </p>
+        <div className="text-sm">
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
     })
   }, [])
-  return
+  return;
 }
 
 UpdateUserById.dispalyname = 'UpdateUserById'

@@ -8,10 +8,10 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { toast, useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
@@ -32,7 +32,6 @@ type TSearch = {
 
 export const Route = createFileRoute('/_layout/client/delete')({
   component: DeleteSelectedClients,
-  errorComponent: Error,
   validateSearch: (search: TSearch) => search,
   beforeLoad: () => {
     const { rol, userId } = useToken.getState()
@@ -195,25 +194,7 @@ export function DeleteSelectedClients() {
   )
 }
 
-/* eslint-disable-next-line */
-export function Error() {
-  useEffect(() => {
-    toast({
-      title: text.error.title,
-      description: (
-        <div className="flex flex-row items-center gap-2">
-          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-base"> {text.error.descriiption} </p>
-        </div>
-      ),
-      variant: 'destructive',
-    })
-  }, [])
-  return
-}
-
 DeleteSelectedClients.dispalyname = 'DeleteSelectedClients'
-Error.dispalyname = 'DeleteSelectedClientsError'
 
 const text = {
   title: 'Eliminacion de clientes',

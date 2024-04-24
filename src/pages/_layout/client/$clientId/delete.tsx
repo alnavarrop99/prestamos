@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute, redirect } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import clsx from 'clsx'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
@@ -35,7 +35,6 @@ export const deleteClientByIdOpt = {
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteClientById,
-  errorComponent: Error,
   validateSearch: (search: TSearch) => search,
   beforeLoad: () => {
     const { rol, userId } = useToken.getState()
@@ -188,25 +187,7 @@ export function DeleteClientById() {
   )
 }
 
-/* eslint-disable-next-line */
-export function Error() {
-  useEffect(() => {
-    toast({
-      title: text.error.title,
-      description: (
-        <div className="flex flex-row items-center gap-2">
-          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-base"> {text.error.descriiption} </p>
-        </div>
-      ),
-      variant: 'destructive',
-    })
-  }, [])
-  return
-}
-
 DeleteClientById.dispalyname = 'DeleteClientById'
-Error.dispalyname = 'DeleteClientByIdError'
 
 const text = {
   title: 'Eliminacion del cliente',

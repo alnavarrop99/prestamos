@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, defer } from '@tanstack/react-router'
+import { ErrorComponentProps, createFileRoute, defer } from '@tanstack/react-router'
 import React, { ComponentRef, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 import {
@@ -664,20 +664,29 @@ export function NewCredit() {
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: (error as Error)?.name, msg: (error as Error).message })
+    }
+  }, [error] )
+
   useEffect(() => {
     toast({
-      title: text.error.title,
+      title: "" + errorMsg?.type,
       description: (
-        <div className="flex flex-row items-center gap-2">
-          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-base"> {text.error.descriiption} </p>
+        <div className="text-sm">
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
     })
   }, [])
-  return
+  return;
 }
 
 NewCredit.dispalyname = 'NewClient'

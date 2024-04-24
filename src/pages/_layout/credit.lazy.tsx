@@ -642,7 +642,7 @@ export function Error({ error }: ErrorComponentProps) {
     <div className="flex xl:h-full h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
-        <h1 className="font-bold">{errorMsg?.type + ": " + text.error}</h1>
+        <h1 className="font-bold">{errorMsg?.type}</h1>
         <p className="italic line-clamp-3">{errorMsg?.msg}</p>
         <Separator />
         <Button variant="ghost" onClick={onClick} className="text-sm">

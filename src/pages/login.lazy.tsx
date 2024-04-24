@@ -8,11 +8,11 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@radix-ui/react-label'
-import { Navigate, createFileRoute } from '@tanstack/react-router'
-import { useEffect, useReducer, useRef } from 'react'
+import { ErrorComponentProps, Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/use-toast'
-import { Eye, EyeOff } from 'lucide-react'
+import { Annoyed, Eye, EyeOff } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import { type TUSER_LOGIN, type TUSER_LOGIN_BODY, loginUser } from '@/api/users'
 import { useToken } from '@/lib/context/login'
@@ -27,6 +27,7 @@ export const postCurrentUser = {
 
 export const Route = createFileRoute('/login')({
   component: Login,
+  errorComponent: Error
 })
 
 /* eslint-disable-next-line */
@@ -175,10 +176,46 @@ export function Login() {
     </>
   )
 }
+
+/* eslint-disable-next-line */
+export function Error({ error }: ErrorComponentProps) {
+  const navigate = useNavigate()
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: "Error", msg: (error as Error).message })
+    }
+  }, [error] )
+  const onClick: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
+    navigate({to: Route.to})
+  }
+  return (
+    <div className="flex xl:h-full h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+      <Annoyed className="animate-bounce" />
+      <div className="space-y-2">
+        <h1 className="font-bold">{errorMsg?.type}</h1>
+        <p className="italic">{errorMsg?.msg}</p>
+        <Separator />
+        <Button variant="ghost" onClick={onClick} className="text-sm">
+          {' '}
+          {text.retry + '.'}{' '}
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 Login.dispalyname = 'Login'
+Error.dispalyname = 'LoginError'
 
 const text = {
   title: 'Inicio de sesion:',
+  retry: 'Recargar',
   browser: 'Bienvenido',
   description: [
     'Bienvenido a su aplicacion de creditos.',
