@@ -120,8 +120,8 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
         </TableBody>
 
         <TableFooter>
-          <TableRow className="rounded-b-xl">
-            <TableCell colSpan={5} className="flex justify-between font-bold">
+          <TableRow className="[&>*]:rounded-bl-xl">
+            <TableCell className="flex justify-between font-bold">
               <p>{text.total + ':'}</p>
               <GetPay credit={credit} />
             </TableCell>
@@ -132,8 +132,8 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
 
   return (
     <Table>
-      <TableHeader className="rounded-t-xl  bg-muted [&_th]:text-center">
-        <TableRow>
+      <TableHeader className="[&_th]:text-center">
+        <TableRow className="bg-muted [&>*:first-child]:rounded-tl-xl [&>*:last-child]:rounded-tr-xl">
           <TableHead></TableHead>
           <TableHead>{text.payDate}</TableHead>
           <TableHead>{text.payValue}</TableHead>
@@ -206,7 +206,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
         ))}
       </TableBody>
       <TableFooter>
-        <TableRow>
+        <TableRow className="[&>*:first-child]:rounded-bl-xl [&>*:last-child]:rounded-br-xl">
           <TableCell colSpan={5} className="font-bold">
             <p>{text.total + ':'}</p>
           </TableCell>
