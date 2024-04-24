@@ -1,5 +1,11 @@
 import { Button } from '@/components/ui/button'
-import { DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog'
+import {
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -9,19 +15,18 @@ import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import clsx from 'clsx'
 import { ToastAction } from '@radix-ui/react-toast'
-import styles from "@/styles/global.module.css"
+import styles from '@/styles/global.module.css'
 import { Checkbox } from '@/components/ui/checkbox'
-import { type TPAYMENT_POST, type TPAYMENT_POST_BODY } from "@/api/payment";
+import { type TPAYMENT_POST, type TPAYMENT_POST_BODY } from '@/api/payment'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Textarea } from '@/components/ui/textarea'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { postPaymentOpt } from "@/pages/_layout/credit_/$creditId/pay"
+import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { getCreditsListOpt } from '../credit'
 import { getCreditByIdOpt } from '../credit_/$creditId'
-import { getPaymentListOpt } from '@/pages/_layout'
 
 type TSearch = {
   name: string
@@ -31,11 +36,11 @@ type TSearch = {
 
 export const Route = createFileRoute('/_layout/credit/pay')({
   component: PaySelectedCredit,
-  validateSearch: (search: TSearch) => (search)
+  validateSearch: (search: TSearch) => search,
 })
 
 /* eslint-disable-next-line */
-type TFormName = keyof Omit<TPAYMENT_POST_BODY, "credito_id">
+type TFormName = keyof Omit<TPAYMENT_POST_BODY, 'credito_id'>
 
 /* eslint-disable-next-line */
 export function PaySelectedCredit() {
@@ -46,7 +51,11 @@ export function PaySelectedCredit() {
   const { pay, name, creditId } = Route.useSearch()
   const qClient = useQueryClient()
 
-const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = ( _, items ) => {
+  const onSuccess: (
+    data: TPAYMENT_POST,
+    variables: TPAYMENT_POST_BODY,
+    context: unknown
+  ) => unknown = (_, items) => {
     const description = text.notification.decription({
       username: name,
       number: +items?.valor_del_pago,
@@ -60,17 +69,22 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
 
     pushNotification({
       date: new Date(),
-      action: "POST",
+      action: 'POST',
       description,
     })
 
-    qClient?.refetchQueries(
-      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey, ...getPaymentListOpt?.queryKey]  },
-    )
+    qClient?.refetchQueries({ queryKey: getCreditsListOpt?.queryKey })
 
+    qClient?.refetchQueries({
+      queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
+    })
   }
 
-  const onError: ((error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown) = ( ) => {
+  const onError: (
+    error: Error,
+    variables: TPAYMENT_POST_BODY,
+    context: unknown
+  ) => unknown = () => {
     const description = text.notification.error({
       username: name,
     })
@@ -83,15 +97,16 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
       variant: 'destructive',
       action: (
         <ToastAction altText="action from new user" onClick={onClick}>
-            {text.notification.retry}
+          {text.notification.retry}
         </ToastAction>
       ),
     })
   }
 
-  const { mutate: createPayment } = useMutation({ ...postPaymentOpt,
+  const { mutate: createPayment } = useMutation({
+    ...postPaymentOpt,
     onSuccess,
-    onError
+    onError,
   })
 
   const onCheckedChange: (checked: boolean) => void = () => {
@@ -102,18 +117,19 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
     if (!form.current) return
 
     const items = Object.fromEntries(
-      [...new FormData(form.current).entries()]?.map( ([ key, value ]) => {
-      if( value === "" ) return [ key, undefined ]
-      return [ key, value ]
-    })) as Record<TFormName, string>
+      [...new FormData(form.current).entries()]?.map(([key, value]) => {
+        if (value === '') return [key, undefined]
+        return [key, value]
+      })
+    ) as Record<TFormName, string>
 
-      alert(creditId)
+    alert(creditId)
 
     createPayment({
-        valor_del_pago: +items?.valor_del_pago,
-        comentario: items?.comentario ?? "",
-        credito_id: creditId,
-        fecha_de_pago: format( items?.fecha_de_pago ?? new Date(), "yyyy-MM-dd" ) 
+      valor_del_pago: +items?.valor_del_pago,
+      comentario: items?.comentario ?? '',
+      credito_id: creditId,
+      fecha_de_pago: format(items?.fecha_de_pago ?? new Date(), 'yyyy-MM-dd'),
     })
 
     setOpen({ open: !open })
@@ -124,94 +140,100 @@ const onSuccess: ((data: TPAYMENT_POST, variables: TPAYMENT_POST_BODY, context: 
 
   return (
     <>
-    { !open && <Navigate to={"../"} replace />}
-    <DialogContent className="max-w-lg">
-      <DialogHeader>
-        <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
-        <Separator />
-        <DialogDescription className='text-xs text-start md:text-base text-muted-foreground'><p>{text.descriiption}</p></DialogDescription>
-      </DialogHeader>
-      <form
-        autoFocus={false}
-        autoComplete="off"
-        ref={form}
-        onSubmit={onSubmit}
-        id="pay-credit"
-        className={clsx(
-          'p-1 grid-rows-subgrid grid gap-3 grid-cols-none md:grid-cols-2 gap-y-4 [&>label]:space-y-2',
-          styles?.["custom-form"]
-        )}
-      >
-        <Label>
-          <span>{text.form.amount.label} </span>
-          <Input
-            required
-            min={0}
-            step={1}
-            name={'valor_del_pago' as TFormName}
-            type="number"
-            placeholder={text.form.amount.placeholder}
-            defaultValue={ pay }
-          />
-        </Label>
-        <Label className='md:!col-span-1'>
-          <span>{text.form.date.label} </span>
-          <DatePicker name={"fecha_de_pago" as TFormName}
-            label={text.form.date.placeholder}
-            className='!border-1 !border-ring'
-          />
-        </Label>
-        <Label className='md:cols-span-full'>
-          <span>{text.form.comment.label}</span>
-          <Textarea
-            name={"comentario" as TFormName}
-            rows={5}
-            placeholder={text.form.comment.placeholder}
-          />
-        </Label>
-      </form>
-      <DialogFooter className="justify-end gap-2 flex-col md:flex-row">
-        <div className="flex items-center gap-2 font-bold italic">
-          <Checkbox
-            id="checkbox-payment-credit"
-            checked={checked}
-            onCheckedChange={onCheckedChange}
-          />
-          <Label
-            htmlFor="checkbox-payment-credit"
-            className={clsx('cursor-pointer')}
-          >
-            {text.button.checkbox}
-          </Label>
-          
-        </div>
-        <div
-          className={clsx( 'flex flex-col-reverse items-end gap-2',
-            {
-              '!flex-col': checked,
-              '[&>*:last-child]:animate-pulse': !checked,
-            }
+      {!open && <Navigate to={'../'} replace />}
+      <DialogContent className="max-w-lg">
+        <DialogHeader>
+          <DialogTitle className="text-start text-xl md:text-2xl">
+            {text.title}
+          </DialogTitle>
+          <Separator />
+          <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
+            <p>{text.descriiption}</p>
+          </DialogDescription>
+        </DialogHeader>
+        <form
+          autoFocus={false}
+          autoComplete="off"
+          ref={form}
+          onSubmit={onSubmit}
+          id="pay-credit"
+          className={clsx(
+            'grid-rows-subgrid grid grid-cols-none gap-3 gap-y-4 p-1 md:grid-cols-2 [&>label]:space-y-2',
+            styles?.['custom-form']
           )}
         >
-          <Button 
-            form="pay-credit"
-            type="submit"
-            disabled={!checked}
-            className={clsx({ "bg-success hover:bg-success hover:ring-4 ring-success-foreground": checked, })}>
-            {text.button.pay}
-          </Button>
-          <DialogClose asChild>
-            <Button
-              type="button"
-              variant="outline"
-              className={clsx("font-bold hover:ring hover:ring-primary")}
+          <Label>
+            <span>{text.form.amount.label} </span>
+            <Input
+              required
+              min={0}
+              step={1}
+              name={'valor_del_pago' as TFormName}
+              type="number"
+              placeholder={text.form.amount.placeholder}
+              defaultValue={pay}
+            />
+          </Label>
+          <Label className="md:!col-span-1">
+            <span>{text.form.date.label} </span>
+            <DatePicker
+              name={'fecha_de_pago' as TFormName}
+              label={text.form.date.placeholder}
+              className="!border-1 !border-ring"
+            />
+          </Label>
+          <Label className="md:cols-span-full">
+            <span>{text.form.comment.label}</span>
+            <Textarea
+              name={'comentario' as TFormName}
+              rows={5}
+              placeholder={text.form.comment.placeholder}
+            />
+          </Label>
+        </form>
+        <DialogFooter className="flex-col justify-end gap-2 md:flex-row">
+          <div className="flex items-center gap-2 font-bold italic">
+            <Checkbox
+              id="checkbox-payment-credit"
+              checked={checked}
+              onCheckedChange={onCheckedChange}
+            />
+            <Label
+              htmlFor="checkbox-payment-credit"
+              className={clsx('cursor-pointer')}
             >
-              {text.button.close}
+              {text.button.checkbox}
+            </Label>
+          </div>
+          <div
+            className={clsx('flex flex-col-reverse items-end gap-2', {
+              '!flex-col': checked,
+              '[&>*:last-child]:animate-pulse': !checked,
+            })}
+          >
+            <Button
+              form="pay-credit"
+              type="submit"
+              disabled={!checked}
+              className={clsx({
+                'bg-success ring-success-foreground hover:bg-success hover:ring-4':
+                  checked,
+              })}
+            >
+              {text.button.pay}
             </Button>
-          </DialogClose>
-        </div>
-      </DialogFooter>
-    </DialogContent>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant="outline"
+                className={clsx('font-bold hover:ring hover:ring-primary')}
+              >
+                {text.button.close}
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogFooter>
+      </DialogContent>
     </>
   )
 }
@@ -220,8 +242,7 @@ PaySelectedCredit.dispalyname = 'PayCreditById'
 
 const text = {
   title: 'Realizar un pago:',
-  descriiption:
-    'Introdusca los datos correctamente para realizar un pago.',
+  descriiption: 'Introdusca los datos correctamente para realizar un pago.',
   button: {
     close: 'No, vuelve a la pestaña anterior',
     pay: 'Si, realiza el pago',
@@ -229,9 +250,14 @@ const text = {
   },
   notification: {
     titile: 'Ejecucion de un pago',
-    decription: ({ username, number }: { username: string, number: number }) =>
-      'Se ha pagado la cuota con un monto de $' + number + " del usuario " + username + ' con exito.',
-    error: ({username}:{username: string}) => 'Ha fallado el pago de la cuota del usuario ' + username,
+    decription: ({ username, number }: { username: string; number: number }) =>
+      'Se ha pagado la cuota con un monto de $' +
+      number +
+      ' del usuario ' +
+      username +
+      ' con exito.',
+    error: ({ username }: { username: string }) =>
+      'Ha fallado el pago de la cuota del usuario ' + username,
     retry: 'Reintentar',
   },
   form: {
@@ -241,11 +267,11 @@ const text = {
     },
     comment: {
       label: 'Comentario',
-      placeholder: "Escriba un comentario"
+      placeholder: 'Escriba un comentario',
     },
     date: {
       label: 'Fecha de aprobacion',
-      placeholder: "Seleccione una fecha"
-    }
+      placeholder: 'Seleccione una fecha',
+    },
   },
 }

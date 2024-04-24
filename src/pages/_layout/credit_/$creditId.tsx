@@ -15,24 +15,15 @@ import { CircleDollarSign as Pay } from 'lucide-react'
 import { format } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
 import { getFrecuencyById } from '@/lib/type/frecuency'
-import { createContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useMemo } from 'react'
 import { type TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
 import { type TCLIENT_GET } from '@/api/clients'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useRouter } from '@tanstack/react-router'
 import { queryClient } from '@/pages/__root'
-import {
-  queryOptions,
-  useIsMutating,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
-import {
-  deletePaymentByIdOpt,
-  updateCreditByIdOpt,
-} from '@/pages/_layout/credit_/$creditId_/update.confirm'
-import { postCreditOpt } from '@/pages/_layout/credit/new'
-import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
+import {} from '@/pages/_layout/credit_/$creditId_/update.confirm'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
 import { PaymentTable } from './-table'
@@ -74,42 +65,15 @@ export const _client = createContext<TCLIENT_GET | undefined>(undefined)
 /* eslint-disable-next-line */
 export function CreditById() {
   const { creditId } = Route.useParams()
-  const { data: creditRes, refetch: refetchCredit } = useSuspenseQuery(
+  const { data: creditRes } = useSuspenseQuery(
     queryOptions(getCreditByIdOpt({ creditId }))
   )
-  const { data: clientRes, refetch: refetchClient } = useSuspenseQuery(
+  const { data: clientRes } = useSuspenseQuery(
     queryOptions(getClientByIdOpt({ clientId: '' + creditRes.owner_id }))
   )
-  const [credit, setCredit] = useState(creditRes)
-  const [client, setClient] = useState(clientRes)
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
   const { userId, rol } = useToken()
-
-  const isUpdateCredit = useIsMutating({
-    status: 'success',
-    mutationKey: updateCreditByIdOpt.mutationKey,
-  })
-  const isNewCredit = useIsMutating({
-    status: 'success',
-    mutationKey: postCreditOpt.mutationKey,
-  })
-  const isDeleteCredit = useIsMutating({
-    status: 'success',
-    mutationKey: deleteCreditByIdOpt.mutationKey,
-  })
-  const isNewPayment = useIsMutating({
-    status: 'success',
-    mutationKey: deletePaymentByIdOpt.mutationKey,
-  })
-  const isDeletePayment = useIsMutating({
-    status: 'success',
-    mutationKey: deletePaymentByIdOpt.mutationKey,
-  })
-  const isUpdatePayment = useIsMutating({
-    status: 'success',
-    mutationKey: updateCreditByIdOpt.mutationKey,
-  })
 
   const onOpenChange = (open: boolean) => {
     if (!open) {
@@ -120,53 +84,29 @@ export function CreditById() {
 
   const table = useMemo(
     () =>
-      credit?.pagos?.map((_, i, list) => ({
+      creditRes?.pagos?.map((_, i, list) => ({
         payment: list?.[i],
-        cuote: credit?.cuotas?.[i],
+        cuote: creditRes?.cuotas?.[i],
       })),
-    [credit?.pagos, credit?.cuotas]
+    [creditRes?.pagos, creditRes?.cuotas]
   )
 
-  useEffect(() => {
-    if (creditRes) {
-      refetchCredit()?.then(({ data }) => {
-        if (!data) return
-        setCredit(data)
-      })
-    }
-
-    if (clientRes) {
-      refetchClient()?.then(({ data }) => {
-        if (!data) return
-        setClient(data)
-      })
-    }
-    return () => {}
-  }, [
-    isUpdateCredit,
-    isNewCredit,
-    isDeleteCredit,
-    isNewPayment,
-    isDeletePayment,
-    isUpdatePayment,
-  ])
-
-  const mora = credit?.cuotas?.at(-1)?.valor_de_mora
-  const moraType = getMoraTypeById({ moraTypeId: credit?.tipo_de_mora_id })
+  const mora = creditRes?.cuotas?.at(-1)?.valor_de_mora
+  const moraType = getMoraTypeById({ moraTypeId: creditRes?.tipo_de_mora_id })
     ?.nombre
   const moraStatus = !!mora && mora > 0
 
-  const cuoteValue = credit?.cuotas?.at(-1)?.valor_de_cuota
-  const interestValue = (credit?.tasa_de_interes / 100) * (cuoteValue ?? 1)
+  const cuoteValue = creditRes?.cuotas?.at(-1)?.valor_de_cuota
+  const interestValue = (creditRes?.tasa_de_interes / 100) * (cuoteValue ?? 1)
   const moreValue =
     moraType === 'Porciento'
-      ? ((credit?.valor_de_mora + credit?.tasa_de_interes) / 100) *
+      ? ((creditRes?.valor_de_mora + creditRes?.tasa_de_interes) / 100) *
         (cuoteValue ?? 1)
-      : credit?.valor_de_mora
+      : creditRes?.valor_de_mora
 
   return (
-    <_client.Provider value={client}>
-      <_credit.Provider value={credit}>
+    <_client.Provider value={clientRes}>
+      <_credit.Provider value={creditRes}>
         <div className="space-y-4">
           <div className="flex gap-2">
             <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
@@ -174,19 +114,19 @@ export function CreditById() {
               <DialogTrigger asChild>
                 <Link
                   to={'./print'}
-                  disabled={credit?.pagos?.length <= 0}
+                  disabled={creditRes?.pagos?.length <= 0}
                   className="hidden xl:ms-auto xl:block"
                 >
                   <Button
                     variant="outline"
                     className="hover:ring hover:ring-primary"
-                    disabled={credit?.pagos?.length <= 0}
+                    disabled={creditRes?.pagos?.length <= 0}
                   >
                     <Printer />
                   </Button>
                 </Link>
               </DialogTrigger>
-              {userId === credit?.cobrador_id && (
+              {userId === creditRes?.cobrador_id && (
                 <DialogTrigger asChild className="ms-auto xl:ms-0">
                   <Link to={'./pay'}>
                     <Button
@@ -227,27 +167,31 @@ export function CreditById() {
               <b>{text.details.status + ':'}</b>
               <Switch
                 className={'cursor-not-allowed'}
-                checked={!!credit?.estado}
+                checked={!!creditRes?.estado}
               ></Switch>
             </li>
             <li>
               <b>{text.details.name + ':'}</b>{' '}
-              <span>{client?.nombres + ' ' + client?.apellidos + '.'}</span>
+              <span>
+                {clientRes?.nombres + ' ' + clientRes?.apellidos + '.'}
+              </span>
             </li>
             <li>
               <b>{text.details.date + ':'}</b>{' '}
               <span>
-                {format(new Date(credit?.fecha_de_aprobacion), 'dd/MM/yyyy') +
-                  '.'}
+                {format(
+                  new Date(creditRes?.fecha_de_aprobacion),
+                  'dd/MM/yyyy'
+                ) + '.'}
               </span>
             </li>
             <li>
               <b>{text.details.aditionalsDays + ':'}</b>{' '}
-              <span>{credit?.dias_adicionales + '.'}</span>
+              <span>{creditRes?.dias_adicionales + '.'}</span>
             </li>
             <li>
               <b>{text.details.amount + ':'}</b>{' '}
-              <span>{'$' + credit?.monto + '.'}</span>
+              <span>{'$' + creditRes?.monto + '.'}</span>
             </li>
             <li>
               <b>{text.details.cuote + ':'}</b>{' '}
@@ -256,14 +200,17 @@ export function CreditById() {
             <li>
               <b>{text.details.cuoteNumber + ':'}</b>{' '}
               <span>
-                {credit.pagos?.length + '/' + credit.numero_de_cuotas + '.'}
+                {creditRes.pagos?.length +
+                  '/' +
+                  creditRes.numero_de_cuotas +
+                  '.'}
               </span>
             </li>
             <li>
               <b>{text.details.frecuency + ':'}</b>{' '}
               <span>
                 {getFrecuencyById({
-                  frecuencyId: credit?.frecuencia_del_credito_id,
+                  frecuencyId: creditRes?.frecuencia_del_credito_id,
                 })?.nombre + '.'}
               </span>
             </li>
@@ -275,7 +222,7 @@ export function CreditById() {
             >
               <b>{text.details.interest + ':'}</b>{' '}
               <span>
-                {credit?.tasa_de_interes + '% de $' + cuoteValue + '.'}
+                {creditRes?.tasa_de_interes + '% de $' + cuoteValue + '.'}
               </span>
             </li>
             <li
@@ -289,7 +236,10 @@ export function CreditById() {
                 <span>{'$' + moreValue + '.'}</span>
               ) : (
                 <span>
-                  {credit?.valor_de_mora + '% de $' + (cuoteValue ?? 0) + '.'}
+                  {creditRes?.valor_de_mora +
+                    '% de $' +
+                    (cuoteValue ?? 0) +
+                    '.'}
                 </span>
               )}
             </li>
@@ -306,19 +256,19 @@ export function CreditById() {
             </li>
             <li>
               <b>{text.details.comment + ':'}</b>{' '}
-              <p className="text-sm md:text-base">{credit?.comentario}</p>
+              <p className="text-sm md:text-base">{creditRes?.comentario}</p>
             </li>
           </ul>
           <Separator />
-          {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
+          {!!creditRes?.cuotas?.length && !!creditRes?.pagos?.length && (
             <h2 className="text-xl font-bold md:text-2xl">
               {' '}
               {text.cuotes.title}{' '}
             </h2>
           )}
-          {!!credit?.cuotas?.length && !!credit?.pagos?.length && (
+          {!!creditRes?.cuotas?.length && !!creditRes?.pagos?.length && (
             <div className="rounded-xl bg-background ring-2 ring-border">
-              <PaymentTable credit={credit} table={table} />
+              <PaymentTable credit={creditRes} table={table} />
             </div>
           )}
         </div>

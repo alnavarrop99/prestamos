@@ -55,17 +55,7 @@ import {
   SelectTrigger,
 } from '@/components/ui/select'
 import { queryClient } from '@/pages/__root'
-import {
-  queryOptions,
-  useIsMutating,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
-import {
-  deletePaymentByIdOpt,
-  updateCreditByIdOpt,
-} from '@/pages/_layout/credit_/$creditId_/update.confirm'
-import { postCreditOpt } from '@/pages/_layout/credit/new'
-import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
+import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { useToken } from '@/lib/context/login'
 
 const getFilterCredit = async () => {
@@ -189,35 +179,10 @@ export function Credits() {
       return credits?.filter(({ cobrador_id }) => userId === cobrador_id)
     return credits
   }
-  const { data: creditsRes, refetch } = useSuspenseQuery(
+  const { data: creditsRes } = useSuspenseQuery(
     queryOptions({ ...getCreditsListOpt, select })
   )
-  const [credits, setCredits] = useState(creditsRes)
-
-  const isUpdateCredit = useIsMutating({
-    status: 'success',
-    mutationKey: updateCreditByIdOpt.mutationKey,
-  })
-  const isNewCredit = useIsMutating({
-    status: 'success',
-    mutationKey: postCreditOpt.mutationKey,
-  })
-  const isDeleteCredit = useIsMutating({
-    status: 'success',
-    mutationKey: deleteCreditByIdOpt.mutationKey,
-  })
-  const isNewPayment = useIsMutating({
-    status: 'success',
-    mutationKey: deletePaymentByIdOpt.mutationKey,
-  })
-  const isDeletePayment = useIsMutating({
-    status: 'success',
-    mutationKey: deletePaymentByIdOpt.mutationKey,
-  })
-  const isUpdatePayment = useIsMutating({
-    status: 'success',
-    mutationKey: updateCreditByIdOpt.mutationKey,
-  })
+  const [credits, setCredits] = useState<TCREDIT_GET_FILTER_ALL>([])
 
   const onSelectOrder: (value: string) => void = (value) => {
     if (
@@ -316,23 +281,6 @@ export function Credits() {
       setCredits(creditsRes)
     }
   }, [value])
-
-  useEffect(() => {
-    if (creditsRes) {
-      refetch()?.then(({ data }) => {
-        if (!data) return
-        setCredits(data)
-      })
-    }
-    return () => {}
-  }, [
-    isUpdateCredit,
-    isNewCredit,
-    isDeleteCredit,
-    isNewPayment,
-    isDeletePayment,
-    isUpdatePayment,
-  ])
 
   return (
     <>
@@ -509,7 +457,7 @@ export function Credits() {
                                   search={{
                                     name: nombre_del_cliente,
                                     pay: valor_de_cuota,
-                                    creditId: creditId
+                                    creditId: creditId,
                                   }}
                                 >
                                   <Button

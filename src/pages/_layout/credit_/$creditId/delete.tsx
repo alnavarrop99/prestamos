@@ -18,7 +18,11 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { deleteCreditById, TCREDIT_GET_ALL, TCREDIT_GET_FILTER_ALL, type TCREDIT_GET_BASE } from '@/api/credit'
+import {
+  deleteCreditById,
+  type TCREDIT_GET_FILTER_ALL,
+  type TCREDIT_GET_BASE,
+} from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import {
   queryOptions,
@@ -79,14 +83,17 @@ export function DeleteCreditById() {
       variant: 'default',
     })
 
-    const update: (data: TCREDIT_GET_FILTER_ALL) => TCREDIT_GET_FILTER_ALL = (data) => {
+    const update: (data: TCREDIT_GET_FILTER_ALL) => TCREDIT_GET_FILTER_ALL = (
+      data
+    ) => {
       const res = data
       return res?.filter(({ id }) => id !== +creditId)
     }
 
-    qClient?.removeQueries({ queryKey: getCreditByIdOpt({ creditId })?.queryKey })
+    qClient?.removeQueries({
+      queryKey: getCreditByIdOpt({ creditId })?.queryKey,
+    })
     qClient?.setQueryData(getCreditsListOpt?.queryKey, update)
-
   }
   const onError: (
     error: Error,
@@ -140,13 +147,17 @@ export function DeleteCreditById() {
       {!open && <Navigate to={'../../'} replace />}
       <DialogContent className="max-w-xl">
         <DialogHeader>
-          <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
+          <DialogTitle className="text-start text-xl md:text-2xl">
+            {text.title}
+          </DialogTitle>
           <Separator />
           <DialogDescription>
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4 hidden md:block" />
-              <AlertTitle className='text-sm md:text-base text-start max-sm:!px-0'>{text.alert.title}</AlertTitle>
-              <AlertDescription className='text-xs md:text-base text-start max-sm:!px-0'>
+              <AlertCircle className="hidden h-4 w-4 md:block" />
+              <AlertTitle className="text-start text-sm max-sm:!px-0 md:text-base">
+                {text.alert.title}
+              </AlertTitle>
+              <AlertDescription className="text-start text-xs max-sm:!px-0 md:text-base">
                 {text.alert.description({
                   // TODO
                   username: '' + credit?.owner_id,
@@ -155,7 +166,7 @@ export function DeleteCreditById() {
             </Alert>
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="!justify-between flex-col md:flex-row">
+        <DialogFooter className="flex-col !justify-between md:flex-row">
           <div className="flex items-center gap-2 font-bold italic">
             <Checkbox
               id="confirmation"

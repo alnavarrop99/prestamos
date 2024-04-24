@@ -29,9 +29,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
 import {
-    getCreditsList,
   postCredit,
-  TCREDIT_GET_ALL,
+  type TCREDIT_GET_ALL,
   type TCREDIT_GET_BASE,
   type TCREDIT_POST_BODY,
 } from '@/api/credit'
@@ -39,7 +38,12 @@ import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { type TMORA_TYPE, getMoraTypeByName } from '@/lib/type/moraType'
 import { getFrecuencyByName, listFrecuencys } from '@/lib/type/frecuency'
-import { queryOptions, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  queryOptions,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query'
 import { Navigate } from '@tanstack/react-router'
 import { getStatusByName } from '@/lib/type/status'
 import { format } from 'date-fns'
@@ -148,7 +152,7 @@ export function NewCredit() {
     data: TCREDIT_GET_BASE,
     variables: TCREDIT_POST_BODY,
     context: unknown
-  ) => unknown = ( newData ) => {
+  ) => unknown = (newData) => {
     const description = text.notification.decription({
       username: client?.nombres + ' ' + client?.apellidos,
     })
@@ -170,7 +174,6 @@ export function NewCredit() {
     }
 
     qClient?.setQueryData(getCreditsListOpt?.queryKey, update)
-
   }
 
   const onError: (
@@ -265,7 +268,10 @@ export function NewCredit() {
       frecuencia_del_credito_id: +items?.frecuencia_del_credito_id,
       owner_id: clientId,
       garante_id: refId ?? null,
-      fecha_de_aprobacion: format(items?.fecha_de_aprobacion ?? new Date(), "yyyy-MM-dd"),
+      fecha_de_aprobacion: format(
+        items?.fecha_de_aprobacion ?? new Date(),
+        'yyyy-MM-dd'
+      ),
     })
 
     setOpen({ open: !open })
