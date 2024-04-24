@@ -538,9 +538,8 @@ export function UpdateCreditById() {
                         name={'comentario' as TFormName}
                         rows={5}
                         placeholder={text.form.details.comment.placeholder}
-                      >
-                        {creditChange.comentario}
-                      </Textarea>
+                        defaultValue={creditChange.comentario}
+                      />
                     </Label>
                   </form>
                 </CardContent>
@@ -656,9 +655,8 @@ export function UpdateCreditById() {
                                       placeholder={
                                         text.form.pay.comment.placeholder
                                       }
-                                    >
-                                      {creditChange.comentario}
-                                    </Textarea>
+                                      defaultValue={creditChange.comentario}
+                                    />
                                   </Label>
                                 </form>
                               </AccordionContent>

@@ -105,7 +105,7 @@ export function Report() {
                     name="Comentario"
                     rows={5}
                     placeholder={text.comment.placeholder}
-                  ></Textarea>
+                  />
                 </Label>
               </form>
               <Button
