@@ -46,6 +46,7 @@ import { persist } from 'zustand/middleware'
 import { useToken } from '@/lib/context/login'
 import { ClientTable } from '@/pages/_layout/-table'
 import { useScreen } from '@/lib/hook/useScreens'
+import { ErrorComponentProps } from '@tanstack/react-router'
 
 type TSearch = {
   userId: number
@@ -419,7 +420,16 @@ export function Pending() {
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: "Error", msg: (error as Error).message })
+    }
+  }, [error] )
   const { history } = useRouter()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
@@ -427,11 +437,11 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex xl:h-full h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
-        <h1 className="font-bold">{text.error}</h1>
-        <p className="italic">{text.errorDescription}</p>
+        <h1 className="font-bold">{errorMsg?.type + ": " + text.error}</h1>
+        <p className="italic">{errorMsg?.msg}</p>
         <Separator />
         <Button variant="ghost" onClick={onClick} className="text-sm">
           {' '}

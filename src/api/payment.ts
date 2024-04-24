@@ -1,5 +1,5 @@
 import { useToken } from '@/lib/context/login'
-import { TCREDIT_GET_BASE } from './credit'
+import { type TCREDIT_GET_BASE } from './credit'
 
 // GET
 export type TPAYMENT_GET = {
