@@ -153,7 +153,7 @@ export const getCreditById: TGetCreditById = async ({ params: { creditId} }) => 
     headers
   })
 
-  if( !res.ok ) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -171,7 +171,7 @@ export const getCreditsList: TGetCreditsList =  async () => {
     headers
   })
 
-  if( !res.ok ) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -190,7 +190,7 @@ export const getCreditsFilter: TGetCreditsFilter = ( filter = { cliente: null, f
     headers
   })
 
-  if( !res.ok ) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -209,7 +209,7 @@ export const postCredit: TPostCredit =  async ( newCredit ) => {
     headers
   })
 
-  if( !res.ok ) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -227,7 +227,7 @@ export const deleteCreditById: TDeleteCreditById =  async ({ creditId }) => {
     headers
   })
 
-  if( !res.ok ) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -246,7 +246,7 @@ export const patchCreditsById: TPatchCreditById =  async ({ creditId, updateCred
     headers
   })
 
-  if( !res.ok ) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }

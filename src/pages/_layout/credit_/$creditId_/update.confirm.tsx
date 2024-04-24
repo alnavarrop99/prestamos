@@ -7,7 +7,6 @@ import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import clsx from 'clsx'
-import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle  } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -92,22 +91,15 @@ export function UpdateConfirmationCredit() {
     )
   }
 
-  const onErrorUpdateCredit: ((error: Error, variables: { creditId: number; updateCredit?: TCREDIT_PATCH_BODY | undefined; }, context: unknown) => unknown) = () => {
-    const description = text.notification.credit.error({
-      username: client?.nombres + " " + client?.apellidos,
-    })
-
-    const onClick = () => {}
+  const onErrorUpdateCredit: ((error: Error, variables: { creditId: number; updateCredit?: TCREDIT_PATCH_BODY | undefined; }, context: unknown) => unknown) = (error) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.credit.titile,
-      description,
+      title: error.name + ": " + errorMsg?.type,
+      description: (<div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>),
       variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
-      ),
     })
   }
   const { mutate: updateCredit } = useMutation({
@@ -133,26 +125,22 @@ export function UpdateConfirmationCredit() {
       description,
     })
 
-    qClient?.refetchQueries(
-      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey]  },
-    )
-  }
-  const onErrorUpdatePayment: ((error: Error, variables: { paymentId: number; updatePayment?: TPAYMENT_PATCH_BODY | undefined; }, context: unknown) => unknown) = () => {
-    const description = text.notification.payment.error({
-      username: client?.nombres + " " + client?.apellidos,
-    })
+    qClient?.refetchQueries({ queryKey: getCreditsListOpt?.queryKey })
 
-    const onClick = () => {}
+    qClient?.refetchQueries({
+      queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
+    })
+  }
+  const onErrorUpdatePayment: ((error: Error, variables: { paymentId: number; updatePayment?: TPAYMENT_PATCH_BODY | undefined; }, context: unknown) => unknown) = (error) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.payment.titile,
-      description,
-      variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
+      title: error.name + ": " + errorMsg?.type,
+      description: (<div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>
       ),
+      variant: 'destructive',
     })
   }
   const { mutate: updatePayment } = useMutation({
@@ -178,26 +166,22 @@ export function UpdateConfirmationCredit() {
       description,
     })
 
-    qClient?.refetchQueries(
-      { queryKey: [...getCreditsListOpt?.queryKey, ...getCreditByIdOpt({ creditId: "" + creditId })?.queryKey]  },
-    )
-  }
-  const onErrorRemovePayment: ((error: Error, variables: { paymentId: number; }, context: unknown) => unknown) = () => {
-    const description = text.notification.deletePayment.error({
-      username: client?.nombres + " " + client?.apellidos,
+    qClient?.refetchQueries({ queryKey: getCreditsListOpt?.queryKey })
+
+    qClient?.refetchQueries({
+      queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
 
-    const onClick = () => {}
+  }
+  const onErrorRemovePayment: ((error: Error, variables: { paymentId: number; }, context: unknown) => unknown) = (error) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.deletePayment.titile,
-      description,
+      title: error.name + ": " + errorMsg?.type,
+      description: (<div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>),
       variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
-      ),
     })
   }
   const { mutate: removePaymentById } = useMutation({

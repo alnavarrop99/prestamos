@@ -14,7 +14,6 @@ import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useContext, useRef, useState } from 'react'
 import clsx from 'clsx'
-import { ToastAction } from '@radix-ui/react-toast'
 import styles from '@/styles/global.module.css'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -93,23 +92,16 @@ export function PayCreditById() {
     error: Error,
     variables: TPAYMENT_POST_BODY,
     context: unknown
-  ) => unknown = (_, items) => {
-    const description = text.notification.decription({
-      username: client?.nombres + ' ' + client?.apellidos,
-      number: +items?.valor_del_pago,
-    })
-
-    const onClick = () => {}
+  ) => unknown = (error) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.titile,
-      description,
-      variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
+      title: error.name + ": " + errorMsg?.type,
+      description: (<div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>
       ),
+      variant: 'destructive',
     })
   }
   const { mutate: createPayment } = useMutation({

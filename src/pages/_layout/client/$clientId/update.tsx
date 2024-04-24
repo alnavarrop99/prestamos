@@ -14,7 +14,6 @@ import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute, defer } from '@tanstack/react-router'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
-import { ToastAction } from '@radix-ui/react-toast'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -140,7 +139,7 @@ export function UpdateClientById() {
       })
     }
 
-    const updateClient: (data: TCLIENT_PATCH) => TCLIENT_PATCH = (data) => {
+    const updateClient: (data: TCLIENT_PATCH ) => TCLIENT_PATCH = (data) => {
       return { ...newData, ...data }
     }
 
@@ -151,29 +150,15 @@ export function UpdateClientById() {
     )
   }
 
-  const onError = () => {
+  const onError: ((error: Error, variables: { clientId: number; }, context: unknown) => unknown) = (error) => {
     if (!init?.current?.nombres || !init?.current?.apellidos) return
-
-    const description = text.notification.error({
-      username: init?.current?.nombres + ' ' + init.current.apellidos,
-    })
-
-    const onClick = () => {}
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.titile,
-      description,
-      variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
-      ),
-    })
-
-    toast({
-      title: text.notification.titile,
-      description,
+      title: error.name + ": " + errorMsg?.type,
+      description: (<div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>),
       variant: 'destructive',
     })
   }

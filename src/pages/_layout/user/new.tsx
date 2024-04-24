@@ -17,7 +17,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { ToastAction } from '@/components/ui/toast'
 import { toast } from '@/components/ui/use-toast'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
@@ -98,26 +97,15 @@ export function NewUser() {
     qClient?.setQueryData(getUsersListOpt?.queryKey, update)
   }
 
-  const onError: (
-    error: Error,
-    variables: TUSER_POST_BODY,
-    context: unknown
-  ) => unknown = (_, items) => {
-    const description = text.notification.error({
-      username: items?.nombre,
-    })
-
-    const onClick = () => {}
+  const onError: ( error: Error, variables: TUSER_POST_BODY, context: unknown) => unknown = (error) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.titile,
-      description,
+      title: error.name + ": " + errorMsg?.type,
+      description: <div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>,
       variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
-      ),
     })
   }
 

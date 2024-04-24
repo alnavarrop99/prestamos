@@ -17,7 +17,6 @@ import { useMutation } from '@tanstack/react-query'
 import { type TUSER_LOGIN, type TUSER_LOGIN_BODY, loginUser } from '@/api/users'
 import { useToken } from '@/lib/context/login'
 import { BoundleLoader } from '@/components/ui/loader'
-import { ToastAction } from '@radix-ui/react-toast'
 import { Separator } from '@radix-ui/react-separator'
 import brand from '@/assets/menu-brand.avif'
 
@@ -68,26 +67,16 @@ export function Login() {
     setToken(user.access_token)
   }
 
-  const onError: (
-    error: Error,
-    variables: TUSER_LOGIN_BODY,
-    context: unknown
-  ) => unknown = (_, { username }) => {
-    if (!ref.current) return
-    const onClick = () => {}
+  const onError: ( error: Error, variables: TUSER_LOGIN_BODY, context: unknown) => unknown = (error) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.title,
-      description: text.notification.error({ username }),
+      title: error.name + ": " + errorMsg?.type,
+      description: <div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>,
       variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
-      ),
     })
-
-    ref.current.reset()
   }
   const { mutate: login, isPending } = useMutation({
     ...postCurrentUser,

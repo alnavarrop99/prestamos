@@ -14,7 +14,6 @@ import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute, defer } from '@tanstack/react-router'
 import React, { ComponentRef, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
-import { ToastAction } from '@radix-ui/react-toast'
 import {
   Select,
   SelectContent,
@@ -180,22 +179,15 @@ export function NewCredit() {
     error: Error,
     variables: TCREDIT_POST_BODY,
     context: unknown
-  ) => unknown = () => {
-    const description = text.notification.error({
-      username: client?.nombres + ' ' + client?.apellidos,
-    })
-
-    const onClick = () => {}
+  ) => unknown = (error) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.titile,
-      description,
+      title: error.name + ": " + errorMsg?.type,
+      description: (<div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>),
       variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
-      ),
     })
   }
 

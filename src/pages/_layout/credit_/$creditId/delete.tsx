@@ -13,7 +13,6 @@ import { DialogDescription } from '@radix-ui/react-dialog'
 import { createFileRoute } from '@tanstack/react-router'
 import { useContext, useState } from 'react'
 import clsx from 'clsx'
-import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -99,25 +98,16 @@ export function DeleteCreditById() {
     error: Error,
     variables: { creditId: number },
     context: unknown
-  ) => Promise<unknown> = async () => {
-    const client = await qClient?.fetchQuery(
-      queryOptions(getClientByIdOpt({ clientId: '' + credit?.owner_id }))
-    )
-    const description = text.notification.error({
-      username: client?.nombres + ' ' + client?.apellidos,
-    })
-
-    const onClick = () => {}
+  ) => Promise<unknown> = async ( error ) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.titile,
-      description,
-      variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
+      title: error.name + ": " + errorMsg?.type,
+      description: (<div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>
       ),
+      variant: 'destructive',
     })
   }
 

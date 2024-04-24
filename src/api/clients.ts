@@ -109,7 +109,7 @@ export const getClientById: TGetClientById = async ({
     }
   )
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return await res.json()
 }
@@ -127,7 +127,7 @@ export const getClientsList: TGetClientsList = async () => {
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return await res.json()
 }
@@ -146,7 +146,7 @@ export const postClient: TPostClient = async (params) => {
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return await res.json()
 }
@@ -167,7 +167,7 @@ export const deleteClientsById: TDeleteClientById = async ({ clientId }) => {
     }
   )
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -189,7 +189,7 @@ export const pathClientById: TPatchClientById = async ({
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }

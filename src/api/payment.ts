@@ -86,7 +86,7 @@ export const getPaymentById: TGetPaymentById = async ({
     }
   )
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -104,7 +104,7 @@ export const listPayments: TListPayments = async () => {
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -123,7 +123,7 @@ export const postPaymentId: TPostPaymentById = async (newPayment) => {
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: (await res?.text()) } ))
 
   return res.json()
 }
@@ -145,7 +145,7 @@ export const patchPaymentById: TPatchPaymentById = async ({
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -166,7 +166,7 @@ export const deletePaymentById: TDeletePaymentById = async ({ paymentId }) => {
     }
   )
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }

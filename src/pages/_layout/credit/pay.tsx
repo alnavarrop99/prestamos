@@ -14,7 +14,6 @@ import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useRef, useState } from 'react'
 import clsx from 'clsx'
-import { ToastAction } from '@radix-ui/react-toast'
 import styles from '@/styles/global.module.css'
 import { Checkbox } from '@/components/ui/checkbox'
 import { type TPAYMENT_POST, type TPAYMENT_POST_BODY } from '@/api/payment'
@@ -80,26 +79,15 @@ export function PaySelectedCredit() {
     })
   }
 
-  const onError: (
-    error: Error,
-    variables: TPAYMENT_POST_BODY,
-    context: unknown
-  ) => unknown = () => {
-    const description = text.notification.error({
-      username: name,
-    })
-
-    const onClick = () => {}
+  const onError: ( error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown = (error) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.titile,
-      description,
+      title: error.name + ": " + errorMsg?.type,
+      description:  (<div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>),
       variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
-      ),
     })
   }
 
@@ -122,8 +110,6 @@ export function PaySelectedCredit() {
         return [key, value]
       })
     ) as Record<TFormName, string>
-
-    alert(creditId)
 
     createPayment({
       valor_del_pago: +items?.valor_del_pago,

@@ -48,7 +48,7 @@ export const getAllReport: TGetAllReport = async () => {
     headers
   })
 
-  if( !res.ok ) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -67,7 +67,7 @@ export const postReportById: TPostReportsById = async ({ code, report }) => {
     headers
   })
 
-  if( !res.ok ) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }

@@ -62,7 +62,7 @@ export const loginUser: TGetUserLogin = async (params) => {
     body: formData,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -80,7 +80,7 @@ export const getUserById: TGetUserById = async ({ params: { userId } }) => {
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -98,7 +98,7 @@ export const getUsersList: TGetUsersList = async () => {
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -117,7 +117,7 @@ export const postUser: TPostUser = async (params) => {
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -136,7 +136,7 @@ export const pathUserById: TPathUserById = async ({ userId, params }) => {
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -154,7 +154,7 @@ export const getCurrentUser: TGetCurrentUser = async () => {
     headers,
   })
 
-  if (!res.ok) throw Error()
+  if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 
   return res.json()
 }
@@ -171,7 +171,7 @@ export const getCurrentUser: TGetCurrentUser = async () => {
 //     headers
 //   })
 //
-//   if( !res.ok ) throw Error()
+  // if (!res.ok) throw Error( JSON.stringify( { type: res?.status, msg: await res?.text() } ))
 //
 //   return res.json()
 // }

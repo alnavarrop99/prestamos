@@ -13,7 +13,6 @@ import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute, redirect } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import clsx from 'clsx'
-import { ToastAction } from '@radix-ui/react-toast'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -82,22 +81,15 @@ export function DeleteClientById() {
     qClient?.setQueryData(getClientListOpt?.queryKey, update)
   }
 
-  const onError = () => {
-    const description = text.notification.error({
-      username: name,
-    })
-
-    const onClick = () => {}
+  const onError: ((error: Error, variables: { clientId: number; }, context: unknown) => unknown) = (error) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.titile,
-      description,
+      title: error.name + ": " + errorMsg?.type,
+      description: (<div>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>),
       variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
-      ),
     })
   }
 

@@ -15,7 +15,6 @@ import { Navigate, createFileRoute } from '@tanstack/react-router'
 import { useContext, useRef } from 'react'
 import styles from '@/styles/global.module.css'
 import clsx from 'clsx'
-import { ToastAction } from '@radix-ui/react-toast'
 import {
   postClient,
   type TCLIENT_GET_ALL,
@@ -86,25 +85,15 @@ export function NewClient() {
     qClient?.setQueryData(getClientListOpt?.queryKey, update)
   }
 
-  const onError: (
-    data: TCLIENT_POST,
-    variables: TCLIENT_POST_BODY
-  ) => unknown = (_, items) => {
-    const description = text.notification.error({
-      username: items?.nombres + items?.apellidos,
-    })
-
-    const onClick = () => {}
+  const onError: (error: Error, variables: TCLIENT_POST_BODY ) => void = (error) => {
+    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
 
     toast({
-      title: text.notification.titile,
-      description,
+      title: error.name + ": " + errorMsg?.type,
+      description: (<div className='text-sm'>
+        <p>{ errorMsg?.msg as unknown as string }</p>
+      </div>),
       variant: 'destructive',
-      action: (
-        <ToastAction altText="action from new user" onClick={onClick}>
-          {text.notification.retry}
-        </ToastAction>
-      ),
     })
   }
   const { mutate: createClient } = useMutation({
