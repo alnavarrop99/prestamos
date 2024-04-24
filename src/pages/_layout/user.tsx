@@ -138,7 +138,7 @@ export function Users() {
         }))
         ?.filter(({ id }) => userId !== id)
     )
-  const { data: usersRes } = useSuspenseQuery(
+  const { data: usersRes, isRefetching } = useSuspenseQuery(
     queryOptions({ ...getUsersListOpt, select })
   )
   const [users, setUsers] = useState<TUsersState[]>([])
@@ -150,7 +150,7 @@ export function Users() {
   useEffect(() => {
     if (!usersRes) return () => {}
     setUsers(usersRes)
-  }, [usersRes])
+  }, [usersRes, isRefetching])
 
   const onSelectOrder: (value: string) => void = (value) => {
     if (order !== 'rol' && order !== 'nombre' && order !== 'id') return

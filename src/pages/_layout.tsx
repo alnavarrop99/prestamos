@@ -247,7 +247,7 @@ export function Layout() {
     )
   }
 
-  const { data: creditssRes } = useQuery(
+  const { data: creditsRes } = useQuery(
     queryOptions({ ...getCreditsListOpt, select: selectCredits })
   )
 
@@ -445,7 +445,7 @@ export function Layout() {
             <Calendar
               key={'calendar'}
               className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary"
-              days={creditssRes}
+              days={creditsRes}
             />
           ) : (
             <Popover onOpenChange={onclick(setStatus, { calendar: !calendar })}>
@@ -461,7 +461,7 @@ export function Layout() {
                 <Calendar
                   key={'calendar'}
                   className="rounded-xl bg-secondary-foreground text-muted-foreground ring-1 ring-secondary [&_*]:font-bold"
-                  days={creditssRes}
+                  days={creditsRes}
                 />
               </PopoverContent>
             </Popover>

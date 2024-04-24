@@ -179,10 +179,7 @@ export function CreditById() {
             <li>
               <b>{text.details.date + ':'}</b>{' '}
               <span>
-                {format(
-                  new Date(creditRes?.fecha_de_aprobacion),
-                  'dd/MM/yyyy'
-                ) + '.'}
+                {format(creditRes?.fecha_de_aprobacion, 'dd/MM/yyyy') + '.'}
               </span>
             </li>
             <li>

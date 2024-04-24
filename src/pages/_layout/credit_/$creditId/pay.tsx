@@ -83,23 +83,20 @@ export function PayCreditById() {
     qClient?.refetchQueries({
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
-
-    qClient?.refetchQueries({
-      queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
-    })
   }
   const onError: (
     error: Error,
     variables: TPAYMENT_POST_BODY,
     context: unknown
   ) => unknown = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: (<div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
-      </div>
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg as unknown as string}</p>
+        </div>
       ),
       variant: 'destructive',
     })

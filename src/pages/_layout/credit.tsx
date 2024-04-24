@@ -78,14 +78,15 @@ const getFilterCredit = async () => {
         const { cuotas, pagos } = await getCreditById({
           params: { creditId: '' + creditId },
         })
+
         return {
           clientId: owner_id,
           id: creditId,
           frecuencia: getFrecuencyById({
             frecuencyId: frecuencia_del_credito_id ?? 1,
           }),
-          fecha_de_cuota: cuotas?.at(-1)?.fecha_de_pago,
-          valor_de_cuota: cuotas?.at(-1)?.valor_de_cuota,
+          fecha_de_cuota: cuotas?.at(pagos?.length)?.fecha_de_pago,
+          valor_de_cuota: cuotas?.at(pagos?.length)?.valor_de_cuota,
           numero_de_cuota: pagos?.length,
           valor_de_la_mora: cuotas?.at(-1)?.valor_de_mora,
           nombre_del_cliente: nombres + ' ' + apellidos,
@@ -179,7 +180,7 @@ export function Credits() {
       return credits?.filter(({ cobrador_id }) => userId === cobrador_id)
     return credits
   }
-  const { data: creditsRes } = useSuspenseQuery(
+  const { data: creditsRes, isRefetching } = useSuspenseQuery(
     queryOptions({ ...getCreditsListOpt, select })
   )
   const [credits, setCredits] = useState<TCREDIT_GET_FILTER_ALL>([])
@@ -281,6 +282,11 @@ export function Credits() {
       setCredits(creditsRes)
     }
   }, [value])
+
+  useEffect(() => {
+    if (!creditsRes) return () => {}
+    setCredits(creditsRes)
+  }, [creditsRes, isRefetching])
 
   return (
     <>
@@ -426,7 +432,7 @@ export function Credits() {
                           </CardContent>
                           <CardFooter className="flex items-center gap-2">
                             <Badge>
-                              {format(new Date(fecha_de_cuota), 'dd-MM-yyyy')}{' '}
+                              {format(fecha_de_cuota, 'dd-MM-yyyy')}{' '}
                             </Badge>
                             <Dialog open={open} onOpenChange={onOpenChange}>
                               <DialogTrigger asChild className="ms-auto">
