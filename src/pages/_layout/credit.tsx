@@ -126,6 +126,7 @@ const ORDER: Record<
     | 'numero_de_cuota'
     | 'valor_de_la_mora'
     | 'cobrador_id'
+    | 'estado'
   >,
   TOrderType
 > = {

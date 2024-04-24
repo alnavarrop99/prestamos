@@ -6,7 +6,6 @@ import {
 } from '@tanstack/react-router'
 import { type TCREDIT_GET, getCreditById } from '@/api/credit'
 import { Separator } from '@/components/ui/separator'
-import { Switch } from '@/components/ui/switch'
 import clsx from 'clsx'
 import { Button } from '@/components/ui/button'
 import { Annoyed, Printer } from 'lucide-react'
@@ -163,13 +162,6 @@ export function CreditById() {
             {text.details.title}{' '}
           </h2>
           <ul className="flex flex-col gap-2 px-2 [&>li]:space-x-2">
-            <li>
-              <b>{text.details.status + ':'}</b>
-              <Switch
-                className={'cursor-not-allowed'}
-                checked={!!creditRes?.estado}
-              ></Switch>
-            </li>
             <li>
               <b>{text.details.name + ':'}</b>{' '}
               <span>

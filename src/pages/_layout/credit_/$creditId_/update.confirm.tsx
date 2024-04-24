@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle  } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
-import { patchCreditsById, type TCREDIT_GET, type TCREDIT_PATCH_BODY, TCREDIT_GET_FILTER_ALL, TCREDIT_PATCH } from '@/api/credit'
+import { patchCreditsById, type TCREDIT_GET, type TCREDIT_PATCH_BODY, type TCREDIT_GET_FILTER_ALL, type TCREDIT_PATCH } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { _client, _credit, _creditChange, _payDelete } from '@/pages/_layout/credit_/$creditId_/update'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -222,7 +222,7 @@ export function UpdateConfirmationCredit() {
           cobrador_id: +creditItems?.cobrador_id || undefined,
           garante_id: +creditItems?.garante_id || undefined,
           comentario: creditItems?.comentario,
-          estado: stateItem,
+          estado: stateItem || undefined,
           monto: +creditItems?.monto || undefined,
           tasa_de_interes: +creditItems?.tasa_de_interes || undefined,
           tipo_de_mora_id: +creditItems?.tipo_de_mora_id || undefined,

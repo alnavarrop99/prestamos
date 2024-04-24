@@ -9,7 +9,6 @@ import {
   useRouter,
 } from '@tanstack/react-router'
 import { createContext, useMemo, useRef, useState } from 'react'
-import { Switch } from '@/components/ui/switch'
 import { type TCREDIT_PATCH_BODY, type TCREDIT_GET } from '@/api/credit'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@radix-ui/react-label'
@@ -134,10 +133,6 @@ export function UpdateCreditById() {
       navigate({ to: Route.to })
     }
     setOpen({ open })
-  }
-
-  const onChangeStatus = (checked: boolean) => {
-    setCreditChange({ ...creditChange, estado: !checked ? 0 : 1 })
   }
 
   const onChangeType: React.ChangeEventHandler<HTMLInputElement> = (ev) => {
@@ -301,12 +296,6 @@ export function UpdateCreditById() {
                     <CardTitle className="text-xl font-bold md:text-2xl">
                       {text.form.details.title}
                     </CardTitle>
-                    <Switch
-                      form="edit-credit"
-                      name={'estado' as TFormName}
-                      defaultChecked={!!credit.estado}
-                      onCheckedChange={onChangeStatus}
-                    />
                   </div>
                 </CardHeader>
                 <CardContent>
