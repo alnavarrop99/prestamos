@@ -329,7 +329,7 @@ export function Users() {
               <SelectTrigger className="!border-1 w-44 !border-ring xl:ms-auto xl:w-48">
                 <SelectValue placeholder={'Orden'} />
               </SelectTrigger>
-              <SelectContent className="z-10 [&_*]:cursor-pointer">
+              <SelectContent className="[&_*]:cursor-pointer">
                 {Object.entries(ORDER)?.map(([key, value], index) => (
                   <SelectItem key={index} value={key}>
                     {value}

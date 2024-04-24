@@ -21,8 +21,8 @@ import {
   pathClientById,
   type TCLIENT_GET,
   type TCLIENT_PATCH_BODY,
-  TCLIENT_GET_ALL,
-  TCLIENT_PATCH,
+  type TCLIENT_GET_ALL,
+  type TCLIENT_PATCH,
 } from '@/api/clients'
 import {
   Select,
@@ -359,7 +359,7 @@ export function UpdateClientById() {
                   <SelectTrigger className={clsx('w-full')}>
                     <SelectValue placeholder={text.form.typeId.placeholder} />
                   </SelectTrigger>
-                  <SelectContent className="z-10 [&_*]:cursor-pointer">
+                  <SelectContent className="[&_*]:cursor-pointer">
                     {listIds()?.map(({ id, nombre }, index) => (
                       <SelectItem key={index} value={'' + id}>
                         {nombre}

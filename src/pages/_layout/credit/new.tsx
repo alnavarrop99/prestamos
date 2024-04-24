@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { TCLIENT_GET_ALL, type TCLIENT_GET_BASE } from '@/api/clients'
+import { type TCLIENT_GET_ALL, type TCLIENT_GET_BASE } from '@/api/clients'
 import styles from '@/styles/global.module.css'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
@@ -479,7 +479,7 @@ export function NewCredit() {
                       placeholder={text.form.frecuency.placeholder}
                     />
                   </SelectTrigger>
-                  <SelectContent className="z-10 [&_*]:cursor-pointer">
+                  <SelectContent className="[&_*]:cursor-pointer">
                     {listFrecuencys()?.map(({ id, nombre }, index) => (
                       <SelectItem key={index} value={'' + id}>
                         {nombre}

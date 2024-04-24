@@ -310,7 +310,7 @@ export const MyUserInfo = memo(function () {
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={text.form.rol.placeholder} />
                 </SelectTrigger>
-                <SelectContent className="z-10 [&_*]:cursor-pointer">
+                <SelectContent className="[&_*]:cursor-pointer">
                   {listRols()?.map(({ id, nombre }) => (
                     <SelectItem key={id} value={'' + id}>
                       {nombre}

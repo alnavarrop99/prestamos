@@ -205,7 +205,7 @@ export function NewClient() {
                 <SelectTrigger className="!border-1 w-full !border-ring">
                   <SelectValue placeholder={text.form.typeId.placeholder} />
                 </SelectTrigger>
-                <SelectContent className="z-10 [&_*]:cursor-pointer">
+                <SelectContent className="[&_*]:cursor-pointer">
                   {listIds()?.map(({ id, nombre }, index) => (
                     <SelectItem key={index} value={'' + id}>
                       {nombre}
