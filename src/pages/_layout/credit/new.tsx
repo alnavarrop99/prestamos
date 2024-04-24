@@ -29,8 +29,7 @@ import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
 import {
   postCredit,
-  type TCREDIT_GET_ALL,
-  type TCREDIT_GET_BASE,
+  TCREDIT_POST,
   type TCREDIT_POST_BODY,
 } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
@@ -95,8 +94,8 @@ type TFormName = keyof (Omit<
 /* eslint-disable-next-line */
 export function NewCredit() {
   const form = useRef<HTMLFormElement>(null)
-  const { userId: currentUserId, rol } = useToken()
-  const { data: usersRes, isSuccess: okUsers } = useQuery(
+  const { userId: currentUserId, rol, name } = useToken()
+  const { data: usersRes, isSuccess: okUsers, isFetching: pendingUsers } = useQuery(
     queryOptions(getUsersListOpt)
   )
 
@@ -105,7 +104,7 @@ export function NewCredit() {
       return data?.filter(({ owner_id }) => owner_id === currentUserId)
     return data
   }
-  const { data: clientsRes, isSuccess: okClients } = useQuery({
+  const { data: clientsRes, isSuccess: okClients, isFetching: pendingClients } = useQuery({
     ...queryOptions(getClientListOpt),
     select,
   })
@@ -137,7 +136,7 @@ export function NewCredit() {
       setRef(ref)
     }
     return () => {}
-  }, [clientsRes, clientId])
+  }, [clientsRes, clientId, okClients, pendingClients])
 
   useEffect(() => {
     if (usersRes) {
@@ -152,13 +151,13 @@ export function NewCredit() {
       setUser(user)
     }
     return () => {}
-  }, [usersRes, client, clientId])
+  }, [usersRes, client, clientId, okClients && okUsers, pendingClients && pendingUsers])
 
   const onSuccess: (
-    data: TCREDIT_GET_BASE,
+    data: TCREDIT_POST,
     variables: TCREDIT_POST_BODY,
     context: unknown
-  ) => unknown = (newData) => {
+  ) => unknown = () => {
     const description = text.notification.decription({
       username: client?.nombres + ' ' + client?.apellidos,
     })
@@ -175,11 +174,7 @@ export function NewCredit() {
       description,
     })
 
-    const update: (data: TCREDIT_GET_ALL) => TCREDIT_GET_ALL = (data) => {
-      return [...data, newData]
-    }
-
-    qClient?.setQueryData(getCreditsListOpt?.queryKey, update)
+    qClient?.refetchQueries({ queryKey: getCreditsListOpt?.queryKey })
   }
 
   const onError: (
@@ -259,10 +254,10 @@ export function NewCredit() {
       estado: getStatusByName({ statusName: 'Activo' })?.id,
       comentario: items?.comentario ?? '',
       cobrador_id: userId,
-      valor_de_mora: +items?.valor_de_mora,
+      valor_de_mora: +(items?.valor_de_mora ?? 0),
       tasa_de_interes: +items?.tasa_de_interes,
       tipo_de_mora_id: getMoraTypeByName({
-        moraTypeName: items?.tipo_de_mora as TMORA_TYPE,
+        moraTypeName: (items?.tipo_de_mora as TMORA_TYPE) ?? "Valor fijo",
       })?.id,
       dias_adicionales: +(items?.dias_adicionales ?? 0),
       numero_de_cuotas: +items?.numero_de_cuotas,
@@ -270,7 +265,7 @@ export function NewCredit() {
       owner_id: clientId,
       garante_id: refId ?? null,
       fecha_de_aprobacion: format(
-        items?.fecha_de_aprobacion ?? new Date(),
+        new Date(items?.fecha_de_aprobacion ?? ""),
         'yyyy-MM-dd'
       ),
     })
@@ -501,7 +496,7 @@ export function NewCredit() {
                     type="text"
                     placeholder={text.form.user.placeholder}
                     list="credit-user"
-                    defaultValue={user ? user?.nombre : undefined}
+                    defaultValue={user ? user?.nombre : name}
                     disabled={
                       !!currentUserId && rol?.rolName !== 'Administrador'
                     }
@@ -561,8 +556,7 @@ export function NewCredit() {
               ) : (
                 <Input
                   id="credit-installments"
-                  required
-                  min={1}
+                  min={0}
                   max={installmants?.type === 'Porciento' ? 100 : undefined}
                   step={installmants?.type === 'Porciento' ? 1 : 1}
                   name={'valor_de_mora' as TFormName}

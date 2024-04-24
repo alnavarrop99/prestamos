@@ -437,7 +437,7 @@ export function Credits() {
                           </CardContent>
                           <CardFooter className="flex items-center gap-2">
                             <Badge>
-                              {format(fecha_de_cuota, 'dd-MM-yyyy')}{' '}
+                              {format(new Date(fecha_de_cuota ?? ""), 'dd-MM-yyyy')}{' '}
                             </Badge>
                             <Dialog open={open} onOpenChange={onOpenChange}>
                               <DialogTrigger asChild className="ms-auto">

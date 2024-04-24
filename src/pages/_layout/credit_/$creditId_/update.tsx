@@ -573,7 +573,7 @@ export function UpdateCreditById() {
                                     { 'line-through': paymentDelete?.[index] }
                                   )}
                                 >
-                                  {format(payment?.fecha_de_pago, 'dd-MM-yyyy')}
+                                  {format(new Date(payment?.fecha_de_pago ?? ""), 'dd-MM-yyyy')}
                                 </span>
                                 <Button
                                   onClick={onDeletePaymentById(index)}

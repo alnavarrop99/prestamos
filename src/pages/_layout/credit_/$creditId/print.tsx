@@ -64,7 +64,6 @@ export function PrintCreditById() {
   const onSubmit: React.FormEventHandler< HTMLFormElement > = (ev) => {
     if (!form.current || !opt) return
 
-    console.table(credit)
     setOpen({ open: !open })
 
     handlePrint()
@@ -126,7 +125,7 @@ export function PrintCreditById() {
               <SelectValue placeholder={text.form.pay.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { credit?.pagos?.map( (_, index ) => ( <SelectItem key={index} value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
+              { credit?.pagos?.map( (_, index ) => ( <SelectItem key={index} value={""+index}> {format( new Date( credit?.cuotas?.[index].fecha_de_pago ), "dd/MM/yyyy")} </SelectItem> ) ) }
             </SelectContent>
           </Select>
         </Label> }
@@ -158,7 +157,7 @@ export function PrintCreditById() {
                   ssn: client?.numero_de_identificacion,
                   telephone: client?.telefono,
                   phone: client?.celular,
-                  date: format( pay?.fecha_de_pago ?? "",  "dd/MM/yyyy" ),
+                  date: format( new Date( pay?.fecha_de_pago ?? "" ),  "dd/MM/yyyy" ),
                   // date: pay?.fecha_de_pago ?? "",
                   pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
                   mora: mora ? +mora.toFixed(2) : undefined,

@@ -79,7 +79,7 @@ export function PaySelectedCredit() {
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
 
-    qClient?.resetQueries( { queryKey: getPaymentListOpt?.queryKey } )
+    qClient?.refetchQueries( { queryKey: getPaymentListOpt?.queryKey } )
   }
 
   const onError: ( error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown = (error) => {
@@ -118,7 +118,7 @@ export function PaySelectedCredit() {
       valor_del_pago: +items?.valor_del_pago,
       comentario: items?.comentario ?? '',
       credito_id: creditId,
-      fecha_de_pago: format(items?.fecha_de_pago ?? new Date(), 'yyyy-MM-dd'),
+      fecha_de_pago: format(new Date(items?.fecha_de_pago ?? "") , 'yyyy-MM-dd'),
     })
 
     setOpen({ open: !open })

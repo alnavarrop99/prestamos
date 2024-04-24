@@ -204,7 +204,7 @@ export function PrintSelectedCredit() {
                       <SelectItem key={index} value={'' + index}>
                         {' '}
                         {format(
-                          creditRes?.cuotas?.[index].fecha_de_pago,
+                          new Date(creditRes?.cuotas?.[index].fecha_de_pago ?? ""),
                           'dd/MM/yyyy'
                         )}{' '}
                       </SelectItem>
@@ -267,7 +267,7 @@ export function PrintSelectedCredit() {
                           telephone: client?.telefono,
                           phone: client?.celular,
                           date: format(
-                            new Date(pay.fecha_de_pago),
+                            new Date(pay.fecha_de_pago ?? ""),
                             'dd/MM/yyyy'
                           ),
                           pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),

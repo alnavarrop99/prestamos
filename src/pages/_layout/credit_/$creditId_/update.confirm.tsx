@@ -132,7 +132,7 @@ export function UpdateConfirmationCredit() {
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
 
-    qClient?.resetQueries( { queryKey: getPaymentListOpt?.queryKey } )
+    qClient?.refetchQueries( { queryKey: getPaymentListOpt?.queryKey } )
   }
   const onErrorUpdatePayment: ((error: Error, variables: { paymentId: number; updatePayment?: TPAYMENT_PATCH_BODY | undefined; }, context: unknown) => unknown) = (error) => {
     const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
@@ -175,7 +175,7 @@ export function UpdateConfirmationCredit() {
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
 
-    qClient?.resetQueries( { queryKey: getPaymentListOpt?.queryKey } )
+    qClient?.refetchQueries( { queryKey: getPaymentListOpt?.queryKey } )
 
   }
   const onErrorRemovePayment: ((error: Error, variables: { paymentId: number; }, context: unknown) => unknown) = (error) => {
@@ -233,7 +233,7 @@ export function UpdateConfirmationCredit() {
           tipo_de_mora_id: +creditItems?.tipo_de_mora_id || undefined,
           dias_adicionales: +creditItems?.dias_adicionales || undefined,
           numero_de_cuotas: +creditItems?.numero_de_cuotas || undefined,
-          fecha_de_aprobacion: creditItems?.fecha_de_aprobacion ? format( creditItems?.fecha_de_aprobacion, "yyyy-MM-dd" ) : undefined,
+          fecha_de_aprobacion: creditItems?.fecha_de_aprobacion ? format( creditItems?.fecha_de_aprobacion ?? "", "yyyy-MM-dd" ) : undefined,
           frecuencia_del_credito_id: +creditItems?.frecuencia_del_credito_id || undefined,
         }
       })
@@ -245,7 +245,7 @@ export function UpdateConfirmationCredit() {
         updatePayment: {
           valor_del_pago: +pay?.valor_del_pago || undefined,
           comentario: pay?.comentario,
-          fecha_de_pago: format( pay?.fecha_de_pago, "yyyy-MM-dd" )
+          fecha_de_pago: format( new Date(pay?.fecha_de_pago ?? ""), "yyyy-MM-dd" )
         }
       })
     }
