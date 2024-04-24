@@ -232,7 +232,6 @@ export function NewClient() {
                 type="tel"
                 placeholder={text.form.telephone.placeholder}
                 // pattern="(?:\+57|0)[0-9]{6,7}"
-                // pattern="(?:\+57|0)[0-9]{6,7}"
                 pattern="[0-9]{8, 12}"
               />
             </Label>

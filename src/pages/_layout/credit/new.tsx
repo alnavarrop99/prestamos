@@ -27,11 +27,7 @@ import styles from '@/styles/global.module.css'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
-import {
-  postCredit,
-  TCREDIT_POST,
-  type TCREDIT_POST_BODY,
-} from '@/api/credit'
+import { postCredit, TCREDIT_POST, type TCREDIT_POST_BODY } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { type TMORA_TYPE, getMoraTypeByName } from '@/lib/type/moraType'
@@ -95,16 +91,22 @@ type TFormName = keyof (Omit<
 export function NewCredit() {
   const form = useRef<HTMLFormElement>(null)
   const { userId: currentUserId, rol, name } = useToken()
-  const { data: usersRes, isSuccess: okUsers, isFetching: pendingUsers } = useQuery(
-    queryOptions(getUsersListOpt)
-  )
+  const {
+    data: usersRes,
+    isSuccess: okUsers,
+    isFetching: pendingUsers,
+  } = useQuery(queryOptions(getUsersListOpt))
 
   const select: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
     if (currentUserId && rol?.rolName !== 'Administrador')
       return data?.filter(({ owner_id }) => owner_id === currentUserId)
     return data
   }
-  const { data: clientsRes, isSuccess: okClients, isFetching: pendingClients } = useQuery({
+  const {
+    data: clientsRes,
+    isSuccess: okClients,
+    isFetching: pendingClients,
+  } = useQuery({
     ...queryOptions(getClientListOpt),
     select,
   })
@@ -139,19 +141,25 @@ export function NewCredit() {
   }, [clientsRes, clientId, okClients, pendingClients])
 
   useEffect(() => {
-    if (usersRes) {
-      if (!usersRes?.length) return
-      const user = usersRes?.find(
-        ({ id }) =>
-          id === client?.owner_id ||
-          (rol?.rolName !== 'Administrador' && id === currentUserId)
-      )
+    const user = usersRes?.find(
+      ({ id }) =>
+        id === client?.owner_id ||
+        (rol?.rolName !== 'Administrador' && id === currentUserId)
+    )
 
-      if (!user) return
-      setUser(user)
-    }
+    if (!usersRes || !usersRes?.length || !user)
+      return () => {
+        setUser({
+          nombre: name ?? '',
+          id: currentUserId ?? 0,
+          rol: rol?.rolName ?? '',
+        })
+      }
+
+    setUser(user)
+
     return () => {}
-  }, [usersRes, client, clientId, okClients && okUsers, pendingClients && pendingUsers])
+  }, [clientId, client, pendingUsers, okUsers])
 
   const onSuccess: (
     data: TCREDIT_POST,
@@ -257,7 +265,7 @@ export function NewCredit() {
       valor_de_mora: +(items?.valor_de_mora ?? 0),
       tasa_de_interes: +items?.tasa_de_interes,
       tipo_de_mora_id: getMoraTypeByName({
-        moraTypeName: (items?.tipo_de_mora as TMORA_TYPE) ?? "Valor fijo",
+        moraTypeName: (items?.tipo_de_mora as TMORA_TYPE) ?? 'Valor fijo',
       })?.id,
       dias_adicionales: +(items?.dias_adicionales ?? 0),
       numero_de_cuotas: +items?.numero_de_cuotas,
@@ -265,7 +273,7 @@ export function NewCredit() {
       owner_id: clientId,
       garante_id: refId ?? null,
       fecha_de_aprobacion: format(
-        new Date(items?.fecha_de_aprobacion ?? ""),
+        new Date(items?.fecha_de_aprobacion ?? ''),
         'yyyy-MM-dd'
       ),
     })
@@ -496,7 +504,7 @@ export function NewCredit() {
                     type="text"
                     placeholder={text.form.user.placeholder}
                     list="credit-user"
-                    defaultValue={user ? user?.nombre : name}
+                    defaultValue={user?.nombre}
                     disabled={
                       !!currentUserId && rol?.rolName !== 'Administrador'
                     }

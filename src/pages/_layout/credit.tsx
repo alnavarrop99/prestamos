@@ -437,7 +437,10 @@ export function Credits() {
                           </CardContent>
                           <CardFooter className="flex items-center gap-2">
                             <Badge>
-                              {format(new Date(fecha_de_cuota ?? ""), 'dd-MM-yyyy')}{' '}
+                              {format(
+                                new Date(fecha_de_cuota ?? ''),
+                                'dd-MM-yyyy'
+                              )}{' '}
                             </Badge>
                             <Dialog open={open} onOpenChange={onOpenChange}>
                               <DialogTrigger asChild className="ms-auto">
@@ -618,7 +621,7 @@ export function Pending() {
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: { error: Error }) {
   const { history } = useRouter()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
