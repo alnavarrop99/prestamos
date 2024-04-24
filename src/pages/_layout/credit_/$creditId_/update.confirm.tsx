@@ -212,6 +212,7 @@ export function UpdateConfirmationCredit() {
     ) as Record< keyof TPAYMENT_GET_BASE, string> & { id: number } )?.filter( ( { id, ...items } ) => ( Object.values( items ).some( ( item ) => ( !!item ) ) ) )
 
     const deleteItems = Object.values( deletePayment ?? {} )
+    const stateItem = creditChange?.estado
 
     if(creditId && Object?.values( credit )?.length > 1) {
       updateCredit({
@@ -221,7 +222,7 @@ export function UpdateConfirmationCredit() {
           cobrador_id: +creditItems?.cobrador_id || undefined,
           garante_id: +creditItems?.garante_id || undefined,
           comentario: creditItems?.comentario,
-          estado: +creditItems?.estado || undefined,
+          estado: stateItem,
           monto: +creditItems?.monto || undefined,
           tasa_de_interes: +creditItems?.tasa_de_interes || undefined,
           tipo_de_mora_id: +creditItems?.tipo_de_mora_id || undefined,
@@ -255,7 +256,7 @@ export function UpdateConfirmationCredit() {
 
   return (
     <>
-    {!open && <Navigate to={"../"} replace /> }
+    {!open && <Navigate to={"../../"} replace /> }
     <DialogContent className="max-w-lg">
       <DialogHeader>
         <DialogTitle className="text-start text-xl md:text-2xl">{text.title}</DialogTitle>
