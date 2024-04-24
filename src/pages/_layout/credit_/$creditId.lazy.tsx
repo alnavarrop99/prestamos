@@ -110,12 +110,8 @@ export function CreditById() {
           <div className="flex gap-2">
             <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
             <Dialog open={open} onOpenChange={onOpenChange}>
-              <DialogTrigger asChild>
-                <Link
-                  to={'./print'}
-                  disabled={creditRes?.pagos?.length <= 0}
-                  className="hidden xl:ms-auto xl:block"
-                >
+              <DialogTrigger asChild className="hidden xl:ms-auto xl:block">
+                <Link to={'./print'} disabled={creditRes?.pagos?.length <= 0}>
                   <Button
                     variant="outline"
                     className="hover:ring hover:ring-primary"
@@ -128,7 +124,7 @@ export function CreditById() {
               <DialogTrigger
                 asChild
                 className={clsx('ms-auto xl:ms-0', {
-                  invisible: userId !== creditRes?.cobrador_id,
+                  'invisible order-1': userId !== creditRes?.cobrador_id,
                 })}
               >
                 <Link to={'./pay'}>
@@ -174,7 +170,10 @@ export function CreditById() {
             <li>
               <b>{text.details.date + ':'}</b>{' '}
               <span>
-                {format(new Date(creditRes?.fecha_de_aprobacion ?? ""), 'dd/MM/yyyy') + '.'}
+                {format(
+                  new Date(creditRes?.fecha_de_aprobacion ?? ''),
+                  'dd/MM/yyyy'
+                ) + '.'}
               </span>
             </li>
             <li>
