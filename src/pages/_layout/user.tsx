@@ -292,14 +292,10 @@ export function Users() {
                 </Button>
               </Link>
             </DialogTrigger>
-            <DialogTrigger
-              asChild
-              title="Caracteristica aun en desarrollo"
-              disabled={true}
-            >
+            <DialogTrigger asChild title='Caracteristica aun en desarrollo' disabled={true}>
               <Link
                 to={'./delete'}
-                disabled={true || !users?.some(({ selected }) => selected)}
+                disabled={ true || !users?.some(({ selected }) => selected)}
               >
                 <Button
                   disabled={true || !users?.some(({ selected }) => selected)}
@@ -417,7 +413,7 @@ export function Users() {
                             </DialogTrigger>
                             <DialogTrigger asChild>
                               <DropdownMenuItem
-                                title="Caracteristica aun en desarrollo"
+                                title='Caracteristica aun en desarrollo'
                                 disabled={true}
                                 onClick={onOpenChangeById(
                                   index + pagination?.start * LENGTH
