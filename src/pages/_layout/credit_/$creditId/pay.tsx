@@ -33,6 +33,7 @@ import {
 } from '@/pages/_layout/credit_/$creditId'
 import { format } from 'date-fns'
 import { getCreditsListOpt } from '../../credit'
+import { getPaymentListOpt } from '@/pages/_layout'
 
 export const postPaymentOpt = {
   mutationKey: ['create-payment'],
@@ -83,6 +84,8 @@ export function PayCreditById() {
     qClient?.refetchQueries({
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
+
+    qClient?.resetQueries( { queryKey: getPaymentListOpt?.queryKey } )
   }
   const onError: (
     error: Error,

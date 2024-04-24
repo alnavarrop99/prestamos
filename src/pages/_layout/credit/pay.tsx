@@ -26,6 +26,7 @@ import { format } from 'date-fns'
 import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { getCreditsListOpt } from '../credit'
 import { getCreditByIdOpt } from '../credit_/$creditId'
+import { getPaymentListOpt } from '@/pages/_layout'
 
 type TSearch = {
   name: string
@@ -77,6 +78,8 @@ export function PaySelectedCredit() {
     qClient?.refetchQueries({
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
+
+    qClient?.resetQueries( { queryKey: getPaymentListOpt?.queryKey } )
   }
 
   const onError: ( error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown = (error) => {

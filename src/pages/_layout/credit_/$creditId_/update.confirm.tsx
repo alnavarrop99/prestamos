@@ -19,6 +19,7 @@ import { type TPAYMENT_GET_BASE, deletePaymentById, patchPaymentById, type TPAYM
 import { format } from 'date-fns'
 import { getCreditsListOpt } from '../../credit'
 import { getCreditByIdOpt } from '../$creditId'
+import { getPaymentListOpt } from '@/pages/_layout'
 
 export const updateCreditByIdOpt = {
     mutationKey: ["update-credit"],
@@ -130,6 +131,8 @@ export function UpdateConfirmationCredit() {
     qClient?.refetchQueries({
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
+
+    qClient?.resetQueries( { queryKey: getPaymentListOpt?.queryKey } )
   }
   const onErrorUpdatePayment: ((error: Error, variables: { paymentId: number; updatePayment?: TPAYMENT_PATCH_BODY | undefined; }, context: unknown) => unknown) = (error) => {
     const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
@@ -171,6 +174,8 @@ export function UpdateConfirmationCredit() {
     qClient?.refetchQueries({
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
+
+    qClient?.resetQueries( { queryKey: getPaymentListOpt?.queryKey } )
 
   }
   const onErrorRemovePayment: ((error: Error, variables: { paymentId: number; }, context: unknown) => unknown) = (error) => {
