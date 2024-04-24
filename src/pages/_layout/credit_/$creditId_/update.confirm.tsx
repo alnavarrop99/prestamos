@@ -13,12 +13,12 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
 import { patchCreditsById, type TCREDIT_GET, type TCREDIT_PATCH_BODY, type TCREDIT_GET_FILTER_ALL, type TCREDIT_PATCH } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
-import { _client, _credit, _creditChange, _payDelete } from '@/pages/_layout/credit_/$creditId_/update'
+import { _client, _credit, _creditChange, _payDelete } from '@/pages/_layout/credit_/$creditId_/update.lazy'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { type TPAYMENT_GET_BASE, deletePaymentById, patchPaymentById, type TPAYMENT_PATCH_BODY } from "@/api/payment";
 import { format } from 'date-fns'
-import { getCreditsListOpt } from '../../credit'
-import { getCreditByIdOpt } from '../$creditId'
+import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
 
 export const updateCreditByIdOpt = {

@@ -28,12 +28,12 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query'
-import { _credit, getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
+import { _credit, getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { Navigate } from '@tanstack/react-router'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
-import { getCreditsListOpt } from '@/pages/_layout/credit'
+import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 
 export const deleteCreditByIdOpt = {
   mutationKey: ['delete-credit-by-id'],

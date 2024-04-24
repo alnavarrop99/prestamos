@@ -77,7 +77,7 @@ import {
   getUsersListOpt,
   usePagination as userPagination,
   useOrder as userOrder,
-} from '@/pages/_layout/user'
+} from '@/pages/_layout/user.lazy'
 import {
   getUserByIdOpt,
   updateUserByIdOpt,
@@ -86,7 +86,7 @@ import { postUserOpt } from '@/pages/_layout/user/new'
 import {
   getClientListOpt,
   useFilter as clientFilter,
-} from '@/pages/_layout/client'
+} from '@/pages/_layout/client.lazy'
 import {
   getClientByIdOpt,
   updateClientByIdOpt,
@@ -97,8 +97,8 @@ import {
   getCreditsListOpt,
   useOrder as creditOrder,
   usePagination as creditPagination,
-} from '@/pages/_layout/credit'
-import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
+} from '@/pages/_layout/credit.lazy'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import {
   deletePaymentByIdOpt,
   updateCreditByIdOpt,
@@ -108,7 +108,7 @@ import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
 import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { postCreditOpt } from '@/pages/_layout/credit/new'
 import { queryClient } from '@/pages/__root'
-import { getReportsOpt, postReportOpt } from '@/pages/_layout/report'
+import { getReportsOpt, postReportOpt } from '@/pages/_layout/report.lazy'
 import { getRolByName, type TROLES } from '@/lib/type/rol'
 import { translate } from '@/lib/route'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
@@ -1113,7 +1113,8 @@ export const ErrorStates = ({
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({error}: {error: Error}) {
+  const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
   const navigate = useNavigate()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
@@ -1135,7 +1136,7 @@ export function Error() {
     <div className="flex h-[100dvh] flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
-        <h1 className="font-bold">{text.error}</h1>
+        <h1 className="font-bold">{error.name + ': ' + errorMsg?.type}</h1>
         <p className="italic">{text.errorDescription}</p>
         <Separator />
         <Button variant="ghost" onClick={onClick} className="text-sm">

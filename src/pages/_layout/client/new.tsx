@@ -31,7 +31,7 @@ import {
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { listIds, getIdByName } from '@/lib/type/id'
-import { _clientContext, getClientListOpt } from '@/pages/_layout/client'
+import { _clientContext, getClientListOpt } from '@/pages/_layout/client.lazy'
 import { useStatus } from '@/lib/context/layout'
 import { getStatusByName } from '@/lib/type/status'
 import { Textarea } from '@/components/ui/textarea'

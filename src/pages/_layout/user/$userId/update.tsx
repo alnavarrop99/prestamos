@@ -44,7 +44,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { getUsersListOpt } from '../../user'
+import { getUsersListOpt } from '@/pages/_layout/user.lazy'
 
 export const updateUserByIdOpt = {
   mutationKey: ['update-user-by-id'],

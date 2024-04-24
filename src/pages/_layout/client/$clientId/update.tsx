@@ -40,7 +40,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query'
 import { listIds, getIdById } from '@/lib/type/id'
-import { _clientContext, getClientListOpt } from '@/pages/_layout/client'
+import { _clientContext, getClientListOpt } from '@/pages/_layout/client.lazy'
 import { Textarea } from '@/components/ui/textarea'
 import { queryClient } from '@/pages/__root'
 import { Skeleton } from '@/components/ui/skeleton'

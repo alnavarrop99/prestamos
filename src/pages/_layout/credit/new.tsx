@@ -42,13 +42,13 @@ import { Navigate } from '@tanstack/react-router'
 import { getStatusByName } from '@/lib/type/status'
 import { format } from 'date-fns'
 import { queryClient } from '@/pages/__root'
-import { getClientListOpt } from '@/pages/_layout/client'
-import { getUsersListOpt } from '@/pages/_layout/user'
+import { getClientListOpt } from '@/pages/_layout/client.lazy'
+import { getUsersListOpt } from '@/pages/_layout/user.lazy'
 import { type TUSER_GET } from '@/api/users'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToken } from '@/lib/context/login'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { getCreditsListOpt } from '../credit'
+import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 
 type TSearch = {
   clientId: number

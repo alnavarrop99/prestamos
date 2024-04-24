@@ -18,13 +18,13 @@ import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
 import { type TCLIENT_GET_ALL, type TCLIENT_DELETE } from '@/api/clients'
-import { _rowSelected, getClientListOpt } from '@/pages/_layout/client'
+import { _rowSelected, getClientListOpt } from '@/pages/_layout/client.lazy'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
-import { getClientByIdOpt } from './$clientId/update'
+import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 
 type TSearch = {
   clients: number[]

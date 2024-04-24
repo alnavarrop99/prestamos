@@ -31,7 +31,7 @@ import {
 import { format } from 'date-fns'
 import { queryClient } from '@/pages/__root'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { defer } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'

@@ -13,7 +13,7 @@ import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
-import { _selectUsers } from '../user'
+import { _selectUsers } from '@/pages/_layout/user.lazy'
 
 export const Route = createFileRoute('/_layout/user/delete')({
   component: DeleteSelectedUsers,

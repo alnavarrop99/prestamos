@@ -30,9 +30,9 @@ import {
   _client,
   _credit,
   getCreditByIdOpt,
-} from '@/pages/_layout/credit_/$creditId'
+} from '@/pages/_layout/credit_/$creditId.lazy'
 import { format } from 'date-fns'
-import { getCreditsListOpt } from '../../credit'
+import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
 
 export const postPaymentOpt = {

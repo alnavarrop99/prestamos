@@ -44,7 +44,7 @@ import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useToken } from '@/lib/context/login'
-import { ClientTable } from './-table'
+import { ClientTable } from '@/pages/_layout/-table'
 import { useScreen } from '@/lib/hook/useScreens'
 
 type TSearch = {

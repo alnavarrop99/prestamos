@@ -41,7 +41,7 @@ import {
 } from '@/pages/_layout/user/$userId/update'
 import { useToken } from '@/lib/context/login'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { getUsersListOpt } from './_layout/user'
+import { getUsersListOpt } from '@/pages/_layout/user.lazy'
 
 /* eslint-disable-next-line */
 interface TPassowordVisibilityState {

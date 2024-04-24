@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/table'
 import { useScreen } from '@/lib/hook/useScreens'
 import { flexRender, type Table as TTable } from '@tanstack/react-table'
-import { TClientTable, desktop } from './-column'
+import { TClientTable, desktop } from '@/pages/_layout/-column'
 import clsx from 'clsx'
 import { Label } from '@/components/ui/label'
 import { useToken } from '@/lib/context/login'

@@ -19,7 +19,7 @@ import { Navigate } from '@tanstack/react-router'
 import { PrintCredit } from '@/pages/_layout/-print'
 import { useReactToPrint } from 'react-to-print'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { _client, _credit } from '@/pages/_layout/credit_/$creditId'
+import { _client, _credit } from '@/pages/_layout/credit_/$creditId.lazy'
 import { format } from 'date-fns'
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({

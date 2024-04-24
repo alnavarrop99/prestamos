@@ -21,8 +21,8 @@ import { useNotifications } from '@/lib/context/notification'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { type TCLIENT_GET_ALL, deleteClientsById } from '@/api/clients'
 import { useToken } from '@/lib/context/login'
-import { getClientByIdOpt } from './update'
-import { getClientListOpt } from '../../client'
+import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+import { getClientListOpt } from '@/pages/_layout/client.lazy'
 
 type TSearch = {
   name: string

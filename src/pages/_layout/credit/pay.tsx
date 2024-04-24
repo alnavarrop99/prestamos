@@ -24,8 +24,8 @@ import { useStatus } from '@/lib/context/layout'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
-import { getCreditsListOpt } from '../credit'
-import { getCreditByIdOpt } from '../credit_/$creditId'
+import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
 
 type TSearch = {
