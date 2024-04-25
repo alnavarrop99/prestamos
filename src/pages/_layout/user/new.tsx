@@ -35,7 +35,7 @@ import { getRolByName, listRols } from '@/lib/type/rol'
 import { useStatus } from '@/lib/context/layout'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { getUsersListOpt } from '@/pages/_layout/user.lazy'
-import { news as text } from "@/assets/locale/user";
+import { news as text } from "@/locale/user";
 
 export const postUserOpt = {
   mutationKey: ['create-user'],

@@ -21,7 +21,7 @@ import { useReactToPrint } from 'react-to-print'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { _client, _credit } from '@/pages/_layout/credit_/$creditId.lazy'
 import { format } from 'date-fns'
-import { print_by_id as text } from "@/assets/locale/credit";
+import { print_by_id as text } from "@/locale/credit";
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
   component: PrintCreditById,

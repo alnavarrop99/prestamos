@@ -58,6 +58,7 @@ import { queryClient } from '@/pages/__root'
 import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { useToken } from '@/lib/context/login'
 import { ErrorComponentProps } from '@tanstack/react-router'
+import { main as text } from "@/locale/credit";
 
 const getFilterCredit = async () => {
   // TODO: this is a temporal function to getFilter
@@ -674,53 +675,3 @@ const sortCredit = (
 Credits.dispalyname = 'CreditsList'
 Error.dispalyname = 'CreditsListError'
 Pending.dispalyname = 'CreditsListPending'
-
-const text = {
-  title: 'Prestamos:',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'El listado de prestamos ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
-  browser: 'Prestamos',
-  notfound: 'No existen prestamos activos.',
-  select: ({ total }: { total: number }) => `${total} credito(s) activos.`,
-  pagination: {
-    back: 'Anterior',
-    next: 'Siguiente',
-  },
-  alert: {
-    info: {
-      title: 'Fecha limite',
-      description: ({ date }: { date: Date }) =>
-        'El cobro se aproxima a su fecha limite ' + date + '.',
-    },
-    warn: {
-      title: 'Cliente en estado moroso',
-    },
-  },
-  button: {
-    create: 'Nuevo',
-    delete: 'Eliminar',
-    deactivate: 'Desactivar',
-  },
-  details: {
-    pay: 'Numero de cuotas',
-    cuote: 'Monto por cuota',
-    mora: 'Monto por mora',
-    frecuency: 'Frecuencia',
-    history: 'Historial de pagos',
-  },
-  print: {
-    title: 'Comprobante de pago',
-    client: 'Cliente',
-    ssn: 'Cédula',
-    telephone: 'Teléfono',
-    phone: 'Celular',
-    date: 'Fecha',
-    pay: 'Pago cuota',
-    mora: 'Mora',
-    cuoteNumber: 'Número de cuota',
-    pending: 'Pendiente',
-    comment: 'Comentario',
-    services: 'Servicios',
-  },
-}

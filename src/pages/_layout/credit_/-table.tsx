@@ -20,7 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { useScreen } from '@/lib/hook/useScreens'
 import { Badge } from '@/components/ui/badge'
 import clsx from 'clsx'
-import { credit_table as text } from "@/assets/locale/credit";
+import { credit_table as text } from "@/locale/credit";
 
 /* eslint-disable-next-line */
 type TData = {

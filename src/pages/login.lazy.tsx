@@ -24,7 +24,7 @@ import { useToken } from '@/lib/context/login'
 import { BoundleLoader } from '@/components/ui/loader'
 import { Separator } from '@radix-ui/react-separator'
 import brand from '@/assets/menu-brand.avif'
-import { main as text } from '@/assets/locale/login.ts'
+import { main as text } from '@/locale/login.ts'
 
 export const postCurrentUser = {
   mutationKey: ['login-user'],

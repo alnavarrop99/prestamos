@@ -26,7 +26,7 @@ import {} from '@/pages/_layout/credit_/$creditId_/update.confirm'
 import { useToken } from '@/lib/context/login'
 import { PaymentTable } from './-table'
 import { ErrorComponentProps } from '@tanstack/react-router'
-import { credit_by_id as text } from "@/assets/locale/credit";
+import { credit_by_id as text } from "@/locale/credit";
 
 export const getCreditByIdOpt = ({ creditId }: { creditId: string }) => ({
   queryKey: ['get-credit-by-id', { creditId }],

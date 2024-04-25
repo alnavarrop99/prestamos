@@ -80,7 +80,7 @@ const update = {
     decription: ({ username }: { username: string }) =>
       'Se ha actualizacion el usuario ' + username + ' con exito.',
     error: ({ username }: { username: string }) =>
-      'La actualizacion del usuario' + username + 'ha fallado',
+      'La actualizacion del usuario ' + username + ' ha fallado',
     retry: 'Reintentar',
   },
   form: {
@@ -127,7 +127,7 @@ const news = {
     decription: ({ username }: { username: string }) =>
       'Se ha creado el usuario ' + username + ' con exito.',
     error: ({ username }: { username: string }) =>
-      'La creacion del usuario' + username + 'ha fallado',
+      'La creacion del usuario ' + username + ' ha fallado',
     retry: 'Deshacer',
   },
   form: {
@@ -161,11 +161,65 @@ const news = {
   },
 }
 
+const info = {
+  title: 'Actualizar Usuario:',
+  error: {
+    title: 'Obtencion de datos de usuario',
+    descriiption: 'Ha ocurrido un error inesperado',
+  },
+  descriiption:
+    'Modifique los campos para actualizar los datos del usuario en la plataforma.',
+  button: {
+    close: 'Cerrar',
+    update: 'Actualizar',
+    delete: 'Si, eliminar mi usuario.',
+  },
+  notification: {
+    titile: 'Actualizacion de usuario',
+    decription: ({ username }: { username: string }) =>
+      'Se ha actualizacion el usuario ' + username + ' con exito.',
+    error: ({ username }: { username: string }) =>
+      'La actualizacion del usuario' + username + 'ha fallado',
+    retry: 'Reintentar',
+  },
+  form: {
+    firstName: {
+      label: 'Nombre:',
+      placeholder: 'Escriba el nombre del usuario',
+    },
+    lastName: {
+      label: 'Apellidos:',
+      placeholder: 'Escriba el apellido del usuario',
+    },
+    password: {
+      current: {
+        label: 'Nueva contraseña:',
+        placeholder: 'Escriba la cantraseña actual del usuario',
+      },
+      new: {
+        label: 'Confirmar contraseña:',
+        placeholder: 'Escriba la nuva cantraseña del usuario',
+      },
+    },
+    rol: {
+      label: 'Tipo de rol:',
+      placeholder: 'Seleccione el rol del usuario',
+      items: {
+        user: 'Usuario',
+        admin: 'Administrador',
+        client: 'Cliente',
+      },
+    },
+  },
+
+}
+
 export {
   main,
   delete_by_id,
   delete_multiple,
   update,
-  news
+  news,
+  info
 }
 

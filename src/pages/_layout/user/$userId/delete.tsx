@@ -13,7 +13,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { useToken } from '@/lib/context/login'
-import { delete_by_id as text } from "@/assets/locale/user";
+import { delete_by_id as text } from "@/locale/user";
 
 type TSearch = {
   name: string

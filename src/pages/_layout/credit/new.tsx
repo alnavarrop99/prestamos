@@ -49,7 +49,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useToken } from '@/lib/context/login'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
-import { news as text } from "@/assets/locale/credit";
+import { news as text } from "@/locale/credit";
 
 type TSearch = {
   clientId: number

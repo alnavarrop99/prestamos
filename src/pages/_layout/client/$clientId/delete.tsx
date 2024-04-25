@@ -23,7 +23,7 @@ import { type TCLIENT_GET_ALL, deleteClientsById } from '@/api/clients'
 import { useToken } from '@/lib/context/login'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { getClientListOpt } from '@/pages/_layout/client.lazy'
-import { delete_by_id as text } from '@/assets/locale/client'
+import { delete_by_id as text } from '@/locale/client'
 
 type TSearch = {
   name: string

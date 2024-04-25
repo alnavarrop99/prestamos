@@ -52,7 +52,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
 import { ErrorComponentProps } from '@tanstack/react-router'
-import { update as text } from "@/assets/locale/credit";
+import { update as text } from "@/locale/credit";
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,

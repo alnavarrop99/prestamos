@@ -34,7 +34,7 @@ import {
 import { format } from 'date-fns'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
-import { pay_by_id as text } from "@/assets/locale/credit";
+import { pay_by_id as text } from "@/locale/credit";
 
 export const postPaymentOpt = {
   mutationKey: ['create-payment'],

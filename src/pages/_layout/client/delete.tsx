@@ -25,7 +25,7 @@ import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
-import { delete_selected as text } from '@/assets/locale/client'
+import { delete_selected as text } from '@/locale/client'
 
 type TSearch = {
   clients: number[]

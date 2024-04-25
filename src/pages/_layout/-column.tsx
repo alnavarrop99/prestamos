@@ -23,7 +23,7 @@ import { useStatus } from '@/lib/context/layout'
 import type { TCLIENT_GET_BASE } from '@/api/clients'
 import { getIdById } from '@/lib/type/id'
 import { useToken } from '@/lib/context/login'
-import { client_table as text } from "@/assets/locale/client"
+import { client_table as text } from "@/locale/client"
 
 export type TClientTable = Omit<
   TCLIENT_GET_BASE,

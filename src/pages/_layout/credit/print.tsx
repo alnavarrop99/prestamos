@@ -37,7 +37,7 @@ import { defer } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SpinLoader } from '@/components/ui/loader'
 import { toast } from '@/components/ui/use-toast'
-import { print_selected as text } from "@/assets/locale/credit";
+import { print_selected as text } from "@/locale/credit";
 
 type TSearch = {
   creditId: number

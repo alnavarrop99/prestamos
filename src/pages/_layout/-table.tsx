@@ -12,7 +12,7 @@ import { TClientTable, desktop } from '@/pages/_layout/-column'
 import clsx from 'clsx'
 import { Label } from '@/components/ui/label'
 import { useToken } from '@/lib/context/login'
-import { client_table as text } from "@/assets/locale/client"
+import { client_table as text } from "@/locale/client"
 
 /* eslint-disable-next-line */
 type TPaymentTable = {

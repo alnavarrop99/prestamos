@@ -62,7 +62,7 @@ import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { queryClient } from '@/pages/__root'
 import { useToken } from '@/lib/context/login'
 import { ErrorComponentProps } from '@tanstack/react-router'
-import { main as text } from "@/assets/locale/user"
+import { main as text } from "@/locale/user"
 
 export const getUsersListOpt = {
   queryKey: ['list-users'],

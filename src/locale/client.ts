@@ -9,7 +9,7 @@ const main = {
   search: {
     404: 'No se encontraron resultados',
     selected: ({ selected, total }: { selected: number; total: number }) =>
-      `${selected} de ${total} fila(s) seleccionadas.`,
+      selected + " de " + total + " fila(s) seleccionadas.",
   },
   columns: {
     fullName: 'Nombre y apellidos',
@@ -86,7 +86,7 @@ const delete_selected = {
   },
   alert: {
     title: 'Se eiminara multiples clientes de la base de datos',
-    description: ({ length = 0 }: { length: number }) =>
+    description: ({ length }: { length: number }) =>
       'Estas seguro de eliminar ' +
       length +
       ' cliente(s) de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con los clientes seleccionados.',

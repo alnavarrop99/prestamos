@@ -54,7 +54,7 @@ import { useToken } from '@/lib/context/login'
 // import { redirect } from '@tanstack/react-router'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ScrollBar } from '@/components/ui/scroll-area'
-import { update as text } from '@/assets/locale/client'
+import { update as text } from '@/locale/client'
 
 export const updateClientByIdOpt = {
   mutationKey: ['update-client-by-id'],

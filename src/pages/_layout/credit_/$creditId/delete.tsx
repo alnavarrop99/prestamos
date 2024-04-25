@@ -34,7 +34,7 @@ import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
-import { delete_by_id as text } from "@/assets/locale/credit";
+import { delete_by_id as text } from "@/locale/credit";
 
 export const deleteCreditByIdOpt = {
   mutationKey: ['delete-credit-by-id'],

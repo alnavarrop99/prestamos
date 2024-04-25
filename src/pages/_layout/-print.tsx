@@ -1,6 +1,6 @@
 import { forwardRef } from "react"
 import brand from '@/assets/menu-brand.avif'
-import { credit_print as text } from "@/assets/locale/credit";
+import { credit_print as text } from "@/locale/credit";
 
 interface TPrintCredit
   extends React.DetailedHTMLProps<

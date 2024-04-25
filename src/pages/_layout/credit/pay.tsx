@@ -27,7 +27,7 @@ import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
-import { pay_selected as text } from "@/assets/locale/credit";
+import { pay_selected as text } from "@/locale/credit";
 
 type TSearch = {
   name: string

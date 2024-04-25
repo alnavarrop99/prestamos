@@ -46,7 +46,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { getUsersListOpt } from '@/pages/_layout/user.lazy'
 import { ErrorComponentProps } from '@tanstack/react-router'
-import { update as text } from "@/assets/locale/user";
+import { update as text } from "@/locale/user";
 
 export const updateUserByIdOpt = {
   mutationKey: ['update-user-by-id'],

@@ -47,7 +47,7 @@ import { useToken } from '@/lib/context/login'
 import { ClientTable } from '@/pages/_layout/-table'
 import { useScreen } from '@/lib/hook/useScreens'
 import { ErrorComponentProps } from '@tanstack/react-router'
-import { main as text } from '@/assets/locale/client'
+import { main as text } from '@/locale/client'
 
 type TSearch = {
   userId: number

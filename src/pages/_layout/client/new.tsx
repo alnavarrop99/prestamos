@@ -37,7 +37,7 @@ import { getStatusByName } from '@/lib/type/status'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ScrollBar } from '@/components/ui/scroll-area'
-import { news as text } from '@/assets/locale/client'
+import { news as text } from '@/locale/client'
 
 export const postClientOpt = {
   mutationKey: ['create-client'],

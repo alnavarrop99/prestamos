@@ -20,7 +20,7 @@ import { format } from 'date-fns'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
-import { update_confirmation as text } from "@/assets/locale/credit";
+import { update_confirmation as text } from "@/locale/credit";
 
 export const updateCreditByIdOpt = {
     mutationKey: ["update-credit"],
