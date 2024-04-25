@@ -94,7 +94,7 @@ export function NewClient() {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg as unknown as string}</p>
+          <p>{errorMsg?.msg }</p>
         </div>
       ),
       variant: 'destructive',
