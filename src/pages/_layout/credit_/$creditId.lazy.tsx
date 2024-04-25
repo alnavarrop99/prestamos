@@ -109,10 +109,11 @@ export function CreditById() {
     <_client.Provider value={clientRes}>
       <_credit.Provider value={creditRes}>
         <div className="space-y-4">
-          <div className="flex gap-2">
+          <div className="flex gap-2 justify-between [&>*]:flex [&>*]:gap-2">
             <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
+            <div>
             <Dialog open={open} onOpenChange={onOpenChange}>
-              <DialogTrigger asChild className="hidden xl:ms-auto xl:block">
+              <DialogTrigger asChild className="hidden xl:block">
                 <Link to={'./print'} disabled={creditRes?.pagos?.length <= 0}>
                   <Button
                     variant="outline"
@@ -123,11 +124,8 @@ export function CreditById() {
                   </Button>
                 </Link>
               </DialogTrigger>
-              <DialogTrigger
+              {userId === creditRes?.cobrador_id && <DialogTrigger
                 asChild
-                className={clsx('ms-auto xl:ms-0', {
-                  'invisible order-1': userId !== creditRes?.cobrador_id,
-                })}
               >
                 <Link to={'./pay'}>
                   <Button
@@ -139,7 +137,7 @@ export function CreditById() {
                     <Pay />
                   </Button>
                 </Link>
-              </DialogTrigger>
+              </DialogTrigger> }
               {userId && rol?.rolName === 'Administrador' && (
                 <Link to={'./update'}>
                   <Button variant="default"> {text.button.update} </Button>
@@ -156,6 +154,7 @@ export function CreditById() {
               )}
               <Outlet />
             </Dialog>
+            </div>
           </div>
           <Separator />
           <h2 className="text-xl font-bold md:text-2xl">

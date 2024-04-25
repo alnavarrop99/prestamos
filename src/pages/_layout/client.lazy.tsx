@@ -1,5 +1,6 @@
 import {
   ColumnFiltersState,
+  Row,
   SortingState,
   VisibilityState,
   getCoreRowModel,
@@ -86,6 +87,26 @@ export const useFilter = create<{
 )
 
 /* eslint-disable-next-line */
+type TOrderType = 'Nombre' | 'Fecha de creacion' | 'algo'
+
+const ORDER: Record<keyof Omit<TClientTable, "tipo_de_identificacion_id" | "numero_de_identificacion" | "celular" | "telefono" | "email" | "direccion" | "comentarios" | "estado" | "referencia" | "owner_id" >, TOrderType> = {
+  id: 'Fecha de creacion',
+  fullName: 'Nombre',
+}
+export const useOrder = create<{
+  order: keyof typeof ORDER
+  setOrder: (value: keyof typeof ORDER) => void
+}>()(
+  persist(
+    (set) => ({
+      order: 'id',
+      setOrder: (order) => set(() => ({ order })),
+    }),
+    { name: 'client-order' }
+  )
+)
+
+/* eslint-disable-next-line */
 export function Clients() {
   const { rol, userId } = useToken()
   const [sorting, setSorting] = useState<SortingState>([])
@@ -97,6 +118,7 @@ export function Clients() {
   const { filter, setFilter } = useFilter()
   const { userId: ownerId } = Route.useSearch()
   const screen = useScreen()
+  const { order, setOrder } = useOrder()
 
   const select: (data: TCLIENT_GET_ALL) => TClientTable[] = (data) => {
     const clients = data?.map<TClientTable>(
@@ -130,6 +152,14 @@ export function Clients() {
   useEffect(() => {
     document.title = import.meta.env.VITE_NAME + ' | ' + text.browser
   }, [])
+
+  const onSelectOrder: (value: string) => void = (value) => {
+    setOrder(value as keyof typeof ORDER)
+    if( value === "id" as keyof typeof ORDER ){
+      table?.resetSorting()
+    }
+    table?.getColumn(value)?.toggleSorting()
+  }
 
   const table = useReactTable({
     data: clientsRes,
@@ -215,12 +245,26 @@ export function Clients() {
           <div>
             <div className="flex items-center gap-2 py-4">
               {!!table.getRowCount() && (
+              <div className="flex items-center">
                 <p className="hidden text-sm text-muted-foreground xl:block">
                   {text.search.selected({
                     selected: table.getFilteredSelectedRowModel().rows.length,
                     total: table.getFilteredRowModel().rows.length,
                   })}
                 </p>
+                <Select required defaultValue={order} onValueChange={onSelectOrder}>
+                  <SelectTrigger className="!border-1 w-44 !border-ring xl:w-48 xl:hidden">
+                    <SelectValue placeholder={'Orden'} />
+                  </SelectTrigger>
+                  <SelectContent className="[&_*]:cursor-pointer">
+                    {Object.entries(ORDER)?.map(([key, value], index) => (
+                      <SelectItem key={index} value={key}>
+                        {value}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               )}
               <Select value={filter} onValueChange={onValueChange}>
                 <SelectTrigger
@@ -343,8 +387,8 @@ export function Pending() {
         {rol?.rolName === 'Administrador' && (
           <Skeleton className="hidden h-6 md:w-56 xl:block" />
         )}
-        <Skeleton className="ms-auto hidden h-8 w-32 xl:block" />
-        <Skeleton className="h-8 w-32" />
+        <Skeleton className="xl:ms-auto h-8 w-32" />
+        <Skeleton className="h-8 w-32 hidden xl:block" />
       </div>
       <div className="px-4">
         <table className="hidden w-full border-separate border-spacing-2 divide-y-2 rounded-xl bg-background ring-2 ring-muted xl:table">

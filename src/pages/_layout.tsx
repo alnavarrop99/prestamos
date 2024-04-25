@@ -86,6 +86,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { listPayments } from '@/api/payment'
 import SpinLoader from '@/pages/-spinloader'
 import { main as text } from '@/locale/layout'
+import { useNotifications } from '@/lib/context/notification'
 
 export const getCurrentUserOpt = {
   queryKey: ['login-user', { userId: useToken.getState().userId }],
@@ -124,6 +125,7 @@ export const Route = createFileRoute('/_layout')({
     creditPagination.setState({ start: 0, end: 3 })
     clientFilter.setState({ filter: 'fullName' })
     queryClient.clear()
+    useNotifications.setState( { notifications: undefined } )
   },
   beforeLoad: async () => {
     const { token } = useToken.getState()
@@ -657,17 +659,6 @@ export function Layout() {
                             </Badge>{' '}
                           </li>
                         )}
-                        <li>
-                          <Link
-                            className="flex h-full w-full items-center justify-between gap-2"
-                            to={'/client'}
-                            search={{ userId }}
-                          >
-                            <Button variant="ghost">
-                              <UsersList />
-                            </Button>
-                          </Link>
-                        </li>
                       </ul>
                     </div>
                     <div>
@@ -678,7 +669,16 @@ export function Layout() {
                           onCheckedChange={onSwitch}
                         />
                       </Label>
-                    </div>
+                      { rol?.rolName === "Administrador" && <Link
+                            className="flex h-full w-full items-center justify-between gap-2"
+                            to={'/client'}
+                            search={{ userId }}
+                          >
+                            <Button variant="ghost">
+                              <UsersList />
+                            </Button>
+                          </Link>
+ }                    </div>
                   </div>
                 )}
               </HoverCardContent>

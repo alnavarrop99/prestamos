@@ -322,12 +322,11 @@ export function Credits() {
               <SelectTrigger className="!border-1 w-44 !border-ring xl:ms-auto xl:w-48">
                 <SelectValue placeholder={'Orden'} />
               </SelectTrigger>
-              <SelectContent className="[&_*]:cursor-pointer">
+              <SelectContent className="[&_*]:cursor-pointer" onMouseEnter={(ev) => ev?.stopPropagation()}>
                 {Object.entries(ORDER)?.map(([key, value], index) => (
                   <SelectItem
                     key={index}
                     value={key}
-                    onClick={(ev) => ev?.stopPropagation()}
                   >
                     {value}
                   </SelectItem>
