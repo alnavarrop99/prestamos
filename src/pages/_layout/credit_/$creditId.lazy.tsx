@@ -26,7 +26,7 @@ import {} from '@/pages/_layout/credit_/$creditId_/update.confirm'
 import { useToken } from '@/lib/context/login'
 import { PaymentTable } from './-table'
 import { ErrorComponentProps } from '@tanstack/react-router'
-import { credit_by_id as text } from "@/locale/credit";
+import { credit_by_id as text } from '@/locale/credit'
 
 export const getCreditByIdOpt = ({ creditId }: { creditId: string }) => ({
   queryKey: ['get-credit-by-id', { creditId }],
@@ -109,51 +109,54 @@ export function CreditById() {
     <_client.Provider value={clientRes}>
       <_credit.Provider value={creditRes}>
         <div className="space-y-4">
-          <div className="flex gap-2 justify-between [&>*]:flex [&>*]:gap-2">
+          <div className="flex justify-between gap-2 [&>*]:flex [&>*]:gap-2">
             <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
             <div>
-            <Dialog open={open} onOpenChange={onOpenChange}>
-              <DialogTrigger asChild className="hidden xl:block">
-                <Link to={'./print'} disabled={creditRes?.pagos?.length <= 0}>
-                  <Button
-                    variant="outline"
-                    className="hover:ring hover:ring-primary"
-                    disabled={creditRes?.pagos?.length <= 0}
-                  >
-                    <Printer />
-                  </Button>
-                </Link>
-              </DialogTrigger>
-              {userId === creditRes?.cobrador_id && <DialogTrigger
-                asChild
-              >
-                <Link to={'./pay'}>
-                  <Button
-                    variant="default"
-                    className={clsx(
-                      'bg-success ring-success-foreground hover:bg-success hover:ring-4'
-                    )}
-                  >
-                    <Pay />
-                  </Button>
-                </Link>
-              </DialogTrigger> }
-              {userId && rol?.rolName === 'Administrador' && (
-                <Link to={'./update'}>
-                  <Button variant="default"> {text.button.update} </Button>
-                </Link>
-              )}
-              {userId && rol?.rolName === 'Administrador' && (
-                <DialogTrigger asChild>
-                  <Link to={'./delete'}>
-                    <Button variant="default" className="hover:bg-destructive">
-                      {text.button.delete}
+              <Dialog open={open} onOpenChange={onOpenChange}>
+                <DialogTrigger asChild className="hidden xl:block">
+                  <Link to={'./print'} disabled={creditRes?.pagos?.length <= 0}>
+                    <Button
+                      variant="outline"
+                      className="hover:ring hover:ring-primary"
+                      disabled={creditRes?.pagos?.length <= 0}
+                    >
+                      <Printer />
                     </Button>
                   </Link>
                 </DialogTrigger>
-              )}
-              <Outlet />
-            </Dialog>
+                {userId === creditRes?.cobrador_id && (
+                  <DialogTrigger asChild>
+                    <Link to={'./pay'}>
+                      <Button
+                        variant="default"
+                        className={clsx(
+                          'bg-success ring-success-foreground hover:bg-success hover:ring-4'
+                        )}
+                      >
+                        <Pay />
+                      </Button>
+                    </Link>
+                  </DialogTrigger>
+                )}
+                {userId && rol?.rolName === 'Administrador' && (
+                  <Link to={'./update'}>
+                    <Button variant="default"> {text.button.update} </Button>
+                  </Link>
+                )}
+                {userId && rol?.rolName === 'Administrador' && (
+                  <DialogTrigger asChild>
+                    <Link to={'./delete'}>
+                      <Button
+                        variant="default"
+                        className="hover:bg-destructive"
+                      >
+                        {text.button.delete}
+                      </Button>
+                    </Link>
+                  </DialogTrigger>
+                )}
+                <Outlet />
+              </Dialog>
             </div>
           </div>
           <Separator />
@@ -239,10 +242,11 @@ export function CreditById() {
               <b>{text.details.pay + ':'}</b>{' '}
               <span>
                 {'$' +
-                  (moraStatus
-                    ? (cuoteValue ?? 0) + moreValue
-                    : (cuoteValue ?? 0) + interestValue
-                  ).toFixed(2) +
+                  Math.ceil(
+                    moraStatus
+                      ? (cuoteValue ?? 0) + moreValue
+                      : (cuoteValue ?? 0) + interestValue
+                  ) +
                   '.'}
               </span>
             </li>
@@ -403,15 +407,16 @@ export function Pending() {
 
 /* eslint-disable-next-line */
 export function Error({ error }: ErrorComponentProps) {
-  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
-  useEffect( () => {
-    try{
+  const [errorMsg, setMsg] = useState<
+    { type: number | string; msg?: string } | undefined
+  >(undefined)
+  useEffect(() => {
+    try {
       setMsg(JSON?.parse((error as Error)?.message))
+    } catch {
+      setMsg({ type: 'Error', msg: (error as Error).message })
     }
-    catch{
-      setMsg({ type: "Error", msg: (error as Error).message })
-    }
-  }, [error] )
+  }, [error])
   const { history } = useRouter()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
@@ -419,7 +424,7 @@ export function Error({ error }: ErrorComponentProps) {
     history.back()
   }
   return (
-    <div className="flex xl:h-full h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row xl:h-full [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
         <h1 className="font-bold">{errorMsg?.type}</h1>

@@ -20,7 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { useScreen } from '@/lib/hook/useScreens'
 import { Badge } from '@/components/ui/badge'
 import clsx from 'clsx'
-import { credit_table as text } from "@/locale/credit";
+import { credit_table as text } from '@/locale/credit'
 
 /* eslint-disable-next-line */
 type TData = {
@@ -93,7 +93,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
 
                       <li>
                         <b>{text.payValue + ':'}</b> ${' '}
-                        {payment?.valor_del_pago?.toFixed(2) + '.'}
+                        {Math.ceil(payment?.valor_del_pago) + '.'}
                       </li>
 
                       {cuote?.valor_de_mora > 0 && (
@@ -109,7 +109,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
                       {cuote?.valor_de_mora > 0 && (
                         <li>
                           <b>{text.payInstallments + ':'}</b> ${' '}
-                          {cuote?.valor_de_mora?.toFixed(2) + '.'}
+                          {Math.ceil(cuote?.valor_de_mora) + '.'}
                         </li>
                       )}
                     </ul>
@@ -176,7 +176,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
               </ul>
             </TableCell>
             <TableCell>
-              <p>${payment?.valor_del_pago?.toFixed(2)}</p>
+              <p>${Math.ceil(payment?.valor_del_pago)}</p>
             </TableCell>
             <TableCell>
               <p>
@@ -191,7 +191,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
             <TableCell>
               <p>
                 {cuote?.valor_de_mora > 0 ? (
-                  <>$ {cuote?.valor_de_mora?.toFixed(2)}</>
+                  <>$ {Math.ceil(cuote?.valor_de_mora)}</>
                 ) : (
                   '-'
                 )}
@@ -227,10 +227,11 @@ function GetPay({ credit }: { credit: TCREDIT_GET }) {
   return (
     <p>
       $
-      {credit.pagos
-        .map(({ valor_del_pago }) => valor_del_pago)
-        .reduce((prev, acc) => (acc += prev))
-        ?.toFixed(2)}
+      {Math.ceil(
+        credit.pagos
+          .map(({ valor_del_pago }) => valor_del_pago)
+          .reduce((prev, acc) => (acc += prev))
+      )}
       <b>&#8193;/&#8193;</b>${credit?.monto}
     </p>
   )

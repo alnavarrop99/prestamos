@@ -272,23 +272,23 @@ export function PrintSelectedCredit() {
                             new Date(pay.fecha_de_pago ?? ''),
                             'dd/MM/yyyy'
                           ),
-                          pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
-                          mora: mora ? +mora.toFixed(2) : undefined,
+                          pay: Math.ceil(pay?.valor_del_pago ?? 0),
+                          mora: mora ? Math.ceil(mora) : undefined,
                           cuoteNumber:
                             (payIndex ?? creditRes?.pagos?.length) + 1,
-                          pending: +(
+                          pending: Math.ceil(
                             creditRes?.monto -
-                            creditRes?.pagos
-                              ?.slice(0, payIndex ? payIndex + 1 : -1)
-                              ?.reduce(
-                                (prev, acc) => {
-                                  const res: typeof acc = { ...acc }
-                                  res.valor_del_pago += prev?.valor_del_pago
-                                  return res
-                                },
-                                { valor_del_pago: 0 }
-                              )?.valor_del_pago
-                          )?.toFixed(2),
+                              creditRes?.pagos
+                                ?.slice(0, payIndex ? payIndex + 1 : -1)
+                                ?.reduce(
+                                  (prev, acc) => {
+                                    const res: typeof acc = { ...acc }
+                                    res.valor_del_pago += prev?.valor_del_pago
+                                    return res
+                                  },
+                                  { valor_del_pago: 0 }
+                                )?.valor_del_pago
+                          ),
                           comment:
                             pay?.comentario === ''
                               ? pay?.comentario
