@@ -20,6 +20,7 @@ import { format } from 'date-fns'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
+import { update_confirmation as text } from "@/assets/locale/credit";
 
 export const updateCreditByIdOpt = {
     mutationKey: ["update-credit"],
@@ -330,41 +331,3 @@ export function UpdateConfirmationCredit() {
 }
 
 UpdateConfirmationCredit.dispalyname = 'DeleteCreditById'
-
-const text = {
-  title: 'Actualizacion del prestamo',
-  alert: {
-    title: 'Se actualizara el prestamo de la base de datos',
-    description: ({ username }: { username: string }) =>
-      'Estas seguro de actualizar el prestamo del cliente ' + username + ' de la basde de datos?. Esta accion es irreversible y se actualizara los datos relacionados con el prestamo.',
-  },
-  button: {
-    close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, actualiza el prestamo.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    payment: {
-      titile: 'Actualizacion de un pago',
-      decription: ({ username }: { username?: string }) =>
-        'Se ha actualizado el pago del cliente ' + username + ' con exito.',
-      error: ({ username }: { username: string }) =>
-      'Ha fallado la actualizacion pago para el usuario ' + username + '.',
-    },
-    deletePayment: {
-      titile: 'Elminacion de un pago',
-      decription: ({ username }: { username?: string }) =>
-        'Se ha eliminado el pago del cliente ' + username + ' con exito.',
-      error: ({ username }: { username: string }) =>
-        'Ha fallado la eliminacion del prestamo para el usuario ' + username + '.',
-    },
-    credit: {
-      titile: 'Actualizacion de un prestamo',
-      decription: ({ username }: { username?: string }) =>
-        'Se ha actualizado el prestamo del cliente ' + username + ' con exito.',
-      error: ({ username }: { username: string }) =>
-        'Ha fallado la actualizacion del prestamo para el usuario ' + username + '.',
-    },
-    retry: 'Reintentar',
-  },
-}

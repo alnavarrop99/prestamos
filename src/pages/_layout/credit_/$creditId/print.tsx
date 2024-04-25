@@ -21,6 +21,7 @@ import { useReactToPrint } from 'react-to-print'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
 import { _client, _credit } from '@/pages/_layout/credit_/$creditId.lazy'
 import { format } from 'date-fns'
+import { print_by_id as text } from "@/assets/locale/credit";
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
   component: PrintCreditById,
@@ -189,23 +190,3 @@ export function PrintCreditById() {
 }
 
 PrintCreditById.dispalyname = 'PayCreditById'
-
-const text = {
-  title: 'Opciones de impresion:',
-  description: "Seleccione la opcion deseada para la impresion del pago.",
-  button: {
-    close: 'Volver a la pestaña anterior',
-    print: 'Imprimir',
-  },
-  form: {
-    pay: {
-      label: 'Numero del pago:',
-      placeholder: 'Seleccione el pago',
-    },
-    options: {
-      label: 'Opciones:',
-      placeholder: 'Seleccione la opcion de impresion',
-      items: [ "Ultimo pago","Pago especifico" ]
-    },
-  }
-}

@@ -37,6 +37,7 @@ import { defer } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SpinLoader } from '@/components/ui/loader'
 import { toast } from '@/components/ui/use-toast'
+import { print_selected as text } from "@/assets/locale/credit";
 
 type TSearch = {
   creditId: number
@@ -343,26 +344,3 @@ export function ErrorComp({ error }: ErrorComponentProps) {
 
 PrintSelectedCredit.dispalyname = 'PayCreditById'
 ErrorComp.dispalyname = 'PayCreditByIdError'
-
-const text = {
-  title: 'Opciones de impresion:',
-  description: 'Seleccione la opcion deseada para la impresion del pago.',
-  error: {
-    title: 'Obtencion de datos',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  button: {
-    close: 'Volver a la pestaña anterior',
-    print: 'Imprimir',
-  },
-  form: {
-    pay: {
-      label: 'Numero del pago:',
-      placeholder: 'Seleccione el pago',
-    },
-    options: {
-      label: 'Opciones:',
-      placeholder: 'Seleccione la opcion de impresion',
-    },
-  },
-}

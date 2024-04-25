@@ -23,7 +23,7 @@ import { useStatus } from '@/lib/context/layout'
 import type { TCLIENT_GET_BASE } from '@/api/clients'
 import { getIdById } from '@/lib/type/id'
 import { useToken } from '@/lib/context/login'
-import type { TROLES } from '@/lib/type/rol'
+import { client_table as text } from "@/assets/locale/client"
 
 export type TClientTable = Omit<
   TCLIENT_GET_BASE,
@@ -333,29 +333,4 @@ function ClientActions({ row }: { row: Row<TClientTable> }) {
       </DropdownMenuContent>
     </DropdownMenu>
   )
-}
-
-const text = {
-  menu: {
-    aria: 'Mas Opciones',
-    title: 'Acciones:',
-    copy: 'Copiar datos del cliente',
-    update: ({ rolName }: { rolName?: TROLES }) =>
-      rolName === 'Administrador' ? 'Ver | Actualizar' : 'Ver' + ' cliente',
-    pay: 'Asignar prestamo al cliente',
-    delete: 'Eliminar cliente',
-  },
-  columns: {
-    fullName: 'Nombre y apellidos',
-    email: 'Correo',
-    firstName: 'Nombre',
-    lastName: 'Apellidos',
-    id: 'I.D.',
-    idType: 'Tipo de I.D.',
-    phone: 'Celular',
-    telephone: '#Telefono',
-    ref: 'Referencia',
-    direction: 'Direccion',
-    secondDirection: 'Segunda Direccion',
-  },
 }

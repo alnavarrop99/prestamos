@@ -12,6 +12,7 @@ import { TClientTable, desktop } from '@/pages/_layout/-column'
 import clsx from 'clsx'
 import { Label } from '@/components/ui/label'
 import { useToken } from '@/lib/context/login'
+import { client_table as text } from "@/assets/locale/client"
 
 /* eslint-disable-next-line */
 type TPaymentTable = {
@@ -204,10 +205,4 @@ export function ClientTable({ table }: TPaymentTable) {
       </TableBody>
     </Table>
   )
-}
-
-const text = {
-  search: {
-    404: 'No se encontraron resultados',
-  },
 }

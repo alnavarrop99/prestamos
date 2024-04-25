@@ -15,7 +15,7 @@ import { format } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
 import { getFrecuencyById } from '@/lib/type/frecuency'
 import { createContext, useEffect, useMemo, useState } from 'react'
-import { type TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
+import { getMoraTypeById } from '@/lib/type/moraType'
 import { type TCLIENT_GET } from '@/api/clients'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useRouter } from '@tanstack/react-router'
@@ -26,6 +26,7 @@ import {} from '@/pages/_layout/credit_/$creditId_/update.confirm'
 import { useToken } from '@/lib/context/login'
 import { PaymentTable } from './-table'
 import { ErrorComponentProps } from '@tanstack/react-router'
+import { credit_by_id as text } from "@/assets/locale/credit";
 
 export const getCreditByIdOpt = ({ creditId }: { creditId: string }) => ({
   queryKey: ['get-credit-by-id', { creditId }],
@@ -437,45 +438,3 @@ export function Error({ error }: ErrorComponentProps) {
 CreditById.dispalyname = 'CreditById'
 Pending.dispalyname = 'CreditByIdPending'
 Error.dispalyname = 'CreditByIdError'
-
-const text = {
-  title: 'Detalles:',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'Los detalles del prestamo ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
-  button: {
-    update: 'Editar',
-    delete: 'Eliminar',
-  },
-  details: {
-    title: 'Detalles del prestamo:',
-    name: 'Nombre del cliente',
-    user: 'Cobrador',
-    ref: 'Referencia',
-    amount: 'Monto total',
-    interest: 'Tasa de interes',
-    cuoteNumber: 'Numero de cuotas',
-    cuote: 'Monto por cuota',
-    pay: 'Monto a pagar',
-    installmants: (type: TMORA_TYPE) =>
-      type === 'Valor fijo' ? 'Monta por mora' : 'Tasa por mora',
-    frecuency: 'Frecuencia del credito',
-    status: 'Estado',
-    date: 'Fecha de aprobacion',
-    comment: 'Comentario',
-    cuotes: 'Numero de cuotas',
-    aditionalsDays: 'Dias adicionales',
-  },
-  cuotes: {
-    title: 'Historial de pagos:',
-    payDate: 'Fecha de pago',
-    installmantsDate: 'Fecha de aplicacion de mora',
-    payValue: 'Monto del pago',
-    payInstallmants: 'Monto de la mora',
-    payStatus: 'Pagada',
-    total: 'Monto total',
-  },
-  pay: {
-    title: 'Historial de pagos:',
-  },
-}

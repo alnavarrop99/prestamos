@@ -1,5 +1,6 @@
 import { forwardRef } from "react"
 import brand from '@/assets/menu-brand.avif'
+import { credit_print as text } from "@/assets/locale/credit";
 
 interface TPrintCredit
   extends React.DetailedHTMLProps<
@@ -106,18 +107,3 @@ export const PrintCredit = forwardRef<HTMLDivElement, TPrintCredit>(function (
     </main>
   )
 })
-
-const text = {
-    title: 'Comprobante de pago',
-    client: 'Cliente',
-    ssn: 'Cédula',
-    telephone: 'Teléfono',
-    phone: 'Celular',
-    date: 'Fecha',
-    pay: 'Pago cuota',
-    mora: 'Mora',
-    cuoteNumber: 'Número de cuota',
-    pending: 'Pendiente',
-    comment: 'Comentario',
-    services: 'Servicios',
-}

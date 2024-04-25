@@ -1,3 +1,5 @@
+import { type TROLES } from "@/lib/type/rol";
+
 const main = {
   back: 'Intente volver a la pestaña anterior',
   title: 'Clientes:',
@@ -244,4 +246,32 @@ const update = {
   },
 }
 
-export { main, delete_by_id, delete_selected, news, update }
+const client_table = {
+    menu: {
+    aria: 'Mas Opciones',
+    title: 'Acciones:',
+    copy: 'Copiar datos del cliente',
+    update: ({ rolName }: { rolName?: TROLES }) =>
+      rolName === 'Administrador' ? 'Ver | Actualizar' : 'Ver' + ' cliente',
+    pay: 'Asignar prestamo al cliente',
+    delete: 'Eliminar cliente',
+  },
+  columns: {
+    fullName: 'Nombre y apellidos',
+    email: 'Correo',
+    firstName: 'Nombre',
+    lastName: 'Apellidos',
+    id: 'I.D.',
+    idType: 'Tipo de I.D.',
+    phone: 'Celular',
+    telephone: '#Telefono',
+    ref: 'Referencia',
+    direction: 'Direccion',
+    secondDirection: 'Segunda Direccion',
+  },
+  search: {
+    404: 'No se encontraron resultados',
+  },
+}
+
+export { main, delete_by_id, delete_selected, news, update, client_table }

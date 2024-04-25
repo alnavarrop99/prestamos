@@ -52,6 +52,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
 import { ErrorComponentProps } from '@tanstack/react-router'
+import { update as text } from "@/assets/locale/credit";
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,
@@ -806,95 +807,3 @@ export function Error({ error }: ErrorComponentProps) {
 UpdateCreditById.dispalyname = 'UpdateCreditById'
 Error.dispalyname = 'UpdateCreditByIdError'
 Pending.dispalyname = 'UpdateCreditByIdPending'
-
-const text = {
-  title: 'Editar prestamos:',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'Los detalles del prestamo ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
-  button: {
-    update: 'Actualizar',
-    close: 'Cancelar',
-  },
-  notification: {
-    titile: 'Actualizacion de un prestamo',
-    decription: ({ username }: { username: string }) =>
-      'Se ha actualizado el prestamo para el usuario ' +
-      username +
-      ' con exito.',
-    error: 'Error: la actualizacion del prestamo ha fallado',
-    undo: 'Deshacer',
-  },
-  form: {
-    details: {
-      title: 'Estado del prestamo:',
-      amount: {
-        label: 'Monto total:',
-        placeholder: 'Escriba el nombre del usuario',
-      },
-      date: {
-        label: 'Fecha de aprobacion:',
-        placeholder: 'Seleccione la fecha',
-      },
-      comment: {
-        label: 'Comentario:',
-        placeholder: 'Escriba un comentario',
-      },
-      interest: {
-        label: 'Tasa de interes:',
-        placeholder: 'Escriba la tasa de interes',
-      },
-      aditionalsDays: {
-        label: 'Dias adicionales:',
-        placeholder: 'Cantidad de dias adicionales',
-      },
-      clients: {
-        label: 'Cliente:',
-        placeholder: 'Escribe | Seleccione el cliente',
-      },
-      ref: {
-        label: 'Garante:',
-        placeholder: 'Escribe el garante',
-      },
-      cuotes: {
-        label: 'Numeros de cuotas:',
-        placeholder: 'Escribe la cantidad de cuotas',
-      },
-      users: {
-        label: 'Cobrador:',
-        placeholder: 'Escribe | Seleccione el cobrador',
-      },
-      installmants: {
-        label: 'Monto de mora:',
-        placeholder: {
-          ['Valor fijo' as TMORA_TYPE]: 'Monto adicional en cada cuota',
-          ['Porciento' as TMORA_TYPE]: 'Porcentaje adicional en cada cuota',
-        },
-      },
-      frecuency: {
-        label: 'Frecuencia:',
-        placeholder: 'Seleccione una opcion',
-        items: ['Anual', 'Quincenal', 'Mensual', 'Semanal'],
-      },
-    },
-    pay: {
-      title: 'Listado de pagos:',
-      payDate: {
-        label: 'Fecha de pago:',
-        placeholder: 'Seleccione la fecha',
-      },
-      installmantsDate: {
-        label: 'Fecha de aplicacion de mora:',
-        placeholder: 'Seleccione la fecha',
-      },
-      payValue: {
-        label: 'Monto de pago:',
-        placeholder: 'Valor del pago',
-      },
-      comment: {
-        label: 'Comentario:',
-        placeholder: 'Escribe un comentario',
-      },
-    },
-  },
-}

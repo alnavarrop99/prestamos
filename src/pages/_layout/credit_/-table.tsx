@@ -20,6 +20,7 @@ import { Switch } from '@/components/ui/switch'
 import { useScreen } from '@/lib/hook/useScreens'
 import { Badge } from '@/components/ui/badge'
 import clsx from 'clsx'
+import { credit_table as text } from "@/assets/locale/credit";
 
 /* eslint-disable-next-line */
 type TData = {
@@ -233,13 +234,4 @@ function GetPay({ credit }: { credit: TCREDIT_GET }) {
       <b>&#8193;/&#8193;</b>${credit?.monto}
     </p>
   )
-}
-
-const text = {
-  payDate: 'Fecha de pago',
-  installmantsDate: 'Fecha de aplicacion de mora',
-  payValue: 'Monto del pago',
-  payInstallmants: 'Monto de la mora',
-  payStatus: 'Pagada',
-  total: 'Monto total',
 }

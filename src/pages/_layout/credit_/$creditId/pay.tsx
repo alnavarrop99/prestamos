@@ -34,6 +34,7 @@ import {
 import { format } from 'date-fns'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
+import { pay_by_id as text } from "@/assets/locale/credit";
 
 export const postPaymentOpt = {
   mutationKey: ['create-payment'],
@@ -241,39 +242,3 @@ export function PayCreditById() {
 }
 
 PayCreditById.dispalyname = 'PayCreditById'
-
-const text = {
-  title: 'Realizar un pago:',
-  descriiption: 'Introdusca los datos correctamente para realizar un pago.',
-  button: {
-    close: 'No, vuelve a la pestaña anterior',
-    pay: 'Si, realiza el pago',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    titile: 'Ejecucion de un pago',
-    decription: ({ username, number }: { username: string; number: number }) =>
-      'Se ha pagado la cuota con un monto de $' +
-      number +
-      ' del usuario ' +
-      username +
-      ' con exito.',
-    error: (username: string) =>
-      'Ha fallado el pago de la cuota del usuario ' + username,
-    retry: 'Reintentar',
-  },
-  form: {
-    amount: {
-      label: 'Cantidad:',
-      placeholder: 'Monto a pagar',
-    },
-    comment: {
-      label: 'Comentario',
-      placeholder: 'Escriba un comentario',
-    },
-    date: {
-      label: 'Fecha de aprobacion',
-      placeholder: 'Seleccione una fecha',
-    },
-  },
-}

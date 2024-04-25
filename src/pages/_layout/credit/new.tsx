@@ -49,6 +49,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useToken } from '@/lib/context/login'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
+import { news as text } from "@/assets/locale/credit";
 
 type TSearch = {
   clientId: number
@@ -720,76 +721,4 @@ const getAmountCuote = ({
   if (coute === 0) return 0
 
   return Math.ceil(amount / coute + ((amount / coute) * interest) / 100)
-}
-
-const text = {
-  title: 'Crear prestamo:',
-  descriiption:
-    'Introdusca los datos correctamente para la creacion de un prestamo en la plataforma',
-  error: {
-    title: 'Obtencion de datos',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  button: {
-    close: 'Cerrar',
-    update: 'Crear',
-  },
-  notification: {
-    titile: 'Creacion de un nuevos prestamo',
-    decription: ({ username }: { username: string }) =>
-      'Se ha creado el prestamo para el usuario ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'Ha fallado la creacion del prestamo para el usuario ' + username + '.',
-    retry: 'Reintentar',
-  },
-  form: {
-    cliente: {
-      label: 'Cliente:',
-      placeholder: 'Nombre del cliente',
-    },
-    ref: {
-      label: 'Garante:',
-      placeholder: 'Nombre del garante del cliente',
-    },
-    user: {
-      label: 'Cobrador:',
-      placeholder: 'Nombre del cobrador',
-    },
-    comment: {
-      label: 'Comentario:',
-      placeholder: 'Escriba un commentario',
-    },
-    amount: {
-      label: 'Monto:',
-      placeholder: 'Monto total del prestamo',
-    },
-    frecuency: {
-      label: 'Frecuencia:',
-      placeholder: 'Seleccione una opcion',
-      items: ['Anual', 'Quincenal', 'Mensual', 'Semanal'],
-    },
-    aditionalDays: {
-      label: 'Dias Adicionales:',
-      placeholder: 'Cantidad de dias',
-    },
-    date: {
-      label: 'Fecha de aprobacion:',
-      placeholder: 'Seleccione la fecha',
-    },
-    interest: {
-      label: 'Tasa de Interes:',
-      placeholder: 'Porcentaje de interes por cuota',
-    },
-    installments: {
-      label: 'Mora:',
-      placeholder: {
-        ['Valor fijo' as TMORA_TYPE]: 'Monto adicional en cada cuota',
-        ['Porciento' as TMORA_TYPE]: 'Porcentaje adicional en cada cuota',
-      },
-    },
-    cuote: {
-      label: 'Cuotas:',
-      placeholder: 'Cantidad de cuotas',
-    },
-  },
 }

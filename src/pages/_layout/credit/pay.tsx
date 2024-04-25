@@ -27,6 +27,7 @@ import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
+import { pay_selected as text } from "@/assets/locale/credit";
 
 type TSearch = {
   name: string
@@ -228,39 +229,3 @@ export function PaySelectedCredit() {
 }
 
 PaySelectedCredit.dispalyname = 'PayCreditById'
-
-const text = {
-  title: 'Realizar un pago:',
-  descriiption: 'Introdusca los datos correctamente para realizar un pago.',
-  button: {
-    close: 'No, vuelve a la pestaña anterior',
-    pay: 'Si, realiza el pago',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    titile: 'Ejecucion de un pago',
-    decription: ({ username, number }: { username: string; number: number }) =>
-      'Se ha pagado la cuota con un monto de $' +
-      number +
-      ' del usuario ' +
-      username +
-      ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'Ha fallado el pago de la cuota del usuario ' + username,
-    retry: 'Reintentar',
-  },
-  form: {
-    amount: {
-      label: 'Cantidad:',
-      placeholder: 'Monto a pagar',
-    },
-    comment: {
-      label: 'Comentario',
-      placeholder: 'Escriba un comentario',
-    },
-    date: {
-      label: 'Fecha de aprobacion',
-      placeholder: 'Seleccione una fecha',
-    },
-  },
-}
