@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useRouter } from '@tanstack/react-router'
 import { queryClient } from '@/pages/__root'
 import { ErrorComponentProps } from '@tanstack/react-router'
+import text from "@/assets/locale/report.json"
 
 export const getReportsOpt = {
   queryKey: [ "get-reports" ],
@@ -212,15 +213,3 @@ export function Error({ error }: ErrorComponentProps) {
 Report.dispalyname = 'Report'
 Error.dispalyname = 'ReportError'
 Pending.dispalyname = 'ReportPending'
-
-const text = {
-  title: 'Reportes:',
-  browser: 'Reportes',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'El listado de reportes ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
-  comment: {
-    label: 'Comentario:',
-    placeholder: 'Escriba un comentario',
-  },
-}
