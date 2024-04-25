@@ -8,7 +8,12 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@radix-ui/react-label'
-import { ErrorComponentProps, Navigate, createFileRoute, useNavigate } from '@tanstack/react-router'
+import {
+  ErrorComponentProps,
+  Navigate,
+  createFileRoute,
+  useNavigate,
+} from '@tanstack/react-router'
 import { useEffect, useReducer, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { toast } from '@/components/ui/use-toast'
@@ -19,6 +24,7 @@ import { useToken } from '@/lib/context/login'
 import { BoundleLoader } from '@/components/ui/loader'
 import { Separator } from '@radix-ui/react-separator'
 import brand from '@/assets/menu-brand.avif'
+import text from '@/assets/locale/login.json'
 
 export const postCurrentUser = {
   mutationKey: ['login-user'],
@@ -27,7 +33,7 @@ export const postCurrentUser = {
 
 export const Route = createFileRoute('/login')({
   component: Login,
-  errorComponent: Error
+  errorComponent: Error,
 })
 
 /* eslint-disable-next-line */
@@ -61,21 +67,23 @@ export function Login() {
   ) => unknown = (user, { username }) => {
     toast({
       title: text.notification?.title,
-      description: text.notification?.description({ username }),
+      description: text.notification?.description + ' ' + username,
       variant: !error ? 'default' : 'destructive',
     })
 
     setToken(user.access_token)
   }
 
-  const onError: ( error: Error, variables: TUSER_LOGIN_BODY, context: unknown) => unknown = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+  const onError: (error: Error) => unknown = (error) => {
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: <div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
-      </div>,
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }
@@ -124,7 +132,7 @@ export function Login() {
             <form
               autoFocus={false}
               id="login"
-              className="flex flex-col gap-4 [&>label>span]:font-bold"
+              className="flex flex-col gap-4 [&>label>span]:font-bold [&>label]:space-y-2"
               ref={ref}
               onSubmit={onSubmit}
             >
@@ -180,22 +188,23 @@ export function Login() {
 /* eslint-disable-next-line */
 export function Error({ error }: ErrorComponentProps) {
   const navigate = useNavigate()
-  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
-  useEffect( () => {
-    try{
+  const [errorMsg, setMsg] = useState<
+    { type: number | string; msg?: string } | undefined
+  >(undefined)
+  useEffect(() => {
+    try {
       setMsg(JSON?.parse((error as Error)?.message))
+    } catch {
+      setMsg({ type: 'Error', msg: (error as Error).message })
     }
-    catch{
-      setMsg({ type: "Error", msg: (error as Error).message })
-    }
-  }, [error] )
+  }, [error])
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
   > = () => {
-    navigate({to: Route.to})
+    navigate({ to: Route.to })
   }
   return (
-    <div className="flex xl:h-full h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-[100dvh] flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
         <h1 className="font-bold">{errorMsg?.type}</h1>
@@ -212,31 +221,3 @@ export function Error({ error }: ErrorComponentProps) {
 
 Login.dispalyname = 'Login'
 Error.dispalyname = 'LoginError'
-
-const text = {
-  title: 'Inicio de sesion:',
-  retry: 'Recargar',
-  browser: 'Bienvenido',
-  description: [
-    'Bienvenido a su aplicacion de creditos.',
-    'Por favor introdusca sus credenciales para acceder a su cuenta.',
-  ],
-  username: {
-    placeholder: 'Escriba su @username',
-    label: 'Username:',
-  },
-  password: {
-    placeholder: 'Escriba su contraseña',
-    label: 'Password:',
-  },
-  remember: 'Recuerdame.',
-  notification: {
-    title: 'Usuario logeado con exito!.',
-    description: ({ username }: { username: string }) =>
-      'Bienvenido ' + username,
-    error: ({ username }: { username: string }) =>
-      'El inicio de sesion del usuario' + username + 'ha fallado',
-    retry: 'Reintentar',
-  },
-  login: 'Login',
-}
