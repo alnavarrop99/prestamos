@@ -1,32 +1,45 @@
-import { Input } from "@/components/ui/input"
-import { useIsFetching, useIsMutating } from "@tanstack/react-query"
-import { memo, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { getUsersListOpt } from "@/pages/_layout/user.lazy"
-import { getUserByIdOpt, updateUserByIdOpt } from "@/pages/_layout/user/$userId/update"
-import { postUserOpt } from "@/pages/_layout/user/new"
-import { getClientListOpt } from "@/pages/_layout/client.lazy"
-import { getClientByIdOpt, updateClientByIdOpt } from "@/pages/_layout/client/$clientId/update"
-import { postClientOpt } from "@/pages/_layout/client/new"
-import { deleteClientByIdOpt } from "@/pages/_layout/client/$clientId/delete"
-import { getCreditsListOpt } from "@/pages/_layout/credit.lazy"
-import { postCreditOpt } from "@/pages/_layout/credit/new"
-import { deletePaymentByIdOpt, updateCreditByIdOpt, updatePaymentByIdOpt } from "@/pages/_layout/credit_/$creditId_/update.confirm"
-import { deleteCreditByIdOpt } from "@/pages/_layout/credit_/$creditId/delete"
-import { postPaymentOpt } from "@/pages/_layout/credit_/$creditId/pay"
-import { getCreditByIdOpt } from "@/pages/_layout/credit_/$creditId.lazy"
-import { getReportsOpt, postReportOpt } from "@/pages/_layout/report.lazy"
+import { Input } from '@/components/ui/input'
+import { useIsFetching, useIsMutating } from '@tanstack/react-query'
+import { memo, useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { getUsersListOpt } from '@/pages/_layout/user.lazy'
+import {
+  getUserByIdOpt,
+  updateUserByIdOpt,
+} from '@/pages/_layout/user/$userId/update'
+import { postUserOpt } from '@/pages/_layout/user/new'
+import { getClientListOpt } from '@/pages/_layout/client.lazy'
+import {
+  getClientByIdOpt,
+  updateClientByIdOpt,
+} from '@/pages/_layout/client/$clientId/update'
+import { postClientOpt } from '@/pages/_layout/client/new'
+import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
+import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
+import { postCreditOpt } from '@/pages/_layout/credit/new'
+import {
+  deletePaymentByIdOpt,
+  updateCreditByIdOpt,
+  updatePaymentByIdOpt,
+} from '@/pages/_layout/credit_/$creditId_/update.confirm'
+import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
+import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
+import { getReportsOpt, postReportOpt } from '@/pages/_layout/report.lazy'
 import { SpinLoader as Loader } from '@/components/ui/loader'
-import { Popover, PopoverTrigger } from "@/components/ui/popover"
-import { PopoverContent } from "@radix-ui/react-popover"
-import { Label } from "@/components/ui/label"
-import { Search } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
-import { translate } from "@/lib/route"
-import { Link } from "@tanstack/react-router"
-import clsx from "clsx"
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from '@/components/ui/popover'
+import { Label } from '@/components/ui/label'
+import { Search } from 'lucide-react'
+import { Separator } from '@/components/ui/separator'
+import { translate } from '@/lib/route'
+import { Link } from '@tanstack/react-router'
+import clsx from 'clsx'
 import brand from '@/assets/menu-brand.avif'
-import { loader as text } from "@/locale/layout";
+import { loader as text } from '@/locale/layout'
 
 /* eslint-disable-next-line */
 type TSpinLoader = {
@@ -36,7 +49,11 @@ type TSpinLoader = {
 }
 
 /* eslint-disable-next-line */
-export const SpinLoader = memo<TSpinLoader>(function ({ onChange, rchild, value }) {
+export const SpinLoader = memo<TSpinLoader>(function ({
+  onChange,
+  rchild,
+  value,
+}) {
   const [menu, setMenu] = useState<boolean>(false)
 
   const onOpenChange = (open: boolean) => {
@@ -326,7 +343,7 @@ export const SpinLoader = memo<TSpinLoader>(function ({ onChange, rchild, value 
                         onClick={onClick}
                         variant={!isActive ? 'link' : 'default'}
                         className={clsx(
-                          'delay-50 flex justify-start gap-2 font-bold  duration-300 md:justify-center',
+                          'delay-50 flex justify-start gap-2 font-bold  duration-300 md:justify-center'
                         )}
                       >
                         <Icon />
