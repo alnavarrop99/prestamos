@@ -273,7 +273,7 @@ export function UpdateConfirmationCredit() {
             <AlertTitle className='text-sm md:text-base text-start max-sm:!px-0'>{text.alert.title}</AlertTitle>
             <AlertDescription className='text-xs md:text-base text-start max-sm:!px-0'>
               {text.alert.description({ 
-                username: ""+credit?.owner_id 
+                username: client?.nombres + " " + client?.apellidos 
               })}
             </AlertDescription>
           </Alert>
