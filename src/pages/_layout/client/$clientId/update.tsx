@@ -16,6 +16,7 @@ import {
   Navigate,
   createFileRoute,
   defer,
+  useNavigate,
 } from '@tanstack/react-router'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
@@ -106,7 +107,7 @@ export function UpdateClientById() {
   const qClient = useQueryClient()
 
   useEffect(() => {
-    if (!clientRes && isError) throw Error('client not load')
+    if (!clientRes && isError) throw Error('data not load')
   }, [isError])
 
   const onSuccess = (newData: TCLIENT_PATCH) => {
@@ -182,7 +183,7 @@ export function UpdateClientById() {
   })
 
   useEffect(() => {
-    if (!clientRes) return
+    if (!clientRes || !init?.current) return
     init.current = clientRes
     setClient(clientRes)
     return () => {
@@ -537,6 +538,7 @@ export function UpdateClientById() {
 
 /* eslint-disable-next-line */
 export function ErrorComp({ error }: ErrorComponentProps) {
+  const navigate = useNavigate()
   const [errorMsg, setMsg] = useState<
     { type: number | string; msg?: string } | undefined
   >(undefined)
@@ -549,6 +551,7 @@ export function ErrorComp({ error }: ErrorComponentProps) {
   }, [error])
 
   useEffect(() => {
+    navigate({ to: '../' })
     toast({
       title: '' + errorMsg?.type,
       description: (

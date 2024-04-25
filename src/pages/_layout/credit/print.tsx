@@ -9,7 +9,12 @@ import {
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { ErrorComponentProps, Navigate, createFileRoute } from '@tanstack/react-router'
+import {
+  ErrorComponentProps,
+  Navigate,
+  createFileRoute,
+  useNavigate,
+} from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import styles from '@/styles/global.module.css'
@@ -37,7 +42,7 @@ import { defer } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SpinLoader } from '@/components/ui/loader'
 import { toast } from '@/components/ui/use-toast'
-import { print_selected as text } from "@/locale/credit";
+import { print_selected as text } from '@/locale/credit'
 
 type TSearch = {
   creditId: number
@@ -75,7 +80,7 @@ export function PrintSelectedCredit() {
   const {
     data: creditRes,
     isSuccess: okCredits,
-    isPending: pendingCredits,
+    isFetching: pendingCredits,
   } = useQuery(queryOptions(getCreditByIdOpt({ creditId: '' + creditId })))
 
   const {
@@ -90,13 +95,7 @@ export function PrintSelectedCredit() {
   )
 
   useEffect(() => {
-    if (!creditRes) throw Error()
-  }, [isError])
-
-  useEffect(() => {
-    if (isError) {
-      throw new Error('not load client')
-    }
+    if (!creditRes && isError) throw Error('not load')
   }, [isError])
 
   const { open, setOpen } = useStatus()
@@ -205,7 +204,9 @@ export function PrintSelectedCredit() {
                       <SelectItem key={index} value={'' + index}>
                         {' '}
                         {format(
-                          new Date(creditRes?.cuotas?.[index].fecha_de_pago ?? ""),
+                          new Date(
+                            creditRes?.cuotas?.[index].fecha_de_pago ?? ''
+                          ),
                           'dd/MM/yyyy'
                         )}{' '}
                       </SelectItem>
@@ -268,7 +269,7 @@ export function PrintSelectedCredit() {
                           telephone: client?.telefono,
                           phone: client?.celular,
                           date: format(
-                            new Date(pay.fecha_de_pago ?? ""),
+                            new Date(pay.fecha_de_pago ?? ''),
                             'dd/MM/yyyy'
                           ),
                           pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
@@ -318,19 +319,22 @@ export function PrintSelectedCredit() {
 
 /* eslint-disable-next-line */
 export function ErrorComp({ error }: ErrorComponentProps) {
-  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
-  useEffect( () => {
-    try{
+  const navigate = useNavigate()
+  const [errorMsg, setMsg] = useState<
+    { type: number | string; msg?: string } | undefined
+  >(undefined)
+  useEffect(() => {
+    try {
       setMsg(JSON?.parse((error as Error)?.message))
-    }
-    catch{
+    } catch {
       setMsg({ type: (error as Error)?.name, msg: (error as Error).message })
     }
-  }, [error] )
+  }, [error])
 
   useEffect(() => {
+    navigate({ to: '../' })
     toast({
-      title: "" + errorMsg?.type,
+      title: '' + errorMsg?.type,
       description: (
         <div className="text-sm">
           <p>{errorMsg?.msg}</p>
@@ -339,7 +343,7 @@ export function ErrorComp({ error }: ErrorComponentProps) {
       variant: 'destructive',
     })
   }, [])
-  return;
+  return
 }
 
 PrintSelectedCredit.dispalyname = 'PayCreditById'

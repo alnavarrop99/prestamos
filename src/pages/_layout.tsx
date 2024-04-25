@@ -103,7 +103,7 @@ export const Route = createFileRoute('/_layout')({
   pendingComponent: () => <></>,
   errorComponent: Error,
   loader: async () => ({
-    user: defer(queryClient.ensureQueryData(queryOptions(getCurrentUserOpt))),
+    user: queryClient.ensureQueryData(queryOptions(getCurrentUserOpt)),
     clients: defer(queryClient.ensureQueryData(queryOptions(getClientListOpt))),
     credits: defer(
       queryClient.ensureQueryData(queryOptions(getCreditsListOpt))
@@ -125,7 +125,7 @@ export const Route = createFileRoute('/_layout')({
     creditPagination.setState({ start: 0, end: 3 })
     clientFilter.setState({ filter: 'fullName' })
     queryClient.clear()
-    useNotifications.setState( { notifications: undefined } )
+    useNotifications.setState({ notifications: undefined })
   },
   beforeLoad: async () => {
     const { token } = useToken.getState()
@@ -669,16 +669,18 @@ export function Layout() {
                           onCheckedChange={onSwitch}
                         />
                       </Label>
-                      { rol?.rolName === "Administrador" && <Link
-                            className="flex h-full w-full items-center justify-between gap-2"
-                            to={'/client'}
-                            search={{ userId }}
-                          >
-                            <Button variant="ghost">
-                              <UsersList />
-                            </Button>
-                          </Link>
- }                    </div>
+                      {rol?.rolName === 'Administrador' && (
+                        <Link
+                          className="flex h-full w-full items-center justify-between gap-2"
+                          to={'/client'}
+                          search={{ userId }}
+                        >
+                          <Button variant="ghost">
+                            <UsersList />
+                          </Button>
+                        </Link>
+                      )}{' '}
+                    </div>
                   </div>
                 )}
               </HoverCardContent>

@@ -9,7 +9,12 @@ import {
 } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
-import { Navigate, createFileRoute, defer } from '@tanstack/react-router'
+import {
+  Navigate,
+  createFileRoute,
+  defer,
+  useNavigate,
+} from '@tanstack/react-router'
 import clsx from 'clsx'
 import { ComponentRef, useEffect, useMemo, useRef, useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
@@ -46,7 +51,7 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { getUsersListOpt } from '@/pages/_layout/user.lazy'
 import { ErrorComponentProps } from '@tanstack/react-router'
-import { update as text } from "@/locale/user";
+import { update as text } from '@/locale/user'
 
 export const updateUserByIdOpt = {
   mutationKey: ['update-user-by-id'],
@@ -154,7 +159,7 @@ export function UpdateUserById() {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg }</p>
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
@@ -467,19 +472,22 @@ export function UpdateUserById() {
 
 /* eslint-disable-next-line */
 export function Error({ error }: ErrorComponentProps) {
-  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
-  useEffect( () => {
-    try{
+  const navigate = useNavigate()
+  const [errorMsg, setMsg] = useState<
+    { type: number | string; msg?: string } | undefined
+  >(undefined)
+  useEffect(() => {
+    try {
       setMsg(JSON?.parse((error as Error)?.message))
-    }
-    catch{
+    } catch {
       setMsg({ type: (error as Error)?.name, msg: (error as Error).message })
     }
-  }, [error] )
+  }, [error])
 
   useEffect(() => {
+    navigate({ to: '../' })
     toast({
-      title: "" + errorMsg?.type,
+      title: '' + errorMsg?.type,
       description: (
         <div className="text-sm">
           <p>{errorMsg?.msg}</p>
@@ -488,7 +496,7 @@ export function Error({ error }: ErrorComponentProps) {
       variant: 'destructive',
     })
   }, [])
-  return;
+  return
 }
 
 UpdateUserById.dispalyname = 'UpdateUserById'

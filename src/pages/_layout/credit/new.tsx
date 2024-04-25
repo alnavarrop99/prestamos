@@ -11,7 +11,12 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { ErrorComponentProps, createFileRoute, defer } from '@tanstack/react-router'
+import {
+  ErrorComponentProps,
+  createFileRoute,
+  defer,
+  useNavigate,
+} from '@tanstack/react-router'
 import React, { ComponentRef, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 import {
@@ -49,7 +54,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useToken } from '@/lib/context/login'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
-import { news as text } from "@/locale/credit";
+import { news as text } from '@/locale/credit'
 
 type TSearch = {
   clientId: number
@@ -197,7 +202,7 @@ export function NewCredit() {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg }</p>
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
@@ -666,19 +671,22 @@ export function NewCredit() {
 
 /* eslint-disable-next-line */
 export function Error({ error }: ErrorComponentProps) {
-  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
-  useEffect( () => {
-    try{
+  const navigate = useNavigate()
+  const [errorMsg, setMsg] = useState<
+    { type: number | string; msg?: string } | undefined
+  >(undefined)
+  useEffect(() => {
+    try {
       setMsg(JSON?.parse((error as Error)?.message))
-    }
-    catch{
+    } catch {
       setMsg({ type: (error as Error)?.name, msg: (error as Error).message })
     }
-  }, [error] )
+  }, [error])
 
   useEffect(() => {
+    navigate({ to: '../' })
     toast({
-      title: "" + errorMsg?.type,
+      title: '' + errorMsg?.type,
       description: (
         <div className="text-sm">
           <p>{errorMsg?.msg}</p>
@@ -687,7 +695,7 @@ export function Error({ error }: ErrorComponentProps) {
       variant: 'destructive',
     })
   }, [])
-  return;
+  return
 }
 
 NewCredit.dispalyname = 'NewClient'
