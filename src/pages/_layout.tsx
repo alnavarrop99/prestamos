@@ -22,17 +22,13 @@ import {
   X as ErrorIcon,
   Search,
   Annoyed,
+  Users as UsersList,
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar, TData, TDaysProps } from '@/components/ui/calendar'
-import React, {
-  useCallback,
-  useEffect,
-  useReducer,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -61,11 +57,7 @@ import {
 } from '@/components/ui/breadcrumb'
 import { getRoute, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
-import {
-  queryOptions,
-  useQuery,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
+import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { BoundleLoader } from '@/components/ui/loader'
 import brand from '@/assets/menu-brand.avif'
 import brandOff from '@/assets/menu-off-brand.avif'
@@ -93,7 +85,7 @@ import { type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { listPayments } from '@/api/payment'
 import SpinLoader from '@/pages/-spinloader'
-import { main as text } from "@/locale/layout";
+import { main as text } from '@/locale/layout'
 
 export const getCurrentUserOpt = {
   queryKey: ['login-user', { userId: useToken.getState().userId }],
@@ -665,6 +657,17 @@ export function Layout() {
                             </Badge>{' '}
                           </li>
                         )}
+                        <li>
+                          <Link
+                            className="flex h-full w-full items-center justify-between gap-2"
+                            to={'/client'}
+                            search={{ userId }}
+                          >
+                            <Button variant="ghost">
+                              <UsersList />
+                            </Button>
+                          </Link>
+                        </li>
                       </ul>
                     </div>
                     <div>
@@ -746,7 +749,7 @@ export function Layout() {
       </main>
       <footer className="py-2 xl:py-4">
         <Separator className="my-2 xl:my-4" />
-        <h3 className="max-xl:m-auto w-fit space-x-2 xl:ms-auto">
+        <h3 className="w-fit space-x-2 max-xl:m-auto xl:ms-auto">
           <span className="italic">{text.footer.copyright}</span>
           <Badge> &copy; {new Date().getFullYear()} </Badge>
         </h3>
@@ -775,15 +778,16 @@ export const ErrorStates = ({
 
 /* eslint-disable-next-line */
 export function Error({ error }: ErrorComponentProps) {
-  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
-  useEffect( () => {
-    try{
+  const [errorMsg, setMsg] = useState<
+    { type: number | string; msg?: string } | undefined
+  >(undefined)
+  useEffect(() => {
+    try {
       setMsg(JSON?.parse((error as Error)?.message))
+    } catch {
+      setMsg({ type: 'Error', msg: (error as Error).message })
     }
-    catch{
-      setMsg({ type: "Error", msg: (error as Error).message })
-    }
-  }, [error] )
+  }, [error])
   const navigate = useNavigate()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
