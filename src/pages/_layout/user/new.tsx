@@ -35,6 +35,7 @@ import { getRolByName, listRols } from '@/lib/type/rol'
 import { useStatus } from '@/lib/context/layout'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { getUsersListOpt } from '@/pages/_layout/user.lazy'
+import { news as text } from "@/assets/locale/user";
 
 export const postUserOpt = {
   mutationKey: ['create-user'],
@@ -286,50 +287,3 @@ export function NewUser() {
 }
 
 NewUser.dispalyname = 'NewUser'
-
-const text = {
-  title: 'Crear Usuario:',
-  descriiption:
-    'Introdusca los datos correctamente para la creacion de un usuario nuevo en la plataforma',
-  button: {
-    close: 'Cerrar',
-    update: 'Crear',
-  },
-  notification: {
-    titile: 'Creacion de un nuevos usuario',
-    decription: ({ username }: { username: string }) =>
-      'Se ha creado el usuario ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'La creacion del usuario' + username + 'ha fallado',
-    retry: 'Deshacer',
-  },
-  form: {
-    firstName: {
-      label: 'Nombre:',
-      placeholder: 'Escriba el nombre del usuario',
-    },
-    lastName: {
-      label: 'Apellidos:',
-      placeholder: 'Escriba el apellido del usuario',
-    },
-    password: {
-      current: {
-        label: 'Contraseña:',
-        placeholder: 'Escriba la cantraseña del usuario',
-      },
-      confirmation: {
-        label: 'Confirmacion:',
-        placeholder: 'Confirme la cantraseña anterior',
-      },
-    },
-    rol: {
-      label: 'Tipo de rol:',
-      placeholder: 'Seleccione el rol del usuario',
-      items: {
-        user: 'Usuario',
-        admin: 'Administrador',
-        client: 'Cliente',
-      },
-    },
-  },
-}

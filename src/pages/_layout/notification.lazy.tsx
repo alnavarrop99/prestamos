@@ -13,7 +13,7 @@ import clsx from 'clsx'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { useEffect } from 'react'
-import text from "@/assets/locale/notification.json"
+import { main as text } from "@/assets/locale/notification.ts"
 
 export const Route = createFileRoute('/_layout/notification')({
   component: Notifications,

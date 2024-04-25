@@ -14,6 +14,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { _selectUsers } from '@/pages/_layout/user.lazy'
+import { delete_multiple as text } from "@/assets/locale/user";
 
 export const Route = createFileRoute('/_layout/user/delete')({
   component: DeleteSelectedUsers,
@@ -127,26 +128,3 @@ export function DeleteSelectedUsers() {
 }
 
 DeleteSelectedUsers.dispalyname = 'DeleteSelectedUsers'
-
-const text = {
-  title: 'Eliminacion de usuarios',
-  alert: {
-    title: 'Se eliminara multiples usuarios de la base de datos',
-    description: ({ length = 0 }: { length: number }) =>
-      'Estas seguro de eliminar ' +
-      length +
-      ' usuario(s) de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con los usuarios seleccionados.',
-  },
-  button: {
-    close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina los usuarios.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    titile: 'Eliminacion de multiples usuarios',
-    decription: ({ length = 0 }: { length?: number }) =>
-      'Se han eliminado ' + length + ' usuarios con exito.',
-    error: 'Error: la eliminacion de los usuarios ha fallado',
-    retry: 'Reintentar',
-  },
-}

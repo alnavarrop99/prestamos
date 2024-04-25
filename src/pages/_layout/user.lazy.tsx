@@ -62,6 +62,7 @@ import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { queryClient } from '@/pages/__root'
 import { useToken } from '@/lib/context/login'
 import { ErrorComponentProps } from '@tanstack/react-router'
+import { main as text } from "@/assets/locale/user"
 
 export const getUsersListOpt = {
   queryKey: ['list-users'],
@@ -648,30 +649,3 @@ const sortUsers = (order: keyof typeof ORDER, users: TUsersState[]) => {
 Users.dispalyname = 'UsersList'
 Error.dispalyname = 'UserListError'
 Pending.dispalyname = 'UserListPending'
-
-const text = {
-  title: 'Usuarios:',
-  error: 'Ups!!! ha ocurrido un error',
-  select: ({ select, total }: { select: number; total: number }) =>
-    `${select} de ${total} usuario(s) seleccionados.`,
-  errorDescription: 'El listado de usuarios ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
-  pagination: {
-    back: 'Anterior',
-    next: 'Siguiente',
-  },
-  browser: 'Usuarios',
-  notFound: 'No se encontraron usuarios',
-  button: {
-    create: 'Nuevo',
-    delete: 'Eliminar',
-    deactivate: 'Desactivar',
-  },
-  menu: {
-    aria: 'Mas Opciones',
-    title: 'Acciones:',
-    client: 'Ver clientes disponibles',
-    update: 'Actualizar datos del usuario',
-    delete: 'Eliminar usuario',
-  },
-}

@@ -21,7 +21,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useRouter } from '@tanstack/react-router'
 import { queryClient } from '@/pages/__root'
 import { ErrorComponentProps } from '@tanstack/react-router'
-import text from "@/assets/locale/report.json"
+import { main as text } from "@/assets/locale/report.ts"
 
 export const getReportsOpt = {
   queryKey: [ "get-reports" ],
