@@ -57,6 +57,8 @@ import {
 import { queryClient } from '@/pages/__root'
 import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { useToken } from '@/lib/context/login'
+import { ErrorComponentProps } from '@tanstack/react-router'
+import { main as text } from "@/locale/credit";
 
 const getFilterCredit = async () => {
   // TODO: this is a temporal function to getFilter
@@ -320,7 +322,7 @@ export function Credits() {
               <SelectTrigger className="!border-1 w-44 !border-ring xl:ms-auto xl:w-48">
                 <SelectValue placeholder={'Orden'} />
               </SelectTrigger>
-              <SelectContent className="z-10 [&_*]:cursor-pointer">
+              <SelectContent className="[&_*]:cursor-pointer">
                 {Object.entries(ORDER)?.map(([key, value], index) => (
                   <SelectItem
                     key={index}
@@ -427,7 +429,7 @@ export function Credits() {
                               )}
                               {frecuencia?.id && (
                                 <li>
-                                  <b> {text.details.frecuency + ':'} </b>
+                                  <b> {text.details.frequency + ':'} </b>
                                   {getFrecuencyById({
                                     frecuencyId: frecuencia?.id,
                                   })?.nombre + '.'}
@@ -437,7 +439,10 @@ export function Credits() {
                           </CardContent>
                           <CardFooter className="flex items-center gap-2">
                             <Badge>
-                              {format(fecha_de_cuota, 'dd-MM-yyyy')}{' '}
+                              {format(
+                                new Date(fecha_de_cuota ?? ''),
+                                'dd-MM-yyyy'
+                              )}{' '}
                             </Badge>
                             <Dialog open={open} onOpenChange={onOpenChange}>
                               <DialogTrigger asChild className="ms-auto">
@@ -618,7 +623,16 @@ export function Pending() {
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: "Error", msg: (error as Error).message })
+    }
+  }, [error] )
   const { history } = useRouter()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
@@ -626,11 +640,11 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex xl:h-full h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
-        <h1 className="font-bold">{text.error}</h1>
-        <p className="italic">{text.errorDescription}</p>
+        <h1 className="font-bold">{errorMsg?.type}</h1>
+        <p className="italic line-clamp-3">{errorMsg?.msg}</p>
         <Separator />
         <Button variant="ghost" onClick={onClick} className="text-sm">
           {' '}
@@ -661,53 +675,3 @@ const sortCredit = (
 Credits.dispalyname = 'CreditsList'
 Error.dispalyname = 'CreditsListError'
 Pending.dispalyname = 'CreditsListPending'
-
-const text = {
-  title: 'Prestamos:',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'El listado de prestamos ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
-  browser: 'Prestamos',
-  notfound: 'No existen prestamos activos.',
-  select: ({ total }: { total: number }) => `${total} credito(s) activos.`,
-  pagination: {
-    back: 'Anterior',
-    next: 'Siguiente',
-  },
-  alert: {
-    info: {
-      title: 'Fecha limite',
-      description: ({ date }: { date: Date }) =>
-        'El cobro se aproxima a su fecha limite ' + date + '.',
-    },
-    warn: {
-      title: 'Cliente en estado moroso',
-    },
-  },
-  button: {
-    create: 'Nuevo',
-    delete: 'Eliminar',
-    deactivate: 'Desactivar',
-  },
-  details: {
-    pay: 'Numero de cuotas',
-    cuote: 'Monto por cuota',
-    mora: 'Monto por mora',
-    frecuency: 'Frecuencia',
-    history: 'Historial de pagos',
-  },
-  print: {
-    title: 'Comprobante de pago',
-    client: 'Cliente',
-    ssn: 'Cédula',
-    telephone: 'Teléfono',
-    phone: 'Celular',
-    date: 'Fecha',
-    pay: 'Pago cuota',
-    mora: 'Mora',
-    cuoteNumber: 'Número de cuota',
-    pending: 'Pendiente',
-    comment: 'Comentario',
-    services: 'Servicios',
-  },
-}

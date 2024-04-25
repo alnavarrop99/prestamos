@@ -41,7 +41,8 @@ import {
 } from '@/pages/_layout/user/$userId/update'
 import { useToken } from '@/lib/context/login'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { getUsersListOpt } from './_layout/user'
+import { getUsersListOpt } from '@/pages/_layout/user.lazy'
+import { info as text } from "@/locale/user";
 
 /* eslint-disable-next-line */
 interface TPassowordVisibilityState {
@@ -76,12 +77,12 @@ export const MyUserInfo = memo(function () {
   const onSuccess: (data: TUSER_PATCH) => void = (newData) => {
     if (!init?.current?.nombre) return
 
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: init?.current?.nombre,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -93,7 +94,7 @@ export const MyUserInfo = memo(function () {
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -129,7 +130,7 @@ export const MyUserInfo = memo(function () {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg as unknown as string}</p>
+          <p>{errorMsg?.msg }</p>
         </div>
       ),
       variant: 'destructive',
@@ -240,7 +241,7 @@ export const MyUserInfo = memo(function () {
         </DialogTitle>
         <Separator />
         <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-          {text.descriiption}
+          {text.description}
         </DialogDescription>
       </DialogHeader>
       <ScrollArea className="h-[50dvh] overflow-y-auto md:h-full">
@@ -295,7 +296,7 @@ export const MyUserInfo = memo(function () {
             )}
           </Label>
           <Label>
-            <span>{text.form.rol.label} </span>
+            <span>{text.form.role.label} </span>
             {!isSuccess ? (
               <Skeleton className="h-10 w-full" />
             ) : (
@@ -308,9 +309,9 @@ export const MyUserInfo = memo(function () {
                 disabled={!!userId && rol?.rolName !== 'Administrador'}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={text.form.rol.placeholder} />
+                  <SelectValue placeholder={text.form.role.placeholder} />
                 </SelectTrigger>
-                <SelectContent className="z-10 [&_*]:cursor-pointer">
+                <SelectContent className="[&_*]:cursor-pointer">
                   {listRols()?.map(({ id, nombre }) => (
                     <SelectItem key={id} value={'' + id}>
                       {nombre}
@@ -441,55 +442,3 @@ export const MyUserInfo = memo(function () {
 })
 
 MyUserInfo.displayName = 'UpdateMyUser'
-
-const text = {
-  title: 'Actualizar Usuario:',
-  error: {
-    title: 'Obtencion de datos de usuario',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  descriiption:
-    'Modifique los campos para actualizar los datos del usuario en la plataforma.',
-  button: {
-    close: 'Cerrar',
-    update: 'Actualizar',
-    delete: 'Si, eliminar mi usuario.',
-  },
-  notification: {
-    titile: 'Actualizacion de usuario',
-    decription: ({ username }: { username: string }) =>
-      'Se ha actualizacion el usuario ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'La actualizacion del usuario' + username + 'ha fallado',
-    retry: 'Reintentar',
-  },
-  form: {
-    firstName: {
-      label: 'Nombre:',
-      placeholder: 'Escriba el nombre del usuario',
-    },
-    lastName: {
-      label: 'Apellidos:',
-      placeholder: 'Escriba el apellido del usuario',
-    },
-    password: {
-      current: {
-        label: 'Nueva contraseña:',
-        placeholder: 'Escriba la cantraseña actual del usuario',
-      },
-      new: {
-        label: 'Confirmar contraseña:',
-        placeholder: 'Escriba la nuva cantraseña del usuario',
-      },
-    },
-    rol: {
-      label: 'Tipo de rol:',
-      placeholder: 'Seleccione el rol del usuario',
-      items: {
-        user: 'Usuario',
-        admin: 'Administrador',
-        client: 'Cliente',
-      },
-    },
-  },
-}

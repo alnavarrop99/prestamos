@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { createFileRoute, defer } from '@tanstack/react-router'
+import { ErrorComponentProps, createFileRoute, defer } from '@tanstack/react-router'
 import React, { ComponentRef, useEffect, useRef, useState } from 'react'
 import clsx from 'clsx'
 import {
@@ -22,17 +22,12 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { TCLIENT_GET_ALL, type TCLIENT_GET_BASE } from '@/api/clients'
+import { type TCLIENT_GET_ALL, type TCLIENT_GET_BASE } from '@/api/clients'
 import styles from '@/styles/global.module.css'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Badge } from '@/components/ui/badge'
 import { DatePicker } from '@/components/ui/date-picker'
-import {
-  postCredit,
-  type TCREDIT_GET_ALL,
-  type TCREDIT_GET_BASE,
-  type TCREDIT_POST_BODY,
-} from '@/api/credit'
+import { postCredit, TCREDIT_POST, type TCREDIT_POST_BODY } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
 import { useStatus } from '@/lib/context/layout'
 import { type TMORA_TYPE, getMoraTypeByName } from '@/lib/type/moraType'
@@ -47,13 +42,14 @@ import { Navigate } from '@tanstack/react-router'
 import { getStatusByName } from '@/lib/type/status'
 import { format } from 'date-fns'
 import { queryClient } from '@/pages/__root'
-import { getClientListOpt } from '@/pages/_layout/client'
-import { getUsersListOpt } from '@/pages/_layout/user'
+import { getClientListOpt } from '@/pages/_layout/client.lazy'
+import { getUsersListOpt } from '@/pages/_layout/user.lazy'
 import { type TUSER_GET } from '@/api/users'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToken } from '@/lib/context/login'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { getCreditsListOpt } from '../credit'
+import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
+import { news as text } from "@/locale/credit";
 
 type TSearch = {
   clientId: number
@@ -95,17 +91,23 @@ type TFormName = keyof (Omit<
 /* eslint-disable-next-line */
 export function NewCredit() {
   const form = useRef<HTMLFormElement>(null)
-  const { userId: currentUserId, rol } = useToken()
-  const { data: usersRes, isSuccess: okUsers } = useQuery(
-    queryOptions(getUsersListOpt)
-  )
+  const { userId: currentUserId, rol, name } = useToken()
+  const {
+    data: usersRes,
+    isSuccess: okUsers,
+    isFetching: pendingUsers,
+  } = useQuery(queryOptions(getUsersListOpt))
 
   const select: (data: TCLIENT_GET_ALL) => TCLIENT_GET_ALL = (data) => {
     if (currentUserId && rol?.rolName !== 'Administrador')
       return data?.filter(({ owner_id }) => owner_id === currentUserId)
     return data
   }
-  const { data: clientsRes, isSuccess: okClients } = useQuery({
+  const {
+    data: clientsRes,
+    isSuccess: okClients,
+    isFetching: pendingClients,
+  } = useQuery({
     ...queryOptions(getClientListOpt),
     select,
   })
@@ -137,34 +139,40 @@ export function NewCredit() {
       setRef(ref)
     }
     return () => {}
-  }, [clientsRes, clientId])
+  }, [clientsRes, clientId, okClients, pendingClients])
 
   useEffect(() => {
-    if (usersRes) {
-      if (!usersRes?.length) return
-      const user = usersRes?.find(
-        ({ id }) =>
-          id === client?.owner_id ||
-          (rol?.rolName !== 'Administrador' && id === currentUserId)
-      )
+    const user = usersRes?.find(
+      ({ id }) =>
+        id === client?.owner_id ||
+        (rol?.rolName !== 'Administrador' && id === currentUserId)
+    )
 
-      if (!user) return
-      setUser(user)
-    }
+    if (!usersRes || !usersRes?.length || !user)
+      return () => {
+        setUser({
+          nombre: name ?? '',
+          id: currentUserId ?? 0,
+          rol: rol?.rolName ?? '',
+        })
+      }
+
+    setUser(user)
+
     return () => {}
-  }, [usersRes, client, clientId])
+  }, [clientId, client, pendingUsers, okUsers])
 
   const onSuccess: (
-    data: TCREDIT_GET_BASE,
+    data: TCREDIT_POST,
     variables: TCREDIT_POST_BODY,
     context: unknown
-  ) => unknown = (newData) => {
-    const description = text.notification.decription({
+  ) => unknown = () => {
+    const description = text.notification.description({
       username: client?.nombres + ' ' + client?.apellidos,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -175,11 +183,7 @@ export function NewCredit() {
       description,
     })
 
-    const update: (data: TCREDIT_GET_ALL) => TCREDIT_GET_ALL = (data) => {
-      return [...data, newData]
-    }
-
-    qClient?.setQueryData(getCreditsListOpt?.queryKey, update)
+    qClient?.refetchQueries({ queryKey: getCreditsListOpt?.queryKey })
   }
 
   const onError: (
@@ -193,7 +197,7 @@ export function NewCredit() {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg as unknown as string}</p>
+          <p>{errorMsg?.msg }</p>
         </div>
       ),
       variant: 'destructive',
@@ -259,10 +263,10 @@ export function NewCredit() {
       estado: getStatusByName({ statusName: 'Activo' })?.id,
       comentario: items?.comentario ?? '',
       cobrador_id: userId,
-      valor_de_mora: +items?.valor_de_mora,
+      valor_de_mora: +(items?.valor_de_mora ?? 0),
       tasa_de_interes: +items?.tasa_de_interes,
       tipo_de_mora_id: getMoraTypeByName({
-        moraTypeName: items?.tipo_de_mora as TMORA_TYPE,
+        moraTypeName: (items?.tipo_de_mora as TMORA_TYPE) ?? 'Valor fijo',
       })?.id,
       dias_adicionales: +(items?.dias_adicionales ?? 0),
       numero_de_cuotas: +items?.numero_de_cuotas,
@@ -270,7 +274,7 @@ export function NewCredit() {
       owner_id: clientId,
       garante_id: refId ?? null,
       fecha_de_aprobacion: format(
-        items?.fecha_de_aprobacion ?? new Date(),
+        new Date(items?.fecha_de_aprobacion ?? ''),
         'yyyy-MM-dd'
       ),
     })
@@ -295,7 +299,7 @@ export function NewCredit() {
           </DialogTitle>
           <Separator />
           <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-            {text.descriiption}
+            {text.description}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[50dvh] md:h-full">
@@ -463,7 +467,7 @@ export function NewCredit() {
               )}
             </Label>
             <Label className='xl:row-start-3 [&>span]:after:text-red-500 [&>span]:after:content-["_*_"]'>
-              <span>{text.form.frecuency.label} </span>
+              <span>{text.form.frequency.label} </span>
               {!okUsers && !okClients ? (
                 <Skeleton className="h-10 w-full" />
               ) : (
@@ -476,10 +480,10 @@ export function NewCredit() {
                 >
                   <SelectTrigger className="!border-1 w-full !border-ring">
                     <SelectValue
-                      placeholder={text.form.frecuency.placeholder}
+                      placeholder={text.form.frequency.placeholder}
                     />
                   </SelectTrigger>
-                  <SelectContent className="z-10 [&_*]:cursor-pointer">
+                  <SelectContent className="[&_*]:cursor-pointer">
                     {listFrecuencys()?.map(({ id, nombre }, index) => (
                       <SelectItem key={index} value={'' + id}>
                         {nombre}
@@ -501,7 +505,7 @@ export function NewCredit() {
                     type="text"
                     placeholder={text.form.user.placeholder}
                     list="credit-user"
-                    defaultValue={user ? user?.nombre : undefined}
+                    defaultValue={user?.nombre}
                     disabled={
                       !!currentUserId && rol?.rolName !== 'Administrador'
                     }
@@ -561,8 +565,7 @@ export function NewCredit() {
               ) : (
                 <Input
                   id="credit-installments"
-                  required
-                  min={1}
+                  min={0}
                   max={installmants?.type === 'Porciento' ? 100 : undefined}
                   step={installmants?.type === 'Porciento' ? 1 : 1}
                   name={'valor_de_mora' as TFormName}
@@ -575,7 +578,7 @@ export function NewCredit() {
               )}
             </Label>
             <Label className="xl:row-start-4">
-              <span>{text.form.aditionalDays.label} </span>
+              <span>{text.form.additionalDays.label} </span>
               {!okUsers && !okClients ? (
                 <Skeleton className="h-10 w-full" />
               ) : (
@@ -584,7 +587,7 @@ export function NewCredit() {
                   max={25}
                   name={'dias_adicionales' as TFormName}
                   type="number"
-                  placeholder={text.form.aditionalDays.placeholder}
+                  placeholder={text.form.additionalDays.placeholder}
                 />
               )}
             </Label>
@@ -662,20 +665,29 @@ export function NewCredit() {
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: (error as Error)?.name, msg: (error as Error).message })
+    }
+  }, [error] )
+
   useEffect(() => {
     toast({
-      title: text.error.title,
+      title: "" + errorMsg?.type,
       description: (
-        <div className="flex flex-row items-center gap-2">
-          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-base"> {text.error.descriiption} </p>
+        <div className="text-sm">
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
     })
   }, [])
-  return
+  return;
 }
 
 NewCredit.dispalyname = 'NewClient'
@@ -709,76 +721,4 @@ const getAmountCuote = ({
   if (coute === 0) return 0
 
   return Math.ceil(amount / coute + ((amount / coute) * interest) / 100)
-}
-
-const text = {
-  title: 'Crear prestamo:',
-  descriiption:
-    'Introdusca los datos correctamente para la creacion de un prestamo en la plataforma',
-  error: {
-    title: 'Obtencion de datos',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  button: {
-    close: 'Cerrar',
-    update: 'Crear',
-  },
-  notification: {
-    titile: 'Creacion de un nuevos prestamo',
-    decription: ({ username }: { username: string }) =>
-      'Se ha creado el prestamo para el usuario ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'Ha fallado la creacion del prestamo para el usuario ' + username + '.',
-    retry: 'Reintentar',
-  },
-  form: {
-    cliente: {
-      label: 'Cliente:',
-      placeholder: 'Nombre del cliente',
-    },
-    ref: {
-      label: 'Garante:',
-      placeholder: 'Nombre del garante del cliente',
-    },
-    user: {
-      label: 'Cobrador:',
-      placeholder: 'Nombre del cobrador',
-    },
-    comment: {
-      label: 'Comentario:',
-      placeholder: 'Escriba un commentario',
-    },
-    amount: {
-      label: 'Monto:',
-      placeholder: 'Monto total del prestamo',
-    },
-    frecuency: {
-      label: 'Frecuencia:',
-      placeholder: 'Seleccione una opcion',
-      items: ['Anual', 'Quincenal', 'Mensual', 'Semanal'],
-    },
-    aditionalDays: {
-      label: 'Dias Adicionales:',
-      placeholder: 'Cantidad de dias',
-    },
-    date: {
-      label: 'Fecha de aprobacion:',
-      placeholder: 'Seleccione la fecha',
-    },
-    interest: {
-      label: 'Tasa de Interes:',
-      placeholder: 'Porcentaje de interes por cuota',
-    },
-    installments: {
-      label: 'Mora:',
-      placeholder: {
-        ['Valor fijo' as TMORA_TYPE]: 'Monto adicional en cada cuota',
-        ['Porciento' as TMORA_TYPE]: 'Porcentaje adicional en cada cuota',
-      },
-    },
-    cuote: {
-      label: 'Cuotas:',
-      placeholder: 'Cantidad de cuotas',
-    },
-  },
 }

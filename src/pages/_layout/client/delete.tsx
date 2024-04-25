@@ -8,23 +8,24 @@ import {
 } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
-import { toast, useToast } from '@/components/ui/use-toast'
+import { useToast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute } from '@tanstack/react-router'
-import { useContext, useEffect, useState } from 'react'
+import { useContext, useState } from 'react'
 import clsx from 'clsx'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
 import { type TCLIENT_GET_ALL, type TCLIENT_DELETE } from '@/api/clients'
-import { _rowSelected, getClientListOpt } from '@/pages/_layout/client'
+import { _rowSelected, getClientListOpt } from '@/pages/_layout/client.lazy'
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
-import { getClientByIdOpt } from './$clientId/update'
+import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+import { delete_selected as text } from '@/locale/client'
 
 type TSearch = {
   clients: number[]
@@ -32,7 +33,6 @@ type TSearch = {
 
 export const Route = createFileRoute('/_layout/client/delete')({
   component: DeleteSelectedClients,
-  errorComponent: Error,
   validateSearch: (search: TSearch) => search,
   beforeLoad: () => {
     const { rol, userId } = useToken.getState()
@@ -52,12 +52,12 @@ export function DeleteSelectedClients() {
   const qClient = useQueryClient()
 
   const onSuccess = (data: TCLIENT_DELETE) => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: data.nombres + ' ' + data.apellidos,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -84,14 +84,20 @@ export function DeleteSelectedClients() {
     rowSelected()
   }
 
-  const onError: ((error: Error, variables: { clientId: number; }, context: unknown) => unknown) = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+  const onError: (
+    error: Error,
+    variables: { clientId: number },
+    context: unknown
+  ) => unknown = (error) => {
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: ( <div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
-      </div>),
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }
@@ -195,49 +201,4 @@ export function DeleteSelectedClients() {
   )
 }
 
-/* eslint-disable-next-line */
-export function Error() {
-  useEffect(() => {
-    toast({
-      title: text.error.title,
-      description: (
-        <div className="flex flex-row items-center gap-2">
-          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-base"> {text.error.descriiption} </p>
-        </div>
-      ),
-      variant: 'destructive',
-    })
-  }, [])
-  return
-}
-
 DeleteSelectedClients.dispalyname = 'DeleteSelectedClients'
-Error.dispalyname = 'DeleteSelectedClientsError'
-
-const text = {
-  title: 'Eliminacion de clientes',
-  error: {
-    title: 'Obtencion de datos de usuario',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  alert: {
-    title: 'Se eiminara multiples clientes de la base de datos',
-    description: ({ length = 0 }: { length: number }) =>
-      'Estas seguro de eliminar ' +
-      length +
-      ' cliente(s) de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con los clientes seleccionados.',
-  },
-  button: {
-    close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina los clientes.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    titile: 'Eliminacion de multiples clientes',
-    decription: ({ username }: { username: string }) =>
-      'Se ha eliminado el cliente ' + username + ' con exito.',
-    error: 'Error: la eliminacion de los clientes ha fallado',
-    retry: 'Reintentar',
-  },
-}

@@ -15,11 +15,12 @@ import { useNavigate } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { Printer } from 'lucide-react'
-import { Route } from '@/pages/_layout/credit_/$creditId'
+import { Route } from '@/pages/_layout/credit_/$creditId.lazy'
 import { Switch } from '@/components/ui/switch'
 import { useScreen } from '@/lib/hook/useScreens'
 import { Badge } from '@/components/ui/badge'
 import clsx from 'clsx'
+import { credit_table as text } from "@/locale/credit";
 
 /* eslint-disable-next-line */
 type TData = {
@@ -97,7 +98,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
 
                       {cuote?.valor_de_mora > 0 && (
                         <li>
-                          <b>{text.installmantsDate + ':'}</b>{' '}
+                          <b>{text.installmentsDate + ':'}</b>{' '}
                           {format(
                             new Date(cuote?.fecha_de_aplicacion_de_mora),
                             'dd/MM/yyyy'
@@ -107,7 +108,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
 
                       {cuote?.valor_de_mora > 0 && (
                         <li>
-                          <b>{text.payInstallmants + ':'}</b> ${' '}
+                          <b>{text.payInstallments + ':'}</b> ${' '}
                           {cuote?.valor_de_mora?.toFixed(2) + '.'}
                         </li>
                       )}
@@ -137,8 +138,8 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
           <TableHead></TableHead>
           <TableHead>{text.payDate}</TableHead>
           <TableHead>{text.payValue}</TableHead>
-          <TableHead>{text.installmantsDate}</TableHead>
-          <TableHead>{text.payInstallmants}</TableHead>
+          <TableHead>{text.installmentsDate}</TableHead>
+          <TableHead>{text.payInstallments}</TableHead>
           <TableHead>{text.payStatus}</TableHead>
         </TableRow>
       </TableHeader>
@@ -233,13 +234,4 @@ function GetPay({ credit }: { credit: TCREDIT_GET }) {
       <b>&#8193;/&#8193;</b>${credit?.monto}
     </p>
   )
-}
-
-const text = {
-  payDate: 'Fecha de pago',
-  installmantsDate: 'Fecha de aplicacion de mora',
-  payValue: 'Monto del pago',
-  payInstallmants: 'Monto de la mora',
-  payStatus: 'Pagada',
-  total: 'Monto total',
 }

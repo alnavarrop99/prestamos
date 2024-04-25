@@ -19,8 +19,9 @@ import { Navigate } from '@tanstack/react-router'
 import { PrintCredit } from '@/pages/_layout/-print'
 import { useReactToPrint } from 'react-to-print'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { _client, _credit } from '@/pages/_layout/credit_/$creditId'
+import { _client, _credit } from '@/pages/_layout/credit_/$creditId.lazy'
 import { format } from 'date-fns'
+import { print_by_id as text } from "@/locale/credit";
 
 export const Route = createFileRoute('/_layout/credit/$creditId/print')({
   component: PrintCreditById,
@@ -64,7 +65,6 @@ export function PrintCreditById() {
   const onSubmit: React.FormEventHandler< HTMLFormElement > = (ev) => {
     if (!form.current || !opt) return
 
-    console.table(credit)
     setOpen({ open: !open })
 
     handlePrint()
@@ -126,7 +126,7 @@ export function PrintCreditById() {
               <SelectValue placeholder={text.form.pay.placeholder} />
             </SelectTrigger>
             <SelectContent className='[&_*]:cursor-pointer'>
-              { credit?.pagos?.map( (_, index ) => ( <SelectItem key={index} value={""+index}> {format(credit?.cuotas?.[index].fecha_de_pago, "dd/MM/yyyy")} </SelectItem> ) ) }
+              { credit?.pagos?.map( (_, index ) => ( <SelectItem key={index} value={""+index}> {format( new Date( credit?.cuotas?.[index].fecha_de_pago ), "dd/MM/yyyy")} </SelectItem> ) ) }
             </SelectContent>
           </Select>
         </Label> }
@@ -158,7 +158,7 @@ export function PrintCreditById() {
                   ssn: client?.numero_de_identificacion,
                   telephone: client?.telefono,
                   phone: client?.celular,
-                  date: format( pay?.fecha_de_pago ?? "",  "dd/MM/yyyy" ),
+                  date: format( new Date( pay?.fecha_de_pago ?? "" ),  "dd/MM/yyyy" ),
                   // date: pay?.fecha_de_pago ?? "",
                   pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
                   mora: mora ? +mora.toFixed(2) : undefined,
@@ -190,23 +190,3 @@ export function PrintCreditById() {
 }
 
 PrintCreditById.dispalyname = 'PayCreditById'
-
-const text = {
-  title: 'Opciones de impresion:',
-  description: "Seleccione la opcion deseada para la impresion del pago.",
-  button: {
-    close: 'Volver a la pestaña anterior',
-    print: 'Imprimir',
-  },
-  form: {
-    pay: {
-      label: 'Numero del pago:',
-      placeholder: 'Seleccione el pago',
-    },
-    options: {
-      label: 'Opciones:',
-      placeholder: 'Seleccione la opcion de impresion',
-      items: [ "Ultimo pago","Pago especifico" ]
-    },
-  }
-}

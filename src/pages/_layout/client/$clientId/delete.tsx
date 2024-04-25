@@ -11,7 +11,7 @@ import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
 import { Navigate, createFileRoute, redirect } from '@tanstack/react-router'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import clsx from 'clsx'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircle } from 'lucide-react'
@@ -21,8 +21,9 @@ import { useNotifications } from '@/lib/context/notification'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { type TCLIENT_GET_ALL, deleteClientsById } from '@/api/clients'
 import { useToken } from '@/lib/context/login'
-import { getClientByIdOpt } from './update'
-import { getClientListOpt } from '../../client'
+import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+import { getClientListOpt } from '@/pages/_layout/client.lazy'
+import { delete_by_id as text } from '@/locale/client'
 
 type TSearch = {
   name: string
@@ -35,7 +36,6 @@ export const deleteClientByIdOpt = {
 
 export const Route = createFileRoute('/_layout/client/$clientId/delete')({
   component: DeleteClientById,
-  errorComponent: Error,
   validateSearch: (search: TSearch) => search,
   beforeLoad: () => {
     const { rol, userId } = useToken.getState()
@@ -54,12 +54,12 @@ export function DeleteClientById() {
   const qClient = useQueryClient()
 
   const onSuccess = () => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: name,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -81,14 +81,20 @@ export function DeleteClientById() {
     qClient?.setQueryData(getClientListOpt?.queryKey, update)
   }
 
-  const onError: ((error: Error, variables: { clientId: number; }, context: unknown) => unknown) = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+  const onError: (
+    error: Error,
+    variables: { clientId: number },
+    context: unknown
+  ) => unknown = (error) => {
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: (<div>
-        <p>{ errorMsg?.msg as unknown as string }</p>
-      </div>),
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div>
+          <p>{errorMsg?.msg}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }
@@ -188,50 +194,4 @@ export function DeleteClientById() {
   )
 }
 
-/* eslint-disable-next-line */
-export function Error() {
-  useEffect(() => {
-    toast({
-      title: text.error.title,
-      description: (
-        <div className="flex flex-row items-center gap-2">
-          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-base"> {text.error.descriiption} </p>
-        </div>
-      ),
-      variant: 'destructive',
-    })
-  }, [])
-  return
-}
-
 DeleteClientById.dispalyname = 'DeleteClientById'
-Error.dispalyname = 'DeleteClientByIdError'
-
-const text = {
-  title: 'Eliminacion del cliente',
-  error: {
-    title: 'Obtencion de datos de usuario',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  alert: {
-    title: 'Se eiminara el cliente de la base de datos',
-    description: ({ username }: { username: string }) =>
-      'Estas seguro de eliminar el cliente ' +
-      username +
-      '?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el cliente.',
-  },
-  button: {
-    close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina el cliente.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    titile: 'Eliminacion del cliente',
-    decription: ({ username }: { username: string }) =>
-      'Se ha eliminado el cliente ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'La eliminacion del cliente' + username + 'ha fallado',
-    retry: 'Reintentar',
-  },
-}

@@ -24,9 +24,10 @@ import { useStatus } from '@/lib/context/layout'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
-import { getCreditsListOpt } from '../credit'
-import { getCreditByIdOpt } from '../credit_/$creditId'
+import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
+import { pay_selected as text } from "@/locale/credit";
 
 type TSearch = {
   name: string
@@ -56,13 +57,13 @@ export function PaySelectedCredit() {
     variables: TPAYMENT_POST_BODY,
     context: unknown
   ) => unknown = (_, items) => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: name,
       number: +items?.valor_del_pago,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -79,7 +80,7 @@ export function PaySelectedCredit() {
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
 
-    qClient?.resetQueries( { queryKey: getPaymentListOpt?.queryKey } )
+    qClient?.refetchQueries( { queryKey: getPaymentListOpt?.queryKey } )
   }
 
   const onError: ( error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown = (error) => {
@@ -88,7 +89,7 @@ export function PaySelectedCredit() {
     toast({
       title: error.name + ": " + errorMsg?.type,
       description:  (<div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
+        <p>{ errorMsg?.msg  }</p>
       </div>),
       variant: 'destructive',
     })
@@ -118,7 +119,7 @@ export function PaySelectedCredit() {
       valor_del_pago: +items?.valor_del_pago,
       comentario: items?.comentario ?? '',
       credito_id: creditId,
-      fecha_de_pago: format(items?.fecha_de_pago ?? new Date(), 'yyyy-MM-dd'),
+      fecha_de_pago: format(new Date(items?.fecha_de_pago ?? "") , 'yyyy-MM-dd'),
     })
 
     setOpen({ open: !open })
@@ -137,7 +138,7 @@ export function PaySelectedCredit() {
           </DialogTitle>
           <Separator />
           <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-            <p>{text.descriiption}</p>
+            <p>{text.description}</p>
           </DialogDescription>
         </DialogHeader>
         <form
@@ -228,39 +229,3 @@ export function PaySelectedCredit() {
 }
 
 PaySelectedCredit.dispalyname = 'PayCreditById'
-
-const text = {
-  title: 'Realizar un pago:',
-  descriiption: 'Introdusca los datos correctamente para realizar un pago.',
-  button: {
-    close: 'No, vuelve a la pestaña anterior',
-    pay: 'Si, realiza el pago',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    titile: 'Ejecucion de un pago',
-    decription: ({ username, number }: { username: string; number: number }) =>
-      'Se ha pagado la cuota con un monto de $' +
-      number +
-      ' del usuario ' +
-      username +
-      ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'Ha fallado el pago de la cuota del usuario ' + username,
-    retry: 'Reintentar',
-  },
-  form: {
-    amount: {
-      label: 'Cantidad:',
-      placeholder: 'Monto a pagar',
-    },
-    comment: {
-      label: 'Comentario',
-      placeholder: 'Escriba un comentario',
-    },
-    date: {
-      label: 'Fecha de aprobacion',
-      placeholder: 'Seleccione una fecha',
-    },
-  },
-}

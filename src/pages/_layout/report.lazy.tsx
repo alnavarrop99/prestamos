@@ -14,12 +14,14 @@ import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { Annoyed, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { queryOptions, useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { useRouter } from '@tanstack/react-router'
 import { queryClient } from '@/pages/__root'
+import { ErrorComponentProps } from '@tanstack/react-router'
+import { main as text } from "@/locale/report.ts"
 
 export const getReportsOpt = {
   queryKey: [ "get-reports" ],
@@ -176,34 +178,38 @@ export function Pending() {
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: "Error", msg: (error as Error).message })
+    }
+  }, [error] )
   const { history } = useRouter()
-  const onClick: React.MouseEventHandler< React.ComponentRef< typeof Button > > = () => {
+  const onClick: React.MouseEventHandler<
+    React.ComponentRef<typeof Button>
+  > = () => {
     history.back()
   }
-  return <div className='flex flex-col md:flex-row items-center h-full [&>svg]:w-32 [&>svg]:stroke-destructive [&>svg]:h-32 items-center justify-center gap-4 [&_h1]:text-2xl'>
-      <Annoyed  className='animate-bounce' />
-      <div className='space-y-2'>
-        <h1 className='font-bold'>{text.error}</h1>
-        <p className='italic'>{text.errorDescription}</p>
+  return (
+    <div className="flex xl:h-full h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+      <Annoyed className="animate-bounce" />
+      <div className="space-y-2">
+        <h1 className="font-bold">{errorMsg?.type}</h1>
+        <p className="italic">{errorMsg?.msg}</p>
         <Separator />
-        <Button variant="ghost" onClick={onClick} className='text-sm'> {text.back + "."} </Button>
+        <Button variant="ghost" onClick={onClick} className="text-sm">
+          {' '}
+          {text.back + '.'}{' '}
+        </Button>
       </div>
     </div>
+  )
 }
 
 Report.dispalyname = 'Report'
 Error.dispalyname = 'ReportError'
 Pending.dispalyname = 'ReportPending'
-
-const text = {
-  title: 'Reportes:',
-  browser: 'Reportes',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'El listado de reportes ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
-  comment: {
-    label: 'Comentario:',
-    placeholder: 'Escriba un comentario',
-  },
-}

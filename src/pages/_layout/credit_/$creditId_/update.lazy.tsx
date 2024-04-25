@@ -8,7 +8,7 @@ import {
   useNavigate,
   useRouter,
 } from '@tanstack/react-router'
-import { createContext, useMemo, useRef, useState } from 'react'
+import { createContext, useEffect, useMemo, useRef, useState } from 'react'
 import { type TCREDIT_PATCH_BODY, type TCREDIT_GET } from '@/api/credit'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Label } from '@radix-ui/react-label'
@@ -45,12 +45,14 @@ import { type TCLIENT_GET_BASE } from '@/api/clients'
 import { Annoyed, Cross } from 'lucide-react'
 import { queryClient } from '@/pages/__root'
 import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
-import { getClientListOpt } from '@/pages/_layout/client'
-import { getUsersListOpt } from '@/pages/_layout/user'
-import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
+import { getClientListOpt } from '@/pages/_layout/client.lazy'
+import { getUsersListOpt } from '@/pages/_layout/user.lazy'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
+import { ErrorComponentProps } from '@tanstack/react-router'
+import { update as text } from "@/locale/credit";
 
 export const Route = createFileRoute('/_layout/credit/$creditId/update')({
   component: UpdateCreditById,
@@ -349,7 +351,7 @@ export function UpdateCreditById() {
                       />
                     </Label>
                     <Label className="md:!col-span-1">
-                      <span>{text.form.details.ref.label}</span>
+                      <span>{text.form.details.guarantor.label}</span>
                       <Input
                         name={'ref' as TFormName}
                         list="credit-clients"
@@ -359,7 +361,7 @@ export function UpdateCreditById() {
                             ? ref?.nombres + ' ' + ref?.apellidos
                             : undefined
                         }
-                        placeholder={text.form.details.ref.placeholder}
+                        placeholder={text.form.details.guarantor.placeholder}
                         pattern={`(${clients
                           ?.map(
                             ({ nombres, apellidos }) =>
@@ -419,7 +421,7 @@ export function UpdateCreditById() {
                       />
                     </Label>
                     <Label>
-                      <span>{text.form.details.frecuency.label}</span>
+                      <span>{text.form.details.frequency.label}</span>
                       <Select
                         required
                         name={'frecuencia_del_credito_id' as TFormName}
@@ -430,7 +432,7 @@ export function UpdateCreditById() {
                         <SelectTrigger className="w-full">
                           <SelectValue
                             placeholder={
-                              text.form.details.frecuency.placeholder
+                              text.form.details.frequency.placeholder
                             }
                           />
                         </SelectTrigger>
@@ -469,7 +471,7 @@ export function UpdateCreditById() {
                       className="md:row-start-4"
                     >
                       <div className="flex items-center justify-between gap-2 [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&_label]:flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2">
-                        <span>{text.form.details.installmants.label}</span>
+                        <span>{text.form.details.installments.label}</span>
                         <RadioGroup
                           name={'tipo_de_mora' as TFormName}
                           defaultValue={
@@ -503,8 +505,7 @@ export function UpdateCreditById() {
                       </div>
                       <Input
                         id="credit-installments"
-                        required
-                        min={1}
+                        min={0}
                         max={
                           installmants?.type === 'Porciento' ? 100 : undefined
                         }
@@ -513,14 +514,14 @@ export function UpdateCreditById() {
                         type="number"
                         defaultValue={creditChange?.valor_de_mora}
                         placeholder={
-                          text.form.details.installmants.placeholder[
+                          text.form.details.installments.placeholder[
                             installmants.type
                           ]
                         }
                       />
                     </Label>
                     <Label className="md:row-start-4">
-                      <span>{text.form.details.aditionalsDays.label}</span>
+                      <span>{text.form.details.additionalDays.label}</span>
                       <Input
                         min={0}
                         max={25}
@@ -528,7 +529,7 @@ export function UpdateCreditById() {
                         name={'dias_adicionales' as TFormName}
                         defaultValue={creditChange?.dias_adicionales}
                         placeholder={
-                          text.form.details.aditionalsDays.placeholder
+                          text.form.details.additionalDays.placeholder
                         }
                       />
                     </Label>
@@ -573,7 +574,7 @@ export function UpdateCreditById() {
                                     { 'line-through': paymentDelete?.[index] }
                                   )}
                                 >
-                                  {format(payment?.fecha_de_pago, 'dd-MM-yyyy')}
+                                  {format(new Date(payment?.fecha_de_pago ?? ""), 'dd-MM-yyyy')}
                                 </span>
                                 <Button
                                   onClick={onDeletePaymentById(index)}
@@ -768,8 +769,18 @@ export function Pending() {
   )
 }
 
+
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: "Error", msg: (error as Error).message })
+    }
+  }, [error] )
   const { history } = useRouter()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
@@ -777,11 +788,11 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex xl:h-full h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
-        <h1 className="font-bold">{text.error}</h1>
-        <p className="italic">{text.errorDescription}</p>
+        <h1 className="font-bold">{errorMsg?.type}</h1>
+        <p className="italic">{errorMsg?.msg}</p>
         <Separator />
         <Button variant="ghost" onClick={onClick} className="text-sm">
           {' '}
@@ -795,95 +806,3 @@ export function Error() {
 UpdateCreditById.dispalyname = 'UpdateCreditById'
 Error.dispalyname = 'UpdateCreditByIdError'
 Pending.dispalyname = 'UpdateCreditByIdPending'
-
-const text = {
-  title: 'Editar prestamos:',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'Los detalles del prestamo ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
-  button: {
-    update: 'Actualizar',
-    close: 'Cancelar',
-  },
-  notification: {
-    titile: 'Actualizacion de un prestamo',
-    decription: ({ username }: { username: string }) =>
-      'Se ha actualizado el prestamo para el usuario ' +
-      username +
-      ' con exito.',
-    error: 'Error: la actualizacion del prestamo ha fallado',
-    undo: 'Deshacer',
-  },
-  form: {
-    details: {
-      title: 'Estado del prestamo:',
-      amount: {
-        label: 'Monto total:',
-        placeholder: 'Escriba el nombre del usuario',
-      },
-      date: {
-        label: 'Fecha de aprobacion:',
-        placeholder: 'Seleccione la fecha',
-      },
-      comment: {
-        label: 'Comentario:',
-        placeholder: 'Escriba un comentario',
-      },
-      interest: {
-        label: 'Tasa de interes:',
-        placeholder: 'Escriba la tasa de interes',
-      },
-      aditionalsDays: {
-        label: 'Dias adicionales:',
-        placeholder: 'Cantidad de dias adicionales',
-      },
-      clients: {
-        label: 'Cliente:',
-        placeholder: 'Escribe | Seleccione el cliente',
-      },
-      ref: {
-        label: 'Garante:',
-        placeholder: 'Escribe el garante',
-      },
-      cuotes: {
-        label: 'Numeros de cuotas:',
-        placeholder: 'Escribe la cantidad de cuotas',
-      },
-      users: {
-        label: 'Cobrador:',
-        placeholder: 'Escribe | Seleccione el cobrador',
-      },
-      installmants: {
-        label: 'Monto de mora:',
-        placeholder: {
-          ['Valor fijo' as TMORA_TYPE]: 'Monto adicional en cada cuota',
-          ['Porciento' as TMORA_TYPE]: 'Porcentaje adicional en cada cuota',
-        },
-      },
-      frecuency: {
-        label: 'Frecuencia:',
-        placeholder: 'Seleccione una opcion',
-        items: ['Anual', 'Quincenal', 'Mensual', 'Semanal'],
-      },
-    },
-    pay: {
-      title: 'Listado de pagos:',
-      payDate: {
-        label: 'Fecha de pago:',
-        placeholder: 'Seleccione la fecha',
-      },
-      installmantsDate: {
-        label: 'Fecha de aplicacion de mora:',
-        placeholder: 'Seleccione la fecha',
-      },
-      payValue: {
-        label: 'Monto de pago:',
-        placeholder: 'Valor del pago',
-      },
-      comment: {
-        label: 'Comentario:',
-        placeholder: 'Escribe un comentario',
-      },
-    },
-  },
-}

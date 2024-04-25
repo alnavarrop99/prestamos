@@ -13,13 +13,14 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { useStatus } from '@/lib/context/layout'
 import { patchCreditsById, type TCREDIT_GET, type TCREDIT_PATCH_BODY, type TCREDIT_GET_FILTER_ALL, type TCREDIT_PATCH } from '@/api/credit'
 import { useNotifications } from '@/lib/context/notification'
-import { _client, _credit, _creditChange, _payDelete } from '@/pages/_layout/credit_/$creditId_/update'
+import { _client, _credit, _creditChange, _payDelete } from '@/pages/_layout/credit_/$creditId_/update.lazy'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { type TPAYMENT_GET_BASE, deletePaymentById, patchPaymentById, type TPAYMENT_PATCH_BODY } from "@/api/payment";
 import { format } from 'date-fns'
-import { getCreditsListOpt } from '../../credit'
-import { getCreditByIdOpt } from '../$creditId'
+import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
+import { update_confirmation as text } from "@/locale/credit";
 
 export const updateCreditByIdOpt = {
     mutationKey: ["update-credit"],
@@ -53,12 +54,12 @@ export function UpdateConfirmationCredit() {
   const qClient = useQueryClient()
 
   const onSuccessUpdateCredit: ((data: TCREDIT_PATCH, variables: { creditId: number; updateCredit?: TCREDIT_PATCH_BODY | undefined; }, context: unknown) => unknown) = ( newData ) => {
-    const description = text.notification.credit.decription({
+    const description = text.notification.credit.description({
       username: client?.nombres + " " + client?.apellidos,
     })
 
     toast({
-      title: text.notification.credit.titile,
+      title: text.notification.credit.title,
       description,
       variant: 'default',
     })
@@ -98,7 +99,7 @@ export function UpdateConfirmationCredit() {
     toast({
       title: error.name + ": " + errorMsg?.type,
       description: (<div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
+        <p>{ errorMsg?.msg  }</p>
       </div>),
       variant: 'destructive',
     })
@@ -110,12 +111,12 @@ export function UpdateConfirmationCredit() {
   })
 
   const onSuccessUpdatePayment: ((data: TPAYMENT_GET_BASE, variables: { paymentId: number; updatePayment?: TPAYMENT_PATCH_BODY | undefined }, context: unknown) => unknown) = () => {
-    const description = text.notification.payment.decription({
+    const description = text.notification.payment.description({
       username: client?.nombres + " " + client?.apellidos,
     })
 
     toast({
-      title: text.notification.payment.titile,
+      title: text.notification.payment.title,
       description,
       variant: 'default',
     })
@@ -132,7 +133,7 @@ export function UpdateConfirmationCredit() {
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
 
-    qClient?.resetQueries( { queryKey: getPaymentListOpt?.queryKey } )
+    qClient?.refetchQueries( { queryKey: getPaymentListOpt?.queryKey } )
   }
   const onErrorUpdatePayment: ((error: Error, variables: { paymentId: number; updatePayment?: TPAYMENT_PATCH_BODY | undefined; }, context: unknown) => unknown) = (error) => {
     const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
@@ -140,7 +141,7 @@ export function UpdateConfirmationCredit() {
     toast({
       title: error.name + ": " + errorMsg?.type,
       description: (<div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
+        <p>{ errorMsg?.msg  }</p>
       </div>
       ),
       variant: 'destructive',
@@ -153,12 +154,12 @@ export function UpdateConfirmationCredit() {
   })
 
   const onSuccessRemovePayment: ((data: TPAYMENT_GET_BASE, variables: { paymentId: number; }, context: unknown) => unknown) = () => {
-    const description = text.notification.deletePayment.decription({
+    const description = text.notification.deletePayment.description({
       username: client?.nombres + " " + client?.apellidos,
     })
 
     toast({
-      title: text.notification.deletePayment.titile,
+      title: text.notification.deletePayment.title,
       description,
       variant: 'default',
     })
@@ -175,7 +176,7 @@ export function UpdateConfirmationCredit() {
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
 
-    qClient?.resetQueries( { queryKey: getPaymentListOpt?.queryKey } )
+    qClient?.refetchQueries( { queryKey: getPaymentListOpt?.queryKey } )
 
   }
   const onErrorRemovePayment: ((error: Error, variables: { paymentId: number; }, context: unknown) => unknown) = (error) => {
@@ -184,7 +185,7 @@ export function UpdateConfirmationCredit() {
     toast({
       title: error.name + ": " + errorMsg?.type,
       description: (<div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
+        <p>{ errorMsg?.msg  }</p>
       </div>),
       variant: 'destructive',
     })
@@ -233,7 +234,7 @@ export function UpdateConfirmationCredit() {
           tipo_de_mora_id: +creditItems?.tipo_de_mora_id || undefined,
           dias_adicionales: +creditItems?.dias_adicionales || undefined,
           numero_de_cuotas: +creditItems?.numero_de_cuotas || undefined,
-          fecha_de_aprobacion: creditItems?.fecha_de_aprobacion ? format( creditItems?.fecha_de_aprobacion, "yyyy-MM-dd" ) : undefined,
+          fecha_de_aprobacion: creditItems?.fecha_de_aprobacion ? format( creditItems?.fecha_de_aprobacion ?? "", "yyyy-MM-dd" ) : undefined,
           frecuencia_del_credito_id: +creditItems?.frecuencia_del_credito_id || undefined,
         }
       })
@@ -245,7 +246,7 @@ export function UpdateConfirmationCredit() {
         updatePayment: {
           valor_del_pago: +pay?.valor_del_pago || undefined,
           comentario: pay?.comentario,
-          fecha_de_pago: format( pay?.fecha_de_pago, "yyyy-MM-dd" )
+          fecha_de_pago: format( new Date(pay?.fecha_de_pago ?? ""), "yyyy-MM-dd" )
         }
       })
     }
@@ -272,7 +273,7 @@ export function UpdateConfirmationCredit() {
             <AlertTitle className='text-sm md:text-base text-start max-sm:!px-0'>{text.alert.title}</AlertTitle>
             <AlertDescription className='text-xs md:text-base text-start max-sm:!px-0'>
               {text.alert.description({ 
-                username: ""+credit?.owner_id 
+                username: client?.nombres + " " + client?.apellidos 
               })}
             </AlertDescription>
           </Alert>
@@ -310,7 +311,7 @@ export function UpdateConfirmationCredit() {
               disabled={!checked}
               onClick={onSubmit}
             >
-              {text.button.delete}
+              {text.button.update}
             </Button>
           </DialogClose>
           <DialogClose asChild>
@@ -330,41 +331,3 @@ export function UpdateConfirmationCredit() {
 }
 
 UpdateConfirmationCredit.dispalyname = 'DeleteCreditById'
-
-const text = {
-  title: 'Actualizacion del prestamo',
-  alert: {
-    title: 'Se actualizara el prestamo de la base de datos',
-    description: ({ username }: { username: string }) =>
-      'Estas seguro de actualizar el prestamo del cliente ' + username + ' de la basde de datos?. Esta accion es irreversible y se actualizara los datos relacionados con el prestamo.',
-  },
-  button: {
-    close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, actualiza el prestamo.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    payment: {
-      titile: 'Actualizacion de un pago',
-      decription: ({ username }: { username?: string }) =>
-        'Se ha actualizado el pago del cliente ' + username + ' con exito.',
-      error: ({ username }: { username: string }) =>
-      'Ha fallado la actualizacion pago para el usuario ' + username + '.',
-    },
-    deletePayment: {
-      titile: 'Elminacion de un pago',
-      decription: ({ username }: { username?: string }) =>
-        'Se ha eliminado el pago del cliente ' + username + ' con exito.',
-      error: ({ username }: { username: string }) =>
-        'Ha fallado la eliminacion del prestamo para el usuario ' + username + '.',
-    },
-    credit: {
-      titile: 'Actualizacion de un prestamo',
-      decription: ({ username }: { username?: string }) =>
-        'Se ha actualizado el prestamo del cliente ' + username + ' con exito.',
-      error: ({ username }: { username: string }) =>
-        'Ha fallado la actualizacion del prestamo para el usuario ' + username + '.',
-    },
-    retry: 'Reintentar',
-  },
-}

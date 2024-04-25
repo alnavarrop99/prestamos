@@ -1,6 +1,7 @@
 import {
   createFileRoute,
   defer,
+  ErrorComponentProps,
   Outlet,
   redirect,
   useChildMatches,
@@ -12,7 +13,6 @@ import clsx from 'clsx'
 import {
   ArrowLeftCircle,
   Calendar as CalendarIcon,
-  icons,
   LogOut,
   MenuSquare,
   Moon,
@@ -22,18 +22,13 @@ import {
   X as ErrorIcon,
   Search,
   Annoyed,
+  Users as UsersList,
 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { Calendar, TData, TDaysProps } from '@/components/ui/calendar'
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useReducer,
-  useState,
-} from 'react'
+import React, { useCallback, useEffect, useReducer, useState } from 'react'
 import { User } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
@@ -60,55 +55,27 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { getRoute, getSearch, TSearch } from '@/lib/route'
+import { getRoute, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
-import {
-  queryOptions,
-  useIsFetching,
-  useIsMutating,
-  useQuery,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
-import { SpinLoader as Loader, BoundleLoader } from '@/components/ui/loader'
+import { queryOptions, useQuery, useSuspenseQuery } from '@tanstack/react-query'
+import { BoundleLoader } from '@/components/ui/loader'
 import brand from '@/assets/menu-brand.avif'
 import brandOff from '@/assets/menu-off-brand.avif'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
-  getUsersListOpt,
   usePagination as userPagination,
   useOrder as userOrder,
-} from '@/pages/_layout/user'
-import {
-  getUserByIdOpt,
-  updateUserByIdOpt,
-} from '@/pages/_layout/user/$userId/update'
-import { postUserOpt } from '@/pages/_layout/user/new'
+} from '@/pages/_layout/user.lazy'
 import {
   getClientListOpt,
   useFilter as clientFilter,
-} from '@/pages/_layout/client'
+} from '@/pages/_layout/client.lazy'
 import {
-  getClientByIdOpt,
-  updateClientByIdOpt,
-} from '@/pages/_layout/client/$clientId/update'
-import { postClientOpt } from '@/pages/_layout/client/new'
-import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
-import {
-  getCreditsListOpt,
   useOrder as creditOrder,
   usePagination as creditPagination,
-} from '@/pages/_layout/credit'
-import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
-import {
-  deletePaymentByIdOpt,
-  updateCreditByIdOpt,
-  updatePaymentByIdOpt,
-} from '@/pages/_layout/credit_/$creditId_/update.confirm'
-import { deleteCreditByIdOpt } from '@/pages/_layout/credit_/$creditId/delete'
-import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
-import { postCreditOpt } from '@/pages/_layout/credit/new'
+  getCreditsListOpt,
+} from '@/pages/_layout/credit.lazy'
 import { queryClient } from '@/pages/__root'
-import { getReportsOpt, postReportOpt } from '@/pages/_layout/report'
 import { getRolByName, type TROLES } from '@/lib/type/rol'
 import { translate } from '@/lib/route'
 import { Dialog, DialogTrigger } from '@/components/ui/dialog'
@@ -117,6 +84,8 @@ import { format } from 'date-fns'
 import { type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { listPayments } from '@/api/payment'
+import SpinLoader from '@/pages/-spinloader'
+import { main as text } from '@/locale/layout'
 
 export const getCurrentUserOpt = {
   queryKey: ['login-user', { userId: useToken.getState().userId }],
@@ -688,6 +657,17 @@ export function Layout() {
                             </Badge>{' '}
                           </li>
                         )}
+                        <li>
+                          <Link
+                            className="flex h-full w-full items-center justify-between gap-2"
+                            to={'/client'}
+                            search={{ userId }}
+                          >
+                            <Button variant="ghost">
+                              <UsersList />
+                            </Button>
+                          </Link>
+                        </li>
                       </ul>
                     </div>
                     <div>
@@ -769,7 +749,7 @@ export function Layout() {
       </main>
       <footer className="py-2 xl:py-4">
         <Separator className="my-2 xl:my-4" />
-        <h3 className="m-auto w-fit space-x-2 xl:ms-auto">
+        <h3 className="w-fit space-x-2 max-xl:m-auto xl:ms-auto">
           <span className="italic">{text.footer.copyright}</span>
           <Badge> &copy; {new Date().getFullYear()} </Badge>
         </h3>
@@ -777,322 +757,6 @@ export function Layout() {
     </div>
   )
 }
-
-/* eslint-disable-next-line */
-type TSpinLoader = {
-  rchild?: string
-  value?: string
-  onChange: React.ChangeEventHandler<React.ComponentRef<typeof Input>>
-}
-
-/* eslint-disable-next-line */
-const SpinLoader = memo<TSpinLoader>(function ({ onChange, rchild, value }) {
-  const [menu, setMenu] = useState<boolean>(false)
-
-  const onOpenChange = (open: boolean) => {
-    setMenu(open)
-  }
-
-  const onClick: React.MouseEventHandler<
-    React.ComponentRef<typeof Button>
-  > = () => {
-    setMenu(!menu)
-  }
-
-  const onSearch: React.MouseEventHandler<
-    React.ComponentRef<typeof Button>
-  > = () => {
-    if (!value || value === '') return
-    setMenu(!menu)
-  }
-
-  const onKeyDown: React.KeyboardEventHandler<
-    React.ComponentRef<typeof Input>
-  > = (ev) => {
-    const key = ev.key
-    if (key === 'Enter') setMenu(!menu)
-  }
-
-  const getUser = useIsFetching({
-    fetchStatus: 'fetching',
-    type: 'inactive',
-    stale: true,
-    queryKey: ([] as string[]).concat(getUsersListOpt.queryKey),
-  })
-
-  const userId = useIsFetching({
-    fetchStatus: 'fetching',
-    stale: true,
-    type: 'inactive',
-    queryKey: ([] as string[]).concat(
-      getUserByIdOpt({ userId: '' }).queryKey[0] as string
-    ),
-  })
-
-  const postUser = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(postUserOpt.mutationKey),
-  })
-
-  const updateUser = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(updateUserByIdOpt?.mutationKey),
-  })
-
-  const getClient = useIsFetching({
-    fetchStatus: 'fetching',
-    stale: true,
-    type: 'inactive',
-    queryKey: ([] as string[]).concat(getClientListOpt.queryKey),
-  })
-
-  const clientId = useIsFetching({
-    fetchStatus: 'fetching',
-    stale: true,
-    type: 'inactive',
-    queryKey: ([] as string[]).concat(
-      getClientByIdOpt({ clientId: '' }).queryKey[0] as string
-    ),
-  })
-
-  const postClient = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(postClientOpt.mutationKey),
-  })
-
-  const updateClient = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(updateClientByIdOpt?.mutationKey),
-  })
-
-  const deleteClient = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(deleteClientByIdOpt?.mutationKey),
-  })
-
-  const getCredit = useIsFetching({
-    fetchStatus: 'fetching',
-    stale: true,
-    type: 'inactive',
-    queryKey: ([] as string[]).concat(getCreditsListOpt.queryKey),
-  })
-
-  const creditId = useIsFetching({
-    fetchStatus: 'fetching',
-    stale: true,
-    type: 'inactive',
-    queryKey: ([] as string[]).concat(
-      getCreditByIdOpt({ creditId: '' }).queryKey[0] as string
-    ),
-  })
-
-  const postCredit = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(postCreditOpt.mutationKey),
-  })
-
-  const updateCredit = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(updateCreditByIdOpt?.mutationKey),
-  })
-
-  const deleteCredit = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(deleteCreditByIdOpt?.mutationKey),
-  })
-
-  const postPayment = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(postPaymentOpt.mutationKey),
-  })
-
-  const updatePayment = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(updatePaymentByIdOpt?.mutationKey),
-  })
-
-  const deletePayment = useIsMutating({
-    status: 'pending',
-    mutationKey: ([] as string[]).concat(deletePaymentByIdOpt?.mutationKey),
-  })
-
-  const getReports = useIsFetching({
-    fetchStatus: 'fetching',
-    stale: true,
-    type: 'inactive',
-    queryKey: ([] as string[]).concat(getReportsOpt.queryKey),
-  })
-
-  const postReport = useIsFetching({
-    fetchStatus: 'fetching',
-    stale: true,
-    type: 'inactive',
-    queryKey: ([] as string[]).concat(postReportOpt.mutationKey),
-  })
-
-  const className =
-    'text-muted-foreground italic text-xs flex items-center gap-2'
-
-  if (getUser || userId) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.user.get}
-      </span>
-    )
-  } else if (postUser) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.user.new}{' '}
-      </span>
-    )
-  } else if (updateUser) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.user.update}{' '}
-      </span>
-    )
-  }
-
-  if (getClient || clientId) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.client.get}
-      </span>
-    )
-  } else if (postClient) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.client.new}{' '}
-      </span>
-    )
-  } else if (updateClient) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.client.update}{' '}
-      </span>
-    )
-  } else if (deleteClient) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.client.delete}{' '}
-      </span>
-    )
-  }
-
-  if (getCredit || creditId) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.credit.get}
-      </span>
-    )
-  } else if (postCredit) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.credit.new}{' '}
-      </span>
-    )
-  } else if (updateCredit) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.credit.update}{' '}
-      </span>
-    )
-  } else if (deleteCredit) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.credit.delete}{' '}
-      </span>
-    )
-  }
-
-  if (postPayment) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.payment.new}{' '}
-      </span>
-    )
-  } else if (updatePayment) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.payment.update}{' '}
-      </span>
-    )
-  } else if (deletePayment) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.payment.delete}{' '}
-      </span>
-    )
-  }
-
-  if (getReports) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.report.get}{' '}
-      </span>
-    )
-  } else if (postReport) {
-    return (
-      <span className={className}>
-        <Loader /> {text.loader.report.post}{' '}
-      </span>
-    )
-  }
-
-  return (
-    <Popover open={menu} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild className="xl:hidden">
-        <img alt="brand" src={brand} className={clsx('aspect-contain h-12')} />
-      </PopoverTrigger>
-      <PopoverContent className="min-sm:rounded-t-none w-screen space-y-2 shadow-xl md:mx-4 md:mt-4 md:w-[96dvw]">
-        <Label className="flex items-center gap-2 px-4 md:hidden">
-          <Input
-            type="search"
-            placeholder={text.search.placeholder({
-              pathname: rchild,
-            })}
-            onChange={onChange}
-            value={value}
-            onKeyDown={onKeyDown}
-          />
-          <Button
-            variant="outline"
-            className="duration-450 px-2 opacity-100 transition delay-300 group-hover:invisible group-hover:opacity-0 xl:hidden"
-            onClick={onSearch}
-          >
-            <Search />
-          </Button>
-        </Label>
-        <Separator className="my-2" />
-        <ul className="space-y-3 px-4 md:px-20 [&_button]:w-full">
-          {Object.entries(translate())
-            ?.filter(([, { validation }]) => validation)
-            ?.map(([url, { name: title, icon: Icon }], index) => {
-              return (
-                <li key={index}>
-                  <Link to={url}>
-                    {({ isActive }) => (
-                      <Button
-                        onClick={onClick}
-                        variant={!isActive ? 'link' : 'default'}
-                        className={clsx(
-                          'delay-50 flex justify-start gap-2 font-bold  duration-300 md:justify-center',
-                          {}
-                        )}
-                      >
-                        <Icon />
-                        {title}
-                      </Button>
-                    )}
-                  </Link>
-                </li>
-              )
-            })}
-        </ul>
-      </PopoverContent>
-    </Popover>
-  )
-})
 
 /* eslint-disable-next-line */
 export const ErrorStates = ({
@@ -1113,7 +777,17 @@ export const ErrorStates = ({
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [errorMsg, setMsg] = useState<
+    { type: number | string; msg?: string } | undefined
+  >(undefined)
+  useEffect(() => {
+    try {
+      setMsg(JSON?.parse((error as Error)?.message))
+    } catch {
+      setMsg({ type: 'Error', msg: (error as Error).message })
+    }
+  }, [error])
   const navigate = useNavigate()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
@@ -1132,11 +806,11 @@ export function Error() {
     navigate({ to: '/' })
   }
   return (
-    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-[100dvh] flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
-        <h1 className="font-bold">{text.error}</h1>
-        <p className="italic">{text.errorDescription}</p>
+        <h1 className="font-bold">{errorMsg?.type}</h1>
+        <p className="italic">{errorMsg?.msg}</p>
         <Separator />
         <Button variant="ghost" onClick={onClick} className="text-sm">
           {' '}
@@ -1150,61 +824,3 @@ export function Error() {
 Layout.dispalyname = 'Layout'
 ErrorStates.dispalyname = 'LayoutErrorStates'
 Error.dispalyname = 'LayoutError'
-
-const text = {
-  title: 'Matcor',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'La carga de la pagina ha fallado.',
-  retry: 'Intente recargar e inicie session',
-  loader: {
-    user: {
-      new: 'Creando usuario',
-      update: 'Actualizando usuario',
-      delete: 'Eliminando usuario(s)',
-      get: 'Cargando usuario(s)',
-    },
-    client: {
-      new: 'Creando cliente',
-      update: 'Actualizando cliente',
-      delete: 'Eliminando cliente(s)',
-      get: 'Cargando cliente(s)',
-    },
-    credit: {
-      new: 'Creando prestamo',
-      update: 'Actualizando prestamo',
-      delete: 'Eliminando prestamo(s)',
-      get: 'Cargando prestamo(s)',
-    },
-    payment: {
-      new: 'Creando pago',
-      update: 'Actualizando pago',
-      delete: 'Eliminando pago(s)',
-      get: 'Cargando pago(s)',
-    },
-    report: {
-      get: 'Cargando reporte(s)',
-      post: 'Creando reporte(s)',
-    },
-  },
-  navegation: {
-    credit: { title: 'Prestamos', url: '/credit', Icon: icons?.CreditCard },
-    client: { title: 'Clientes', url: '/client', Icon: icons?.Award },
-    user: { title: 'Usuarios', url: '/user', Icon: icons?.BookUser },
-    report: { title: 'Reportes', url: '/report', Icon: icons?.BookA },
-  },
-  avatar: {
-    src: 'https://placehold.co/50x50?text=Hello+World',
-    name: 'Admin99',
-    description: ({ username }: { username: string }) => username,
-  },
-  search: {
-    placeholder: ({ pathname }: { pathname?: string }) =>
-      'Buscar ' + getSearch({ pathname }),
-    title: 'Clientes:',
-    current: 'actual',
-  },
-  footer: {
-    copyright: 'Todos los derechos reservados',
-    description: 'Compañia de creditos comerciales independiente',
-  },
-}

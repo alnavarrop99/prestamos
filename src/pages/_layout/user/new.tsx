@@ -34,7 +34,8 @@ import {
 import { getRolByName, listRols } from '@/lib/type/rol'
 import { useStatus } from '@/lib/context/layout'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { getUsersListOpt } from '../user'
+import { getUsersListOpt } from '@/pages/_layout/user.lazy'
+import { news as text } from "@/locale/user";
 
 export const postUserOpt = {
   mutationKey: ['create-user'],
@@ -74,12 +75,12 @@ export function NewUser() {
     variables: TUSER_POST_BODY,
     context: unknown
   ) => unknown = (newData, items) => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: items?.nombre,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -108,7 +109,7 @@ export function NewUser() {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg as unknown as string}</p>
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
@@ -158,7 +159,7 @@ export function NewUser() {
           </DialogTitle>
           <Separator />
           <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-            {text.descriiption}
+            {text.description}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60dvh] overflow-y-auto md:h-full">
@@ -196,7 +197,7 @@ export function NewUser() {
             </Label>
             <Label>
               <span className="after:text-red-500 after:content-['_*_']">
-                {text.form.rol.label}{' '}
+                {text.form.role.label}{' '}
               </span>
               <Select
                 required
@@ -206,9 +207,9 @@ export function NewUser() {
                 }
               >
                 <SelectTrigger className="!border-1 w-full !border-ring">
-                  <SelectValue placeholder={text.form.rol.placeholder} />
+                  <SelectValue placeholder={text.form.role.placeholder} />
                 </SelectTrigger>
-                <SelectContent className="z-10 [&_*]:cursor-pointer">
+                <SelectContent className="[&_*]:cursor-pointer">
                   {listRols()?.map(({ nombre, id }, index) => (
                     <SelectItem key={index} value={'' + id}>
                       {nombre}
@@ -268,7 +269,7 @@ export function NewUser() {
         </ScrollArea>
         <DialogFooter className="flex-col justify-end gap-2 md:flex-row">
           <Button variant="default" form="new-client-form" type="submit">
-            {text.button.update}
+            {text.button.create}
           </Button>
           <DialogClose asChild>
             <Button
@@ -286,50 +287,3 @@ export function NewUser() {
 }
 
 NewUser.dispalyname = 'NewUser'
-
-const text = {
-  title: 'Crear Usuario:',
-  descriiption:
-    'Introdusca los datos correctamente para la creacion de un usuario nuevo en la plataforma',
-  button: {
-    close: 'Cerrar',
-    update: 'Crear',
-  },
-  notification: {
-    titile: 'Creacion de un nuevos usuario',
-    decription: ({ username }: { username: string }) =>
-      'Se ha creado el usuario ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'La creacion del usuario' + username + 'ha fallado',
-    retry: 'Deshacer',
-  },
-  form: {
-    firstName: {
-      label: 'Nombre:',
-      placeholder: 'Escriba el nombre del usuario',
-    },
-    lastName: {
-      label: 'Apellidos:',
-      placeholder: 'Escriba el apellido del usuario',
-    },
-    password: {
-      current: {
-        label: 'Contraseña:',
-        placeholder: 'Escriba la cantraseña del usuario',
-      },
-      confirmation: {
-        label: 'Confirmacion:',
-        placeholder: 'Confirme la cantraseña anterior',
-      },
-    },
-    rol: {
-      label: 'Tipo de rol:',
-      placeholder: 'Seleccione el rol del usuario',
-      items: {
-        user: 'Usuario',
-        admin: 'Administrador',
-        client: 'Cliente',
-      },
-    },
-  },
-}

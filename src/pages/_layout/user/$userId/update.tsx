@@ -44,7 +44,9 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { getUsersListOpt } from '../../user'
+import { getUsersListOpt } from '@/pages/_layout/user.lazy'
+import { ErrorComponentProps } from '@tanstack/react-router'
+import { update as text } from "@/locale/user";
 
 export const updateUserByIdOpt = {
   mutationKey: ['update-user-by-id'],
@@ -103,12 +105,12 @@ export function UpdateUserById() {
   const onSuccess: (data: TUSER_PATCH) => void = (newData) => {
     if (!init?.current?.nombre) return
 
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: init?.current?.nombre,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -120,7 +122,7 @@ export function UpdateUserById() {
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -152,7 +154,7 @@ export function UpdateUserById() {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg as unknown as string}</p>
+          <p>{errorMsg?.msg }</p>
         </div>
       ),
       variant: 'destructive',
@@ -265,7 +267,7 @@ export function UpdateUserById() {
           </DialogTitle>
           <Separator />
           <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-            {text.descriiption}
+            {text.description}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60dvh] overflow-y-auto md:h-full">
@@ -318,7 +320,7 @@ export function UpdateUserById() {
               )}
             </Label>
             <Label>
-              <span>{text.form.rol.label} </span>
+              <span>{text.form.role.label} </span>
               {!isSuccess ? (
                 <Skeleton className="h-10 w-full" />
               ) : (
@@ -330,9 +332,9 @@ export function UpdateUserById() {
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder={text.form.rol.placeholder} />
+                    <SelectValue placeholder={text.form.role.placeholder} />
                   </SelectTrigger>
-                  <SelectContent className="z-10 [&_*]:cursor-pointer">
+                  <SelectContent className="[&_*]:cursor-pointer">
                     {listRols()?.map(({ id, nombre }) => (
                       <SelectItem key={id} value={'' + id}>
                         {nombre}
@@ -464,73 +466,30 @@ export function UpdateUserById() {
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: (error as Error)?.name, msg: (error as Error).message })
+    }
+  }, [error] )
+
   useEffect(() => {
     toast({
-      title: text.error.title,
+      title: "" + errorMsg?.type,
       description: (
-        <div className="flex flex-row items-center gap-2">
-          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-base"> {text.error.descriiption} </p>
+        <div className="text-sm">
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
     })
   }, [])
-  return
+  return;
 }
 
 UpdateUserById.dispalyname = 'UpdateUserById'
 Error.dispalyname = 'UpdateUserByIdError'
-
-const text = {
-  title: 'Actualizar Usuario:',
-  error: {
-    title: 'Obtencion de datos de usuario',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  descriiption:
-    'Modifique los campos para actualizar los datos del usuario en la plataforma.',
-  button: {
-    close: 'Cerrar',
-    update: 'Actualizar',
-    delete: 'Si, eliminar mi usuario.',
-  },
-  notification: {
-    titile: 'Actualizacion de usuario',
-    decription: ({ username }: { username: string }) =>
-      'Se ha actualizacion el usuario ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'La actualizacion del usuario' + username + 'ha fallado',
-    retry: 'Reintentar',
-  },
-  form: {
-    firstName: {
-      label: 'Nombre:',
-      placeholder: 'Escriba el nombre del usuario',
-    },
-    lastName: {
-      label: 'Apellidos:',
-      placeholder: 'Escriba el apellido del usuario',
-    },
-    password: {
-      current: {
-        label: 'Nueva contraseña:',
-        placeholder: 'Escriba la cantraseña actual del usuario',
-      },
-      new: {
-        label: 'Confirmar contraseña:',
-        placeholder: 'Escriba la nuva cantraseña del usuario',
-      },
-    },
-    rol: {
-      label: 'Tipo de rol:',
-      placeholder: 'Seleccione el rol del usuario',
-      items: {
-        user: 'Usuario',
-        admin: 'Administrador',
-        client: 'Cliente',
-      },
-    },
-  },
-}

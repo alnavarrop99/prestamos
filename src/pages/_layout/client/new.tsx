@@ -31,12 +31,13 @@ import {
 import { useNotifications } from '@/lib/context/notification'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { listIds, getIdByName } from '@/lib/type/id'
-import { _clientContext, getClientListOpt } from '@/pages/_layout/client'
+import { _clientContext, getClientListOpt } from '@/pages/_layout/client.lazy'
 import { useStatus } from '@/lib/context/layout'
 import { getStatusByName } from '@/lib/type/status'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ScrollBar } from '@/components/ui/scroll-area'
+import { news as text } from '@/locale/client'
 
 export const postClientOpt = {
   mutationKey: ['create-client'],
@@ -62,12 +63,12 @@ export function NewClient() {
     newData: TCLIENT_POST,
     variables: TCLIENT_POST_BODY
   ) => unknown = (newData, items) => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: items?.nombres + items?.apellidos,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -94,7 +95,7 @@ export function NewClient() {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg as unknown as string}</p>
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
@@ -149,7 +150,7 @@ export function NewClient() {
           </DialogTitle>
           <Separator />
           <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-            {text.descriiption}
+            {text.description}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[50dvh] overflow-y-auto md:h-full">
@@ -205,7 +206,7 @@ export function NewClient() {
                 <SelectTrigger className="!border-1 w-full !border-ring">
                   <SelectValue placeholder={text.form.typeId.placeholder} />
                 </SelectTrigger>
-                <SelectContent className="z-10 [&_*]:cursor-pointer">
+                <SelectContent className="[&_*]:cursor-pointer">
                   {listIds()?.map(({ id, nombre }, index) => (
                     <SelectItem key={index} value={'' + id}>
                       {nombre}
@@ -231,7 +232,6 @@ export function NewClient() {
                 name={'telefono' as TFormName}
                 type="tel"
                 placeholder={text.form.telephone.placeholder}
-                // pattern="(?:\+57|0)[0-9]{6,7}"
                 // pattern="(?:\+57|0)[0-9]{6,7}"
                 pattern="[0-9]{8, 12}"
               />
@@ -292,72 +292,3 @@ export function NewClient() {
 }
 
 NewClient.dispalyname = 'NewClient'
-
-const text = {
-  title: 'Crear cliente:',
-  descriiption:
-    'Introdusca los datos correctamente para la creacion de un cliente nuevo en la plataforma.',
-  button: {
-    close: 'Cerrar',
-    update: 'Crear',
-  },
-  notification: {
-    titile: 'Creacion de un nuevos usuario',
-    decription: ({ username }: { username: string }) =>
-      'Se ha creado el cliente ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'La creacion del cliente' + username + 'ha fallado',
-    retry: 'Deshacer',
-  },
-  form: {
-    firstName: {
-      label: 'Nombre:',
-      placeholder: 'Escriba el nombre',
-    },
-    lastName: {
-      label: 'Apellidos:',
-      placeholder: 'Escriba el apellido',
-    },
-    phone: {
-      label: 'Celular:',
-      placeholder: 'Escriba el celular',
-    },
-    telephone: {
-      label: 'Telefono:',
-      placeholder: 'Escriba el telefono',
-    },
-    direction: {
-      label: 'Direccion:',
-      placeholder: 'Escriba la direccion',
-    },
-    email: {
-      label: 'Email:',
-      placeholder: 'Escriba el email',
-    },
-    comment: {
-      label: 'Comentarios:',
-      placeholder: 'Escriba el comentario',
-    },
-    id: {
-      label: 'ID:',
-      placeholder: 'Escriba el ID',
-    },
-    typeId: {
-      label: 'Tipo de identificacion:',
-      placeholder: 'Seleccione una opcion',
-      items: {
-        passport: 'Passaporte',
-        id: 'Cedula',
-        driverId: 'Carnet de Conducir',
-      },
-    },
-    ref: {
-      label: 'Referencia:',
-      placeholder: 'Escriba la referencia del cliente',
-    },
-    status: {
-      label: 'Estado:',
-      placeholder: 'Seleccione el estado del cliente',
-    },
-  },
-}

@@ -9,7 +9,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { Navigate, createFileRoute } from '@tanstack/react-router'
+import { ErrorComponentProps, Navigate, createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import styles from '@/styles/global.module.css'
@@ -31,12 +31,13 @@ import {
 import { format } from 'date-fns'
 import { queryClient } from '@/pages/__root'
 import { queryOptions, useQuery } from '@tanstack/react-query'
-import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
+import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { defer } from '@tanstack/react-router'
 import { Skeleton } from '@/components/ui/skeleton'
 import { SpinLoader } from '@/components/ui/loader'
 import { toast } from '@/components/ui/use-toast'
+import { print_selected as text } from "@/locale/credit";
 
 type TSearch = {
   creditId: number
@@ -199,12 +200,12 @@ export function PrintSelectedCredit() {
                   <SelectTrigger className="!border-1 w-full !border-ring">
                     <SelectValue placeholder={text.form.pay.placeholder} />
                   </SelectTrigger>
-                  <SelectContent className="z-10 [&_*]:cursor-pointer">
+                  <SelectContent className="[&_*]:cursor-pointer">
                     {creditRes?.pagos?.map((_, index) => (
                       <SelectItem key={index} value={'' + index}>
                         {' '}
                         {format(
-                          creditRes?.cuotas?.[index].fecha_de_pago,
+                          new Date(creditRes?.cuotas?.[index].fecha_de_pago ?? ""),
                           'dd/MM/yyyy'
                         )}{' '}
                       </SelectItem>
@@ -267,7 +268,7 @@ export function PrintSelectedCredit() {
                           telephone: client?.telefono,
                           phone: client?.celular,
                           date: format(
-                            new Date(pay.fecha_de_pago),
+                            new Date(pay.fecha_de_pago ?? ""),
                             'dd/MM/yyyy'
                           ),
                           pay: +(pay?.valor_del_pago ?? 0)?.toFixed(2),
@@ -316,43 +317,30 @@ export function PrintSelectedCredit() {
 }
 
 /* eslint-disable-next-line */
-export function ErrorComp() {
+export function ErrorComp({ error }: ErrorComponentProps) {
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: (error as Error)?.name, msg: (error as Error).message })
+    }
+  }, [error] )
+
   useEffect(() => {
     toast({
-      title: text.error.title,
+      title: "" + errorMsg?.type,
       description: (
-        <div className="flex flex-row items-center gap-2">
-          <h2 className="text-2xl font-bold">:&nbsp;(</h2>
-          <p className="text-base"> {text.error.descriiption} </p>
+        <div className="text-sm">
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
     })
   }, [])
-  return
+  return;
 }
 
 PrintSelectedCredit.dispalyname = 'PayCreditById'
-
-const text = {
-  title: 'Opciones de impresion:',
-  description: 'Seleccione la opcion deseada para la impresion del pago.',
-  error: {
-    title: 'Obtencion de datos',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  button: {
-    close: 'Volver a la pestaña anterior',
-    print: 'Imprimir',
-  },
-  form: {
-    pay: {
-      label: 'Numero del pago:',
-      placeholder: 'Seleccione el pago',
-    },
-    options: {
-      label: 'Opciones:',
-      placeholder: 'Seleccione la opcion de impresion',
-    },
-  },
-}
+ErrorComp.dispalyname = 'PayCreditByIdError'

@@ -14,8 +14,8 @@ import { CircleDollarSign as Pay } from 'lucide-react'
 import { format } from 'date-fns'
 import { useStatus } from '@/lib/context/layout'
 import { getFrecuencyById } from '@/lib/type/frecuency'
-import { createContext, useMemo } from 'react'
-import { type TMORA_TYPE, getMoraTypeById } from '@/lib/type/moraType'
+import { createContext, useEffect, useMemo, useState } from 'react'
+import { getMoraTypeById } from '@/lib/type/moraType'
 import { type TCLIENT_GET } from '@/api/clients'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useRouter } from '@tanstack/react-router'
@@ -25,6 +25,8 @@ import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import {} from '@/pages/_layout/credit_/$creditId_/update.confirm'
 import { useToken } from '@/lib/context/login'
 import { PaymentTable } from './-table'
+import { ErrorComponentProps } from '@tanstack/react-router'
+import { credit_by_id as text } from "@/locale/credit";
 
 export const getCreditByIdOpt = ({ creditId }: { creditId: string }) => ({
   queryKey: ['get-credit-by-id', { creditId }],
@@ -110,12 +112,8 @@ export function CreditById() {
           <div className="flex gap-2">
             <h1 className="text-2xl font-bold md:text-3xl">{text.title}</h1>
             <Dialog open={open} onOpenChange={onOpenChange}>
-              <DialogTrigger asChild>
-                <Link
-                  to={'./print'}
-                  disabled={creditRes?.pagos?.length <= 0}
-                  className="hidden xl:ms-auto xl:block"
-                >
+              <DialogTrigger asChild className="hidden xl:ms-auto xl:block">
+                <Link to={'./print'} disabled={creditRes?.pagos?.length <= 0}>
                   <Button
                     variant="outline"
                     className="hover:ring hover:ring-primary"
@@ -128,7 +126,7 @@ export function CreditById() {
               <DialogTrigger
                 asChild
                 className={clsx('ms-auto xl:ms-0', {
-                  invisible: userId !== creditRes?.cobrador_id,
+                  'invisible order-1': userId !== creditRes?.cobrador_id,
                 })}
               >
                 <Link to={'./pay'}>
@@ -174,11 +172,14 @@ export function CreditById() {
             <li>
               <b>{text.details.date + ':'}</b>{' '}
               <span>
-                {format(creditRes?.fecha_de_aprobacion, 'dd/MM/yyyy') + '.'}
+                {format(
+                  new Date(creditRes?.fecha_de_aprobacion ?? ''),
+                  'dd/MM/yyyy'
+                ) + '.'}
               </span>
             </li>
             <li>
-              <b>{text.details.aditionalsDays + ':'}</b>{' '}
+              <b>{text.details.additionalDays + ':'}</b>{' '}
               <span>{creditRes?.dias_adicionales + '.'}</span>
             </li>
             <li>
@@ -199,7 +200,7 @@ export function CreditById() {
               </span>
             </li>
             <li>
-              <b>{text.details.frecuency + ':'}</b>{' '}
+              <b>{text.details.frequency + ':'}</b>{' '}
               <span>
                 {getFrecuencyById({
                   frecuencyId: creditRes?.frecuencia_del_credito_id,
@@ -223,7 +224,7 @@ export function CreditById() {
                 '[&>b]:line-through': !moraStatus,
               })}
             >
-              <b>{text.details.installmants(moraType) + ':'}</b>
+              <b>{text.details.installments(moraType) + ':'}</b>
               {moraType === 'Valor fijo' ? (
                 <span>{'$' + moreValue + '.'}</span>
               ) : (
@@ -402,7 +403,16 @@ export function Pending() {
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
+  useEffect( () => {
+    try{
+      setMsg(JSON?.parse((error as Error)?.message))
+    }
+    catch{
+      setMsg({ type: "Error", msg: (error as Error).message })
+    }
+  }, [error] )
   const { history } = useRouter()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
@@ -410,11 +420,11 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex xl:h-full h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
-        <h1 className="font-bold">{text.error}</h1>
-        <p className="italic">{text.errorDescription}</p>
+        <h1 className="font-bold">{errorMsg?.type}</h1>
+        <p className="italic">{errorMsg?.msg}</p>
         <Separator />
         <Button variant="ghost" onClick={onClick} className="text-sm">
           {' '}
@@ -428,45 +438,3 @@ export function Error() {
 CreditById.dispalyname = 'CreditById'
 Pending.dispalyname = 'CreditByIdPending'
 Error.dispalyname = 'CreditByIdError'
-
-const text = {
-  title: 'Detalles:',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'Los detalles del prestamo ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
-  button: {
-    update: 'Editar',
-    delete: 'Eliminar',
-  },
-  details: {
-    title: 'Detalles del prestamo:',
-    name: 'Nombre del cliente',
-    user: 'Cobrador',
-    ref: 'Referencia',
-    amount: 'Monto total',
-    interest: 'Tasa de interes',
-    cuoteNumber: 'Numero de cuotas',
-    cuote: 'Monto por cuota',
-    pay: 'Monto a pagar',
-    installmants: (type: TMORA_TYPE) =>
-      type === 'Valor fijo' ? 'Monta por mora' : 'Tasa por mora',
-    frecuency: 'Frecuencia del credito',
-    status: 'Estado',
-    date: 'Fecha de aprobacion',
-    comment: 'Comentario',
-    cuotes: 'Numero de cuotas',
-    aditionalsDays: 'Dias adicionales',
-  },
-  cuotes: {
-    title: 'Historial de pagos:',
-    payDate: 'Fecha de pago',
-    installmantsDate: 'Fecha de aplicacion de mora',
-    payValue: 'Monto del pago',
-    payInstallmants: 'Monto de la mora',
-    payStatus: 'Pagada',
-    total: 'Monto total',
-  },
-  pay: {
-    title: 'Historial de pagos:',
-  },
-}

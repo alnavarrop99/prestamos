@@ -44,8 +44,10 @@ import { queryOptions, useSuspenseQuery } from '@tanstack/react-query'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import { useToken } from '@/lib/context/login'
-import { ClientTable } from './-table'
+import { ClientTable } from '@/pages/_layout/-table'
 import { useScreen } from '@/lib/hook/useScreens'
+import { ErrorComponentProps } from '@tanstack/react-router'
+import { main as text } from '@/locale/client'
 
 type TSearch = {
   userId: number
@@ -227,7 +229,7 @@ export function Clients() {
                 >
                   <SelectValue placeholder={text.select.placeholder} />
                 </SelectTrigger>
-                <SelectContent className="z-10 [&>div]:cursor-pointer">
+                <SelectContent className="[&>div]:cursor-pointer">
                   <SelectItem
                     value={'fullName' as keyof TClientTable}
                     className="cursor-pointer"
@@ -419,7 +421,17 @@ export function Pending() {
 }
 
 /* eslint-disable-next-line */
-export function Error() {
+export function Error({ error }: ErrorComponentProps) {
+  const [errorMsg, setMsg] = useState<
+    { type: number | string; msg?: string } | undefined
+  >(undefined)
+  useEffect(() => {
+    try {
+      setMsg(JSON?.parse((error as Error)?.message))
+    } catch {
+      setMsg({ type: 'Error', msg: (error as Error).message })
+    }
+  }, [error])
   const { history } = useRouter()
   const onClick: React.MouseEventHandler<
     React.ComponentRef<typeof Button>
@@ -427,11 +439,11 @@ export function Error() {
     history.back()
   }
   return (
-    <div className="flex h-full flex-col  items-center items-center justify-center gap-4 md:flex-row [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
+    <div className="flex h-[80dvh] flex-col items-center items-center justify-center gap-4 md:flex-row xl:h-full [&>svg]:h-32 [&>svg]:w-32 [&>svg]:stroke-destructive [&_h1]:text-2xl">
       <Annoyed className="animate-bounce" />
       <div className="space-y-2">
-        <h1 className="font-bold">{text.error}</h1>
-        <p className="italic">{text.errorDescription}</p>
+        <h1 className="font-bold">{errorMsg?.type}</h1>
+        <p className="italic">{errorMsg?.msg}</p>
         <Separator />
         <Button variant="ghost" onClick={onClick} className="text-sm">
           {' '}
@@ -467,54 +479,4 @@ const getMenuItem = (name: string) => {
     referencia: text.dropdown.items?.ref,
   }
   return data?.[name as TMenuItems] ?? 'fullName'
-}
-
-const text = {
-  back: 'Intente volver a la pestaña anterior',
-  title: 'Clientes:',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'El listado de clientes ha fallado.',
-  browser: 'Clientes',
-  search: {
-    404: 'No se encontraron resultados',
-    selected: ({ selected, total }: { selected: number; total: number }) =>
-      `${selected} de ${total} fila(s) seleccionadas.`,
-  },
-  columns: {
-    fullName: 'Nombre y apellidos',
-    firstName: 'Nombre',
-    lastName: 'Apellidos',
-    id: 'I.D.',
-    phone: 'Celular',
-    telephone: 'Telefono',
-    ref: 'Referencia',
-    direction: 'Direccion',
-  },
-  buttons: {
-    next: 'Siguiente',
-    prev: 'Anterior',
-    delete: 'Eliminar',
-    new: 'Nuevo',
-  },
-  select: {
-    placeholder: 'Seleccione un filtro',
-    title: 'Filtros:',
-    get items() {
-      return { ...text.columns }
-    },
-  },
-  dropdown: {
-    title: 'Columnas',
-    subtitle: 'Acciones',
-    get items() {
-      return { ...text.columns }
-    },
-  },
-  menu: {
-    aria: 'Mas Opciones',
-    title: 'Acciones:',
-    copy: 'Copiar datos del cliente',
-    update: 'Ver | Actualizar Cliente',
-    delete: 'Eliminar Cliente',
-  },
 }

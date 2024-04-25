@@ -28,12 +28,14 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query'
-import { _credit, getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId'
+import { _credit, getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { Navigate } from '@tanstack/react-router'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
-import { getCreditsListOpt } from '@/pages/_layout/credit'
+import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
+import { delete_by_id as text } from "@/locale/credit";
+import { _client } from '@/pages/_layout/credit_/$creditId.lazy'
 
 export const deleteCreditByIdOpt = {
   mutationKey: ['delete-credit-by-id'],
@@ -57,6 +59,7 @@ export function DeleteCreditById() {
   const { pushNotification } = useNotifications()
   const { creditId } = Route.useParams()
   const qClient = useQueryClient()
+  const client = useContext(_client) 
 
   const onSuccess: (
     data: TCREDIT_GET_BASE,
@@ -66,7 +69,7 @@ export function DeleteCreditById() {
     const client = await qClient?.fetchQuery(
       queryOptions(getClientByIdOpt({ clientId: '' + credit?.owner_id }))
     )
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: client?.nombres + ' ' + client?.apellidos,
     })
 
@@ -77,7 +80,7 @@ export function DeleteCreditById() {
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -104,7 +107,7 @@ export function DeleteCreditById() {
     toast({
       title: error.name + ": " + errorMsg?.type,
       description: (<div className='text-sm'>
-        <p>{ errorMsg?.msg as unknown as string }</p>
+        <p>{ errorMsg?.msg  }</p>
       </div>
       ),
       variant: 'destructive',
@@ -149,8 +152,7 @@ export function DeleteCreditById() {
               </AlertTitle>
               <AlertDescription className="text-start text-xs max-sm:!px-0 md:text-base">
                 {text.alert.description({
-                  // TODO
-                  username: '' + credit?.owner_id,
+                  username: client?.nombres + " " + client?.apellidos,
                 })}
               </AlertDescription>
             </Alert>
@@ -208,27 +210,3 @@ export function DeleteCreditById() {
 }
 
 DeleteCreditById.dispalyname = 'DeleteCreditById'
-
-const text = {
-  title: 'Eliminacion de un prestamo',
-  alert: {
-    title: 'Se eiminara el prestamo de la base de datos',
-    description: ({ username }: { username: string }) =>
-      'Estas seguro de eliminar prestamo del cliente ' +
-      username +
-      ' de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el prestamo.',
-  },
-  button: {
-    close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina el prestamo.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    titile: 'Eliminacion de un credito',
-    decription: ({ username }: { username?: string }) =>
-      'Se ha eliminado prestamo del cliente ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'La eliminacion del prestamo del cliente ' + username + ' ha fallado',
-    retry: 'Reintentar',
-  },
-}
