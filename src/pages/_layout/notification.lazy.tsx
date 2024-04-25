@@ -13,6 +13,7 @@ import clsx from 'clsx'
 import { format } from 'date-fns'
 import { Badge } from '@/components/ui/badge'
 import { useEffect } from 'react'
+import text from "@/assets/locale/notification.json"
 
 export const Route = createFileRoute('/_layout/notification')({
   component: Notifications,
@@ -43,7 +44,7 @@ export function Notifications() {
       </div>
       <Separator />
       <div className="space-y-4 py-2 md:space-y-4">
-        {!notifications?.length && <p> {text.notfound} </p>}
+        {!notifications?.length && <p> {text["404"]} </p>}
         {!!notifications?.length &&
           notifications?.reverse()?.map(
             ({ id: notificationId, description, action, date }, index) =>
@@ -108,9 +109,3 @@ const getAction = (action: 'POST' | 'PATH' | 'DELETE') => {
 }
 
 Notifications.dispalyname = 'Notification'
-
-const text = {
-  title: 'Notificaciones:',
-  browser: 'Notificaciones',
-  notfound: 'No existen notificaciones.',
-}
