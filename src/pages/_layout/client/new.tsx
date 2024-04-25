@@ -84,6 +84,8 @@ export function NewClient() {
     }
 
     qClient?.setQueryData(getClientListOpt?.queryKey, update)
+    if (!form.current) return
+    form.current.reset()
   }
 
   const onError: (error: Error, variables: TCLIENT_POST_BODY) => void = (
@@ -136,7 +138,6 @@ export function NewClient() {
       email: items?.email ?? '',
     })
 
-    form.current.reset()
     ev.preventDefault()
   }
 

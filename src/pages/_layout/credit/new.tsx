@@ -189,6 +189,8 @@ export function NewCredit() {
     })
 
     qClient?.refetchQueries({ queryKey: getCreditsListOpt?.queryKey })
+    if (!form.current) return
+    form.current.reset()
   }
 
   const onError: (
@@ -290,7 +292,6 @@ export function NewCredit() {
     if (client) setClient(client)
     if (ref) setRef(ref)
 
-    form.current.reset()
     ev.preventDefault()
   }
 
