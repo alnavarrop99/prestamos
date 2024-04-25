@@ -11,7 +11,12 @@ import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { toast } from '@/components/ui/use-toast'
 import { DialogDescription } from '@radix-ui/react-dialog'
-import { ErrorComponentProps, Navigate, createFileRoute, defer } from '@tanstack/react-router'
+import {
+  ErrorComponentProps,
+  Navigate,
+  createFileRoute,
+  defer,
+} from '@tanstack/react-router'
 import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import clsx from 'clsx'
 import { Switch } from '@/components/ui/switch'
@@ -49,6 +54,7 @@ import { useToken } from '@/lib/context/login'
 // import { redirect } from '@tanstack/react-router'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ScrollBar } from '@/components/ui/scroll-area'
+import { update as text } from '@/assets/locale/client'
 
 export const updateClientByIdOpt = {
   mutationKey: ['update-client-by-id'],
@@ -62,7 +68,7 @@ export const getClientByIdOpt = ({ clientId }: { clientId: string }) => ({
 
 export const Route = createFileRoute('/_layout/client/$clientId/update')({
   component: UpdateClientById,
-  errorComponent: Error,
+  errorComponent: ErrorComp,
   loader: async ({ params }) => {
     const data = queryClient.ensureQueryData(
       queryOptions(getClientByIdOpt(params))
@@ -100,7 +106,7 @@ export function UpdateClientById() {
   const qClient = useQueryClient()
 
   useEffect(() => {
-    if (!clientRes && isError) throw Error()
+    if (!clientRes && isError) throw Error('client not load')
   }, [isError])
 
   const onSuccess = (newData: TCLIENT_PATCH) => {
@@ -163,7 +169,7 @@ export function UpdateClientById() {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg }</p>
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
@@ -530,20 +536,21 @@ export function UpdateClientById() {
 }
 
 /* eslint-disable-next-line */
-export function Error({ error }: ErrorComponentProps) {
-  const [ errorMsg, setMsg ] = useState<{ type: number | string; msg?: string } | undefined>( undefined )
-  useEffect( () => {
-    try{
+export function ErrorComp({ error }: ErrorComponentProps) {
+  const [errorMsg, setMsg] = useState<
+    { type: number | string; msg?: string } | undefined
+  >(undefined)
+  useEffect(() => {
+    try {
       setMsg(JSON?.parse((error as Error)?.message))
-    }
-    catch{
+    } catch {
       setMsg({ type: (error as Error)?.name, msg: (error as Error).message })
     }
-  }, [error] )
+  }, [error])
 
   useEffect(() => {
     toast({
-      title: "" + errorMsg?.type,
+      title: '' + errorMsg?.type,
       description: (
         <div className="text-sm">
           <p>{errorMsg?.msg}</p>
@@ -552,80 +559,8 @@ export function Error({ error }: ErrorComponentProps) {
       variant: 'destructive',
     })
   }, [])
-  return;
+  return
 }
 
 UpdateClientById.dispalyname = 'UpdateClientById'
-Error.dispalyname = 'UpdateClientByIdError'
-
-const text = {
-  title: ({ state }: { state: boolean }) =>
-    (state ? 'Datos del ' : 'Actualizacion de los datos') + ' cliente:',
-  description: ({ state }: { state: boolean }) =>
-    (state ? 'Datos' : 'Actualizacion de los datos') +
-    ' del cliente en la plataforma.',
-  error: {
-    title: 'Obtencion de datos de usuario',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  button: {
-    close: 'Cerrar',
-    update: 'Actualizar',
-    mode: 'Modo',
-  },
-  notification: {
-    titile: 'Actualizacion del cliente',
-    decription: ({ username }: { username: string }) =>
-      'Se ha actualizado el cliente ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'La actualizacion del cliente' + username + 'ha fallado',
-    retry: 'Reintentar',
-  },
-  form: {
-    firstName: {
-      label: 'Nombre:',
-      placeholder: 'Escriba el nombre',
-    },
-    lastName: {
-      label: 'Apellidos:',
-      placeholder: 'Escriba el apellido',
-    },
-    phone: {
-      label: 'Celular:',
-      placeholder: 'Escriba el celular',
-    },
-    telephone: {
-      label: 'Telefono:',
-      placeholder: 'Escriba el telefono',
-    },
-    direction: {
-      label: 'Direccion:',
-      placeholder: 'Escriba la direccion',
-    },
-    id: {
-      label: 'ID:',
-      placeholder: 'Escriba el ID',
-    },
-    comment: {
-      label: 'Comentarios:',
-      placeholder: 'Escriba el comentario',
-    },
-    typeId: {
-      label: 'Tipo de identificacion:',
-      placeholder: 'Seleccione una opcion',
-      items: {
-        passport: 'Passaporte',
-        id: 'I.D.',
-        driverId: 'Carnet de Conducir',
-      },
-    },
-    ref: {
-      label: 'Referencia:',
-      placeholder: 'Escriba la referencia',
-    },
-    status: {
-      label: 'Estado:',
-      placeholder: 'Seleccione el estado',
-    },
-  },
-}
+ErrorComp.dispalyname = 'UpdateClientByIdError'

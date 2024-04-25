@@ -23,6 +23,7 @@ import { type TCLIENT_GET_ALL, deleteClientsById } from '@/api/clients'
 import { useToken } from '@/lib/context/login'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
 import { getClientListOpt } from '@/pages/_layout/client.lazy'
+import { delete_by_id as text } from '@/assets/locale/client'
 
 type TSearch = {
   name: string
@@ -80,14 +81,20 @@ export function DeleteClientById() {
     qClient?.setQueryData(getClientListOpt?.queryKey, update)
   }
 
-  const onError: ((error: Error, variables: { clientId: number; }, context: unknown) => unknown) = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+  const onError: (
+    error: Error,
+    variables: { clientId: number },
+    context: unknown
+  ) => unknown = (error) => {
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: (<div>
-        <p>{ errorMsg?.msg  }</p>
-      </div>),
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div>
+          <p>{errorMsg?.msg}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }
@@ -188,31 +195,3 @@ export function DeleteClientById() {
 }
 
 DeleteClientById.dispalyname = 'DeleteClientById'
-
-const text = {
-  title: 'Eliminacion del cliente',
-  error: {
-    title: 'Obtencion de datos de usuario',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  alert: {
-    title: 'Se eiminara el cliente de la base de datos',
-    description: ({ username }: { username: string }) =>
-      'Estas seguro de eliminar el cliente ' +
-      username +
-      '?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el cliente.',
-  },
-  button: {
-    close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina el cliente.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    titile: 'Eliminacion del cliente',
-    decription: ({ username }: { username: string }) =>
-      'Se ha eliminado el cliente ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'La eliminacion del cliente' + username + 'ha fallado',
-    retry: 'Reintentar',
-  },
-}

@@ -25,6 +25,7 @@ import { deleteClientByIdOpt } from '@/pages/_layout/client/$clientId/delete'
 import { useToken } from '@/lib/context/login'
 import { redirect } from '@tanstack/react-router'
 import { getClientByIdOpt } from '@/pages/_layout/client/$clientId/update'
+import { delete_selected as text } from '@/assets/locale/client'
 
 type TSearch = {
   clients: number[]
@@ -83,14 +84,20 @@ export function DeleteSelectedClients() {
     rowSelected()
   }
 
-  const onError: ((error: Error, variables: { clientId: number; }, context: unknown) => unknown) = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+  const onError: (
+    error: Error,
+    variables: { clientId: number },
+    context: unknown
+  ) => unknown = (error) => {
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description: ( <div className='text-sm'>
-        <p>{ errorMsg?.msg  }</p>
-      </div>),
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }
@@ -195,30 +202,3 @@ export function DeleteSelectedClients() {
 }
 
 DeleteSelectedClients.dispalyname = 'DeleteSelectedClients'
-
-const text = {
-  title: 'Eliminacion de clientes',
-  error: {
-    title: 'Obtencion de datos de usuario',
-    descriiption: 'Ha ocurrido un error inesperado',
-  },
-  alert: {
-    title: 'Se eiminara multiples clientes de la base de datos',
-    description: ({ length = 0 }: { length: number }) =>
-      'Estas seguro de eliminar ' +
-      length +
-      ' cliente(s) de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con los clientes seleccionados.',
-  },
-  button: {
-    close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina los clientes.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
-  },
-  notification: {
-    titile: 'Eliminacion de multiples clientes',
-    decription: ({ username }: { username: string }) =>
-      'Se ha eliminado el cliente ' + username + ' con exito.',
-    error: 'Error: la eliminacion de los clientes ha fallado',
-    retry: 'Reintentar',
-  },
-}

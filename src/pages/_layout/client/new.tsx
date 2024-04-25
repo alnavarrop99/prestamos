@@ -37,6 +37,7 @@ import { getStatusByName } from '@/lib/type/status'
 import { Textarea } from '@/components/ui/textarea'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ScrollBar } from '@/components/ui/scroll-area'
+import { news as text } from '@/assets/locale/client'
 
 export const postClientOpt = {
   mutationKey: ['create-client'],
@@ -94,7 +95,7 @@ export function NewClient() {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg }</p>
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
@@ -291,72 +292,3 @@ export function NewClient() {
 }
 
 NewClient.dispalyname = 'NewClient'
-
-const text = {
-  title: 'Crear cliente:',
-  descriiption:
-    'Introdusca los datos correctamente para la creacion de un cliente nuevo en la plataforma.',
-  button: {
-    close: 'Cerrar',
-    update: 'Crear',
-  },
-  notification: {
-    titile: 'Creacion de un nuevos usuario',
-    decription: ({ username }: { username: string }) =>
-      'Se ha creado el cliente ' + username + ' con exito.',
-    error: ({ username }: { username: string }) =>
-      'La creacion del cliente' + username + 'ha fallado',
-    retry: 'Deshacer',
-  },
-  form: {
-    firstName: {
-      label: 'Nombre:',
-      placeholder: 'Escriba el nombre',
-    },
-    lastName: {
-      label: 'Apellidos:',
-      placeholder: 'Escriba el apellido',
-    },
-    phone: {
-      label: 'Celular:',
-      placeholder: 'Escriba el celular',
-    },
-    telephone: {
-      label: 'Telefono:',
-      placeholder: 'Escriba el telefono',
-    },
-    direction: {
-      label: 'Direccion:',
-      placeholder: 'Escriba la direccion',
-    },
-    email: {
-      label: 'Email:',
-      placeholder: 'Escriba el email',
-    },
-    comment: {
-      label: 'Comentarios:',
-      placeholder: 'Escriba el comentario',
-    },
-    id: {
-      label: 'ID:',
-      placeholder: 'Escriba el ID',
-    },
-    typeId: {
-      label: 'Tipo de identificacion:',
-      placeholder: 'Seleccione una opcion',
-      items: {
-        passport: 'Passaporte',
-        id: 'Cedula',
-        driverId: 'Carnet de Conducir',
-      },
-    },
-    ref: {
-      label: 'Referencia:',
-      placeholder: 'Escriba la referencia del cliente',
-    },
-    status: {
-      label: 'Estado:',
-      placeholder: 'Seleccione el estado del cliente',
-    },
-  },
-}
