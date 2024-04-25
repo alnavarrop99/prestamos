@@ -429,7 +429,7 @@ export function Credits() {
                               )}
                               {frecuencia?.id && (
                                 <li>
-                                  <b> {text.details.frecuency + ':'} </b>
+                                  <b> {text.details.frequency + ':'} </b>
                                   {getFrecuencyById({
                                     frecuencyId: frecuencia?.id,
                                   })?.nombre + '.'}

@@ -351,7 +351,7 @@ export function UpdateCreditById() {
                       />
                     </Label>
                     <Label className="md:!col-span-1">
-                      <span>{text.form.details.ref.label}</span>
+                      <span>{text.form.details.guarantor.label}</span>
                       <Input
                         name={'ref' as TFormName}
                         list="credit-clients"
@@ -361,7 +361,7 @@ export function UpdateCreditById() {
                             ? ref?.nombres + ' ' + ref?.apellidos
                             : undefined
                         }
-                        placeholder={text.form.details.ref.placeholder}
+                        placeholder={text.form.details.guarantor.placeholder}
                         pattern={`(${clients
                           ?.map(
                             ({ nombres, apellidos }) =>
@@ -421,7 +421,7 @@ export function UpdateCreditById() {
                       />
                     </Label>
                     <Label>
-                      <span>{text.form.details.frecuency.label}</span>
+                      <span>{text.form.details.frequency.label}</span>
                       <Select
                         required
                         name={'frecuencia_del_credito_id' as TFormName}
@@ -432,7 +432,7 @@ export function UpdateCreditById() {
                         <SelectTrigger className="w-full">
                           <SelectValue
                             placeholder={
-                              text.form.details.frecuency.placeholder
+                              text.form.details.frequency.placeholder
                             }
                           />
                         </SelectTrigger>
@@ -471,7 +471,7 @@ export function UpdateCreditById() {
                       className="md:row-start-4"
                     >
                       <div className="flex items-center justify-between gap-2 [&>div]:flex [&>div]:items-center [&>div]:gap-2 [&_label]:flex [&_label]:cursor-pointer [&_label]:items-center [&_label]:gap-2">
-                        <span>{text.form.details.installmants.label}</span>
+                        <span>{text.form.details.installments.label}</span>
                         <RadioGroup
                           name={'tipo_de_mora' as TFormName}
                           defaultValue={
@@ -505,8 +505,7 @@ export function UpdateCreditById() {
                       </div>
                       <Input
                         id="credit-installments"
-                        required
-                        min={1}
+                        min={0}
                         max={
                           installmants?.type === 'Porciento' ? 100 : undefined
                         }
@@ -515,14 +514,14 @@ export function UpdateCreditById() {
                         type="number"
                         defaultValue={creditChange?.valor_de_mora}
                         placeholder={
-                          text.form.details.installmants.placeholder[
+                          text.form.details.installments.placeholder[
                             installmants.type
                           ]
                         }
                       />
                     </Label>
                     <Label className="md:row-start-4">
-                      <span>{text.form.details.aditionalsDays.label}</span>
+                      <span>{text.form.details.additionalDays.label}</span>
                       <Input
                         min={0}
                         max={25}
@@ -530,7 +529,7 @@ export function UpdateCreditById() {
                         name={'dias_adicionales' as TFormName}
                         defaultValue={creditChange?.dias_adicionales}
                         placeholder={
-                          text.form.details.aditionalsDays.placeholder
+                          text.form.details.additionalDays.placeholder
                         }
                       />
                     </Label>

@@ -22,10 +22,11 @@ import { PopoverContent } from "@radix-ui/react-popover"
 import { Label } from "@/components/ui/label"
 import { Search } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
-import { getSearch, translate } from "@/lib/route"
+import { translate } from "@/lib/route"
 import { Link } from "@tanstack/react-router"
 import clsx from "clsx"
 import brand from '@/assets/menu-brand.avif'
+import { loader as text } from "@/locale/layout";
 
 /* eslint-disable-next-line */
 type TSpinLoader = {
@@ -343,40 +344,3 @@ export const SpinLoader = memo<TSpinLoader>(function ({ onChange, rchild, value 
 })
 
 export default SpinLoader
-
-const text = {
-  user: {
-    new: 'Creando usuario',
-    update: 'Actualizando usuario',
-    delete: 'Eliminando usuario(s)',
-    get: 'Cargando usuario(s)',
-  },
-  client: {
-    new: 'Creando cliente',
-    update: 'Actualizando cliente',
-    delete: 'Eliminando cliente(s)',
-    get: 'Cargando cliente(s)',
-  },
-  credit: {
-    new: 'Creando prestamo',
-    update: 'Actualizando prestamo',
-    delete: 'Eliminando prestamo(s)',
-    get: 'Cargando prestamo(s)',
-  },
-  payment: {
-    new: 'Creando pago',
-    update: 'Actualizando pago',
-    delete: 'Eliminando pago(s)',
-    get: 'Cargando pago(s)',
-  },
-  report: {
-    get: 'Cargando reporte(s)',
-    post: 'Creando reporte(s)',
-  },
-  search: {
-    placeholder: ({ pathname }: { pathname?: string }) =>
-      'Buscar ' + getSearch({ pathname }),
-    title: 'Clientes:',
-    current: 'actual',
-  },
-}

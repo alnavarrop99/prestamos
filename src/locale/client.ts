@@ -1,15 +1,15 @@
 import { type TROLES } from "@/lib/type/rol";
 
 const main = {
-  back: 'Intente volver a la pestaña anterior',
+  back: 'Atras',
   title: 'Clientes:',
-  error: 'Ups!!! ha ocurrido un error',
+  error: 'Ha ocurrido un error',
   errorDescription: 'El listado de clientes ha fallado.',
   browser: 'Clientes',
   search: {
     404: 'No se encontraron resultados',
     selected: ({ selected, total }: { selected: number; total: number }) =>
-      selected + " de " + total + " fila(s) seleccionadas.",
+      selected + " de " + total + " fila(s) seleccionada(s).",
   },
   columns: {
     fullName: 'Nombre y apellidos',
@@ -17,9 +17,9 @@ const main = {
     lastName: 'Apellidos',
     id: 'I.D.',
     phone: 'Celular',
-    telephone: 'Telefono',
+    telephone: 'Teléfono',
     ref: 'Referencia',
-    direction: 'Direccion',
+    direction: 'Dirección',
   },
   buttons: {
     next: 'Siguiente',
@@ -31,94 +31,94 @@ const main = {
     placeholder: 'Seleccione un filtro',
     title: 'Filtros:',
     get items() {
-      return main.columns
+      return main.columns;
     },
   },
   dropdown: {
     title: 'Columnas',
     subtitle: 'Acciones',
     get items() {
-      return main.columns
+      return main.columns;
     },
   },
   menu: {
-    aria: 'Mas Opciones',
+    aria: 'Más opciones',
     title: 'Acciones:',
     copy: 'Copiar datos del cliente',
-    update: 'Ver | Actualizar Cliente',
-    delete: 'Eliminar Cliente',
+    update: 'Ver | Actualizar cliente',
+    delete: 'Eliminar cliente',
   },
 }
 
 const delete_by_id = {
-  title: 'Eliminacion del cliente',
+  title: 'Eliminación del cliente',
   error: {
-    title: 'Obtencion de datos de usuario',
-    descriiption: 'Ha ocurrido un error inesperado',
+    title: 'Obtención de datos de usuario',
+    description: 'Ha ocurrido un error inesperado',
   },
   alert: {
-    title: 'Se eiminara el cliente de la base de datos',
+    title: 'Se eliminará el cliente de la base de datos',
     description: ({ username }: { username: string }) =>
-      'Estas seguro de eliminar el cliente ' +
+      '¿Estás seguro de eliminar el cliente ' +
       username +
-      '?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el cliente.',
+      '? Esta acción es irreversible y se eliminarán todos los datos relacionados con el cliente.',
   },
   button: {
     close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina el cliente.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
+    delete: 'Sí, elimina el cliente.',
+    checkbox: 'Marca la casilla de verificación para proceder con la acción.',
   },
   notification: {
-    titile: 'Eliminacion del cliente',
-    decription: ({ username }: { username: string }) =>
-      'Se ha eliminado el cliente ' + username + ' con exito.',
+    title: 'Eliminación del cliente',
+    description: ({ username }: { username: string }) =>
+      'Se ha eliminado el cliente ' + username + ' con éxito.',
     error: ({ username }: { username: string }) =>
-      'La eliminacion del cliente' + username + 'ha fallado',
+      'La eliminación del cliente ' + username + ' ha fallado.',
     retry: 'Reintentar',
   },
 }
 
 const delete_selected = {
-  title: 'Eliminacion de clientes',
+  title: 'Eliminación de clientes',
   error: {
-    title: 'Obtencion de datos de usuario',
-    descriiption: 'Ha ocurrido un error inesperado',
+    title: 'Obtención de datos de usuario',
+    description: 'Ha ocurrido un error inesperado',
   },
   alert: {
-    title: 'Se eiminara multiples clientes de la base de datos',
+    title: 'Se eliminarán múltiples clientes de la base de datos',
     description: ({ length }: { length: number }) =>
-      'Estas seguro de eliminar ' +
+      '¿Estás seguro de eliminar ' +
       length +
-      ' cliente(s) de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con los clientes seleccionados.',
+      ' cliente(s) de la base de datos? Esta acción es irreversible y se eliminarán todos los datos relacionados con los clientes seleccionados.',
   },
   button: {
     close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina los clientes.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
+    delete: 'Sí, elimina los clientes.',
+    checkbox: 'Marca la casilla de verificación para proceder con la acción.',
   },
   notification: {
-    titile: 'Eliminacion de multiples clientes',
-    decription: ({ username }: { username: string }) =>
-      'Se ha eliminado el cliente ' + username + ' con exito.',
-    error: 'Error: la eliminacion de los clientes ha fallado',
+    title: 'Eliminación de múltiples clientes',
+    description: ({ username }: { username: string }) =>
+      'Se ha eliminado el cliente ' + username + ' con éxito.',
+    error: 'Error: la eliminación de los clientes ha fallado.',
     retry: 'Reintentar',
   },
 }
 
 const news = {
   title: 'Crear cliente:',
-  descriiption:
-    'Introdusca los datos correctamente para la creacion de un cliente nuevo en la plataforma.',
+  description:
+    'Introduzca los datos correctamente para la creación de un cliente nuevo en la plataforma.',
   button: {
     close: 'Cerrar',
     update: 'Crear',
   },
   notification: {
-    titile: 'Creacion de un nuevos usuario',
-    decription: ({ username }: { username: string }) =>
-      'Se ha creado el cliente ' + username + ' con exito.',
+    title: 'Creación de un nuevo usuario',
+    description: ({ username }: { username: string }) =>
+      'Se ha creado el cliente ' + username + ' con éxito.',
     error: ({ username }: { username: string }) =>
-      'La creacion del cliente' + username + 'ha fallado',
+      'La creación del cliente ' + username + ' ha fallado.',
     retry: 'Deshacer',
   },
   form: {
@@ -135,12 +135,12 @@ const news = {
       placeholder: 'Escriba el celular',
     },
     telephone: {
-      label: 'Telefono:',
-      placeholder: 'Escriba el telefono',
+      label: 'Teléfono:',
+      placeholder: 'Escriba el teléfono',
     },
     direction: {
-      label: 'Direccion:',
-      placeholder: 'Escriba la direccion',
+      label: 'Dirección:',
+      placeholder: 'Escriba la dirección',
     },
     email: {
       label: 'Email:',
@@ -155,11 +155,11 @@ const news = {
       placeholder: 'Escriba el ID',
     },
     typeId: {
-      label: 'Tipo de identificacion:',
-      placeholder: 'Seleccione una opcion',
+      label: 'Tipo de identificación:',
+      placeholder: 'Seleccione una opción',
       items: {
-        passport: 'Passaporte',
-        id: 'Cedula',
+        passport: 'Pasaporte',
+        id: 'Cédula',
         driverId: 'Carnet de Conducir',
       },
     },
@@ -176,13 +176,13 @@ const news = {
 
 const update = {
   title: ({ state }: { state: boolean }) =>
-    (state ? 'Datos del ' : 'Actualizacion de los datos') + ' cliente:',
+    (state ? 'Datos del ' : 'Actualización de los datos del') + ' cliente:',
   description: ({ state }: { state: boolean }) =>
-    (state ? 'Datos' : 'Actualizacion de los datos') +
+    (state ? 'Datos' : 'Actualización de los datos') +
     ' del cliente en la plataforma.',
   error: {
-    title: 'Obtencion de datos de usuario',
-    descriiption: 'Ha ocurrido un error inesperado',
+    title: 'Obtención de datos de usuario',
+    description: 'Ha ocurrido un error inesperado',
   },
   button: {
     close: 'Cerrar',
@@ -190,11 +190,11 @@ const update = {
     mode: 'Modo',
   },
   notification: {
-    titile: 'Actualizacion del cliente',
-    decription: ({ username }: { username: string }) =>
-      'Se ha actualizado el cliente ' + username + ' con exito.',
+    title: 'Actualización del cliente',
+    description: ({ username }: { username: string }) =>
+      'Se ha actualizado el cliente ' + username + ' con éxito.',
     error: ({ username }: { username: string }) =>
-      'La actualizacion del cliente' + username + 'ha fallado',
+      'La actualización del cliente ' + username + ' ha fallado.',
     retry: 'Reintentar',
   },
   form: {
@@ -211,12 +211,12 @@ const update = {
       placeholder: 'Escriba el celular',
     },
     telephone: {
-      label: 'Telefono:',
-      placeholder: 'Escriba el telefono',
+      label: 'Teléfono:',
+      placeholder: 'Escriba el teléfono',
     },
     direction: {
-      label: 'Direccion:',
-      placeholder: 'Escriba la direccion',
+      label: 'Dirección:',
+      placeholder: 'Escriba la dirección',
     },
     id: {
       label: 'ID:',
@@ -227,11 +227,11 @@ const update = {
       placeholder: 'Escriba el comentario',
     },
     typeId: {
-      label: 'Tipo de identificacion:',
-      placeholder: 'Seleccione una opcion',
+      label: 'Tipo de identificación:',
+      placeholder: 'Seleccione una opción',
       items: {
-        passport: 'Passaporte',
-        id: 'I.D.',
+        passport: 'Pasaporte',
+        id: 'Cédula',
         driverId: 'Carnet de Conducir',
       },
     },
@@ -247,13 +247,13 @@ const update = {
 }
 
 const client_table = {
-    menu: {
-    aria: 'Mas Opciones',
+  menu: {
+    aria: 'Más opciones',
     title: 'Acciones:',
     copy: 'Copiar datos del cliente',
     update: ({ rolName }: { rolName?: TROLES }) =>
-      rolName === 'Administrador' ? 'Ver | Actualizar' : 'Ver' + ' cliente',
-    pay: 'Asignar prestamo al cliente',
+      rolName === 'Administrador' ? 'Ver | Actualizar' : 'Ver cliente',
+    pay: 'Asignar préstamo al cliente',
     delete: 'Eliminar cliente',
   },
   columns: {
@@ -264,10 +264,10 @@ const client_table = {
     id: 'I.D.',
     idType: 'Tipo de I.D.',
     phone: 'Celular',
-    telephone: '#Telefono',
+    telephone: 'Teléfono',
     ref: 'Referencia',
-    direction: 'Direccion',
-    secondDirection: 'Segunda Direccion',
+    direction: 'Dirección',
+    secondDirection: 'Segunda Dirección',
   },
   search: {
     404: 'No se encontraron resultados',

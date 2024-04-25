@@ -63,12 +63,12 @@ export function NewClient() {
     newData: TCLIENT_POST,
     variables: TCLIENT_POST_BODY
   ) => unknown = (newData, items) => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: items?.nombres + items?.apellidos,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -150,7 +150,7 @@ export function NewClient() {
           </DialogTitle>
           <Separator />
           <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-            {text.descriiption}
+            {text.description}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[50dvh] overflow-y-auto md:h-full">

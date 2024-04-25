@@ -75,12 +75,12 @@ export function NewUser() {
     variables: TUSER_POST_BODY,
     context: unknown
   ) => unknown = (newData, items) => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: items?.nombre,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -159,7 +159,7 @@ export function NewUser() {
           </DialogTitle>
           <Separator />
           <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-            {text.descriiption}
+            {text.description}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60dvh] overflow-y-auto md:h-full">
@@ -197,7 +197,7 @@ export function NewUser() {
             </Label>
             <Label>
               <span className="after:text-red-500 after:content-['_*_']">
-                {text.form.rol.label}{' '}
+                {text.form.role.label}{' '}
               </span>
               <Select
                 required
@@ -207,7 +207,7 @@ export function NewUser() {
                 }
               >
                 <SelectTrigger className="!border-1 w-full !border-ring">
-                  <SelectValue placeholder={text.form.rol.placeholder} />
+                  <SelectValue placeholder={text.form.role.placeholder} />
                 </SelectTrigger>
                 <SelectContent className="[&_*]:cursor-pointer">
                   {listRols()?.map(({ nombre, id }, index) => (
@@ -269,7 +269,7 @@ export function NewUser() {
         </ScrollArea>
         <DialogFooter className="flex-col justify-end gap-2 md:flex-row">
           <Button variant="default" form="new-client-form" type="submit">
-            {text.button.update}
+            {text.button.create}
           </Button>
           <DialogClose asChild>
             <Button

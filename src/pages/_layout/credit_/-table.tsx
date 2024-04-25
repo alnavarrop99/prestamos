@@ -98,7 +98,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
 
                       {cuote?.valor_de_mora > 0 && (
                         <li>
-                          <b>{text.installmantsDate + ':'}</b>{' '}
+                          <b>{text.installmentsDate + ':'}</b>{' '}
                           {format(
                             new Date(cuote?.fecha_de_aplicacion_de_mora),
                             'dd/MM/yyyy'
@@ -108,7 +108,7 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
 
                       {cuote?.valor_de_mora > 0 && (
                         <li>
-                          <b>{text.payInstallmants + ':'}</b> ${' '}
+                          <b>{text.payInstallments + ':'}</b> ${' '}
                           {cuote?.valor_de_mora?.toFixed(2) + '.'}
                         </li>
                       )}
@@ -138,8 +138,8 @@ export function PaymentTable({ table, credit }: TPaymentTable) {
           <TableHead></TableHead>
           <TableHead>{text.payDate}</TableHead>
           <TableHead>{text.payValue}</TableHead>
-          <TableHead>{text.installmantsDate}</TableHead>
-          <TableHead>{text.payInstallmants}</TableHead>
+          <TableHead>{text.installmentsDate}</TableHead>
+          <TableHead>{text.payInstallments}</TableHead>
           <TableHead>{text.payStatus}</TableHead>
         </TableRow>
       </TableHeader>

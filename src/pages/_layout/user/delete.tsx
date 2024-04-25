@@ -32,7 +32,7 @@ export function DeleteSelectedUsers() {
   }
 
   const onSubmit: React.FormEventHandler< React.ComponentRef< typeof Button > > = (ev) => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       length: selectUsers?.length,
     })
 
@@ -47,7 +47,7 @@ export function DeleteSelectedUsers() {
     const onClick = () => {}
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
       action: (

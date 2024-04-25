@@ -77,12 +77,12 @@ export const MyUserInfo = memo(function () {
   const onSuccess: (data: TUSER_PATCH) => void = (newData) => {
     if (!init?.current?.nombre) return
 
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: init?.current?.nombre,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -94,7 +94,7 @@ export const MyUserInfo = memo(function () {
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -241,7 +241,7 @@ export const MyUserInfo = memo(function () {
         </DialogTitle>
         <Separator />
         <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-          {text.descriiption}
+          {text.description}
         </DialogDescription>
       </DialogHeader>
       <ScrollArea className="h-[50dvh] overflow-y-auto md:h-full">
@@ -296,7 +296,7 @@ export const MyUserInfo = memo(function () {
             )}
           </Label>
           <Label>
-            <span>{text.form.rol.label} </span>
+            <span>{text.form.role.label} </span>
             {!isSuccess ? (
               <Skeleton className="h-10 w-full" />
             ) : (
@@ -309,7 +309,7 @@ export const MyUserInfo = memo(function () {
                 disabled={!!userId && rol?.rolName !== 'Administrador'}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={text.form.rol.placeholder} />
+                  <SelectValue placeholder={text.form.role.placeholder} />
                 </SelectTrigger>
                 <SelectContent className="[&_*]:cursor-pointer">
                   {listRols()?.map(({ id, nombre }) => (

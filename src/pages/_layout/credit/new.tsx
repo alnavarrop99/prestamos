@@ -167,12 +167,12 @@ export function NewCredit() {
     variables: TCREDIT_POST_BODY,
     context: unknown
   ) => unknown = () => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: client?.nombres + ' ' + client?.apellidos,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -299,7 +299,7 @@ export function NewCredit() {
           </DialogTitle>
           <Separator />
           <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-            {text.descriiption}
+            {text.description}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[50dvh] md:h-full">
@@ -467,7 +467,7 @@ export function NewCredit() {
               )}
             </Label>
             <Label className='xl:row-start-3 [&>span]:after:text-red-500 [&>span]:after:content-["_*_"]'>
-              <span>{text.form.frecuency.label} </span>
+              <span>{text.form.frequency.label} </span>
               {!okUsers && !okClients ? (
                 <Skeleton className="h-10 w-full" />
               ) : (
@@ -480,7 +480,7 @@ export function NewCredit() {
                 >
                   <SelectTrigger className="!border-1 w-full !border-ring">
                     <SelectValue
-                      placeholder={text.form.frecuency.placeholder}
+                      placeholder={text.form.frequency.placeholder}
                     />
                   </SelectTrigger>
                   <SelectContent className="[&_*]:cursor-pointer">
@@ -578,7 +578,7 @@ export function NewCredit() {
               )}
             </Label>
             <Label className="xl:row-start-4">
-              <span>{text.form.aditionalDays.label} </span>
+              <span>{text.form.additionalDays.label} </span>
               {!okUsers && !okClients ? (
                 <Skeleton className="h-10 w-full" />
               ) : (
@@ -587,7 +587,7 @@ export function NewCredit() {
                   max={25}
                   name={'dias_adicionales' as TFormName}
                   type="number"
-                  placeholder={text.form.aditionalDays.placeholder}
+                  placeholder={text.form.additionalDays.placeholder}
                 />
               )}
             </Label>

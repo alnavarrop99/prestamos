@@ -52,12 +52,12 @@ export function DeleteSelectedClients() {
   const qClient = useQueryClient()
 
   const onSuccess = (data: TCLIENT_DELETE) => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: data.nombres + ' ' + data.apellidos,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })

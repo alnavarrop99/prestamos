@@ -112,12 +112,12 @@ export function UpdateClientById() {
   const onSuccess = (newData: TCLIENT_PATCH) => {
     if (!init?.current?.nombres || !init?.current?.apellidos) return
 
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: init?.current?.nombres + ' ' + init.current.apellidos,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -129,7 +129,7 @@ export function UpdateClientById() {
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })

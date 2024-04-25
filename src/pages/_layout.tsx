@@ -13,7 +13,6 @@ import clsx from 'clsx'
 import {
   ArrowLeftCircle,
   Calendar as CalendarIcon,
-  icons,
   LogOut,
   MenuSquare,
   Moon,
@@ -60,7 +59,7 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { getRoute, getSearch, TSearch } from '@/lib/route'
+import { getRoute, TSearch } from '@/lib/route'
 import { useToken } from '@/lib/context/login'
 import {
   queryOptions,
@@ -94,6 +93,7 @@ import { type TCREDIT_GET_FILTER_ALL } from '@/api/credit'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { listPayments } from '@/api/payment'
 import SpinLoader from '@/pages/-spinloader'
+import { main as text } from "@/locale/layout";
 
 export const getCurrentUserOpt = {
   queryKey: ['login-user', { userId: useToken.getState().userId }],
@@ -820,61 +820,3 @@ export function Error({ error }: ErrorComponentProps) {
 Layout.dispalyname = 'Layout'
 ErrorStates.dispalyname = 'LayoutErrorStates'
 Error.dispalyname = 'LayoutError'
-
-const text = {
-  title: 'Matcor',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'La carga de la pagina ha fallado.',
-  retry: 'Intente recargar e inicie session',
-  loader: {
-    user: {
-      new: 'Creando usuario',
-      update: 'Actualizando usuario',
-      delete: 'Eliminando usuario(s)',
-      get: 'Cargando usuario(s)',
-    },
-    client: {
-      new: 'Creando cliente',
-      update: 'Actualizando cliente',
-      delete: 'Eliminando cliente(s)',
-      get: 'Cargando cliente(s)',
-    },
-    credit: {
-      new: 'Creando prestamo',
-      update: 'Actualizando prestamo',
-      delete: 'Eliminando prestamo(s)',
-      get: 'Cargando prestamo(s)',
-    },
-    payment: {
-      new: 'Creando pago',
-      update: 'Actualizando pago',
-      delete: 'Eliminando pago(s)',
-      get: 'Cargando pago(s)',
-    },
-    report: {
-      get: 'Cargando reporte(s)',
-      post: 'Creando reporte(s)',
-    },
-  },
-  navegation: {
-    credit: { title: 'Prestamos', url: '/credit', Icon: icons?.CreditCard },
-    client: { title: 'Clientes', url: '/client', Icon: icons?.Award },
-    user: { title: 'Usuarios', url: '/user', Icon: icons?.BookUser },
-    report: { title: 'Reportes', url: '/report', Icon: icons?.BookA },
-  },
-  avatar: {
-    src: 'https://placehold.co/50x50?text=Hello+World',
-    name: 'Admin99',
-    description: ({ username }: { username: string }) => username,
-  },
-  search: {
-    placeholder: ({ pathname }: { pathname?: string }) =>
-      'Buscar ' + getSearch({ pathname }),
-    title: 'Clientes:',
-    current: 'actual',
-  },
-  footer: {
-    copyright: 'Todos los derechos reservados',
-    description: 'Compañia de creditos comerciales independiente',
-  },
-}

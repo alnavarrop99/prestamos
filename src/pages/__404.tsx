@@ -2,6 +2,7 @@ import { NotFoundRoute } from '@tanstack/react-router'
 import { Route as _root } from '@/pages/__root'
 import { SearchX } from 'lucide-react'
 import { useEffect } from 'react';
+import { main as text } from "@/locale/404";
 
 export const Route = new NotFoundRoute({
   component: _404,
@@ -26,9 +27,3 @@ export function _404() {
 }
 
 _404.dispalyname = 'Not Found'
-
-const text = {
-  title: '( 404 )',
-  browser: "404",
-  description: 'Pagina no encontrada',
-}

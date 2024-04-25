@@ -63,13 +63,13 @@ export function PayCreditById() {
     variables: TPAYMENT_POST_BODY,
     context: unknown
   ) => unknown = (_, items) => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: client?.nombres + ' ' + client?.apellidos,
       number: +items?.valor_del_pago,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -150,7 +150,7 @@ export function PayCreditById() {
           </DialogTitle>
           <Separator />
           <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-            <p>{text.descriiption}</p>
+            <p>{text.description}</p>
           </DialogDescription>
         </DialogHeader>
         <form

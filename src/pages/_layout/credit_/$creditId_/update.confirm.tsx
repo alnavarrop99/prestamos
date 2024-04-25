@@ -54,12 +54,12 @@ export function UpdateConfirmationCredit() {
   const qClient = useQueryClient()
 
   const onSuccessUpdateCredit: ((data: TCREDIT_PATCH, variables: { creditId: number; updateCredit?: TCREDIT_PATCH_BODY | undefined; }, context: unknown) => unknown) = ( newData ) => {
-    const description = text.notification.credit.decription({
+    const description = text.notification.credit.description({
       username: client?.nombres + " " + client?.apellidos,
     })
 
     toast({
-      title: text.notification.credit.titile,
+      title: text.notification.credit.title,
       description,
       variant: 'default',
     })
@@ -111,12 +111,12 @@ export function UpdateConfirmationCredit() {
   })
 
   const onSuccessUpdatePayment: ((data: TPAYMENT_GET_BASE, variables: { paymentId: number; updatePayment?: TPAYMENT_PATCH_BODY | undefined }, context: unknown) => unknown) = () => {
-    const description = text.notification.payment.decription({
+    const description = text.notification.payment.description({
       username: client?.nombres + " " + client?.apellidos,
     })
 
     toast({
-      title: text.notification.payment.titile,
+      title: text.notification.payment.title,
       description,
       variant: 'default',
     })
@@ -154,12 +154,12 @@ export function UpdateConfirmationCredit() {
   })
 
   const onSuccessRemovePayment: ((data: TPAYMENT_GET_BASE, variables: { paymentId: number; }, context: unknown) => unknown) = () => {
-    const description = text.notification.deletePayment.decription({
+    const description = text.notification.deletePayment.description({
       username: client?.nombres + " " + client?.apellidos,
     })
 
     toast({
-      title: text.notification.deletePayment.titile,
+      title: text.notification.deletePayment.title,
       description,
       variant: 'default',
     })
@@ -311,7 +311,7 @@ export function UpdateConfirmationCredit() {
               disabled={!checked}
               onClick={onSubmit}
             >
-              {text.button.delete}
+              {text.button.update}
             </Button>
           </DialogClose>
           <DialogClose asChild>

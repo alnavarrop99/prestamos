@@ -1,26 +1,26 @@
 const main = {
   title: "Inicio de sesión:",
-  retry: "Recargar",
+  retry: "Reintentar",
   browser: "Bienvenido",
   description: [
-    "Bienvenido a su aplicación de prestamos.",
-    "Por favor introduzca sus credenciales para acceder a su cuenta."
+    "Bienvenido a tu aplicación de préstamos.",
+    "Por favor, ingresa tus credenciales para acceder a tu cuenta."
   ],
   username: {
     placeholder: "Nombre de usuario",
-    label: "Username:"
+    label: "Nombre de usuario:"
   },
   password: {
     placeholder: "Contraseña",
-    label: "Password:"
+    label: "Contraseña:"
   },
   remember: "Recuérdame.",
   notification: {
-    title: "Usuario logeado con éxito!",
+    title: "¡Inicio de sesión exitoso!",
     description: "Bienvenido",
     retry: "Reintentar"
   },
-  login: "Login"
+  login: "Iniciar sesión"
 }
 
 export {

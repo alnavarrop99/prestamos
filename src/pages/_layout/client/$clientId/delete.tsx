@@ -54,12 +54,12 @@ export function DeleteClientById() {
   const qClient = useQueryClient()
 
   const onSuccess = () => {
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: name,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })

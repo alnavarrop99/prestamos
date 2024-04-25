@@ -105,12 +105,12 @@ export function UpdateUserById() {
   const onSuccess: (data: TUSER_PATCH) => void = (newData) => {
     if (!init?.current?.nombre) return
 
-    const description = text.notification.decription({
+    const description = text.notification.description({
       username: init?.current?.nombre,
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -122,7 +122,7 @@ export function UpdateUserById() {
     })
 
     toast({
-      title: text.notification.titile,
+      title: text.notification.title,
       description,
       variant: 'default',
     })
@@ -267,7 +267,7 @@ export function UpdateUserById() {
           </DialogTitle>
           <Separator />
           <DialogDescription className="text-start text-xs text-muted-foreground md:text-base">
-            {text.descriiption}
+            {text.description}
           </DialogDescription>
         </DialogHeader>
         <ScrollArea className="h-[60dvh] overflow-y-auto md:h-full">
@@ -320,7 +320,7 @@ export function UpdateUserById() {
               )}
             </Label>
             <Label>
-              <span>{text.form.rol.label} </span>
+              <span>{text.form.role.label} </span>
               {!isSuccess ? (
                 <Skeleton className="h-10 w-full" />
               ) : (
@@ -332,7 +332,7 @@ export function UpdateUserById() {
                   }
                 >
                   <SelectTrigger className="w-full">
-                    <SelectValue placeholder={text.form.rol.placeholder} />
+                    <SelectValue placeholder={text.form.role.placeholder} />
                   </SelectTrigger>
                   <SelectContent className="[&_*]:cursor-pointer">
                     {listRols()?.map(({ id, nombre }) => (

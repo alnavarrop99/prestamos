@@ -1,22 +1,22 @@
 import { TMORA_TYPE } from "@/lib/type/moraType"
 
 const main = {
-  title: 'Prestamos:',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'El listado de prestamos ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
-  browser: 'Prestamos',
-  notfound: 'No existen prestamos activos.',
-  select: ({ total }: { total: number }) => `${total} credito(s) activos.`,
+  title: 'Préstamos:',
+  error: 'Ha ocurrido un error',
+  errorDescription: 'Ha fallado la obtención del listado de préstamos.',
+  back: 'Atras',
+  browser: 'Préstamos',
+  notfound: 'No existen préstamos activos.',
+  select: ({ total }: { total: number }) => `${total} crédito(s) activo(s).`,
   pagination: {
     back: 'Anterior',
     next: 'Siguiente',
   },
   alert: {
     info: {
-      title: 'Fecha limite',
+      title: 'Fecha límite',
       description: ({ date }: { date: Date }) =>
-        'El cobro se aproxima a su fecha limite ' + date + '.',
+        'El cobro se aproxima a su fecha límite: ' + date + '.',
     },
     warn: {
       title: 'Cliente en estado moroso',
@@ -28,10 +28,10 @@ const main = {
     deactivate: 'Desactivar',
   },
   details: {
-    pay: 'Numero de cuotas',
+    pay: 'Número de cuotas',
     cuote: 'Monto por cuota',
     mora: 'Monto por mora',
-    frecuency: 'Frecuencia',
+    frequency: 'Frecuencia',
     history: 'Historial de pagos',
   },
   print: {
@@ -41,7 +41,7 @@ const main = {
     telephone: 'Teléfono',
     phone: 'Celular',
     date: 'Fecha',
-    pay: 'Pago cuota',
+    pay: 'Pago de cuota',
     mora: 'Mora',
     cuoteNumber: 'Número de cuota',
     pending: 'Pendiente',
@@ -51,47 +51,47 @@ const main = {
 }
 
 const delete_by_id = {
-  title: 'Eliminacion de un prestamo',
+  title: 'Eliminación de un préstamo',
   alert: {
-    title: 'Se eiminara el prestamo de la base de datos',
+    title: 'Se eliminará el préstamo de la base de datos',
     description: ({ username }: { username: string }) =>
-      'Estas seguro de eliminar prestamo del cliente ' +
+      '¿Estás seguro de eliminar el préstamo del cliente ' +
       username +
-      ' de la basde de datos?. Esta accion es irreversible y se eliminaran todos los datos relacionados con el prestamo.',
+      ' de la base de datos? Esta acción es irreversible y se eliminarán todos los datos relacionados con el préstamo.',
   },
   button: {
-    close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, elimina el prestamo.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
+    close: 'No, volver a la pestaña anterior.',
+    delete: 'Sí, eliminar el préstamo.',
+    checkbox: 'Marca la casilla de verificación para proceder con la acción.',
   },
   notification: {
-    titile: 'Eliminacion de un credito',
-    decription: ({ username }: { username?: string }) =>
-      'Se ha eliminado prestamo del cliente ' + username + ' con exito.',
+    title: 'Eliminación de un crédito',
+    description: ({ username }: { username?: string }) =>
+      'Se ha eliminado el préstamo del cliente ' + username + ' con éxito.',
     error: ({ username }: { username: string }) =>
-      'La eliminacion del prestamo del cliente ' + username + ' ha fallado',
+      'La eliminación del préstamo del cliente ' + username + ' ha fallado.',
     retry: 'Reintentar',
   },
 }
 
 const news = {
-  title: 'Crear prestamo:',
-  descriiption:
-    'Introdusca los datos correctamente para la creacion de un prestamo en la plataforma',
+  title: 'Crear préstamo:',
+  description:
+    'Introduzca los datos correctamente para la creación de un préstamo en la plataforma.',
   error: {
-    title: 'Obtencion de datos',
-    descriiption: 'Ha ocurrido un error inesperado',
+    title: 'Obtención de datos',
+    description: 'Ha ocurrido un error inesperado.',
   },
   button: {
     close: 'Cerrar',
     update: 'Crear',
   },
   notification: {
-    titile: 'Creacion de un nuevos prestamo',
-    decription: ({ username }: { username: string }) =>
-      'Se ha creado el prestamo para el usuario ' + username + ' con exito.',
+    title: 'Creación de un nuevo préstamo',
+    description: ({ username }: { username: string }) =>
+      'Se ha creado el préstamo para el usuario ' + username + ' con éxito.',
     error: ({ username }: { username: string }) =>
-      'Ha fallado la creacion del prestamo para el usuario ' + username + '.',
+      'Ha fallado la creación del préstamo para el usuario ' + username + '.',
     retry: 'Reintentar',
   },
   form: {
@@ -109,34 +109,34 @@ const news = {
     },
     comment: {
       label: 'Comentario:',
-      placeholder: 'Escriba un commentario',
+      placeholder: 'Escriba un comentario',
     },
     amount: {
       label: 'Monto:',
-      placeholder: 'Monto total del prestamo',
+      placeholder: 'Monto total del préstamo',
     },
-    frecuency: {
+    frequency: {
       label: 'Frecuencia:',
-      placeholder: 'Seleccione una opcion',
+      placeholder: 'Seleccione una opción',
       items: ['Anual', 'Quincenal', 'Mensual', 'Semanal'],
     },
-    aditionalDays: {
-      label: 'Dias Adicionales:',
-      placeholder: 'Cantidad de dias',
+    additionalDays: {
+      label: 'Días Adicionales:',
+      placeholder: 'Cantidad de días',
     },
     date: {
-      label: 'Fecha de aprobacion:',
+      label: 'Fecha de aprobación:',
       placeholder: 'Seleccione la fecha',
     },
     interest: {
-      label: 'Tasa de Interes:',
-      placeholder: 'Porcentaje de interes por cuota',
+      label: 'Tasa de Interés:',
+      placeholder: 'Porcentaje de interés por cuota',
     },
     installments: {
       label: 'Mora:',
       placeholder: {
         ['Valor fijo' as TMORA_TYPE]: 'Monto adicional en cada cuota',
-        ['Porciento' as TMORA_TYPE]: 'Porcentaje adicional en cada cuota',
+        ['Porcentaje' as TMORA_TYPE]: 'Porcentaje adicional en cada cuota',
       },
     },
     cuote: {
@@ -148,22 +148,22 @@ const news = {
 
 const pay_by_id = {
   title: 'Realizar un pago:',
-  descriiption: 'Introdusca los datos correctamente para realizar un pago.',
+  description: 'Introduzca los datos correctamente para realizar un pago.',
   button: {
-    close: 'No, vuelve a la pestaña anterior',
-    pay: 'Si, realiza el pago',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
+    close: 'No, volver a la pestaña anterior',
+    pay: 'Sí, realiza el pago',
+    checkbox: 'Marca la casilla de verificación para proceder con la acción.',
   },
   notification: {
-    titile: 'Ejecucion de un pago',
-    decription: ({ username, number }: { username: string; number: number }) =>
+    title: 'Ejecución de un pago',
+    description: ({ username, number }: { username: string; number: number }) =>
       'Se ha pagado la cuota con un monto de $' +
       number +
       ' del usuario ' +
       username +
-      ' con exito.',
+      ' con éxito.',
     error: (username: string) =>
-      'Ha fallado el pago de la cuota del usuario ' + username,
+      'Ha fallado el pago de la cuota del usuario ' + username + '.',
     retry: 'Reintentar',
   },
   form: {
@@ -172,11 +172,11 @@ const pay_by_id = {
       placeholder: 'Monto a pagar',
     },
     comment: {
-      label: 'Comentario',
+      label: 'Comentario:',
       placeholder: 'Escriba un comentario',
     },
     date: {
-      label: 'Fecha de aprobacion',
+      label: 'Fecha de aprobación:',
       placeholder: 'Seleccione una fecha',
     },
   },
@@ -184,20 +184,20 @@ const pay_by_id = {
 
 const pay_selected = {
   title: 'Realizar un pago:',
-  descriiption: 'Introdusca los datos correctamente para realizar un pago.',
+  description: 'Introduzca los datos correctamente para realizar un pago.',
   button: {
     close: 'No, vuelve a la pestaña anterior',
-    pay: 'Si, realiza el pago',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
+    pay: 'Sí, realiza el pago',
+    checkbox: 'Marque la casilla de verificación para proceder con la acción.',
   },
   notification: {
-    titile: 'Ejecucion de un pago',
-    decription: ({ username, number }: { username: string; number: number }) =>
+    title: 'Ejecución de un pago',
+    description: ({ username, number }: { username: string; number: number }) =>
       'Se ha pagado la cuota con un monto de $' +
       number +
       ' del usuario ' +
       username +
-      ' con exito.',
+      ' con éxito.',
     error: ({ username }: { username: string }) =>
       'Ha fallado el pago de la cuota del usuario ' + username,
     retry: 'Reintentar',
@@ -212,38 +212,38 @@ const pay_selected = {
       placeholder: 'Escriba un comentario',
     },
     date: {
-      label: 'Fecha de aprobacion',
+      label: 'Fecha de aprobación',
       placeholder: 'Seleccione una fecha',
     },
   },
 }
 
 const print_by_id = {
-  title: 'Opciones de impresion:',
-  description: "Seleccione la opcion deseada para la impresion del pago.",
+  title: 'Opciones de impresión:',
+  description: 'Seleccione la opción deseada para la impresión del pago.',
   button: {
     close: 'Volver a la pestaña anterior',
     print: 'Imprimir',
   },
   form: {
     pay: {
-      label: 'Numero del pago:',
+      label: 'Número del pago:',
       placeholder: 'Seleccione el pago',
     },
     options: {
       label: 'Opciones:',
-      placeholder: 'Seleccione la opcion de impresion',
-      items: [ "Ultimo pago","Pago especifico" ]
+      placeholder: 'Seleccione la opción de impresión',
+      items: ["Último pago", "Pago específico"],
     },
-  }
+  },
 }
 
 const print_selected = {
-  title: 'Opciones de impresion:',
-  description: 'Seleccione la opcion deseada para la impresion del pago.',
+    title: 'Opciones de impresión:',
+  description: 'Seleccione la opción deseada para la impresión del pago.',
   error: {
-    title: 'Obtencion de datos',
-    descriiption: 'Ha ocurrido un error inesperado',
+    title: 'Obtención de datos',
+    description: 'Ha ocurrido un error inesperado',
   },
   button: {
     close: 'Volver a la pestaña anterior',
@@ -251,50 +251,50 @@ const print_selected = {
   },
   form: {
     pay: {
-      label: 'Numero del pago:',
+      label: 'Número del pago:',
       placeholder: 'Seleccione el pago',
     },
     options: {
       label: 'Opciones:',
-      placeholder: 'Seleccione la opcion de impresion',
+      placeholder: 'Seleccione la opción de impresión',
     },
   },
 }
 
 const credit_by_id = {
   title: 'Detalles:',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'Los detalles del prestamo ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
+  error: 'Ha ocurrido un error',
+  errorDescription: 'Ha fallado la obtención de los detalles del préstamo.',
+  back: 'Atras',
   button: {
     update: 'Editar',
     delete: 'Eliminar',
   },
   details: {
-    title: 'Detalles del prestamo:',
+    title: 'Detalles del préstamo:',
     name: 'Nombre del cliente',
     user: 'Cobrador',
     ref: 'Referencia',
     amount: 'Monto total',
-    interest: 'Tasa de interes',
-    cuoteNumber: 'Numero de cuotas',
+    interest: 'Tasa de interés',
+    cuoteNumber: 'Número de cuotas',
     cuote: 'Monto por cuota',
     pay: 'Monto a pagar',
-    installmants: (type: TMORA_TYPE) =>
-      type === 'Valor fijo' ? 'Monta por mora' : 'Tasa por mora',
-    frecuency: 'Frecuencia del credito',
+    installments: (type: TMORA_TYPE) =>
+      type === 'Valor fijo' ? 'Monto por mora' : 'Tasa por mora',
+    frequency: 'Frecuencia del crédito',
     status: 'Estado',
-    date: 'Fecha de aprobacion',
+    date: 'Fecha de aprobación',
     comment: 'Comentario',
-    cuotes: 'Numero de cuotas',
-    aditionalsDays: 'Dias adicionales',
+    cuotes: 'Número de cuotas',
+    additionalDays: 'Días adicionales',
   },
   cuotes: {
     title: 'Historial de pagos:',
     payDate: 'Fecha de pago',
-    installmantsDate: 'Fecha de aplicacion de mora',
+    installmentsDate: 'Fecha de aplicación de mora',
     payValue: 'Monto del pago',
-    payInstallmants: 'Monto de la mora',
+    payInstallments: 'Monto de la mora',
     payStatus: 'Pagada',
     total: 'Monto total',
   },
@@ -304,72 +304,72 @@ const credit_by_id = {
 }
 
 const update = {
-  title: 'Editar prestamos:',
-  error: 'Ups!!! ha ocurrido un error',
-  errorDescription: 'Los detalles del prestamo ha fallado.',
-  back: 'Intente volver a la pestaña anterior',
+    title: 'Editar préstamos:',
+  error: 'Ha ocurrido un error',
+  errorDescription: 'Ha fallado la obtención de los detalles del préstamo.',
+  back: 'Atras',
   button: {
     update: 'Actualizar',
     close: 'Cancelar',
   },
   notification: {
-    titile: 'Actualizacion de un prestamo',
-    decription: ({ username }: { username: string }) =>
-      'Se ha actualizado el prestamo para el usuario ' +
+    title: 'Actualización de un préstamo',
+    description: ({ username }: { username: string }) =>
+      'Se ha actualizado el préstamo para el usuario ' +
       username +
-      ' con exito.',
-    error: 'Error: la actualizacion del prestamo ha fallado',
+      ' con éxito.',
+    error: 'Error: la actualización del préstamo ha fallado',
     undo: 'Deshacer',
   },
   form: {
     details: {
-      title: 'Estado del prestamo:',
+      title: 'Estado del préstamo:',
       amount: {
         label: 'Monto total:',
-        placeholder: 'Escriba el nombre del usuario',
+        placeholder: 'Escriba el monto total',
       },
       date: {
-        label: 'Fecha de aprobacion:',
-        placeholder: 'Seleccione la fecha',
+        label: 'Fecha de aprobación:',
+        placeholder: 'Seleccione la fecha de aprobación',
       },
       comment: {
         label: 'Comentario:',
         placeholder: 'Escriba un comentario',
       },
       interest: {
-        label: 'Tasa de interes:',
-        placeholder: 'Escriba la tasa de interes',
+        label: 'Tasa de interés:',
+        placeholder: 'Escriba la tasa de interés',
       },
-      aditionalsDays: {
-        label: 'Dias adicionales:',
-        placeholder: 'Cantidad de dias adicionales',
+      additionalDays: {
+        label: 'Días adicionales:',
+        placeholder: 'Cantidad de días adicionales',
       },
       clients: {
         label: 'Cliente:',
-        placeholder: 'Escribe | Seleccione el cliente',
+        placeholder: 'Escriba o seleccione el cliente',
       },
-      ref: {
+      guarantor: {
         label: 'Garante:',
-        placeholder: 'Escribe el garante',
+        placeholder: 'Escriba el garante',
       },
       cuotes: {
-        label: 'Numeros de cuotas:',
-        placeholder: 'Escribe la cantidad de cuotas',
+        label: 'Número de cuotas:',
+        placeholder: 'Escriba la cantidad de cuotas',
       },
       users: {
         label: 'Cobrador:',
-        placeholder: 'Escribe | Seleccione el cobrador',
+        placeholder: 'Escriba o seleccione el cobrador',
       },
-      installmants: {
+      installments: {
         label: 'Monto de mora:',
         placeholder: {
           ['Valor fijo' as TMORA_TYPE]: 'Monto adicional en cada cuota',
           ['Porciento' as TMORA_TYPE]: 'Porcentaje adicional en cada cuota',
         },
       },
-      frecuency: {
+      frequency: {
         label: 'Frecuencia:',
-        placeholder: 'Seleccione una opcion',
+        placeholder: 'Seleccione una opción',
         items: ['Anual', 'Quincenal', 'Mensual', 'Semanal'],
       },
     },
@@ -377,11 +377,11 @@ const update = {
       title: 'Listado de pagos:',
       payDate: {
         label: 'Fecha de pago:',
-        placeholder: 'Seleccione la fecha',
+        placeholder: 'Seleccione la fecha de pago',
       },
-      installmantsDate: {
-        label: 'Fecha de aplicacion de mora:',
-        placeholder: 'Seleccione la fecha',
+      installmentsDate: {
+        label: 'Fecha de aplicación de mora:',
+        placeholder: 'Seleccione la fecha de aplicación de mora',
       },
       payValue: {
         label: 'Monto de pago:',
@@ -389,45 +389,47 @@ const update = {
       },
       comment: {
         label: 'Comentario:',
-        placeholder: 'Escribe un comentario',
+        placeholder: 'Escriba un comentario',
       },
     },
   },
 }
 
 const update_confirmation = {
-  title: 'Actualizacion del prestamo',
+    title: 'Actualización del préstamo',
   alert: {
-    title: 'Se actualizara el prestamo de la base de datos',
+    title: 'Se actualizará el préstamo en la base de datos',
     description: ({ username }: { username: string }) =>
-      'Estas seguro de actualizar el prestamo del cliente ' + username + ' de la basde de datos?. Esta accion es irreversible y se actualizara los datos relacionados con el prestamo.',
+      '¿Estás seguro de que deseas actualizar el préstamo del cliente ' +
+      username +
+      ' en la base de datos? Esta acción es irreversible y actualizará los datos relacionados con el préstamo.',
   },
   button: {
-    close: 'No, vuelve a la pestaña anterior.',
-    delete: 'Si, actualiza el prestamo.',
-    checkbox: 'Marca la casilla de verificacon para proceder con la accion.',
+    close: 'No, volver a la pestaña anterior',
+    update: 'Sí, actualizar el préstamo',
+    checkbox: 'Marca la casilla de verificación para proceder con la acción',
   },
   notification: {
     payment: {
-      titile: 'Actualizacion de un pago',
-      decription: ({ username }: { username?: string }) =>
-        'Se ha actualizado el pago del cliente ' + username + ' con exito.',
+      title: 'Actualización de un pago',
+      description: ({ username }: { username?: string }) =>
+        'Se ha actualizado el pago del cliente ' + username + ' con éxito.',
       error: ({ username }: { username: string }) =>
-      'Ha fallado la actualizacion pago para el usuario ' + username + '.',
+        'Ha fallado la actualización del pago para el usuario ' + username + '.',
     },
     deletePayment: {
-      titile: 'Elminacion de un pago',
-      decription: ({ username }: { username?: string }) =>
-        'Se ha eliminado el pago del cliente ' + username + ' con exito.',
+      title: 'Eliminación de un pago',
+      description: ({ username }: { username?: string }) =>
+        'Se ha eliminado el pago del cliente ' + username + ' con éxito.',
       error: ({ username }: { username: string }) =>
-        'Ha fallado la eliminacion del prestamo para el usuario ' + username + '.',
+        'Ha fallado la eliminación del préstamo para el usuario ' + username + '.',
     },
     credit: {
-      titile: 'Actualizacion de un prestamo',
-      decription: ({ username }: { username?: string }) =>
-        'Se ha actualizado el prestamo del cliente ' + username + ' con exito.',
+      title: 'Actualización de un préstamo',
+      description: ({ username }: { username?: string }) =>
+        'Se ha actualizado el préstamo del cliente ' + username + ' con éxito.',
       error: ({ username }: { username: string }) =>
-        'Ha fallado la actualizacion del prestamo para el usuario ' + username + '.',
+        'Ha fallado la actualización del préstamo para el usuario ' + username + '.',
     },
     retry: 'Reintentar',
   },
@@ -435,26 +437,26 @@ const update_confirmation = {
 
 const credit_table = {
   payDate: 'Fecha de pago',
-  installmantsDate: 'Fecha de aplicacion de mora',
+  installmentsDate: 'Fecha de aplicación de mora',
   payValue: 'Monto del pago',
-  payInstallmants: 'Monto de la mora',
+  payInstallments: 'Monto de la mora',
   payStatus: 'Pagada',
   total: 'Monto total',
 }
 
 const credit_print = {
-    title: 'Comprobante de pago',
-    client: 'Cliente',
-    ssn: 'Cédula',
-    telephone: 'Teléfono',
-    phone: 'Celular',
-    date: 'Fecha',
-    pay: 'Pago cuota',
-    mora: 'Mora',
-    cuoteNumber: 'Número de cuota',
-    pending: 'Pendiente',
-    comment: 'Comentario',
-    services: 'Servicios',
+  title: 'Comprobante de pago',
+  client: 'Cliente',
+  ssn: 'Cédula',
+  telephone: 'Teléfono',
+  phone: 'Celular',
+  date: 'Fecha',
+  pay: 'Pago cuota',
+  mora: 'Mora',
+  cuoteNumber: 'Número de cuota',
+  pending: 'Pendiente',
+  comment: 'Comentario',
+  services: 'Servicios',
 }
 
 export {

@@ -179,7 +179,7 @@ export function CreditById() {
               </span>
             </li>
             <li>
-              <b>{text.details.aditionalsDays + ':'}</b>{' '}
+              <b>{text.details.additionalDays + ':'}</b>{' '}
               <span>{creditRes?.dias_adicionales + '.'}</span>
             </li>
             <li>
@@ -200,7 +200,7 @@ export function CreditById() {
               </span>
             </li>
             <li>
-              <b>{text.details.frecuency + ':'}</b>{' '}
+              <b>{text.details.frequency + ':'}</b>{' '}
               <span>
                 {getFrecuencyById({
                   frecuencyId: creditRes?.frecuencia_del_credito_id,
@@ -224,7 +224,7 @@ export function CreditById() {
                 '[&>b]:line-through': !moraStatus,
               })}
             >
-              <b>{text.details.installmants(moraType) + ':'}</b>
+              <b>{text.details.installments(moraType) + ':'}</b>
               {moraType === 'Valor fijo' ? (
                 <span>{'$' + moreValue + '.'}</span>
               ) : (
