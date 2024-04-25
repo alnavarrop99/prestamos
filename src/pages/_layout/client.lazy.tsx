@@ -1,6 +1,5 @@
 import {
   ColumnFiltersState,
-  Row,
   SortingState,
   VisibilityState,
   getCoreRowModel,
@@ -89,7 +88,22 @@ export const useFilter = create<{
 /* eslint-disable-next-line */
 type TOrderType = 'Nombre' | 'Fecha de creacion' | 'algo'
 
-const ORDER: Record<keyof Omit<TClientTable, "tipo_de_identificacion_id" | "numero_de_identificacion" | "celular" | "telefono" | "email" | "direccion" | "comentarios" | "estado" | "referencia" | "owner_id" >, TOrderType> = {
+const ORDER: Record<
+  keyof Omit<
+    TClientTable,
+    | 'tipo_de_identificacion_id'
+    | 'numero_de_identificacion'
+    | 'celular'
+    | 'telefono'
+    | 'email'
+    | 'direccion'
+    | 'comentarios'
+    | 'estado'
+    | 'referencia'
+    | 'owner_id'
+  >,
+  TOrderType
+> = {
   id: 'Fecha de creacion',
   fullName: 'Nombre',
 }
@@ -155,7 +169,7 @@ export function Clients() {
 
   const onSelectOrder: (value: string) => void = (value) => {
     setOrder(value as keyof typeof ORDER)
-    if( value === "id" as keyof typeof ORDER ){
+    if (value === ('id' as keyof typeof ORDER)) {
       table?.resetSorting()
     }
     table?.getColumn(value)?.toggleSorting()
@@ -245,26 +259,30 @@ export function Clients() {
           <div>
             <div className="flex items-center gap-2 py-4">
               {!!table.getRowCount() && (
-              <div className="flex items-center">
-                <p className="hidden text-sm text-muted-foreground xl:block">
-                  {text.search.selected({
-                    selected: table.getFilteredSelectedRowModel().rows.length,
-                    total: table.getFilteredRowModel().rows.length,
-                  })}
-                </p>
-                <Select required defaultValue={order} onValueChange={onSelectOrder}>
-                  <SelectTrigger className="!border-1 w-44 !border-ring xl:w-48 xl:hidden">
-                    <SelectValue placeholder={'Orden'} />
-                  </SelectTrigger>
-                  <SelectContent className="[&_*]:cursor-pointer">
-                    {Object.entries(ORDER)?.map(([key, value], index) => (
-                      <SelectItem key={index} value={key}>
-                        {value}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                <div className="flex items-center">
+                  <p className="hidden text-sm text-muted-foreground xl:block">
+                    {text.search.selected({
+                      selected: table.getFilteredSelectedRowModel().rows.length,
+                      total: table.getFilteredRowModel().rows.length,
+                    })}
+                  </p>
+                  <Select
+                    required
+                    defaultValue={order}
+                    onValueChange={onSelectOrder}
+                  >
+                    <SelectTrigger className="!border-1 w-44 !border-ring xl:hidden xl:w-48">
+                      <SelectValue placeholder={'Orden'} />
+                    </SelectTrigger>
+                    <SelectContent className="[&_*]:cursor-pointer">
+                      {Object.entries(ORDER)?.map(([key, value], index) => (
+                        <SelectItem key={index} value={key}>
+                          {value}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               )}
               <Select value={filter} onValueChange={onValueChange}>
                 <SelectTrigger
@@ -387,8 +405,8 @@ export function Pending() {
         {rol?.rolName === 'Administrador' && (
           <Skeleton className="hidden h-6 md:w-56 xl:block" />
         )}
-        <Skeleton className="xl:ms-auto h-8 w-32" />
-        <Skeleton className="h-8 w-32 hidden xl:block" />
+        <Skeleton className="h-8 w-32 xl:ms-auto" />
+        <Skeleton className="hidden h-8 w-32 xl:block" />
       </div>
       <div className="px-4">
         <table className="hidden w-full border-separate border-spacing-2 divide-y-2 rounded-xl bg-background ring-2 ring-muted xl:table">
