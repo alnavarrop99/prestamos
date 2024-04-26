@@ -1,4 +1,4 @@
-import { TMORA_TYPE } from "@/lib/type/moraType"
+import { TMORA_TYPE } from '@/lib/type/moraType'
 
 const main = {
   title: 'Préstamos:',
@@ -81,6 +81,10 @@ const news = {
   error: {
     title: 'Obtención de datos',
     description: 'Ha ocurrido un error inesperado.',
+  },
+  fotter: {
+    ammount: 'Monto Total',
+    cuote: 'Valor cuota',
   },
   button: {
     close: 'Cerrar',
@@ -176,7 +180,7 @@ const pay_by_id = {
       placeholder: 'Escriba un comentario',
     },
     date: {
-      label: 'Fecha de aprobación:',
+      label: 'Fecha de pago:',
       placeholder: 'Seleccione una fecha',
     },
   },
@@ -212,7 +216,7 @@ const pay_selected = {
       placeholder: 'Escriba un comentario',
     },
     date: {
-      label: 'Fecha de aprobación',
+      label: 'Fecha de pago',
       placeholder: 'Seleccione una fecha',
     },
   },
@@ -233,13 +237,13 @@ const print_by_id = {
     options: {
       label: 'Opciones:',
       placeholder: 'Seleccione la opción de impresión',
-      items: ["Último pago", "Pago específico"],
+      items: ['Último pago', 'Pago específico'],
     },
   },
 }
 
 const print_selected = {
-    title: 'Opciones de impresión:',
+  title: 'Opciones de impresión:',
   description: 'Seleccione la opción deseada para la impresión del pago.',
   error: {
     title: 'Obtención de datos',
@@ -274,11 +278,12 @@ const credit_by_id = {
     title: 'Detalles del préstamo:',
     name: 'Nombre del cliente',
     user: 'Cobrador',
-    ref: 'Referencia',
-    amount: 'Monto total',
+    ref: 'Garante',
+    amount: 'Monto prestamo',
     interest: 'Tasa de interés',
     cuoteNumber: 'Número de cuotas',
-    cuote: 'Monto por cuota',
+    cuote: 'Próxima Cuota',
+    pending: 'Pendiente',
     pay: 'Monto a pagar',
     installments: (type: TMORA_TYPE) =>
       type === 'Valor fijo' ? 'Monto por mora' : 'Tasa por mora',
@@ -304,7 +309,7 @@ const credit_by_id = {
 }
 
 const update = {
-    title: 'Editar préstamos:',
+  title: 'Editar préstamos:',
   error: 'Ha ocurrido un error',
   errorDescription: 'Ha fallado la obtención de los detalles del préstamo.',
   back: 'Atras',
@@ -396,7 +401,7 @@ const update = {
 }
 
 const update_confirmation = {
-    title: 'Actualización del préstamo',
+  title: 'Actualización del préstamo',
   alert: {
     title: 'Se actualizará el préstamo en la base de datos',
     description: ({ username }: { username: string }) =>
@@ -415,21 +420,27 @@ const update_confirmation = {
       description: ({ username }: { username?: string }) =>
         'Se ha actualizado el pago del cliente ' + username + ' con éxito.',
       error: ({ username }: { username: string }) =>
-        'Ha fallado la actualización del pago para el usuario ' + username + '.',
+        'Ha fallado la actualización del pago para el usuario ' +
+        username +
+        '.',
     },
     deletePayment: {
       title: 'Eliminación de un pago',
       description: ({ username }: { username?: string }) =>
         'Se ha eliminado el pago del cliente ' + username + ' con éxito.',
       error: ({ username }: { username: string }) =>
-        'Ha fallado la eliminación del préstamo para el usuario ' + username + '.',
+        'Ha fallado la eliminación del préstamo para el usuario ' +
+        username +
+        '.',
     },
     credit: {
       title: 'Actualización de un préstamo',
       description: ({ username }: { username?: string }) =>
         'Se ha actualizado el préstamo del cliente ' + username + ' con éxito.',
       error: ({ username }: { username: string }) =>
-        'Ha fallado la actualización del préstamo para el usuario ' + username + '.',
+        'Ha fallado la actualización del préstamo para el usuario ' +
+        username +
+        '.',
     },
     retry: 'Reintentar',
   },
@@ -471,5 +482,5 @@ export {
   update,
   update_confirmation,
   credit_table,
-  credit_print
+  credit_print,
 }

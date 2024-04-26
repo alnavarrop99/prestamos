@@ -47,6 +47,12 @@ export const Route = createFileRoute('/_layout/credit/$creditId')({
       )
     )
 
+    const ref = queryClient.ensureQueryData(
+      queryOptions(
+        getClientByIdOpt({ clientId: '' + (await credit)?.garante_id })
+      )
+    )
+
     // const { userId, rol } = useToken.getState()
     // TODO:
     // const ownerId = (await credit)?.cobrador_id
@@ -54,7 +60,7 @@ export const Route = createFileRoute('/_layout/credit/$creditId')({
     //   throw redirect({ to: '/credit' })
     // }
 
-    return { credit, client }
+    return { credit, client, ref }
   },
 })
 
@@ -71,6 +77,9 @@ export function CreditById() {
   )
   const { data: clientRes } = useSuspenseQuery(
     queryOptions(getClientByIdOpt({ clientId: '' + creditRes.owner_id }))
+  )
+  const { data: refRes } = useSuspenseQuery(
+    queryOptions(getClientByIdOpt({ clientId: '' + creditRes.garante_id }))
   )
   const { open, setOpen } = useStatus()
   const navigate = useNavigate()
@@ -96,14 +105,6 @@ export function CreditById() {
   const moraType = getMoraTypeById({ moraTypeId: creditRes?.tipo_de_mora_id })
     ?.nombre
   const moraStatus = !!mora && mora > 0
-
-  const cuoteValue = creditRes?.cuotas?.at(-1)?.valor_de_cuota
-  const interestValue = (creditRes?.tasa_de_interes / 100) * (cuoteValue ?? 1)
-  const moreValue =
-    moraType === 'Porciento'
-      ? ((creditRes?.valor_de_mora + creditRes?.tasa_de_interes) / 100) *
-        (cuoteValue ?? 1)
-      : creditRes?.valor_de_mora
 
   return (
     <_client.Provider value={clientRes}>
@@ -167,10 +168,28 @@ export function CreditById() {
           <ul className="flex flex-col gap-2 px-2 [&>li]:space-x-2">
             <li>
               <b>{text.details.name + ':'}</b>{' '}
-              <span>
+              <Link
+                className="hover:underline"
+                to={'/client/$clientId/update'}
+                params={{ clientId: clientRes?.id }}
+                onClick={() => onOpenChange(!open)}
+              >
                 {clientRes?.nombres + ' ' + clientRes?.apellidos + '.'}
-              </span>
+              </Link>
             </li>
+            {!!refRes && (
+              <li>
+                <b>{text.details.ref + ':'}</b>{' '}
+                <Link
+                  className="hover:underline"
+                  to={'/client/$clientId/update'}
+                  params={{ clientId: refRes?.id }}
+                  onClick={() => onOpenChange(!open)}
+                >
+                  {refRes?.nombres + ' ' + refRes?.apellidos + '.'}
+                </Link>
+              </li>
+            )}
             <li>
               <b>{text.details.date + ':'}</b>{' '}
               <span>
@@ -180,6 +199,20 @@ export function CreditById() {
                 ) + '.'}
               </span>
             </li>
+            {creditRes?.cuotas?.[creditRes?.pagos?.length]?.fecha_de_pago && (
+              <li>
+                <b>{text.details.cuote + ':'}</b>{' '}
+                <span>
+                  {format(
+                    new Date(
+                      creditRes?.cuotas?.[creditRes?.pagos?.length]
+                        ?.fecha_de_pago
+                    ),
+                    'dd/MM/yyyy'
+                  ) + '.'}
+                </span>
+              </li>
+            )}
             <li>
               <b>{text.details.additionalDays + ':'}</b>{' '}
               <span>{creditRes?.dias_adicionales + '.'}</span>
@@ -189,9 +222,36 @@ export function CreditById() {
               <span>{'$' + creditRes?.monto + '.'}</span>
             </li>
             <li>
-              <b>{text.details.cuote + ':'}</b>{' '}
-              <span>{'$' + cuoteValue + '.'}</span>
+              <b>{text.details.pending + ':'}</b>{' '}
+              <span>
+                {'$' +
+                  Math.ceil(
+                    creditRes?.monto -
+                      creditRes?.pagos
+                        ?.slice(0, creditRes?.pagos?.length + 1)
+                        ?.reduce(
+                          (prev, acc) => {
+                            const res: typeof acc = { ...acc }
+                            res.valor_del_pago += prev?.valor_del_pago
+                            return res
+                          },
+                          { valor_del_pago: 0 }
+                        )?.valor_del_pago
+                  ) +
+                  '.'}
+              </span>
             </li>
+            {creditRes?.cuotas?.[creditRes?.pagos?.length]?.valor_de_cuota && (
+              <li>
+                <b>{'Valor Proxima Cuota' + ':'}</b>{' '}
+                <span>
+                  {'$' +
+                    creditRes?.cuotas?.[creditRes?.pagos?.length]
+                      ?.valor_de_cuota +
+                    '.'}
+                </span>
+              </li>
+            )}
             <li>
               <b>{text.details.cuoteNumber + ':'}</b>{' '}
               <span>
@@ -216,9 +276,7 @@ export function CreditById() {
               })}
             >
               <b>{text.details.interest + ':'}</b>{' '}
-              <span>
-                {creditRes?.tasa_de_interes + '% de $' + cuoteValue + '.'}
-              </span>
+              <span>{creditRes?.tasa_de_interes + '%' + '.'}</span>
             </li>
             <li
               className={clsx({
@@ -227,33 +285,20 @@ export function CreditById() {
               })}
             >
               <b>{text.details.installments(moraType) + ':'}</b>
-              {moraType === 'Valor fijo' ? (
-                <span>{'$' + moreValue + '.'}</span>
-              ) : (
-                <span>
-                  {creditRes?.valor_de_mora +
-                    '% de $' +
-                    (cuoteValue ?? 0) +
-                    '.'}
-                </span>
-              )}
-            </li>
-            <li>
-              <b>{text.details.pay + ':'}</b>{' '}
               <span>
-                {'$' +
-                  Math.ceil(
-                    moraStatus
-                      ? (cuoteValue ?? 0) + moreValue
-                      : (cuoteValue ?? 0) + interestValue
-                  ) +
-                  '.'}
+                {(getMoraTypeById({
+                  moraTypeId: creditRes?.tipo_de_mora_id ?? 0,
+                })?.nombre === 'Porciento'
+                  ? creditRes?.valor_de_mora + '%'
+                  : '$' + creditRes?.valor_de_mora) + '.'}
               </span>
             </li>
-            <li>
-              <b>{text.details.comment + ':'}</b>{' '}
-              <p className="text-sm md:text-base">{creditRes?.comentario}</p>
-            </li>
+            {creditRes?.comentario && creditRes?.comentario !== '' && (
+              <li>
+                <b>{text.details.comment + ':'}</b>{' '}
+                <p className="text-sm md:text-base">{creditRes?.comentario}</p>
+              </li>
+            )}
           </ul>
           <Separator />
           {!!creditRes?.cuotas?.length && !!creditRes?.pagos?.length && (

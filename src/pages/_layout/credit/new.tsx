@@ -251,12 +251,10 @@ export function NewCredit() {
 
     const user = usersRes?.find(({ nombre }) => nombre == items?.user)
     const client = clientsRes?.find(
-      ({ nombres, apellidos }) =>
-        [nombres, apellidos].join(' ') === items?.client
+      ({ nombres, apellidos }) => nombres + ' ' + apellidos === items?.client
     )
     const ref = clientsRes?.find(
-      ({ nombres, apellidos }) =>
-        [nombres, apellidos].join(' ') === items?.client
+      ({ nombres, apellidos }) => nombres + ' ' + apellidos === items?.ref
     )
 
     const userId = user?.id ?? currentUserId
@@ -628,11 +626,11 @@ export function NewCredit() {
             )}
           >
             <li>
-              <span>Monto Total</span>:{' '}
+              <span>{text.fotter.ammount}</span>:{' '}
               {'$' + getAmountTotal({ amount, interest, coute })}.
             </li>
             <li>
-              <span>Monto por cuota</span>:{' '}
+              <span>{text.fotter.cuote}</span>:{' '}
               {'$' + getAmountCuote({ interest, amount, coute })}.{' '}
             </li>
           </ul>

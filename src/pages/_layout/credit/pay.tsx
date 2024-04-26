@@ -27,7 +27,7 @@ import { postPaymentOpt } from '@/pages/_layout/credit_/$creditId/pay'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 import { getCreditByIdOpt } from '@/pages/_layout/credit_/$creditId.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
-import { pay_selected as text } from "@/locale/credit";
+import { pay_selected as text } from '@/locale/credit'
 
 type TSearch = {
   name: string
@@ -80,17 +80,23 @@ export function PaySelectedCredit() {
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
 
-    qClient?.refetchQueries( { queryKey: getPaymentListOpt?.queryKey } )
+    qClient?.refetchQueries({ queryKey: getPaymentListOpt?.queryKey })
   }
 
-  const onError: ( error: Error, variables: TPAYMENT_POST_BODY, context: unknown) => unknown = (error) => {
-    const errorMsg: {type: number, msg: string} = JSON.parse( error.message )
+  const onError: (
+    error: Error,
+    variables: TPAYMENT_POST_BODY,
+    context: unknown
+  ) => unknown = (error) => {
+    const errorMsg: { type: number; msg: string } = JSON.parse(error.message)
 
     toast({
-      title: error.name + ": " + errorMsg?.type,
-      description:  (<div className='text-sm'>
-        <p>{ errorMsg?.msg  }</p>
-      </div>),
+      title: error.name + ': ' + errorMsg?.type,
+      description: (
+        <div className="text-sm">
+          <p>{errorMsg?.msg}</p>
+        </div>
+      ),
       variant: 'destructive',
     })
   }
@@ -119,7 +125,7 @@ export function PaySelectedCredit() {
       valor_del_pago: +items?.valor_del_pago,
       comentario: items?.comentario ?? '',
       credito_id: creditId,
-      fecha_de_pago: format(new Date(items?.fecha_de_pago ?? "") , 'yyyy-MM-dd'),
+      fecha_de_pago: format(new Date(items?.fecha_de_pago ?? ''), 'yyyy-MM-dd'),
     })
 
     setOpen({ open: !open })
@@ -170,6 +176,7 @@ export function PaySelectedCredit() {
               name={'fecha_de_pago' as TFormName}
               label={text.form.date.placeholder}
               className="!border-1 !border-ring"
+              date={new Date()}
             />
           </Label>
           <Label className="md:cols-span-full">

@@ -319,7 +319,7 @@ export function Credits() {
               })}
             </p>
             <Select defaultValue={order} onValueChange={onSelectOrder}>
-              <SelectTrigger className="!border-1 w-44 !border-ring xl:hidden xl:w-48">
+              <SelectTrigger className="!border-1 w-44 !border-ring xl:ms-auto xl:w-48">
                 <SelectValue placeholder={'Orden'} />
               </SelectTrigger>
               <SelectContent className="[&_*]:cursor-pointer">
@@ -343,7 +343,7 @@ export function Credits() {
         {!!credits?.length && (
           <div
             className={clsx(
-              'flex flex-wrap gap-4 xl:gap-6 [&>*]:flex-1 md:[&>*]:basis-2/5'
+              'flex flex-wrap gap-4 xl:gap-6 [&>*]:flex-auto md:[&>*]:basis-2/5'
             )}
           >
             {!!credits?.length &&

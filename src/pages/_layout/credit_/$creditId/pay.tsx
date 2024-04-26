@@ -34,7 +34,7 @@ import {
 import { format } from 'date-fns'
 import { getCreditsListOpt } from '@/pages/_layout/credit.lazy'
 import { getPaymentListOpt } from '@/pages/_layout'
-import { pay_by_id as text } from "@/locale/credit";
+import { pay_by_id as text } from '@/locale/credit'
 
 export const postPaymentOpt = {
   mutationKey: ['create-payment'],
@@ -86,7 +86,7 @@ export function PayCreditById() {
       queryKey: getCreditByIdOpt({ creditId: '' + creditId })?.queryKey,
     })
 
-    qClient?.refetchQueries( { queryKey: getPaymentListOpt?.queryKey } )
+    qClient?.refetchQueries({ queryKey: getPaymentListOpt?.queryKey })
   }
   const onError: (
     error: Error,
@@ -99,7 +99,7 @@ export function PayCreditById() {
       title: error.name + ': ' + errorMsg?.type,
       description: (
         <div className="text-sm">
-          <p>{errorMsg?.msg }</p>
+          <p>{errorMsg?.msg}</p>
         </div>
       ),
       variant: 'destructive',
@@ -131,7 +131,7 @@ export function PayCreditById() {
       valor_del_pago: +items?.valor_del_pago,
       comentario: items?.comentario ?? '',
       credito_id: +creditId,
-      fecha_de_pago: format(new Date(items?.fecha_de_pago ?? ""), 'yyyy-MM-dd'),
+      fecha_de_pago: format(new Date(items?.fecha_de_pago ?? ''), 'yyyy-MM-dd'),
     })
 
     setOpen({ open: !open })
@@ -173,7 +173,9 @@ export function PayCreditById() {
               name={'valor_del_pago' as TFormName}
               type="number"
               placeholder={text.form.amount.placeholder}
-              defaultValue={credit?.cuotas?.at(0)?.valor_de_cuota}
+              defaultValue={
+                credit?.cuotas?.[credit?.pagos?.length]?.valor_de_cuota
+              }
             />
           </Label>
           <Label className="md:!col-span-1">
@@ -182,6 +184,11 @@ export function PayCreditById() {
               name={'fecha_de_pago' as TFormName}
               label={text.form.date.placeholder}
               className="!border-1 !border-ring"
+              date={
+                new Date(
+                  credit?.cuotas?.[credit?.pagos?.length]?.fecha_de_pago ?? ''
+                )
+              }
             />
           </Label>
           <Label className="md:cols-span-full">
