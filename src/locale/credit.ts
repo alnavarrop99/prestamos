@@ -140,7 +140,7 @@ const news = {
       label: 'Mora:',
       placeholder: {
         ['Valor fijo' as TMORA_TYPE]: 'Monto adicional en cada cuota',
-        ['Porcentaje' as TMORA_TYPE]: 'Porcentaje adicional en cada cuota',
+        ['Porciento' as TMORA_TYPE]: 'Porcentaje adicional en cada cuota',
       },
     },
     cuote: {

@@ -576,7 +576,7 @@ export function NewCredit() {
                   type="number"
                   defaultValue={installmants.value}
                   placeholder={
-                    text.form.installments.placeholder?.[installmants.type]
+                    text.form.installments.placeholder?.[installmants?.type]
                   }
                 />
               )}
