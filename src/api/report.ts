@@ -22,14 +22,14 @@ export type TREPORT_GET_ALL = TREPORT_GET[]
 // POST 
 export type TREPORT_POST = {
   error: string
-  resultado: string[]
+  resultados: unknown[]
 }
 
 export type TREPORT_POST_BODY = {}
 
 // FUNCTION TYPES 
 type TGetAllReport = () => Promise<TREPORT_GET_ALL>
-type TPostReportsById = ( params :{ code: string, report: TREPORT_POST_BODY } ) => Promise<TREPORT_POST[]>
+type TPostReportsById = ( params :{ code: string, report: TREPORT_POST_BODY } ) => Promise<TREPORT_POST>
 
 // FUNCTION UTILS
 export const typeDataByName = ( name: TREPORT_PARAMS_DATE_TYPE ) => ({ date: undefined, str: 'text', number: 'number', like: 'text' })[name]

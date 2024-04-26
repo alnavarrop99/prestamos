@@ -2,11 +2,11 @@ import type { Meta, StoryObj } from '@storybook/react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Label } from '@/components/ui/label'
 
-function Basic({ label }: { label: string }) {
+function Basic({ label, checked }: { label: string, checked :boolean }) {
   return (
     <div>
       <Label className="inline-flex items-center gap-1">
-        <Checkbox /> {label}{' '}
+        <Checkbox checked={checked} /> {label}{' '}
       </Label>
     </div>
   )
@@ -41,6 +41,7 @@ export const _Basic: StoryObj<React.ComponentProps<typeof Basic>> = {
   name: 'Basic',
   args: {
     label: 'Checkbox',
+    checked: false
   },
   render: Basic,
 }

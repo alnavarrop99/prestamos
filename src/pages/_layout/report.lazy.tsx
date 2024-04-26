@@ -1,4 +1,6 @@
-import { getAllReport, typeDataByName, postReportById, type TREPORT_POST_BODY, type TREPORT_PARAMS_DATE_TYPE } from '@/api/report'
+import React from 'react';
+import { Page, Text, View, Document, StyleSheet, PDFDownloadLink } from '@react-pdf/renderer';
+import { getAllReport, typeDataByName, postReportById, type TREPORT_POST_BODY, type TREPORT_PARAMS_DATE_TYPE, type TREPORT_POST } from '@/api/report'
 import {
   Accordion,
   AccordionContent,
@@ -12,7 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@radix-ui/react-label'
 import { createFileRoute } from '@tanstack/react-router'
 import clsx from 'clsx'
-import { Annoyed, Download } from 'lucide-react'
+import { Annoyed, Download, PlusSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useEffect, useRef, useState } from 'react'
 import { queryOptions, useMutation, useSuspenseQuery } from '@tanstack/react-query'
@@ -22,6 +24,9 @@ import { useRouter } from '@tanstack/react-router'
 import { queryClient } from '@/pages/__root'
 import { ErrorComponentProps } from '@tanstack/react-router'
 import { main as text } from "@/locale/report.ts"
+import { SpinLoader } from '@/components/ui/loader';
+import { toast } from '@/components/ui/use-toast';
+import { format } from 'date-fns';
 
 export const getReportsOpt = {
   queryKey: [ "get-reports" ],
@@ -45,15 +50,17 @@ const LENGTH = 5
 /* eslint-disable-next-line */
 export function Report() {
   const { data: reports } = useSuspenseQuery( queryOptions( getReportsOpt ) )
-  const form = reports?.map( () => useRef<HTMLFormElement>(null) ) 
-  const { mutate: reportById } = useMutation( postReportOpt )
+  const form = reports?.map( () => useRef<HTMLFormElement>(null) )
+  const [ action, setAction ] = useState<{[ k: number ]: boolean}>( Object.fromEntries( reports?.map<[number, boolean]>( (_, i) => ([ i, false ]) ) ) )
+  const [ res, setRes ] = useState< unknown[] >([])
 
+  const { mutate: reportById, isSuccess, isError, isPending, failureReason } = useMutation( {...postReportOpt} )
   useEffect( () => {
     document.title = import.meta.env.VITE_NAME + " | " + text.browser
   }, [] )
 
-  const onSubmit: (  index: number  ) => React.FormEventHandler = ( index ) => (ev) =>  {
-    if (!form?.[index]) return;
+  const onSubmit: (  index: number  ) => React.FormEventHandler = ( index ) => async (ev) =>  {
+    if (!form?.[index] || !reports?.[index]) return;
 
     const items = Object.fromEntries(
       Array.from( new FormData(form?.[index]?.current ?? undefined).entries() )?.map( ([ key, value ], i, list) => {
@@ -61,12 +68,35 @@ export function Report() {
       return list?.[i]
     }) ) as Record<keyof TREPORT_POST_BODY, string>
 
+    const onSuccess: ((data: TREPORT_POST, variables: { code: string; report: TREPORT_POST_BODY; }, context: unknown) => void) = (data) => {
+      if( !data?.resultados?.length ) {
+          toast({
+          title: text[404].title,
+          description: (
+            <div className="text-sm">
+              <p>{ text[404].description }</p>
+            </div>
+          ),
+          variant: 'destructive',
+       })
+        return;
+      }
+      setRes( data?.resultados )
+      setAction( {...action, [index]: true })
+    }
+    const onError = () => {
+      setAction( {...action, [index]: false })
+      setRes([])
+    }
+
     reportById({
       code: reports?.[index]?.codigo,
       report: items,
+    }, {
+      onSuccess,
+      onError
     })
 
-    form?.[index]?.current?.reset()
     ev.preventDefault()
   }
 
@@ -110,14 +140,37 @@ export function Report() {
                   />
                 </Label>
               </form>
-              <Button
-                type="submit"
-                form={'report' + id}
-                variant="default"
-                className=" group ms-auto flex gap-2"
-              >
-                <Download />
-              </Button>
+              <div className="flex gap-1 justify-end">
+                <Button
+                  type={"submit"}
+                  form={'report' + id}
+                  variant="default"
+                >
+                  <PlusSquare />
+                </Button>
+                { action?.[index] && <Button
+                  type={"button"}
+                  variant="link"
+                >
+                  <PDFDownloadLink document={<MyDocument codigo={ nombre } resultado={ res } />} fileName={nombre + " " + format(new Date(), "yyyy-MM-dd")}>
+                    {({ loading, error: _error }) => {
+                       const error = failureReason ?? _error
+                       if( error || isError ) toast({
+                          title: error?.name,
+                          description: (
+                            <div className="text-sm">
+                              <p>{error?.message}</p>
+                            </div>
+                          ),
+                          variant: 'destructive',
+                       })
+                       if( loading || isPending ) return <SpinLoader />
+                       return isSuccess && action?.[index] && <Download />
+                    }
+                  }
+                  </PDFDownloadLink>
+                </Button> }
+              </div>
             </AccordionContent>
           </AccordionItem>
         ))}
@@ -208,6 +261,62 @@ export function Error({ error }: ErrorComponentProps) {
       </div>
     </div>
   )
+}
+
+const styles = StyleSheet.create({
+  page: {
+    paddingTop: 35,
+    paddingBottom: 65,
+    paddingHorizontal: 35,
+  },
+  image: {
+    marginVertical: 15,
+    marginHorizontal: 100,
+  },
+  section: {
+    margin: 5,
+    padding: 5,
+    fontSize: 10
+  },
+  title: {
+    margin: 10,
+    padding: 10,
+    paddingLeft: 20,
+    fontSize: 16,
+    textAlign: "justify"
+  },
+  footer: {
+    padding: 8,
+    margin: 8,
+    fontSize: 10,
+    textAlign: "justify"
+  }
+});
+
+const MyDocument = ({ resultado, codigo }: {resultado: unknown[], codigo?: string}) => {
+ return <Document>
+    <Page size="A4" style={styles.page}>
+      <View style={styles.title}>
+        <Text style={{fontWeight: "bold"}}>{ text.doc.title + ":"} {codigo}</Text>
+      </View>
+      <View>
+        { resultado?.map( ( items, i ) => {
+          if( typeof items === "object" && !!items ) return <View style={styles.section}> <PrintDoc items={items} /> </View>
+          if( typeof items === "string" && !!items ) return <Text key={i}>{ items }</Text>
+        })}
+      </View>
+      <View style={styles.footer}>
+        <Text> {text.doc.date + ":"} { format( new Date(), "dd-MM-yyyy" ) } </Text>
+      </View>
+    </Page>
+  </Document>
+};
+
+const PrintDoc = ( { items, margin = 5 }: { items: object, margin?: number } ) => {
+  return <> { Object.entries(items)?.map( ( [ name, value ], i ) => {
+    if( typeof items === value ) return <PrintDoc items={value} margin={margin * i} />
+    return <Text key={i} style={ { paddingLeft: margin } } > {name}: {value} </Text> 
+  })} </>
 }
 
 Report.dispalyname = 'Report'
